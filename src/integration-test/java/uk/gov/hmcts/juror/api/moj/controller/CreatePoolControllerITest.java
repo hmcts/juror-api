@@ -70,7 +70,8 @@ import static org.assertj.core.api.Assertions.assertThat;
     "PMD.TooManyMethods",
     "PMD.LinguisticNaming",
     "PMD.ExcessiveImports",
-    "PMD.ExcessivePublicCount"})
+    "PMD.ExcessivePublicCount",
+    "PMD.CouplingBetweenObjects"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
@@ -324,7 +325,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_createPool.sql",
         "/db/CreatePoolController_excludedJurorsTest.sql",
         "/db/CreatePoolController_loadVotersWithDeceasedJurors.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void createPool_withDeceasedVoters() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
                                    .userType(UserType.BUREAU)
@@ -422,7 +422,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_createPool.sql",
         "/db/CreatePoolController_excludedJurorsTest.sql",
         "/db/CreatePoolController_loadVotersWithExcluded.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void createPool_withExcludedVoters() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
                                        .userType(UserType.BUREAU)

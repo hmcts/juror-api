@@ -37,7 +37,6 @@ import static org.springframework.http.HttpMethod.GET;
 /**
  * Integration tests for the API endpoints defined in {@link CourtLocationController}.
  */
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CourtLocationControllerITest extends AbstractIntegrationTest {
@@ -51,12 +50,13 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+    @SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.SignatureDeclareThrowsException"})
     @BeforeEach
     public void setUp() throws Exception {
         initHeaders();
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void initHeaders() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
@@ -69,6 +69,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()
@@ -189,6 +190,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
                 .replace("{loc_code}", locCode);
         }
 
+        @SuppressWarnings("PMD.SignatureDeclareThrowsException")
         @DisplayName("Positive")
         @Nested
         class Positive {
@@ -205,7 +207,6 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
                 return response;
             }
 
-
             @Test
             void typical() throws Exception {
                 ResponseEntity<CourtRates> response = triggerValid("001");
@@ -220,6 +221,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
         @DisplayName("Negative")
         @Nested
         class Negative {
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             protected ResponseEntity<String> triggerInvalid(String locCode) throws Exception {
                 final String jwt = createBureauJwt(COURT_USER, "415", locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);

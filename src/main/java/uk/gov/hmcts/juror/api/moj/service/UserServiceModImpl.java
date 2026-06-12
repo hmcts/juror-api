@@ -116,6 +116,7 @@ public class UserServiceModImpl implements UserService {
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.AvoidReassigningParameters"})
     public JwtDto createJwt(String email, String locCode) {
         User user = findUserByEmail(email);
         if (!user.isActive()) {
@@ -255,10 +256,9 @@ public class UserServiceModImpl implements UserService {
         String username = email.split("@")[0];
         username = username.substring(0, Math.min(username.length(), 30));
         // limit to 28 characters (DB constraint + 2 digits for numerics)
-        int i = 1;
         String usernameTemp = username;
         while (userRepository.existsById(usernameTemp)) {
-            usernameTemp = username + i;
+            usernameTemp = username + 1;
         }
         return usernameTemp;
     }

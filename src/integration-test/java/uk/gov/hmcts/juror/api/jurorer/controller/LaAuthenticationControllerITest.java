@@ -46,17 +46,18 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/juror-er";
     private static final String EMAIL_SUFFIX = "@localauthority1.council.uk";
 
-    private final TestRestTemplate template;
-    private HttpHeaders httpHeaders;
+    @Autowired
+    private TestRestTemplate template;
 
     @Value("${jwt.secret.er-portal}")
     private String erPortalSecret;
 
     private final Clock clock;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
-        httpHeaders = new HttpHeaders();
+        HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 

@@ -35,7 +35,6 @@ import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @WireMockTest(httpPort = 8090)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -54,12 +53,13 @@ class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
     @Value("${jwt.secret.bureau}")
     protected String bureauSecret;
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+    @SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.SignatureDeclareThrowsException"})
     @BeforeEach
     public void setUp() throws Exception {
         initHeaders();
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void initHeaders(String... userLevel) throws Exception {
         String level = "99";
         if (userLevel.length == 1) {

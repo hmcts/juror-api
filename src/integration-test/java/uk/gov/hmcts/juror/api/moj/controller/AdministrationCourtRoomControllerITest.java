@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -39,16 +38,17 @@ import static org.springframework.http.HttpMethod.PUT;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationCourtRoomControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AdministrationCourtRoomControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/administration/court-rooms";
 
     private HttpHeaders httpHeaders;
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
 
     @Autowired
-    private final CourtroomRepository courtroomRepository;
+    private CourtroomRepository courtroomRepository;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();

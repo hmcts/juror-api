@@ -52,7 +52,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 public class BureauStaffControllerTest extends AbstractIntegrationTest {
 
     private static final List<StaffDto> ACTIVE_STAFF = Arrays.asList(

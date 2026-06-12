@@ -44,6 +44,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class DeferralResponseServiceImpl implements DeferralResponseService {
 
     public static final String DEFERRAL_REJECTED_CODE = "Z";
@@ -65,6 +66,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     public DeferralAgeDisqualificationResponseDto respondToDeferralRequest(BureauJwtPayload payload,
                                                                            DeferralRequestDto deferralRequestDto) {
 
@@ -96,45 +98,47 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
                 .eligible(1)
                 .ageDisqualified(List.of())
                 .build();
-        } else if (!deferralRequestDto.isAllowMultipleDeferrals() && !firstDeferral) {
+        } else if (deferralRequestDto.isAllowMultipleDeferrals() || firstDeferral) {
+            if (deferralRequestDto.getDeferralDecision() == DeferralDecision.GRANT) {
+                log.info("Begin processing grant deferral juror {} by user {}", jurorNumber, payload.getLogin());
+
+                // age check - only applies to grant path since we are moving juror to a future date
+                LocalDate currentServiceStartDate = jurorPool.getReturnDate();
+                LocalDate newDate = deferralRequestDto.getDeferralDate();
+                LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
+                    jurorPool, digitalResponseRepository, paperResponseRepository,null);
+
+                if (ManageDeferralsService.isAgeDisqualified(dob, newDate)) {
+                    return DeferralAgeDisqualificationResponseDto.builder()
+                        .eligible(0)
+                        .ageDisqualified(List.of(
+                            DeferralAgeDisqualificationResponseDto.AgeDisqualifiedJurorDto.builder()
+                                .jurorNumber(jurorNumber)
+                                .dob(dob)
+                                .currentServiceStartDate(currentServiceStartDate)
+                                .newDate(newDate)
+                                .build()
+                        ))
+                        .build();
+                }
+
+                jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
+                grantDeferralForJurorPool(payload, deferralRequestDto, jurorPool);
+
+                return DeferralAgeDisqualificationResponseDto.builder()
+                    .eligible(1)
+                    .ageDisqualified(List.of())
+                    .build();
+            } else {
+                log.error("Invalid deferral decision for juror {}", jurorNumber);
+                throw new MojException.BadRequest("Invalid deferral decision", null);
+            }
+        } else {
             log.debug("Can not defer juror multiple times without allowMultipleDeferrals flag. Juror {}",
                 jurorNumber);
             throw new MojException.BusinessRuleViolation("Juror has been deferred before. Please use "
                 + "allow_multiple_deferrals to bypass this error.",
                 MojException.BusinessRuleViolation.ErrorCode.JUROR_HAS_BEEN_DEFERRED_BEFORE);
-        } else if (deferralRequestDto.getDeferralDecision() == DeferralDecision.GRANT) {
-            log.info("Begin processing grant deferral juror {} by user {}", jurorNumber, payload.getLogin());
-
-            // age check - only applies to grant path since we are moving juror to a future date
-            LocalDate currentServiceStartDate = jurorPool.getReturnDate();
-            LocalDate newDate = deferralRequestDto.getDeferralDate();
-            LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
-                jurorPool, digitalResponseRepository, paperResponseRepository,null);
-
-            if (ManageDeferralsService.isAgeDisqualified(dob, newDate)) {
-                return DeferralAgeDisqualificationResponseDto.builder()
-                    .eligible(0)
-                    .ageDisqualified(List.of(
-                        DeferralAgeDisqualificationResponseDto.AgeDisqualifiedJurorDto.builder()
-                            .jurorNumber(jurorNumber)
-                            .dob(dob)
-                            .currentServiceStartDate(currentServiceStartDate)
-                            .newDate(newDate)
-                            .build()
-                    ))
-                    .build();
-            }
-
-            jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
-            grantDeferralForJurorPool(payload, deferralRequestDto, jurorPool);
-
-            return DeferralAgeDisqualificationResponseDto.builder()
-                .eligible(1)
-                .ageDisqualified(List.of())
-                .build();
-        } else {
-            log.error("Invalid deferral decision for juror {}", jurorNumber);
-            throw new MojException.BadRequest("Invalid deferral decision", null);
         }
     }
 

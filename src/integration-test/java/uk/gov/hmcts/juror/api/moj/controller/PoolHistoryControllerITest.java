@@ -97,6 +97,7 @@ public class PoolHistoryControllerITest extends AbstractIntegrationTest {
             .isEqualTo(FORBIDDEN);
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void initHeaders() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
@@ -109,6 +110,7 @@ public class PoolHistoryControllerITest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()

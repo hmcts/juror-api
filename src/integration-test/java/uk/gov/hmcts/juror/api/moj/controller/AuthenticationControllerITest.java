@@ -57,7 +57,8 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/moj";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private HttpHeaders httpHeaders;
 
     @Value("${jwt.secret.bureau}")
@@ -65,9 +66,10 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
 
     private final Clock clock;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
-        httpHeaders = new HttpHeaders();
+        HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
@@ -165,7 +167,6 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET (POST) " + ViewCourts.URL)
     class CreateJwt extends AbstractControllerIntegrationTest<EmailDto, JwtDto> {
@@ -191,7 +192,6 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
         }
 
         @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-
         public String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);
         }

@@ -37,6 +37,7 @@ import static uk.gov.hmcts.juror.api.validation.LaCodeValidator.isValidLaCode;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings("PMD.CouplingBetweenObjects")
 public class ErDashboardServiceImpl implements ErDashboardService {
 
     private final LocalAuthorityService localAuthorityService;

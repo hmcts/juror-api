@@ -65,8 +65,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * Integration tests for the API endpoints defined in {@link JurorPaperResponseController}.
  */
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.ExcessivePublicCount", "PMD.TooManyMethods",
-    "PMD.CyclomaticComplexity"})
+@SuppressWarnings({"PMD.ExcessiveImports",
+    "PMD.ExcessivePublicCount",
+    "PMD.TooManyMethods",
+    "PMD.CyclomaticComplexity",
+    "PMD.CouplingBetweenObjects"
+})
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
@@ -1920,6 +1924,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         });
     }
 
+    @SuppressWarnings("PMD.CognitiveComplexity")
     private void verifyResponseDtoMapping(JurorPaperResponseDetailDto responseDetailDto, String owner) {
         executeInTransaction(() -> {
             PaperResponse jurorPaperResponse =

@@ -62,7 +62,12 @@ import static org.springframework.http.HttpStatus.OK;
  * Integration tests for the API endpoints defined in {@link RequestPoolController}.
  */
 @RunWith(SpringRunner.class)
-@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.TooManyMethods", "PMD.ExcessiveImports"})
+@SuppressWarnings({
+    "PMD.ExcessivePublicCount",
+    "PMD.TooManyMethods",
+    "PMD.ExcessiveImports",
+    "PMD.CouplingBetweenObjects"
+})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
@@ -88,6 +93,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         initHeaders();
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void initHeaders() throws Exception {
         final String bureauJwt = getBureauJwt();
 

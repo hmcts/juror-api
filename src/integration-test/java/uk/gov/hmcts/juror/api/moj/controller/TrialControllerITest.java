@@ -85,7 +85,8 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
 @Sql({"/db/mod/truncate.sql", "/db/trial/Trial.sql"})
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.CouplingBetweenObjects"
 })
 class TrialControllerITest extends AbstractIntegrationTest {
     private static final String REASSIGN_PANEL_MEMBERS = "/api/v1/moj/trial/reassign-panel-members";

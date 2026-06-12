@@ -203,6 +203,7 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
     }
 
 
+    @SuppressWarnings("PMD.ExhaustiveSwitchHasDefault")
     private void applySorting(JPAQuery<Tuple> query, PoolSearchRequestDto poolSearchRequestDto) {
         switch (poolSearchRequestDto.getSortColumn()) {
             case POOL_NO -> poolRequestRepository.orderByStringColumn(query, QPoolRequest.poolRequest.poolNumber,

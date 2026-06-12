@@ -365,6 +365,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         jurorHistoryRepository.saveAll(historyList);
     }
 
+    @SuppressWarnings("PMD.ExceptionAsFlowControl")
     private List<JurorPool> getJurorPools(String login, String owner, PoolCreateRequestDto poolCreateRequestDto) {
 
         List<JurorPool> jurorPools = new ArrayList<>();

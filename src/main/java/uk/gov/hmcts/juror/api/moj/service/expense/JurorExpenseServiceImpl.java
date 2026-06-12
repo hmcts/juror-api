@@ -79,12 +79,12 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -101,7 +101,8 @@ import static uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils.getOrZero;
     "PMD.ExcessiveImports",
     "PMD.GodClass",
     "PMD.TooManyMethods",
-    "PMD.CyclomaticComplexity"
+    "PMD.CyclomaticComplexity",
+    "PMD.CouplingBetweenObjects"
 })
 public class JurorExpenseServiceImpl implements JurorExpenseService {
 
@@ -335,6 +336,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     @Transactional
+    @SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
     DailyExpenseResponse updateExpenseInternal(Appearance appearance,
                                                DailyExpense request) {
         DailyExpenseResponse dailyExpenseResponse = new DailyExpenseResponse();
@@ -438,10 +440,10 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         if (request.getApplyToAllDays() == null || request.getApplyToAllDays().isEmpty()) {
             Appearance appearance = getDraftAppearance(locCode, jurorNumber,
                 request.getDateOfExpense());
-            if (!isAttendanceDay(appearance)) {
-                validationService.validate(request, DailyExpense.NonAttendanceDay.class);
-            } else {
+            if (isAttendanceDay(appearance)) {
                 validationService.validate(request, DailyExpense.AttendanceDay.class);
+            } else {
+                validationService.validate(request, DailyExpense.NonAttendanceDay.class);
             }
             return updateExpenseInternal(appearance, request);
         }
@@ -528,6 +530,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     @Transactional
+    @SuppressWarnings("PMD.CognitiveComplexity")
     void applyToAll(List<Appearance> appearances, DailyExpense request) {
         List<BiConsumer<Appearance, DailyExpense>> updateAppearanceConsumer = new ArrayList<>();
         AtomicBoolean hasFinancialLoss = new AtomicBoolean(false);
@@ -732,6 +735,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     @Override
     @Transactional(readOnly = true)
+    @SuppressWarnings("PMD.CognitiveComplexity")
     public SummaryExpenseDetailsDto calculateSummaryTotals(String locCode, String jurorNumber) {
 
         final String owner = SecurityUtil.getActiveOwner();
@@ -1050,29 +1054,21 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
         String locCode, List<Appearance> appearances,
         boolean isReapproval,
         LocalDate fromInclusive, LocalDate toInclusive) {
-        Map<String, List<Appearance>> approvalMapIdListMap = new HashMap<>();
+        Map<String, List<Appearance>> approvalMapIdListMap = new ConcurrentHashMap<>();
 
         appearances.forEach(
             appearance -> approvalMapIdListMap.computeIfAbsent(appearance.getJurorNumber(), k -> new ArrayList<>())
                 .add(appearance));
 
         return approvalMapIdListMap.values().stream()
-            .filter(appearances1 -> {
-                if (fromInclusive != null) {
-                    return appearances1.stream()
-                        .anyMatch(appearance -> appearance.getAttendanceDate().isAfter(fromInclusive)
-                            || appearance.getAttendanceDate().isEqual(fromInclusive));
-                }
-                return true;
-            })
-            .filter(appearances1 -> {
-                if (toInclusive != null) {
-                    return appearances1.stream()
-                        .anyMatch(appearance -> appearance.getAttendanceDate().isBefore(toInclusive)
-                            || appearance.getAttendanceDate().isEqual(toInclusive));
-                }
-                return true;
-            })
+            .filter(appearances1 -> fromInclusive == null
+                || appearances1.stream()
+                .anyMatch(appearance ->
+                              !appearance.getAttendanceDate().isBefore(fromInclusive)))
+            .filter(appearances1 -> toInclusive == null
+                || appearances1.stream()
+                .anyMatch(appearance ->
+                              !appearance.getAttendanceDate().isAfter(toInclusive)))
             .map(appearances1 -> mapAppearancesToPendingApprovalSinglePool(locCode, appearances1, isReapproval))
             .toList();
     }
