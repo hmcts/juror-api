@@ -74,7 +74,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto.builder;
+
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 @ExtendWith(SpringExtension.class)
