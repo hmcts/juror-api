@@ -38,7 +38,6 @@ public class PoolSummaryResponseDto {
     @Setter
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class PoolDetails {
-
         @Schema(name = "Pool Number", description = "9 digit numeric String to identify a Pool Request")
         private String poolNumber;
 
@@ -63,10 +62,12 @@ public class PoolSummaryResponseDto {
             + "Requested (false))")
         private Boolean isActive;
 
+        @JsonProperty("is_nil_pool")
         @Schema(name = "Is Nil Pool",
             description = "Indicates whether the the pool is a nil pool or not")
         private boolean isNilPool;
 
+        @JsonProperty("current_owner")
         @Schema(name = "Current Owner", description = "Current owner (3 digit code) of the juror record")
         private String currentOwner;
     }
@@ -117,12 +118,14 @@ public class PoolSummaryResponseDto {
     @NoArgsConstructor
     @Getter
     @Setter
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class AdditionalStatistics {
 
         @Schema(name = "Court Supply", description = "The number of Pool Members owned by the court (e.g. court "
             + "deferrals) with a status of 'Responded'")
         private int courtSupply;
 
+        @JsonProperty("totalJurorsInPool")
         private long totalJurorsInPool;
     }
 
