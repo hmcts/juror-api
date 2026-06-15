@@ -217,6 +217,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
             void invalidLaCode() {
                 testBuilder()
                     .url(URL + "/0T1")

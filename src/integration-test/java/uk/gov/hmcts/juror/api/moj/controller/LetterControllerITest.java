@@ -5818,6 +5818,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 }
             }
 
+            @SuppressWarnings("PMD.InsufficientStringBufferDeclaration")
             private String buildJurorExemptionUri(String caseNumber, String courtLocation) {
                 StringBuilder builder = new StringBuilder(JUROR_EXEMPITON_URL);
 
