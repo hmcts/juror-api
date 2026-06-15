@@ -22,58 +22,51 @@ import java.util.List;
 @Schema(description = "payload for processing a reassign or transfer request")
 public class JurorManagementRequestDto {
 
-    @JsonProperty("sourcePoolNumber")
     @Schema(name = "Source Pool number", requiredMode = Schema.RequiredMode.REQUIRED,
         description = "9-digit Pool number to reassign the Jurors from")
     @Size(min = 9, max = 9)
     @NumericString
     private String sourcePoolNumber;
 
-    @JsonProperty("sourceCourtLocCode")
     @Schema(name = "Source court location code", requiredMode = Schema.RequiredMode.REQUIRED,
         description = "3-digit court location code to move the Jurors from")
     @Size(min = 3, max = 3)
     @NumericString
     private String sourceCourtLocCode;
 
-    @JsonProperty("jurorNumbers")
     @Size(min = 1)
     @Schema(name = "Juror numbers", requiredMode = Schema.RequiredMode.REQUIRED,
         description = "Array of Juror numbers to move to new pool")
     private List<String> jurorNumbers;
 
     // This will not be required for court users if they create a new pool
-    @JsonProperty("receivingPoolNumber")
     @Schema(name = "receiving Pool number",
         description = "The receiving Pool number to move the Jurors to")
     @Size(min = 9, max = 9)
     @NumericString
     private String receivingPoolNumber;
 
-    @JsonProperty("receivingCourtLocCode")
     @Schema(name = "receiving court location code", requiredMode = Schema.RequiredMode.REQUIRED,
         description = "3-digit court location code to move the Jurors to")
     @Size(min = 3, max = 3)
     @NumericString
     private String receivingCourtLocCode;
 
-    @JsonProperty("targetServiceStartDate")
     @Schema(name = "Service Start Date", requiredMode = Schema.RequiredMode.REQUIRED,
         description = "New Pool's requested start date (at the receiving court)")
     private LocalDate serviceStartDate;
 
-    @JsonProperty("sendingCourtLocCode")
     @Schema(name = "Sending Court Location Code", requiredMode = Schema.RequiredMode.REQUIRED,
         description = "3-digit numeric string to uniquely identify the sending court's location code")
     @Size(min = 3, max = 3)
     @NumericString
     private String sendingCourtLocCode;
 
-    @JsonProperty("deferral_maintenance")
     @Schema(description = "Deferral is occurring from deferral maintenance")
     public Boolean deferralMaintenance;
 
     //constructor to handle transfer jurors requests
+
     public JurorManagementRequestDto(String sourcePoolNumber, String sendingCourtLocCode, String receivingCourtLocCode,
                                      LocalDate serviceStartDate, List<String> jurorNumbers) {
         this.sourcePoolNumber = sourcePoolNumber;

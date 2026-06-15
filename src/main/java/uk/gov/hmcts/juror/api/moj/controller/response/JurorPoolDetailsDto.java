@@ -14,13 +14,10 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class JurorPoolDetailsDto {
 
-    @JsonProperty("pool_number")
     private String poolNumber;
 
-    @JsonProperty("status")
     private String status;
 
-    @JsonProperty("court_name")
     private String courtName;
 
     public static JurorPoolDetailsDto from(JurorPool jurorPool) {

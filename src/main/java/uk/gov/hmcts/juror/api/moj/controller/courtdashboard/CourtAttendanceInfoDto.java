@@ -15,6 +15,7 @@ import lombok.Setter;
 @Builder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Court attendance information DTO")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CourtAttendanceInfoDto {
 
     @Schema(description = "Attendance statistics for jurors at the court today")

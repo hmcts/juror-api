@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.trial;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -15,22 +17,20 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @AllArgsConstructor
 @Data
 @Schema(description = "A List of jurors for a panel")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class PanelListDto {
 
-    @JsonProperty("juror_number")
+
     @JurorNumber
     @Schema(name = "Juror number", description = "9 digit numeric string to uniquely identify a juror")
     private String jurorNumber;
 
-    @JsonProperty("first_name")
     @Pattern(regexp = NO_PIPES_REGEX)
     private String firstName;
 
-    @JsonProperty("last_name")
     @Pattern(regexp = NO_PIPES_REGEX)
     private String lastName;
 
-    @JsonProperty("juror_status")
     @NotBlank
     @Schema(name = "Juror status", description = "A status representing the juror e.g. Panelled")
     private String jurorStatus;

@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.request.trial;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,16 +18,14 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Schema(description = "Trial End Information")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EndTrialDto {
-    @JsonProperty("trial_end_date")
     @NotNull
     LocalDate trialEndDate;
 
-    @JsonProperty("trial_number")
     @NotBlank
     String trialNumber;
 
-    @JsonProperty("location_code")
     @NotBlank
     String locationCode;
 }

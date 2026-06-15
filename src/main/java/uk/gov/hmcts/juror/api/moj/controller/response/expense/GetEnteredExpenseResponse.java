@@ -26,6 +26,7 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class GetEnteredExpenseResponse {
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfExpense;
 

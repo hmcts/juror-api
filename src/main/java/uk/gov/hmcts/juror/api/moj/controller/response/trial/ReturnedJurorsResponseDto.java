@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.trial;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,12 +14,11 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 @Schema(description = "A List of jurors returned from a trial with a count of original empanelled jurors")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ReturnedJurorsResponseDto {
 
-    @JsonProperty("returned_jurors")
     private List<PanelListDto> returnedJurors;
 
-    @JsonProperty("original_jurors_count")
     private int originalJurorsCount;
 
 }

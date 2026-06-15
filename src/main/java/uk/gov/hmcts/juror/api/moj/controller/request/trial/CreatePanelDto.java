@@ -3,6 +3,8 @@ package uk.gov.hmcts.juror.api.moj.controller.request.trial;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -23,25 +25,21 @@ import java.util.List;
 @Getter
 @Setter
 @Schema(description = "create panel request information")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CreatePanelDto {
-    @JsonProperty("trial_number")
     @Length(max = 16)
     @NotBlank
     private String trialNumber;
 
-    @JsonProperty("number_requested")
     @NotNull
     private int numberRequested;
 
-    @JsonProperty("pool_numbers")
     private List<String> poolNumbers = new ArrayList<>();
 
-    @JsonProperty("court_location_code")
     @CourtLocationCode
     @NotBlank
     private String courtLocationCode;
 
-    @JsonProperty("attendance_date")
     @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
     private LocalDate attendanceDate = LocalDate.now();
 

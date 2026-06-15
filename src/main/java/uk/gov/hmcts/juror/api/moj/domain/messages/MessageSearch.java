@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.domain.messages;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -29,48 +31,37 @@ import java.util.List;
 
 @Data
 @Builder
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MessageSearch implements IsPageable {
 
-    @JsonProperty("filters")
     private List<Filter> filters;
 
-    @JsonProperty("juror_search")
     @Valid
     private JurorSearch jurorSearch;
 
-    @JsonProperty("pool_number")
     private String poolNumber;
 
-    @JsonProperty("next_due_at_court_date")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate nextDueAtCourt;
 
-    @JsonProperty("date_deferred_to")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateDeferredTo;
 
-    @JsonProperty("trial_number")
     private String trialNumber;
 
-    @JsonProperty("only_deferrals_in_court")
     @CourtLocationCode
     private String onlyDeferralsInCourt;
 
-    @JsonProperty("include_all_jurors_on_trial")
     private boolean includeAllJurorsOnTrial;
 
     @Min(1)
-    @JsonProperty("page_number")
     private long pageNumber;
 
     @Min(1)
-    @JsonProperty("page_limit")
     private long pageLimit;
 
-    @JsonProperty("sort_method")
     private SortMethod sortMethod;
 
-    @JsonProperty("sort_field")
     private SortField sortField;
 
     public void apply(JPQLQuery<Tuple> query) {

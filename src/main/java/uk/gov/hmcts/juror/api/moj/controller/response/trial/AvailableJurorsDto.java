@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.response.trial;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -17,23 +19,20 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Schema(description = "A List of available jurors for generating a panel")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class AvailableJurorsDto {
-    @JsonProperty("pool_number")
+
     @PoolNumber
     private String poolNumber;
 
-    @JsonProperty("available_jurors")
     @NotNull
     private Long availableJurors;
 
-    @JsonProperty("service_start_date")
     @NotNull
     private LocalDate serviceStartDate;
 
-    @JsonProperty("court_location")
     private String courtLocation;
 
-    @JsonProperty("court_location_code")
     @Length(min = 3, max = 3)
     private String courtLocationCode;
 }

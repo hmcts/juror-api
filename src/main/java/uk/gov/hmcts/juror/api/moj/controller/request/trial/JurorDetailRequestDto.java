@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.request.trial;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,28 +22,25 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @AllArgsConstructor
 @Data
 @Schema(description = "The details containing the empanelled result for jurors")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class JurorDetailRequestDto {
-    @JsonProperty("juror_number")
     @JurorNumber
     @Schema(description = "9 digit numeric string to uniquely identify a juror", example =
         "111111111")
     private String jurorNumber;
 
-    @JsonProperty("first_name")
     @NotBlank
     @Pattern(regexp = NO_PIPES_REGEX)
     @Length(max = 20)
     @Schema(description = "Juror first name", example = "FNAME")
     private String firstName;
 
-    @JsonProperty("last_name")
     @NotBlank
     @Pattern(regexp = NO_PIPES_REGEX)
     @Length(max = 25)
     @Schema(description = "Juror last name", example = "LNAME")
     private String lastName;
 
-    @JsonProperty("empanel_status")
     @Enumerated(EnumType.STRING)
     @Schema(description = "An enum representing the empanelled status e.g J - Juror")
     private PanelResult result;

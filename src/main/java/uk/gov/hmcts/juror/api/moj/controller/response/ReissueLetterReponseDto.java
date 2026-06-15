@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,9 +23,9 @@ import java.util.List;
 @Setter
 @Builder
 @Schema(description = "Reissue Bureau letters response DTO")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ReissueLetterReponseDto implements Serializable {
 
-    @JsonProperty("juror_list")
     @Schema(description = "List of jurors with updated status")
     private List<@NotNull ReissueLetterResponseData> jurors;
 
@@ -37,17 +39,14 @@ public class ReissueLetterReponseDto implements Serializable {
         @Schema(description = "Unique juror number")
         private String jurorNumber;
 
-        @JsonProperty("first_name")
         @Length(max = 20)
         @Schema(description = "Juror first name")
         private String firstName;
 
-        @JsonProperty("last_name")
         @Length(max = 20)
         @Schema(description = "Juror last name")
         private String lastName;
 
-        @JsonProperty("juror_status")
         @Schema(description = "Juror status")
         private JurorStatusDto jurorStatus;
 

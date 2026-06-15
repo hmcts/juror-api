@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,8 +17,8 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Schema(description = "Deferrals list response")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DeferralListDto {
-    @JsonProperty("deferrals")
     @Schema(description = "List of deferrals")
     private List<DeferralListDataDto> deferrals;
 
@@ -24,29 +26,24 @@ public class DeferralListDto {
     @Getter
     @Schema(description = "Deferrals data")
     @ToString
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class DeferralListDataDto {
 
-        @JsonProperty("courtLocation")
         @Schema(description = "Court Location")
         private String courtLocation;
 
-        @JsonProperty("jurorNumber")
         @Schema(description = "Juror Number")
         private String jurorNumber;
 
-        @JsonProperty("firstName")
         @Schema(description = "First Name")
         private String firstName;
 
-        @JsonProperty("lastName")
         @Schema(description = "Last name")
         private String lastName;
 
-        @JsonProperty("poolNumber")
         @Schema(description = "Pool number")
         private String poolNumber;
 
-        @JsonProperty("deferredTo")
         @Schema(description = "Date deferred to")
         @JsonFormat(pattern = "yyyy-MM-dd")
         private LocalDate deferredTo;

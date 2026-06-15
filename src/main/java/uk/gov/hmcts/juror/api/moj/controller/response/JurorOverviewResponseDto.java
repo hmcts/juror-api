@@ -86,7 +86,6 @@ public class JurorOverviewResponseDto {
 
     @Schema(description = "Identity check code")
     private IdCheckCodeEnum idCheckCode;
-    @JsonProperty("checked_in_today_time")
     @JsonFormat(pattern = ValidationConstants.TIME_FORMAT)
     private LocalTime checkedInTodayTime;
 

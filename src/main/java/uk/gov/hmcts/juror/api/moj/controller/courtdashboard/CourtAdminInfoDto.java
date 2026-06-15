@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Court administration information DTO")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CourtAdminInfoDto {
 
     @Schema(description = "Number of unpaid attendances for jurors at the court")
