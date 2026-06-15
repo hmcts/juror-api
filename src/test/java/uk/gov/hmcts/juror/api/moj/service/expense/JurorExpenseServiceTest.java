@@ -557,7 +557,7 @@ class JurorExpenseServiceTest {
         void appearanceRecordsNotFound() {
             List<LocalDate> attendanceDates = List.of(LocalDate.of(2024, 1, 1));
 
-            doReturn(new ArrayList<Appearance>()).when(appearanceRepository)
+            doReturn(new ArrayList<>()).when(appearanceRepository)
                 .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
@@ -1586,11 +1586,10 @@ class JurorExpenseServiceTest {
         private final BigDecimal fullDayStandardLimit = new BigDecimal("20.00");
         private final BigDecimal fullDayLongLimit = new BigDecimal("25.00");
         private final BigDecimal fullDayExtraLongLimit = new BigDecimal("50.00");
-        private ExpenseRates expenseRates;
 
         @BeforeEach
         void beforeEach() {
-            this.expenseRates = mock(ExpenseRates.class);
+            ExpenseRates expenseRates = mock(ExpenseRates.class);
             doReturn(halfDayStandardLimit).when(expenseRates).getLimitFinancialLossHalfDay();
             doReturn(halfDayLongLimit).when(expenseRates).getLimitFinancialLossHalfDayLongTrial();
             doReturn(fullDayStandardLimit).when(expenseRates).getLimitFinancialLossFullDay();
@@ -3230,7 +3229,9 @@ class JurorExpenseServiceTest {
                 courtLocation,
                 List.of(appearance1, appearance2)
             );
-            assertNull(paymentData);
+            assertThat(paymentData)
+                .as("Expected paymentData to be null when the total payment amount is zero")
+                .isNull();
             verify(paymentDataRepository, never()).save(any());
         }
 

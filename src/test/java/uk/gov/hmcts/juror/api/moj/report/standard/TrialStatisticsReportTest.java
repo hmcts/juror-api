@@ -36,7 +36,7 @@ class TrialStatisticsReportTest extends AbstractStandardReportTestSupport<TrialS
     private static final LocalDate TO_DATE = LocalDate.of(2024, 1, 30);
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public TrialStatisticsReportTest() {
+    TrialStatisticsReportTest() {
         super(QTrial.trial,
             TrialStatisticsReport.RequestValidator.class,
             DataType.TRIAL_JUDGE_NAME,
@@ -57,7 +57,7 @@ class TrialStatisticsReportTest extends AbstractStandardReportTestSupport<TrialS
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         TestUtils.afterAll();
         securityUtilMockedStatic.close();
     }

@@ -20,7 +20,7 @@ import static org.mockito.Mockito.verify;
 
 @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PoolSelectionReportTest extends AbstractStandardReportTestSupport<PoolSelectionListReport> {
-    public PoolSelectionReportTest() {
+    PoolSelectionReportTest() {
         super(QJurorPool.jurorPool,
             PoolSelectionListReport.RequestValidator.class,
             DataType.JUROR_NUMBER,

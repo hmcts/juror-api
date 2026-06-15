@@ -494,7 +494,7 @@ public class CourtLetterServiceTest {
 
     @Nested
     @DisplayName("getEligibleList - Excusal Granted")
-    public class ExcusalGranted {
+    class ExcusalGranted {
         @Test
         @DisplayName("getEligibleList - exclude printed")
         void eligibleListExcludePrinted() {
@@ -659,7 +659,7 @@ public class CourtLetterServiceTest {
 
     @Nested
     @DisplayName("getEligibleList - Excusal Refused")
-    public class ExcusalRefused {
+    class ExcusalRefused {
         @Test
         @DisplayName("getEligibleList - exclude printed")
         void eligibleListExcludePrinted() {
@@ -825,7 +825,7 @@ public class CourtLetterServiceTest {
 
     @Nested
     @DisplayName("getEligibleList - Withdrawal")
-    public class Withdrawal {
+    class Withdrawal {
 
         @Test
         @DisplayName("getEligibleList - exclude printed")

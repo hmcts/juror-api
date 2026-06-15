@@ -20,11 +20,7 @@ import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.service.administration.AdministrationHolidaysService;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -47,7 +43,7 @@ class AttendanceReportServiceImplTest {
     private final AdministrationHolidaysService holidaysService;
 
 
-    public AttendanceReportServiceImplTest() {
+    private AttendanceReportServiceImplTest() {
         this.appearanceRepository = mock(AppearanceRepository.class);
         this.holidaysService = mock(AdministrationHolidaysService.class);
         this.attendanceReportService = new AttendanceReportServiceImpl(appearanceRepository,
@@ -57,8 +53,7 @@ class AttendanceReportServiceImplTest {
     @BeforeEach
     void beforeEach() {
 
-        Set<Permission> permissions = new HashSet<>();
-        permissions.add(Permission.SUPER_USER);
+        Set<Permission> permissions = EnumSet.of(Permission.SUPER_USER);
         User user = User.builder()
             .username("Administrator")
             .permissions(permissions)

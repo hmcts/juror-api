@@ -3,7 +3,6 @@ package uk.gov.hmcts.juror.api.moj.repository;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -205,7 +204,7 @@ class UserRepositoryImplTest {
             verify(jpaQuery, times(1)).limit(25);
             verify(jpaQuery, times(1)).offset(0);
             verify(jpaQuery, times(1)).orderBy(
-                new OrderSpecifier<?>[]{QUser.user.name.asc()});
+                QUser.user.name.asc());
 
             verifyNoMoreInteractions(queryFactory, jpaQuery);
         }
@@ -289,7 +288,7 @@ class UserRepositoryImplTest {
             verify(jpaQuery, times(1))
                 .where(QUser.user.name.containsIgnoreCase("name1"));
             verify(jpaQuery, times(1)).orderBy(
-                new OrderSpecifier<?>[]{QUser.user.name.asc()});
+                QUser.user.name.asc());
 
             verifyNoMoreInteractions(queryFactory, jpaQuery);
         }
@@ -308,7 +307,7 @@ class UserRepositoryImplTest {
             verify(jpaQuery, times(1))
                 .where(QUser.user.courts.any().locCode.eq("400"));
             verify(jpaQuery, times(1)).orderBy(
-                new OrderSpecifier<?>[]{QUser.user.name.asc()});
+                QUser.user.name.asc());
 
             verifyNoMoreInteractions(queryFactory, jpaQuery);
         }
@@ -327,7 +326,7 @@ class UserRepositoryImplTest {
             verify(jpaQuery, times(1))
                 .where(QUser.user.userType.eq(UserType.BUREAU));
             verify(jpaQuery, times(1)).orderBy(
-                new OrderSpecifier<?>[]{QUser.user.name.asc()});
+                QUser.user.name.asc());
 
             verifyNoMoreInteractions(queryFactory, jpaQuery);
 
@@ -347,7 +346,7 @@ class UserRepositoryImplTest {
             verify(jpaQuery, times(1))
                 .where(QUser.user.active.isTrue());
             verify(jpaQuery, times(1)).orderBy(
-                new OrderSpecifier<?>[]{QUser.user.name.asc()});
+                QUser.user.name.asc());
 
             verifyNoMoreInteractions(queryFactory, jpaQuery);
         }
@@ -366,7 +365,7 @@ class UserRepositoryImplTest {
 
 
             verify(jpaQuery, times(1)).orderBy(
-                new OrderSpecifier<?>[]{QUser.user.name.desc()});
+                QUser.user.name.desc());
 
             verifyNoMoreInteractions(queryFactory, jpaQuery);
         }
@@ -385,9 +384,9 @@ class UserRepositoryImplTest {
 
 
             verify(jpaQuery, times(1)).orderBy(
-                new OrderSpecifier<?>[]{QUser.user.email.desc()});
+                QUser.user.email.desc());
             verify(jpaQuery, times(1)).orderBy(
-                new OrderSpecifier<?>[]{QUser.user.name.asc()});
+                QUser.user.name.asc());
 
             verifyNoMoreInteractions(queryFactory, jpaQuery);
         }

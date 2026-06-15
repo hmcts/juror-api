@@ -135,7 +135,7 @@ public class JurorPoolUtilsTest {
 
     @Test
     public void test_getActiveJurorPoolRecords_noRecords() {
-        Mockito.doReturn(new ArrayList<JurorPool>()).when(jurorPoolPoolRepository)
+        Mockito.doReturn(new ArrayList<>()).when(jurorPoolPoolRepository)
             .findByJurorJurorNumberAndIsActive("333333333", true);
 
         Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->

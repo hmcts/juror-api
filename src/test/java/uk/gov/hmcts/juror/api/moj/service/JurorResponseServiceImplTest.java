@@ -48,7 +48,6 @@ class JurorResponseServiceImplTest {
     @BeforeEach
     void setUpMocks() {
 
-        jurorPaperResponseRepository = Mockito.mock(JurorPaperResponseRepositoryMod.class);
         jurorPoolRepository = Mockito.mock(JurorPoolRepository.class);
         jurorPaperResponseRepository = Mockito.mock(JurorPaperResponseRepositoryMod.class);
         jurorDigitalResponseRepository = Mockito.mock(JurorDigitalResponseRepositoryMod.class);
@@ -105,7 +104,7 @@ class JurorResponseServiceImplTest {
 
     //Tests related to method updateJurorPersonalDetails()
     @Test
-    void testUpdatePaperResponse_personalDetails_bureauUser_bureauOwner_happy() {
+    void testUpdatePaperResponsePersonalDetailsBureauUserBureauOwnerHappy() {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
 
         BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
@@ -119,7 +118,7 @@ class JurorResponseServiceImplTest {
 
 
     @Test
-    void testUpdateDigitalResponsePersonalDetails_bureauUser_bureauOwner_happy() {
+    void testUpdateDigitalResponsePersonalDetailsBureauUserBureauOwnerHappy() {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
 
         BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
@@ -132,7 +131,7 @@ class JurorResponseServiceImplTest {
     }
 
     @Test
-    void testUpdatePaperResponsePersonalDetails_courtUser_courtOwner_happy() {
+    void testUpdatePaperResponsePersonalDetailsCourtUserCourtOwnerHappy() {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
 
         BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER", "99");
@@ -145,7 +144,7 @@ class JurorResponseServiceImplTest {
     }
 
     @Test
-    void testUpdateDigitalResponsePersonalDetails_courtUser_courtOwner_happy() {
+    void testUpdateDigitalResponsePersonalDetailsCourtUserCourtOwnerHappy() {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
 
         BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER", "99");
@@ -157,7 +156,7 @@ class JurorResponseServiceImplTest {
     }
 
     @Test
-    void testUpdatePaperResponsePersonalDetails_bureauUser_courtOwnerUserNotAuthorised() {
+    void testUpdatePaperResponsePersonalDetailsBureauUserCourtOwnerUserNotAuthorised() {
         BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
 
@@ -171,7 +170,7 @@ class JurorResponseServiceImplTest {
     }
 
     @Test
-    void testUpdateDigitalResponsePersonalDetails_bureauUser_courtOwnerUserNotAuthorised() {
+    void testUpdateDigitalResponsePersonalDetailsBureauUserCourtOwnerUserNotAuthorised() {
         BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
 
@@ -185,7 +184,7 @@ class JurorResponseServiceImplTest {
     }
 
     @Test
-    void testUpdatePaperResponsePersonalDetails_courtUser_courtOwner_noAccess() {
+    void testUpdatePaperResponsePersonalDetailsCourtUserCourtOwnerNoAccess() {
         BureauJwtPayload payload = TestUtils.createJwt("416", "SOME_USER", "99");
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
 
@@ -199,7 +198,7 @@ class JurorResponseServiceImplTest {
     }
 
     @Test
-    void testUpdateDigitalResponsePersonalDetails_courtUser_courtOwner_noAccess() {
+    void testUpdateDigitalResponsePersonalDetailsCourtUserCourtOwnerNoAccess() {
         BureauJwtPayload payload = TestUtils.createJwt("416", "SOME_USER", "99");
 
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
