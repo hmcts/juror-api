@@ -73,7 +73,8 @@ import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIn
 @SuppressWarnings({
     "unchecked",
     "PMD.ExcessiveImports",
-    "PMD.CouplingBetweenObjects"
+    "PMD.CouplingBetweenObjects",
+    "PMD.TooManyMethods"
 })
 class AbstractReportTest {
 
@@ -716,6 +717,7 @@ class AbstractReportTest {
 
     @Nested
     @DisplayName("void addJoins(JPAQuery<Tuple> query)")
+    @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
     class AddJoins {
         @Test
         void positiveTypical() {

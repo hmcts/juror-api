@@ -90,6 +90,7 @@ class MessageTemplateRepositoryImplTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
     void positiveSimpleResponseBureauUser() {
         mockBureauUser();
         JPAQuery<Tuple> jpaQuery = mock(JPAQuery.class,
@@ -168,6 +169,7 @@ class MessageTemplateRepositoryImplTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
     void positiveComplexResponseBureau() {
         mockBureauUser();
         JPAQuery<Tuple> jpaQuery = mock(JPAQuery.class);
@@ -260,6 +262,7 @@ class MessageTemplateRepositoryImplTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
     void positiveSimpleResponseCourtUserCourt() {
         mockCourtUser();
         JPAQuery<Tuple> jpaQuery = mock(JPAQuery.class,
@@ -341,6 +344,7 @@ class MessageTemplateRepositoryImplTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
     void positiveComplexResponseCourt() {
         mockCourtUser();
         JPAQuery<Tuple> jpaQuery = mock(JPAQuery.class);
@@ -442,6 +446,7 @@ class MessageTemplateRepositoryImplTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
     void positiveSimpleResponseWithTrialNumber() {
         mockCourtUser();
         JPAQuery<Tuple> jpaQuery = mock(JPAQuery.class);

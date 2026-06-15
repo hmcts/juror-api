@@ -57,13 +57,13 @@ import uk.gov.hmcts.juror.api.moj.service.JurorRecordService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
+	import java.util.Collections;
+	import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+	import static org.mockito.ArgumentMatchers.any;
+	import static org.mockito.Mockito.doNothing;
+	import static org.mockito.Mockito.doReturn;
+	import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -74,9 +74,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto.builder;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = JurorRecordController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ContextConfiguration(classes = {JurorRecordController.class, BulkServiceImpl.class})
@@ -1343,6 +1343,7 @@ class JurorRecordControllerTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void invalidAccountNumber() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
@@ -1370,6 +1371,7 @@ class JurorRecordControllerTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void wrongSortCode() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
@@ -1397,6 +1399,7 @@ class JurorRecordControllerTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void wrongAccountName() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,

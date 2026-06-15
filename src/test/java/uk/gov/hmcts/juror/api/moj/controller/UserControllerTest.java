@@ -102,6 +102,7 @@ class UserControllerTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void negativeInvalidPayload() throws Exception {
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)

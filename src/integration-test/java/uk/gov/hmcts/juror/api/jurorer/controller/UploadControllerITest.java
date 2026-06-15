@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.jurorer.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -23,6 +22,7 @@ import uk.gov.hmcts.juror.api.jurorer.controller.dto.DeadlineDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.FileUploadRequestDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.UploadHistoryDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.UploadStatusDto;
+import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.time.LocalDate;

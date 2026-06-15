@@ -60,7 +60,8 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods",
-    "PMD.PublicMemberInNonPublicType"
+    "PMD.PublicMemberInNonPublicType",
+    "PMD.SingularField"
 })
 class TrialControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial";
@@ -221,6 +222,7 @@ class TrialControllerTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void testReturnJuryEmptyTimes() throws Exception {
         final String methodUrl = "/return-jury?trial_number=T10000000&location_code=415";
 

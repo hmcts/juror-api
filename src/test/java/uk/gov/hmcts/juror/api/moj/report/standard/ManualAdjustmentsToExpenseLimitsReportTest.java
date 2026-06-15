@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ManualAdjustmentsToExpenseLimitsReportTest")
+@SuppressWarnings("PMD.TooManyMethods")
 class ManualAdjustmentsToExpenseLimitsReportTest {
 
     @Mock
@@ -279,6 +280,7 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
 
     @Test
     @DisplayName("Should include revision_number in data rows")
+    @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
     void positiveIncludesRevisionNumber() {
         // Given
         List<String> courtCodes = List.of("415");
@@ -343,6 +345,7 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
 
     @Test
     @DisplayName("Should validate request properly")
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     void positiveRequestValidation() {
 
         StandardReportRequest request = StandardReportRequest.builder()
@@ -355,6 +358,7 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
 
     @Test
     @DisplayName("Should sort by revision number descending (most recent first)")
+    @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
     void positiveSortsByRevisionDescending() {
 
         List<String> courtCodes = List.of("415");

@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
     "PMD.PublicMemberInNonPublicType",
+    "PMD.TooManyMethods",
     "unchecked"
 })
 class CourtsWithIncompleteServiceReportTest

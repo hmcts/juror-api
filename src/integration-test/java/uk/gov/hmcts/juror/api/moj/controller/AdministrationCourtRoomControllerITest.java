@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.domain.administration.CourtRoomWithIdDto;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.trial.CourtroomRepository;
+import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.util.Collections;
