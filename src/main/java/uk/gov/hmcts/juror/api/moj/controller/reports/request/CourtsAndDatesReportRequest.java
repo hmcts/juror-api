@@ -19,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class YieldPerformanceReportRequest {
+public class CourtsAndDatesReportRequest {
 
     private List<String> courtLocCodes;
 
