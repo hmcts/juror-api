@@ -1,4 +1,3 @@
-
 package uk.gov.hmcts.juror.api.moj.controller;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -64,11 +63,10 @@ import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.SURPLUS;
 import static uk.gov.hmcts.juror.api.testvalidation.DeferralMaintenanceValidation.validateDeferralMaintenanceOptions;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: /api/v1/moj/deferral-maintenance/")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest {
 
     static final String JUROR_000000000 = "000000000";
@@ -99,15 +97,22 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
     static final String EXPECT_POOL_UTILISATION = "Expect Pool Utilisation stats to be calculated for the given pool "
         + "request";
 
-    private final TestRestTemplate template;
-    private final CurrentlyDeferredRepository currentlyDeferredRepository;
-    private final BulkPrintDataRepository bulkPrintDataRepository;
-    private final JurorPoolRepository jurorPoolRepository;
-    private final JurorRepository jurorRepository;
-    private final PoolRequestRepository poolRequestRepository;
+    @Autowired
+    private TestRestTemplate template;
+    @Autowired
+    private CurrentlyDeferredRepository currentlyDeferredRepository;
+    @Autowired
+    private BulkPrintDataRepository bulkPrintDataRepository;
+    @Autowired
+    private JurorPoolRepository jurorPoolRepository;
+    @Autowired
+    private JurorRepository jurorRepository;
+    @Autowired
+    private PoolRequestRepository poolRequestRepository;
 
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();

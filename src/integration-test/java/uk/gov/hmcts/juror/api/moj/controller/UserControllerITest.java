@@ -47,6 +47,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
+@SuppressWarnings("PMD.ExcessiveImports")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + UserControllerITest.BASE_URL)
@@ -60,7 +61,8 @@ public class UserControllerITest extends AbstractIntegrationTest {
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
     private static final String SYSTEM_USER = "test_system";
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private HttpHeaders httpHeaders;
 
     private final UserRepository userRepository;
@@ -68,9 +70,10 @@ public class UserControllerITest extends AbstractIntegrationTest {
     private final PlatformTransactionManager transactionManager;
     private TransactionTemplate transactionTemplate;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
-        httpHeaders = new HttpHeaders();
+        HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, createHmacJwt());
         this.transactionTemplate = new TransactionTemplate(transactionManager);

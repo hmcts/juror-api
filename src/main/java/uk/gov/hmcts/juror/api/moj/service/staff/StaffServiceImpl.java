@@ -48,9 +48,6 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     @Transactional
-    @SuppressWarnings({"PMD.NcssCount",
-        "PMD.CognitiveComplexity",
-        "PMD.NPathComplexity"})
     public StaffAssignmentResponseDto changeAssignment(final StaffAssignmentRequestDto staffAssignmentRequestDto,
                                                        final String currentUser) {
         log.trace("enter changeAssignment");
@@ -170,7 +167,7 @@ public class StaffServiceImpl implements StaffService {
                 "Cannot change assignment to user " + JurorDigitalApplication.AUTO_USER, null);
         }
 
-        User assignToUser = null;
+        User assignToUser;
 
         log.trace("Retrieve user record from the database for username {}", username);
         assignToUser = userRepository.findByUsername(username);

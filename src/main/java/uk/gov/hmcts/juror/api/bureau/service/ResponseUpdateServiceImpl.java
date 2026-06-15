@@ -288,6 +288,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
 
     @Transactional
     @Override
+    @SuppressWarnings("PMD.ExhaustiveSwitchHasDefault")
     public void updateExcusalDeferral(final DeferralExcusalDto dto,
                                       final String jurorId, final String login) {
 

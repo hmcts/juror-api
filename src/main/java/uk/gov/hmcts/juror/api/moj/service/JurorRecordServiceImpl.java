@@ -252,6 +252,12 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         juror.setEmail(requestDto.getEmailAddress());
 
 
+        /*
+         * Ensures that the mobile phone number is saved as the primary phone number if it is valid,
+         * and the primary phone number is not a valid mobile phone number.
+         *
+         * @param requestDto The DTO containing the juror's phone numbers.
+         */
         if (isValidMobilePhone(requestDto.getSecondaryPhone()) && (!isValidMobilePhone(requestDto.getPrimaryPhone()))) {
             juror.setPhoneNumber(requestDto.getSecondaryPhone());
             juror.setAltPhoneNumber(requestDto.getPrimaryPhone());

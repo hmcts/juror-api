@@ -23,10 +23,10 @@ import java.util.Set;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AuditControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AuditControllerITest {
     public static final String BASE_URL = "/api/v1/moj/audit";
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
 
 
     @Nested

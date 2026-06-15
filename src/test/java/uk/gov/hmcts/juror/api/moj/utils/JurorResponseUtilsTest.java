@@ -99,7 +99,7 @@ public class JurorResponseUtilsTest {
         JurorPaperResponseDetailDto responseDto = new JurorPaperResponseDetailDto();
         responseDto.setJurorNumber(JUROR_NUMBER_123456789);
 
-        Mockito.doReturn(new ArrayList<JurorPool>()).when(jurorPoolRepository)
+        Mockito.doReturn(new ArrayList<>()).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(JUROR_NUMBER_123456789, true);
 
         Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->

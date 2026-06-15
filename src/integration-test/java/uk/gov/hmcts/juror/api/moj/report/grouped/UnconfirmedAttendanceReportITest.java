@@ -115,7 +115,6 @@ class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerIT
     }
 
     @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-
     public GroupByResponse getTypicalGroupBy() {
         return GroupByResponse.builder()
             .name(DataType.APPEARANCE_DATE_AND_POOL_TYPE.name())

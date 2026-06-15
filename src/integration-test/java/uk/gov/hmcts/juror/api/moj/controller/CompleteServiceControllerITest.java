@@ -57,7 +57,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private final JurorPoolRepository jurorPoolRepository;
     private final JurorHistoryRepository jurorHistoryRepository;
 
@@ -65,6 +66,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
     private static final String BASE_URL = "/api/v1/moj/complete-service";
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();

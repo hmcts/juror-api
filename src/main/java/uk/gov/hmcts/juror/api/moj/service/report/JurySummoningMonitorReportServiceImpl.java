@@ -239,7 +239,7 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
             StringBuilder courtsBuilder = new StringBuilder();
 
             courtLocationRepository.findByLocCodeInOrderByName(courtsList).stream().forEach(c ->
-                courtsBuilder.append(c.getName()).append(" (").append(c.getLocCode()).append(')').append(", ")
+                courtsBuilder.append(c.getName()).append(" (").append(c.getLocCode()).append("), ")
             );
 
             // remove the trailing comma if we have any courts
@@ -290,9 +290,9 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
         COURT("Court", String.class.getSimpleName()),
         COURTS("Courts", String.class.getSimpleName());
 
-        private String displayName;
+        private final String displayName;
 
-        private String dataType;
+        private final String dataType;
 
         ReportHeading(String displayName, String dataType) {
             this.displayName = displayName;

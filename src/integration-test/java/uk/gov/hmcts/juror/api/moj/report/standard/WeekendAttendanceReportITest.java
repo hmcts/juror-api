@@ -49,6 +49,7 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -56,6 +57,7 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getValidBureauJwt())
@@ -63,6 +65,7 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
             .responseConsumer(this::verifyReportResponse);
     }
 
+    @SuppressWarnings("PMD.StringToString")
     @Test
     void negativeInvalidCourtLocCode() {
         StandardReportRequest request = getValidPayload();

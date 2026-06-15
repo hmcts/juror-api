@@ -49,11 +49,13 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     public static final String BASE_URL = "/api/v1/moj/administration/judges";
 
     private HttpHeaders httpHeaders;
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
 
     @Autowired
     private final JudgeRepository judgeRepository;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();

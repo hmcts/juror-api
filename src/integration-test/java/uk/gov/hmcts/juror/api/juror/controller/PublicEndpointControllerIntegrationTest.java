@@ -84,7 +84,12 @@ import static org.mockito.ArgumentMatchers.anyString;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = "notify.disabled=false")
-@SuppressWarnings({"PMD.ExcessiveImports","PMD.TooManyMethods", "PMD.TooManyFields"})
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods",
+    "PMD.TooManyFields",
+    "PMD.CouplingBetweenObjects"
+})
 public class PublicEndpointControllerIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate template;
@@ -1265,7 +1270,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         // set Juror to be one day too young on first day of hearing
         String youngestJurorAgeAllowedString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(101)).get().getSpValue();
-        youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
+        int youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
         LocalDate dob = hearingDate.minusYears(youngestJurorAgeAllowed - 1L).minusDays(364).toLocalDate();
 
         final JurorResponseDto dto = JurorResponseDto.builder(
@@ -1359,7 +1364,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         String tooOldJurorAgeString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(100)).get().getSpValue();
 
-        tooOldJurorAge = Integer.parseInt(tooOldJurorAgeString);
+        int tooOldJurorAge = Integer.parseInt(tooOldJurorAgeString);
         LocalDate dob =
             hearingDate.minusYears(tooOldJurorAge).minusDays(0).toLocalDate();
 
@@ -1453,7 +1458,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         // set Juror to be too young on first day of hearing
         String youngestJurorAgeAllowedString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(101)).get().getSpValue();
-        youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
+        int youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
         LocalDate dob =
             hearingDate.minusYears(youngestJurorAgeAllowed - 1L).minusDays(0).toLocalDate();
 
@@ -1541,7 +1546,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         // set Juror to be the minimum age allowed on first day of hearing
         String youngestJurorAgeAllowedString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(101)).get().getSpValue();
-        youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
+        int youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
         LocalDate dob =
             hearingDate.minusYears(youngestJurorAgeAllowed).minusDays(0).toLocalDate();
 
@@ -1630,7 +1635,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         //     set Juror to be 1 day off from excusal age
         String tooOldJurorAgeString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(100)).get().getSpValue();
-        tooOldJurorAge = Integer.parseInt(tooOldJurorAgeString);
+        int tooOldJurorAge = Integer.parseInt(tooOldJurorAgeString);
         LocalDate dob =
             hearingDate.minusYears(tooOldJurorAge - 1L).minusDays(364).toLocalDate();
 
@@ -2318,6 +2323,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         assertThat(historyRecord.get().getOtherInformationRef()).isEqualTo("A");
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private String mintPublicJwt(final PublicJwtPayload payload) throws Exception {
         return TestUtil.mintPublicJwt(payload, SignatureAlgorithm.HS256, publicSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));

@@ -72,7 +72,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
     "LineLength",
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods",
-    "PMD.PublicMemberInNonPublicType"
+    "PMD.CouplingBetweenObjects"
 })
 class MessagingControllerITest extends AbstractIntegrationTest {
 
@@ -87,9 +87,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
 
-
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-
+    @SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.SignatureDeclareThrowsException"})
     @BeforeEach
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
@@ -1060,11 +1058,13 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
+            @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
 
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private ResponseEntity<ViewMessageTemplateDto> triggerValid(
                 MessageType messageType, String locCode) throws Exception {
                 final String jwt = createJwt(COURT_USER, "415", locCode);
@@ -1094,6 +1094,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 ));
             }
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private void triggerAndValidate(MessageType messageType, String englishTemplate, String welshTemplate,
                                             List<ViewMessageTemplateDto.Placeholder> placeholders,
                                             MessageType.SendType sendType) throws Exception {
@@ -1123,6 +1124,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         @Nested
         @DisplayName("Negative")
         class Negative {
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private ResponseEntity<String> triggerInvalid(
                 String messageType, String locCode, String court) throws Exception {
                 final String jwt = createJwt(COURT_USER, court, court);
@@ -2332,6 +2334,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 ));
             }
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private void triggerValid(
                 MessageType messageType, String locCode, MessageSendRequest request) throws Exception {
                 final String jwt = createBureauJwt(COURT_USER, "415", locCode);
@@ -2350,6 +2353,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
+            @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
@@ -2447,7 +2451,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
             @Getter
             @Setter
             @Builder
-            private static class JurorData {
+            private static final class JurorData {
                 private String jurorPoolNumber;
                 private String jurorNumber;
                 private MessageType.SendType sendType;
@@ -2553,6 +2557,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 this.tests.add(DynamicContainer.dynamicContainer(messageType.name(), dynamicTests));
             }
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private void addTest(
                 MessageType messageType,
                 String locCode,
@@ -2612,7 +2617,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 }
             }
 
-
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private void addTest(
                 MessageType messageType,
                 String locCode,
@@ -2707,6 +2712,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         @DisplayName("Negative")
         class Negative {
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private ResponseEntity<String> triggerInvalid(
                 String messageType, String locCode, String court, MessageSendRequest request) throws Exception {
                 final String jwt = createJwt(COURT_USER, court, court);
@@ -3329,6 +3335,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 );
             }
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private ResponseEntity<ViewMessageTemplateDto> triggerValid(
                 MessageType messageType, String locCode, Map<String, String> placeholders) throws Exception {
                 final String jwt = createBureauJwt(COURT_USER, "415", locCode);
@@ -3347,6 +3354,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
+            @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
@@ -3382,6 +3390,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 this.tests.add(DynamicContainer.dynamicContainer(messageType.name(), dynamicTests));
             }
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private void addTest(MessageType messageType,
                                  String locCode,
                                  String englishMessage,
@@ -3403,6 +3412,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         @DisplayName("Negative")
         class Negative {
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private ResponseEntity<String> triggerInvalid(
                 String messageType, String locCode, String court, Map<String, String> request) throws Exception {
                 final String jwt = createJwt(COURT_USER, court, court);
@@ -3410,7 +3420,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST, toUri(messageType, locCode)), String.class);
             }
-
 
             @Test
             void missingPlaceholderValue() throws Exception {

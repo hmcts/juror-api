@@ -61,7 +61,7 @@ class CourtLocationServiceTest {
     List<CourtLocation> courtLocationList;
 
     @BeforeEach
-    public void setUpCourts() {
+    void setUpCourts() {
         CourtLocation chester = buidCourtLocation("415", "415", "CHESTER");
         CourtLocation manchester = buidCourtLocation("435", "435", "MANCHESTER");
         CourtLocation satellite = buidCourtLocation("415", "462", "WARRINGTON");

@@ -89,7 +89,7 @@ class CourtDashboardServiceImplTest {
     }
 
     @Test
-    void courtNotificationsSjoNoData() {
+    void returnCourtNotificationsSjoNoData() {
 
         TestUtils.mockCourtUser("415", "415", Set.of(Role.SENIOR_JUROR_OFFICER));
 
@@ -122,7 +122,7 @@ class CourtDashboardServiceImplTest {
     }
 
     @Test
-    void courtAdminInfoNoData() {
+    void returnCourtAdminInfoNoData() {
         TestUtils.mockCourtUser("415", "415", Collections.emptySet());
         CourtAdminInfoDto dto = courtDashboardService.getCourtAdminInfo(LOC_CODE);
         assertThat(dto).isNotNull();
@@ -133,7 +133,7 @@ class CourtDashboardServiceImplTest {
     }
 
     @Test
-    void courtAttendanceInfoNoUtilStats() {
+    void returnCourtAttendanceInfoNoUtilStats() {
         TestUtils.mockCourtUser("415", "415", Collections.emptySet());
         CourtAttendanceInfoDto dto = courtDashboardService.getCourtAttendanceInfo(LOC_CODE);
         assertThat(dto).isNotNull();

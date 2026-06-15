@@ -43,7 +43,8 @@ import static org.springframework.http.HttpMethod.POST;
 public class UploadControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/juror-er/upload";
 
-    private final TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
     private HttpHeaders httpHeaders;
 
     @BeforeEach

@@ -88,7 +88,8 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.PublicMemberInNonPublicType",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.CouplingBetweenObjects"
 })
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -122,11 +123,11 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
     private JurorAppearanceService jurorAppearanceService;
 
     @Autowired
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private JurorHistoryRepository jurorHistoryRepository;
 
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         initHeaders();

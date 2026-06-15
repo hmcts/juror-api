@@ -103,7 +103,8 @@ import static org.springframework.http.HttpMethod.PUT;
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.PublicMemberInNonPublicType",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.CouplingBetweenObjects"
 })
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -121,8 +122,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
     private static final String URL_UNPAID_SUMMARY = BASE_URL + "/unpaid-summary";
 
-
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private final AppearanceRepository appearanceRepository;
     private final FinancialAuditDetailsRepository financialAuditDetailsRepository;
     private final FinancialAuditDetailsAppearancesRepository financialAuditDetailsAppearancesRepository;
@@ -133,8 +134,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     private TransactionTemplate transactionTemplate;
 
     private HttpHeaders httpHeaders;
-
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 
     @Autowired
     private Clock clock;
@@ -335,7 +334,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @SuppressWarnings({
         "PMD.PublicMemberInNonPublicType"
     })
-    
     @Nested
     @DisplayName("GET " + GetDefaultExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql"})
@@ -452,14 +450,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         }
-
-
     }
 
-    @SuppressWarnings({
-        "PMD.AbstractClassWithoutAbstractMethod",
-        "PMD.PublicMemberInNonPublicType"
-    })
+    @SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
     abstract class AbstractDraftDailyExpense {
         public static final String URL = BASE_URL + "/{juror_number}/DRAFT/edit";
         public static final String METHOD_NAME = "postEditDailyExpense";
@@ -1458,7 +1451,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     }
 
 
-    
+
     @Nested
     @DisplayName("POST /api/v1/moj/expenses/submit-for-approval")
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_submitForApprovalSetUp.sql",
@@ -1708,7 +1701,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(appearance.getExpenseRates().getId()).isEqualTo(999_999);
         }
 
-        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
         private void verifyExpenseStillInDraft(Appearance appearance) {
             assertThat(appearance.getFinancialAudit())
                 .as("Financial Audit Details object should not be created/associated")
@@ -2093,10 +2085,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     String.class);
             }
 
-            @SuppressWarnings("PMD.PublicMemberInNonPublicType")
             @Test
             void forbiddenIsBureauUser() {
-                @SuppressWarnings("PMD.PublicMemberInNonPublicType")
                 final String type = ExpenseType.FOR_APPROVAL.name();
                 assertForbiddenResponse(triggerInvalid("641500021", type, "400"),
                     toUrl("400", "641500021", type));
@@ -2914,7 +2904,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.PublicMemberInNonPublicType")
             void negativeUnauthorizedNotManager() {
                 assertForbiddenResponse(
                     triggerInvalid(COURT_LOCATION,
@@ -4634,7 +4623,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                           BigDecimal expectedSmartCardAmount) {
                 Appearance appearance = appearanceRepository
                     .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(
-                        COURT_LOCATION, ApportionSmartCard.JUROR_NUMBER, localDate).orElseThrow();
+                        COURT_LOCATION, JUROR_NUMBER, localDate).orElseThrow();
                 assertThat(appearance.getSmartCardAmountDue()).isEqualTo(expectedSmartCardAmount);
             }
 

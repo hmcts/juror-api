@@ -265,7 +265,6 @@ class ReasonableAdjustmentAndCjeReportITest extends AbstractGroupedReportControl
     }
 
     @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-
     public GroupByResponse getTypicalGroupByResponse() {
         return GroupByResponse.builder()
             .name(DataType.COURT_LOCATION_NAME_AND_CODE.name())

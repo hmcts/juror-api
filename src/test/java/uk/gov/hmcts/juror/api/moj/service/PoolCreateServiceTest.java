@@ -70,7 +70,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings("unchecked")
-public class PoolCreateServiceTest {
+class PoolCreateServiceTest {
 
     @Mock
     private VotersLocPostcodeTotalsService votersLocPostcodeTotalsService;
@@ -118,14 +118,14 @@ public class PoolCreateServiceTest {
     PoolCreateServiceImpl poolCreateService;
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         if (mockStaticPaginationUtil != null) {
             mockStaticPaginationUtil.close();
         }
     }
 
     @Test
-    void test_getPoolRequest_recordFound() {
+    void testGetPoolRequestRecordFound() {
         String poolNumber = "415220110";
         String owner = "415";
 
@@ -157,7 +157,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    void test_getPoolRequest_noMatch() {
+    void testGetPoolRequestNoMatch() {
         String poolNumber = "415220111";
         String owner = "415";
 
@@ -170,7 +170,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    void getCourtCatchmentItems_invalidLocationCode() {
+    void returnCourtCatchmentItemsInvalidLocationCode() {
         final String locationCode = "100";
         final boolean isCoronersPool = false;
         assertThatExceptionOfType(PoolCreateException.CourtLocationNotFound.class)
@@ -257,7 +257,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    void checkYield_throw_error() {
+    void checkYieldThrowError() {
         final String owner = "400";
         int citizensToSummon = 199;
         int noRequested = 99;
@@ -275,7 +275,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    void test_checkForDeferrals_withCourtLocNameOnly_happy() {
+    void testCheckForDeferralsWithCourtLocNameOnlyHappy() {
         String owner = "415";
         CourtLocation courtLocation = createValidPoolRequest("415220110").getCourtLocation();
         NilPoolRequestDto nilPoolRequestDto = createValidNilPoolRequestDto();
@@ -294,7 +294,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    void test_checkForDeferrals_withCourtLocCodeOnly_happy() {
+    void testCheckForDeferralsWithCourtLocCodeOnlyHappy() {
         String owner = "415";
         CourtLocation courtLocation = createValidPoolRequest("415220110").getCourtLocation();
         NilPoolRequestDto nilPoolRequestDto = createValidNilPoolRequestDto();
@@ -313,7 +313,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    void test_createNilPool_happy() {
+    void testCreateNilPoolHappy() {
 
         String owner = "415";
         CourtLocation courtLocation = createValidPoolRequest("415220110").getCourtLocation();
@@ -439,7 +439,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    void test_createCoronerPool_happy() {
+    void testCreateCoronerPoolHappy() {
         String owner = "400";
         String locCode = "415";
         CoronerPoolRequestDto coronerPoolRequestDto = getCoronerPoolRequestDto(locCode);
@@ -459,7 +459,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    void test_createCoronerPool_TooManyRequested() {
+    void testCreateCoronerPoolTooManyRequested() {
         String owner = "400";
         String locCode = "415";
         CoronerPoolRequestDto coronerPoolRequestDto = getCoronerPoolRequestDto(locCode);
@@ -472,7 +472,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    void test_createCoronerPool_TooFewRequested() {
+    void testCreateCoronerPoolTooFewRequested() {
         String owner = "400";
         String locCode = "415";
         CoronerPoolRequestDto coronerPoolRequestDto = getCoronerPoolRequestDto(locCode);
@@ -485,7 +485,7 @@ public class PoolCreateServiceTest {
     }
 
     @Test
-    void test_getCoronerPool_happy() {
+    void testGetCoronerPoolHappy() {
 
         CoronerPool coronerPool = getCoronerPool();
 
@@ -724,7 +724,7 @@ public class PoolCreateServiceTest {
         voter.setAddress4(null);
         voter.setAddress5(null);
         voter.setPostcode("SY2 6LU");
-        voter.setHashId(12345678L);
+        voter.setHashId(12_345_678L);
         voter.setDateOfBirth(LocalDate.of(1990, 6, 1));
         voter.setLocalAuthorityId(91);
         voter.setRegisterLett("91");
