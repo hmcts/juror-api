@@ -146,8 +146,8 @@ class JudgeControllerTest {
 
         verify(judgeService, never()).getJudgeForCourtLocation(any());
     }
-    
-    private class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
+
+    private final class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
             return parameter.getParameterType().isAssignableFrom(BureauJwtPayload.class);

@@ -6,7 +6,6 @@ import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -28,6 +27,7 @@ import uk.gov.hmcts.juror.api.jurorer.domain.LaRoles;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.EmailDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.JwtDto;
+import lombok.RequiredArgsConstructor;
 
 import java.time.Clock;
 import java.util.Collections;

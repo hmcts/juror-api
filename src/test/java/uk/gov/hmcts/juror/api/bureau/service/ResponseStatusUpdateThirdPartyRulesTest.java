@@ -69,8 +69,6 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
     private DigitalResponse jurorResponse;
 
     private JurorPool poolDetails;
-    private Juror juror;
-    private PoolRequest poolRequest;
 
     @Before
     public void setUp() {
@@ -90,9 +88,9 @@ public class ResponseStatusUpdateThirdPartyRulesTest {
         jurorResponse.setOtherPhone(THIRD_PARTY_MOBILE_PHONE);
 
         poolDetails = new JurorPool();
-        juror = new Juror();
+        Juror juror = new Juror();
         poolDetails.setJuror(juror);
-        poolRequest = new PoolRequest();
+        PoolRequest poolRequest = new PoolRequest();
         poolDetails.setPool(poolRequest);
         poolDetails.getJuror().setJurorNumber(JUROR_NUMBER);
         doReturn(poolDetails).when(jurorPoolService).getJurorPoolFromUser(JUROR_NUMBER);

@@ -56,6 +56,7 @@ class PaymentStatusReportTest extends AbstractGroupedReportTestSupport<PaymentSt
     }
 
 
+    @Override
     @BeforeEach
     public void beforeEach() {
         this.courtLocationService = mock(CourtLocationService.class);

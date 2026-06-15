@@ -185,6 +185,7 @@ class BureauBacklogAllocateServiceImplTest {
      *
      * @return List JurorResponses
      */
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private List<DigitalResponse> generateResponses(int responseCount, Boolean urgent,
                                                     LocalDateTime now) {
 

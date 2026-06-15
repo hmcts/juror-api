@@ -58,7 +58,8 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods",
-    "PMD.PublicMemberInNonPublicType"
+    "PMD.PublicMemberInNonPublicType",
+    "PMD.CouplingBetweenObjects"
 })
 class PanelControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial/panel";

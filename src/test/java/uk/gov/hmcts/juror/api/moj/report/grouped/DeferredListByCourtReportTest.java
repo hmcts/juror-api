@@ -116,6 +116,7 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
         verifyNoMoreInteractions(query);
     }
 
+    @Override
     public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
         AbstractReportResponse.TableData<GroupedTableData> tableData,

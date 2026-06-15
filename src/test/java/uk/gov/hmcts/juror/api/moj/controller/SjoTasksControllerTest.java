@@ -173,6 +173,7 @@ class SjoTasksControllerTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void negativeBadRequest() throws Exception {
             mockMvc.perform(patch(URL)
                     .contentType(MediaType.APPLICATION_JSON)
