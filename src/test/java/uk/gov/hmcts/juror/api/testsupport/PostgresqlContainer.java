@@ -29,7 +29,10 @@ public final class PostgresqlContainer extends PostgreSQLContainer<PostgresqlCon
     }
 
     public static PostgresqlContainer getInstance() {
-        return Holder.INSTANCE;
+        if (container == null) {
+            container = new PostgresqlContainer();
+        }
+        return container;
     }
 
     @Override
@@ -53,9 +56,5 @@ public final class PostgresqlContainer extends PostgreSQLContainer<PostgresqlCon
     @Override
     public void stop() {
         //do nothing, JVM handles shut down
-    }
-
-    private static final class Holder {
-        private static final PostgresqlContainer INSTANCE = new PostgresqlContainer();
     }
 }

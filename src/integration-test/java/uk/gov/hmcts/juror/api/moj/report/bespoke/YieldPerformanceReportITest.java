@@ -75,6 +75,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewByCourtNegativeBalance() {
 
         testBuilder()
@@ -91,6 +92,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewByCourtPositiveBalance() {
 
         testBuilder()
@@ -107,6 +109,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewByCourts() {
 
         testBuilder()
@@ -117,6 +120,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewByAllCourts() {
 
         testBuilder()

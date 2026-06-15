@@ -1058,6 +1058,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
+            @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
@@ -2352,6 +2353,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
+            @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
@@ -2449,7 +2451,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
             @Getter
             @Setter
             @Builder
-            private static class JurorData {
+            private static final class JurorData {
                 private String jurorPoolNumber;
                 private String jurorNumber;
                 private MessageType.SendType sendType;
@@ -3352,6 +3354,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
+            @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
