@@ -38,4 +38,13 @@
 		<cve>CVE-2026-41843</cve>
 		<cve>CVE-2026-41852</cve>
 	</suppress>
+	<suppress>
+		<notes><![CDATA[
+		Jenkins dependency-check findings for Spring Security 6.5.10 modules.
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-(config|core|crypto|web)@6\.5\.10$</packageUrl>
+		<cve>CVE-2026-40988</cve>
+		<cve>CVE-2026-41003</cve>
+		<cve>CVE-2026-41694</cve>
+	</suppress>
 </suppressions>
