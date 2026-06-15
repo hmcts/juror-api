@@ -74,7 +74,7 @@ class JurorResponseRetrieveServiceImplTest {
     private JurorResponseRetrieveServiceImpl jurorResponseRetrieveService;
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         TestUtils.afterAll();
     }
 

@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PostponedListByPoolReportTest extends AbstractStandardReportTestSupport<PostponedListByPoolReport> {
 
-    public PostponedListByPoolReportTest() {
+    PostponedListByPoolReportTest() {
         super(QJurorPool.jurorPool,
             PostponedListByPoolReport.RequestValidator.class,
             DataType.JUROR_NUMBER,

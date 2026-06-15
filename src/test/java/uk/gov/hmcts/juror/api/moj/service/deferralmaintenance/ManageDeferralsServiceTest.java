@@ -164,7 +164,7 @@ class ManageDeferralsServiceTest {
     private ListAppender<ILoggingEvent> listAppender;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         final Logger logger = (Logger) LoggerFactory.getLogger(ManageDeferralsServiceImpl.class);
 
         doReturn(Optional.of(createJurorStatus(2, "RESPONDED")))
@@ -931,7 +931,7 @@ class ManageDeferralsServiceTest {
     @Test
     void useDeferralsNoDeferralsUsed() {
         PoolRequest poolRequest = createPoolRequest("123456789", "123", LocalDate.now());
-        doReturn(new ArrayList<CurrentlyDeferred>()).when(currentlyDeferredRepository)
+        doReturn(new ArrayList<>()).when(currentlyDeferredRepository)
             .findAll((Predicate) any());
 
         int deferralsUsed = manageDeferralsService.useCourtDeferrals(poolRequest,
@@ -1519,7 +1519,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void changeDeferralDate_happy_path_moveToActivePool_RemoveFromDeferralMaintenance() {
+    void changeDeferralDateHappyPathMoveToActivePoolRemoveFromDeferralMaintenance() {
         TestUtils.mockBureauUser();
         LocalDate newAttendanceDate = LocalDate.now();
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
@@ -1585,7 +1585,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void processJuror_deferral_paper_happy_path_moveToActivePool() {
+    void processJurorDeferralPaperHappyPathMoveToActivePool() {
         TestUtils.mockBureauUser();
         LocalDate newAttendanceDate = LocalDate.now();
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
@@ -1619,7 +1619,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void processJuror_deferral_digital_happy_path_moveToDeferralMaintenance() {
+    void processJurorDeferralDigitalHappyPathMoveToDeferralMaintenance() {
         TestUtils.mockBureauUser();
         final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
@@ -1651,7 +1651,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void processJuror_deferral_paper_happy_path_moveToDeferralMaintenance() {
+    void processJurorDeferralPaperHappyPathMoveToDeferralMaintenance() {
         TestUtils.mockBureauUser();
         final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
@@ -1709,7 +1709,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_findActivePoolsForDates_happyPath() {
+    void testFindActivePoolsForDatesHappyPath() {
         TestUtils.mockBureauUser();
         String bureauOwner = "400";
         final String jurorNumber = "123456789";
@@ -1877,7 +1877,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_findActivePoolsForDates_invalidAccess() {
+    void testFindActivePoolsForDatesInvalidAccess() {
         TestUtils.mockBureauUser();
         String bureauOwner = "400";
         String jurorNumber = "123456789";
@@ -1947,7 +1947,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_findActivePoolsForDates_noDates() {
+    void testFindActivePoolsForDatesNoDates() {
         TestUtils.mockBureauUser();
         String bureauOwner = "400";
         String jurorNumber = "123456789";
@@ -2311,7 +2311,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_getPreferredDeferralDates_noValidDates() {
+    void testGetPreferredDeferralDatesNoValidDates() {
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
 
@@ -2337,7 +2337,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_getPreferredDeferralDates_invalidReadAccess() {
+    void testGetPreferredDeferralDatesInvalidReadAccess() {
         final BureauJwtPayload payload = TestUtils.createJwt("415", "BUREAU_USER");
         String jurorNumber = "123456789";
 
@@ -2360,7 +2360,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_getPreferredDeferralDates_noDigitalResponse() {
+    void testGetPreferredDeferralDatesNoDigitalResponse() {
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
 
@@ -2383,7 +2383,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_moveJurorsToActivePool_singleJuror() {
+    void testMoveJurorsToActivePoolSingleJuror() {
         TestUtils.mockBureauUser();
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         final String courtLocationCode = "415";
@@ -2426,7 +2426,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_moveJurorsToActivePool_singleJuror_noDob() {
+    void testMoveJurorsToActivePoolSingleJurorNoDob() {
         TestUtils.mockBureauUser();
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         final String courtLocationCode = "415";

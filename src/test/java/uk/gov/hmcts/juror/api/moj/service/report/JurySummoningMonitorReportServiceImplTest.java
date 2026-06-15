@@ -45,7 +45,7 @@ class JurySummoningMonitorReportServiceImplTest {
     private final CourtQueriesRepository courtQueriesRepository;
     private final JurySummoningMonitorReportService jurySummoningMonitorReportService;
 
-    public JurySummoningMonitorReportServiceImplTest() {
+    private JurySummoningMonitorReportServiceImplTest() {
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.jurorPoolRepository = mock(JurorPoolRepository.class);

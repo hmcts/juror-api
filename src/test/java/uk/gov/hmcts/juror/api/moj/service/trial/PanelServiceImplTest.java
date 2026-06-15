@@ -49,7 +49,6 @@ import java.util.Random;
 import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -116,7 +115,7 @@ class PanelServiceImplTest {
         final LocalDate date = now();
         final String locCode = "415";
 
-        ArrayList<String> poolNumbers = new ArrayList<>();
+        List<String> poolNumbers = new ArrayList<>();
         poolNumbers.add("415231201");
 
         doReturn(true).when(trialRepository)
@@ -217,7 +216,7 @@ class PanelServiceImplTest {
         doReturn(Optional.of(createAppearance("111111111"))).when(appearanceRepository)
             .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(locCode, "111111111", now());
 
-        ArrayList<String> poolNumbers = new ArrayList<>();
+        List<String> poolNumbers = new ArrayList<>();
         List<PanelListDto> dtoList = panelService.createPanel(2,
             "T100000025",
             poolNumbers,
@@ -301,10 +300,13 @@ class PanelServiceImplTest {
                 any()),
             "Expected exception to be thrown when not enough jurors");
 
-        assertEquals("Cannot create panel - Number requested must be between 1 and 1000",
-            exception.getMessage(),
-            "Expected exception message to be: Cannot create panel - Number requested must be between 1 and 1000");
-        assertEquals(NUMBER_OF_JURORS_EXCEEDS_LIMITS, exception.getErrorCode());
+        assertThat(exception.getMessage())
+            .as("Expected exception message to be: Cannot create panel - Number requested must be between 1 and 1000")
+            .isEqualTo("Cannot create panel - Number requested must be between 1 and 1000");
+
+        assertThat(exception.getErrorCode())
+            .as("Expected error code to be NUMBER_OF_JURORS_EXCEEDS_LIMITS")
+            .isEqualTo(NUMBER_OF_JURORS_EXCEEDS_LIMITS);
 
         verify(trialRepository, times(1))
             .existsByTrialNumberAndCourtLocationLocCode("T100000025", "");
@@ -324,10 +326,13 @@ class PanelServiceImplTest {
                 any()),
             "Expected exception to be thrown when not enough jurors");
 
-        assertEquals("Cannot create panel - Number requested must be between 1 and 1000",
-            exception.getMessage(),
-            "Expected exception message to be: Cannot create panel - Number requested must be between 1 and 1000");
-        assertEquals(NUMBER_OF_JURORS_EXCEEDS_LIMITS, exception.getErrorCode());
+        assertThat(exception.getMessage())
+            .as("Expected exception message to be: Cannot create panel - Number requested must be between 1 and 1000")
+            .isEqualTo("Cannot create panel - Number requested must be between 1 and 1000");
+
+        assertThat(exception.getErrorCode())
+            .as("Expected error code to be NUMBER_OF_JURORS_EXCEEDS_LIMITS")
+            .isEqualTo(NUMBER_OF_JURORS_EXCEEDS_LIMITS);
 
         verify(trialRepository, times(1))
             .existsByTrialNumberAndCourtLocationLocCode("T100000025", "");
@@ -361,10 +366,13 @@ class PanelServiceImplTest {
                 buildPayload()),
             "Expected exception to be thrown when not enough jurors");
 
-        assertEquals("Cannot create panel - Not enough jurors available",
-            exception.getMessage(),
-            "Expected exception message to be: Cannot create panel - Not enough jurors available");
-        assertEquals(NUMBER_OF_JURORS_EXCEEDS_AVAILABLE, exception.getErrorCode());
+        assertThat(exception.getMessage())
+            .as("Expected exception message to be: Cannot create panel - Not enough jurors available")
+            .isEqualTo("Cannot create panel - Not enough jurors available");
+
+        assertThat(exception.getErrorCode())
+            .as("Expected error code to be NUMBER_OF_JURORS_EXCEEDS_AVAILABLE")
+            .isEqualTo(NUMBER_OF_JURORS_EXCEEDS_AVAILABLE);
         verify(trialRepository, times(1))
             .existsByTrialNumberAndCourtLocationLocCode("T100000025", locCode);
         verify(panelRepository, times(1))

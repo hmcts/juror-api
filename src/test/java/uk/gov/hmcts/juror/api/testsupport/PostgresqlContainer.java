@@ -8,13 +8,13 @@ import java.util.List;
 
 public final class PostgresqlContainer extends PostgreSQLContainer<PostgresqlContainer> {
 
-    private static final DockerImageName dockerImageName = DockerImageName
+    private static final DockerImageName DOCKER_IMAGE_NAME = DockerImageName
         .parse("hmctsprod.azurecr.io/imported/postgres:16-alpine")
         .asCompatibleSubstituteFor("postgres");
     private static PostgresqlContainer container;
 
     private PostgresqlContainer() {
-        super(dockerImageName);
+        super(DOCKER_IMAGE_NAME);
         setup();
     }
 
@@ -29,10 +29,7 @@ public final class PostgresqlContainer extends PostgreSQLContainer<PostgresqlCon
     }
 
     public static PostgresqlContainer getInstance() {
-        if (container == null) {
-            container = new PostgresqlContainer();
-        }
-        return container;
+        return Holder.INSTANCE;
     }
 
     @Override
@@ -56,5 +53,9 @@ public final class PostgresqlContainer extends PostgreSQLContainer<PostgresqlCon
     @Override
     public void stop() {
         //do nothing, JVM handles shut down
+    }
+
+    private static final class Holder {
+        private static final PostgresqlContainer INSTANCE = new PostgresqlContainer();
     }
 }
