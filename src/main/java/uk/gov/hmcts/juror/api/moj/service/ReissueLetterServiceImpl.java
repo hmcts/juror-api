@@ -181,7 +181,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             poolLetterCount.keySet().forEach(poolNumber -> {
                 // create pool history
                 poolHistoryService.createPoolHistory(poolNumber, HistoryCode.PHRS,
-                poolLetterCount.get(poolNumber) + " (Number of Reminder letters sent)");
+                    poolLetterCount.get(poolNumber) + " (Number of Reminder letters sent)");
             });
 
         }
