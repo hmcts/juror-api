@@ -75,12 +75,12 @@ class CourtLocationControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()", is(2)))
-            .andExpect(jsonPath("$.[0].locationCode").value("440"))
-            .andExpect(jsonPath("$.[0].locationName").value("Inner London"))
-            .andExpect(jsonPath("$.[0].attendanceTime").doesNotExist())
-            .andExpect(jsonPath("$.[1].locationCode").value("400"))
-            .andExpect(jsonPath("$.[1].locationName").value("Jury Central Summoning Bureau"))
-            .andExpect(jsonPath("$.[1].attendanceTime").doesNotExist());
+            .andExpect(jsonPath("$.[0].location_code").value("440"))
+            .andExpect(jsonPath("$.[0].location_name").value("Inner London"))
+            .andExpect(jsonPath("$.[0].attendance_time").doesNotExist())
+            .andExpect(jsonPath("$.[1].location_code").value("400"))
+            .andExpect(jsonPath("$.[1].location_name").value("Jury Central Summoning Bureau"))
+            .andExpect(jsonPath("$.[1].attendance_time").doesNotExist());
 
         verify(courtLocationService, times(1)).getCourtLocationsByPostcode(postcodeCaptor.capture());
         assertThat(postcodeCaptor.getValue()).isEqualTo("SE15");
@@ -103,12 +103,12 @@ class CourtLocationControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()", is(2)))
-            .andExpect(jsonPath("$.[0].locationCode").value("440"))
-            .andExpect(jsonPath("$.[0].locationName").value("Inner London"))
-            .andExpect(jsonPath("$.[0].attendanceTime").doesNotExist())
-            .andExpect(jsonPath("$.[1].locationCode").value("400"))
-            .andExpect(jsonPath("$.[1].locationName").value("Jury Central Summoning Bureau"))
-            .andExpect(jsonPath("$.[1].attendanceTime").doesNotExist());
+            .andExpect(jsonPath("$.[0].location_code").value("440"))
+            .andExpect(jsonPath("$.[0].location_name").value("Inner London"))
+            .andExpect(jsonPath("$.[0].attendance_time").doesNotExist())
+            .andExpect(jsonPath("$.[1].location_code").value("400"))
+            .andExpect(jsonPath("$.[1].location_name").value("Jury Central Summoning Bureau"))
+            .andExpect(jsonPath("$.[1].attendance_time").doesNotExist());
 
         verify(courtLocationService, times(1)).getCourtLocationsByPostcode(postcodeCaptor.capture());
         assertThat(postcodeCaptor.getValue()).isEqualTo("SE16");

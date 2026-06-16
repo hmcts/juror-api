@@ -29,11 +29,13 @@ public class TrialSummaryDto {
 
     private JudgeDto judge;
 
+    @JsonProperty("courtroom")
     private CourtroomsDto courtroomsDto;
 
     @JsonFormat(pattern = ValidationConstants.DATE_FORMAT)
     private LocalDate trialStartDate;
 
+    @JsonProperty("protected")
     private Boolean protectedTrial;
 
     private Boolean isActive;
