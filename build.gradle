@@ -88,35 +88,6 @@ configurations {
   querydsl.extendsFrom compileClasspath
 }
 
-def generatedQuerydslDir = layout.buildDirectory.dir('generated/querydsl')
-def querydslGenerationSources = fileTree('src/main/java') {
-  include 'uk/gov/hmcts/juror/api/**/domain/**/*.java'
-  include 'uk/gov/hmcts/juror/api/moj/audit/dto/JurorAudit.java'
-  include 'uk/gov/hmcts/juror/api/moj/repository/jurorresponse/JurorCommonResponseRepositoryMod.java'
-
-  exclude '**/*Queries.java'
-  exclude '**/CodeType.java'
-  exclude '**/messages/MessageSearch.java'
-  exclude '**/authentication/UserSearchDto.java'
-}
-
-tasks.register('generateQuerydsl', JavaCompile) {
-  description = 'Generates Querydsl Q classes from JPA domain classes.'
-  group = 'build'
-
-  source = querydslGenerationSources
-  classpath = sourceSets.main.compileClasspath
-  destinationDirectory = layout.buildDirectory.dir('tmp/querydslClasses')
-  options.annotationProcessorPath = configurations.annotationProcessor
-  options.sourcepath = files('src/main/java')
-  options.generatedSourceOutputDirectory = generatedQuerydslDir
-  options.compilerArgs = [
-    '-proc:only',
-    '-implicit:class',
-    '-processor',
-    'com.querydsl.apt.jpa.JPAAnnotationProcessor'
-  ]
-}
 
 dependencies {
 
@@ -286,7 +257,6 @@ sourceSets {
     java {
       srcDirs 'src/main/java'
       //srcDirs 'src/querydsl/java'
-      srcDir generatedQuerydslDir
     }
   }
   functionalTest {
@@ -323,13 +293,7 @@ checkstyle {
   getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
-compileJava {
-  dependsOn tasks.named('generateQuerydsl')
-  options.compilerArgs += [
-    '-processor',
-    'lombok.launch.AnnotationProcessorHider$AnnotationProcessor'
-  ]
-}
+
 
 pmdTest {
   maxFailures = 292
