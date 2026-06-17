@@ -13,6 +13,7 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.AgeDisqualifiedJurorDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -27,6 +28,8 @@ import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.poolmanagement.JurorManagementConstants;
 import uk.gov.hmcts.juror.api.moj.service.poolmanagement.JurorManagementServiceImpl;
@@ -85,6 +88,10 @@ public class JurorManagementServiceImplTest {
     private JurorAppearanceService appearanceService;
     @Mock
     private ReissueLetterService reissueLetterService;
+    @Mock
+    private JurorDigitalResponseRepositoryMod digitalResponseRepositoryMod;
+    @Mock
+    private JurorPaperResponseRepositoryMod paperResponseRepositoryMod;
 
     @InjectMocks
     JurorManagementServiceImpl jurorManagementService;
@@ -196,6 +203,78 @@ public class JurorManagementServiceImplTest {
         verify(jurorHistoryService, times(1))
             .createReassignPoolMemberHistory(any(), any(), any());
         verify(printDataService, times(1)).printConfirmationLetter(any());
+    }
+
+    @Test
+    public void test_reassignJuror_bureauUser_overAgeJuror() {
+        final String sourcePoolNumber = "123456789";
+        final String targetPoolNumber = "987654321";
+        final String sourceCourtLocCode = "415";
+        final String targetCourtLocCode = "416";
+        final String jurorNumber = "123456789";
+        final LocalDate sourceServiceStartDate = LocalDate.now().plusDays(5);
+        final LocalDate targetServiceStartDate = LocalDate.now().plusDays(10);
+        final LocalDate dob = LocalDate.now().minusYears(76).plusDays(10);
+
+        CourtLocation sourceCourtLocation = createCourtLocation(sourceCourtLocCode, "400");
+        CourtLocation targetCourtLocation = createCourtLocation(targetCourtLocCode, "400");
+
+        PoolRequest sourcePoolRequest = new PoolRequest();
+        sourcePoolRequest.setPoolNumber(sourcePoolNumber);
+        sourcePoolRequest.setOwner("400");
+        sourcePoolRequest.setReturnDate(sourceServiceStartDate);
+        sourcePoolRequest.setCourtLocation(sourceCourtLocation);
+
+        PoolRequest targetPoolRequest = new PoolRequest();
+        targetPoolRequest.setPoolNumber(targetPoolNumber);
+        targetPoolRequest.setOwner("400");
+        targetPoolRequest.setReturnDate(targetServiceStartDate);
+        targetPoolRequest.setCourtLocation(targetCourtLocation);
+
+        List<JurorPool> poolMemberList = createJurorPoolList("400");
+        JurorPool sourceJurorPool = poolMemberList.get(0);
+        sourceJurorPool.setPool(sourcePoolRequest);
+        sourceJurorPool.getJuror().setDateOfBirth(dob);
+
+        when(poolRequestRepository.findByPoolNumber(sourcePoolNumber)).thenReturn(Optional.of(sourcePoolRequest));
+        when(poolRequestRepository.findByPoolNumber(targetPoolNumber)).thenReturn(Optional.of(targetPoolRequest));
+        when(courtLocationRepository.findByLocCode(sourceCourtLocCode)).thenReturn(Optional.of(sourceCourtLocation));
+        when(courtLocationRepository.findByLocCode(targetCourtLocCode)).thenReturn(Optional.of(targetCourtLocation));
+        when(jurorPoolRepository.findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
+            anyList(), anyBoolean(), anyString(), any(CourtLocation.class),
+            anyList())).thenReturn(poolMemberList);
+
+        BureauJwtPayload payload = TestUtils.mockBureauUser();
+        JurorManagementRequestDto requestDto = new JurorManagementRequestDto(sourcePoolNumber,
+            sourceCourtLocCode, List.of(jurorNumber), targetPoolNumber, targetCourtLocCode, LocalDate.now());
+
+        ReassignPoolMembersResultDto result = jurorManagementService.reassignJurors(payload, requestDto);
+
+        Assertions.assertThat(result.getNumberReassigned()).isZero();
+        Assertions.assertThat(result.getNewPoolNumber()).isEqualTo(targetPoolNumber);
+        Assertions.assertThat(result.getAgeDisqualified()).hasSize(1);
+
+        AgeDisqualifiedJurorDto ageDisqualifiedJuror = result.getAgeDisqualified().get(0);
+        Assertions.assertThat(ageDisqualifiedJuror.getJurorNumber()).isEqualTo(jurorNumber);
+        Assertions.assertThat(ageDisqualifiedJuror.getDob()).isEqualTo(dob);
+        Assertions.assertThat(ageDisqualifiedJuror.getCurrentServiceStartDate()).isEqualTo(sourceServiceStartDate);
+        Assertions.assertThat(ageDisqualifiedJuror.getNewDate()).isEqualTo(targetServiceStartDate);
+
+        verify(poolRequestRepository, times(2)).findByPoolNumber(anyString());
+        verify(courtLocationRepository, times(2)).findByLocCode(anyString());
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
+                anyList(), anyBoolean(), anyString(), any(CourtLocation.class), anyList());
+        verify(poolRequestRepository, times(1)).saveAndFlush(targetPoolRequest);
+        verify(jurorPoolRepository, never())
+            .findByOwnerAndJurorJurorNumberAndPoolPoolNumber(anyString(), anyString(), anyString());
+        verify(poolMemberSequenceService, never()).getPoolMemberSequenceNumber(anyString());
+        verify(jurorPoolRepository, never()).save(any());
+        verify(jurorHistoryService, never()).createReassignPoolMemberHistory(any(), any(), any());
+        verify(printDataService, never()).printConfirmationLetter(any());
+        verify(appearanceService, times(1))
+            .getUnconfirmedAttendanceCountForJurorsAtCourt(anyList(), anyString());
+        verify(appearanceService, never()).hasAttendancesInPool(anyString(), anyString());
     }
 
     @Test
@@ -568,6 +647,7 @@ public class JurorManagementServiceImplTest {
 
         sourcePoolRequest.setCourtLocation(primaryCourtLocation);
         targetpoolRequest.setCourtLocation(primaryCourtLocation);
+        targetpoolRequest.setLastUpdate(LocalDateTime.now());
 
         JurorStatus respondedStatus = new JurorStatus();
         respondedStatus.setStatus(2);

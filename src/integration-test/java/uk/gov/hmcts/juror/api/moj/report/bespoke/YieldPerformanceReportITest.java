@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractControllerIntegrationTest;
-import uk.gov.hmcts.juror.api.moj.controller.reports.request.YieldPerformanceReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtsAndDatesReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
@@ -37,7 +37,7 @@ import static org.assertj.core.api.BDDAssertions.within;
 @SuppressWarnings({"PMD.TooManyMethods",
     "PMD.JUnitTestsShouldIncludeAssert"}//False positive
 )
-class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<YieldPerformanceReportRequest,
+class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<CourtsAndDatesReportRequest,
     YieldPerformanceReportResponse> {
     public static final String URL = "/api/v1/moj/reports/yield-performance";
     public static final String LOCAL_DATE = "LocalDate";
@@ -64,8 +64,8 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
     @Override
-    protected YieldPerformanceReportRequest getValidPayload() {
-        return YieldPerformanceReportRequest.builder()
+    protected CourtsAndDatesReportRequest getValidPayload() {
+        return CourtsAndDatesReportRequest.builder()
             .allCourts(false)
             .courtLocCodes(List.of("415","774"))
             .fromDate(LocalDate.parse("2024-08-01"))
@@ -77,7 +77,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     void viewByCourtNegativeBalance() {
 
         testBuilder()
-            .payload(YieldPerformanceReportRequest.builder()
+            .payload(CourtsAndDatesReportRequest.builder()
             .allCourts(false)
             .courtLocCodes(List.of("415"))
             .fromDate(LocalDate.parse("2024-08-01"))
@@ -93,7 +93,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     void viewByCourtPositiveBalance() {
 
         testBuilder()
-            .payload(YieldPerformanceReportRequest.builder()
+            .payload(CourtsAndDatesReportRequest.builder()
                 .allCourts(false)
                 .courtLocCodes(List.of("417"))
                 .fromDate(LocalDate.parse("2024-08-01"))
@@ -119,7 +119,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     void viewByAllCourts() {
 
         testBuilder()
-            .payload(YieldPerformanceReportRequest.builder()
+            .payload(CourtsAndDatesReportRequest.builder()
                 .allCourts(true)
                 .fromDate(LocalDate.parse("2024-07-21"))
                 .toDate(LocalDate.parse("2024-08-07"))

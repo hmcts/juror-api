@@ -4,7 +4,7 @@ buildscript {
         notifyVersion = '5.2.1-RELEASE'
         springDocVersion = '2.8.9'
         queryDslVersion = '5.1.0'
-        flywayVersion = '10.22.0'
+        flywayVersion = '11.20.3'
         postgresVersion = '42.7.11'
         envers = '3.5.4'
         jwtVersion = '0.13.0'
@@ -61,7 +61,7 @@ jacoco {
     toolVersion = "0.8.13"
 }
 
-version = '5.26.1'
+version = '5.27.0'
 
 repositories {
     mavenLocal()
@@ -366,24 +366,10 @@ project.tasks['sonarqube'].dependsOn jacocoTestReport
 dependencyCheck {
     // Specifies if the build should be failed if a CVSS score above a specified level is identified.
     // range of 0-10 fails the build, anything greater and it doesn't fail the build
-    failBuildOnCVSS = 10
+    failBuildOnCVSS = 0
     suppressionFile = 'config/owasp/suppressions.xml'
+    scanConfigurations = ['runtimeClasspath', 'compileClasspath']
 
-    analyzers {
-        // Disable scanning of .NET related binaries
-        assemblyEnabled = false
-    }
-    skipConfigurations = [
-            "checkstyle",
-            "compileOnly",
-            "pmd",
-            "integrationTest",
-            "functionalTest",
-            "test",
-            "smokeTest",
-            "contractTestRuntimeClasspath",
-            "contractTestCompileClasspath"
-    ]
 }
 
 project.tasks['check'].dependsOn integration
