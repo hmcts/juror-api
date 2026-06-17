@@ -12,6 +12,6 @@ pgsql_server_configuration_extra = [
   },
   {
     name  = "maintenance_work_mem"
-    value = "1048576kB"
+    value = "1048576"
   },
 ]
