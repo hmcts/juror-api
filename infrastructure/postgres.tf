@@ -30,7 +30,7 @@ module "postgresql_flexible" {
       name : local.db_name
     }
   ]
-  pgsql_server_configuration = [
+  pgsql_server_configuration = concat([
     {
       name  = "azure.extensions"
       value = "dblink,tablefunc,pg_stat_statements"
@@ -47,7 +47,7 @@ module "postgresql_flexible" {
       name  = "track_io_timing"
       value = "ON"
     },
-  ]
+  ], var.pgsql_server_configuration_extra)
   pgsql_version = "16"
 }
 
