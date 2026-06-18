@@ -54,14 +54,14 @@ from juror_mod.court_location courts,
              urm.juror_number, sum(urm.sitting) number_of_sitting_days,
              case when sum(urm.sitting) = 0 then '0'
                   when sum(urm.sitting) = 1 then '1'
-                  when sum(urm.sitting) = 2 then '2 '
+                  when sum(urm.sitting) = 2 then '2'
                   when sum(urm.sitting) = 3 then '3'
                   when sum(urm.sitting) = 4 then '4'
                   when sum(urm.sitting) = 5 then '5'
                   when sum(urm.sitting) = 6 then '6'
                   when sum(urm.sitting) = 7 then '7'
                   when sum(urm.sitting) = 8 then '8'
-                  when sum(urm.sitting) = 9 then '9 '
+                  when sum(urm.sitting) = 9 then '9'
                   when sum(urm.sitting) = 10 then '10'
                   else '11 or more' end sitting_days_category
       from juror_mod.util_report_main( temprow.loc_code,date_trunc('MONTH',current_date - (no_of_months || ' month')::interval)::date,current_date) urm, -- specify date range
