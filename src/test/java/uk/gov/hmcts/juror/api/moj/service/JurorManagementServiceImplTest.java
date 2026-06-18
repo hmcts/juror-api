@@ -216,8 +216,8 @@ public class JurorManagementServiceImplTest {
         final LocalDate targetServiceStartDate = LocalDate.now().plusDays(10);
         final LocalDate dob = LocalDate.now().minusYears(76).plusDays(10);
 
-        CourtLocation sourceCourtLocation = createCourtLocation(sourceCourtLocCode, "400");
-        CourtLocation targetCourtLocation = createCourtLocation(targetCourtLocCode, "400");
+        final CourtLocation sourceCourtLocation = createCourtLocation(sourceCourtLocCode, "400");
+        final CourtLocation targetCourtLocation = createCourtLocation(targetCourtLocCode, "400");
 
         PoolRequest sourcePoolRequest = new PoolRequest();
         sourcePoolRequest.setPoolNumber(sourcePoolNumber);
