@@ -44,6 +44,7 @@ public class UpdateAttendanceDto {
 
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Getter
     @Setter
     @Schema(description = "Common data relating to updating attendance details")
