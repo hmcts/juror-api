@@ -107,7 +107,6 @@ public class MessagingController {
     @Operation(summary = "Send bureau emails to a list of jurors")
     @ResponseStatus(HttpStatus.OK)
     @IsBureauUser
-    @PreAuthorize(SecurityUtil.IS_BUREAU)
     public ResponseEntity<BureauEmailResponseDto> sendBureauEmails(
         @RequestBody @Valid @NotNull BureauEmailRequestDto request
     ) {
