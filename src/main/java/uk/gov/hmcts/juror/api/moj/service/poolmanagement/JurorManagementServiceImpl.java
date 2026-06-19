@@ -190,7 +190,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                     receivingCourtLocation);
 
                 // Need to check if there is an open response for court user only for jurors in summoned status
-                if (SecurityUtil.isCourt() && targetJurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
+                if (SecurityUtil.isCourt() && targetJurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED
+                    && Boolean.TRUE.equals(jurorManagementRequestDto.getFromSummonsReply())) {
                     boolean processingComplete = jurorResponseService.closeOpenResponseRecord(
                         jurorNumber, payload.getLogin());
 
