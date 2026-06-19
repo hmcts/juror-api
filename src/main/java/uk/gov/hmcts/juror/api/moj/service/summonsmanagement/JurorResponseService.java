@@ -55,6 +55,8 @@ public interface JurorResponseService {
 
     void setResponseProcessingStatusToClosed(String jurorNumber);
 
+    boolean closeOpenResponseRecord(String jurorNumber, String auditorUsername);
+
     int getOpenSummonsRepliesCount(String courtCode);
 
     int getOpenSummonsRepliesFourWeeksCount(String locCode);
@@ -69,4 +71,3 @@ public interface JurorResponseService {
                                                                                 LocalDate monthStartDate);
 
 }
-

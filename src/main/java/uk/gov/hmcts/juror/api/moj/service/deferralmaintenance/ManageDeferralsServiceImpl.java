@@ -63,6 +63,7 @@ import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
+import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
@@ -113,6 +114,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     private final PrintDataService printDataService;
     private final JurorPoolService jurorPoolService;
     private final JurorAppearanceService jurorAppearanceService;
+    private final JurorResponseService jurorResponseService;
 
     @Override
     public long getDeferralsCount(String owner, String locationCode, LocalDate deferredTo) {
@@ -569,23 +571,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                     jurorPool, digitalResponseRepository, paperResponseRepository, null);
                 final LocalDate currentServiceStartDate = jurorPool.getReturnDate();
 
-                // close any open digital response
-                DigitalResponse digitalResponse = digitalResponseRepository.findByJurorNumber(jurorNumber);
-                if (digitalResponse != null && !Boolean.TRUE.equals(digitalResponse.getProcessingComplete())) {
-                    digitalResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
-                    digitalResponse.setProcessingComplete(true);
-                    digitalResponse.setCompletedAt(LocalDateTime.now());
-                    mergeService.mergeDigitalResponse(digitalResponse, payload.getLogin());
-                } else {
-                    // close any open paper response
-                    PaperResponse paperResponse = paperResponseRepository.findByJurorNumber(jurorNumber);
-                    if (paperResponse != null && !Boolean.TRUE.equals(paperResponse.getProcessingComplete())) {
-                        paperResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
-                        paperResponse.setProcessingComplete(true);
-                        paperResponse.setCompletedAt(LocalDateTime.now());
-                        mergeService.mergePaperResponse(paperResponse, payload.getLogin());
-                    }
-                }
+                jurorResponseService.closeOpenResponseRecord(jurorNumber, payload.getLogin());
 
                 Juror juror = jurorPool.getJuror();
                 juror.setResponded(true);

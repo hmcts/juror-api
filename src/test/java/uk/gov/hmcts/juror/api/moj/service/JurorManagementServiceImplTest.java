@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.poolmanagement.JurorManagementConstants;
 import uk.gov.hmcts.juror.api.moj.service.poolmanagement.JurorManagementServiceImpl;
+import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.time.LocalDate;
@@ -85,6 +86,8 @@ public class JurorManagementServiceImplTest {
     private JurorAppearanceService appearanceService;
     @Mock
     private ReissueLetterService reissueLetterService;
+    @Mock
+    private JurorResponseService jurorResponseService;
 
     @InjectMocks
     JurorManagementServiceImpl jurorManagementService;
@@ -317,6 +320,8 @@ public class JurorManagementServiceImplTest {
         TestUtils.mockCourtUser(courtOwner, "COURT_USER");
 
         BureauJwtPayload payload = buildPayload(courtOwner);
+        when(jurorResponseService.closeOpenResponseRecord("123456789", payload.getLogin()))
+            .thenReturn(true);
         JurorManagementRequestDto jurorManagementRequestDto = new JurorManagementRequestDto(sourcePoolNumber,
             courtOwner, List.of("123456789"), targetPoolNumber, satelliteCourtCode, LocalDate.now());
 
@@ -329,7 +334,7 @@ public class JurorManagementServiceImplTest {
             .findByPoolNumber(anyString());
         verify(courtLocationRepository, times(4))
             .findByLocCode(anyString());
-        verify(jurorStatusRepository, times(1))
+        verify(jurorStatusRepository, times(2))
             .findById(anyInt());
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
@@ -342,17 +347,92 @@ public class JurorManagementServiceImplTest {
             .getPoolMemberSequenceNumber(anyString());
         verify(jurorHistoryService, times(1))
             .createReassignPoolMemberHistory(any(), any(), any());
+        verify(jurorResponseService, times(1))
+            .closeOpenResponseRecord("123456789", payload.getLogin());
         verify(printDataService, never())
             .printConfirmationLetter(any());
 
         ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
-        verify(jurorPoolRepository, times(2)).save(jurorPoolArgumentCaptor.capture());
+        verify(jurorPoolRepository, times(3)).save(jurorPoolArgumentCaptor.capture());
 
         JurorPool newJurorPool =
             jurorPoolArgumentCaptor.getAllValues().stream().filter(jurorPool ->
                 jurorPool.getPoolNumber().equalsIgnoreCase(targetPoolNumber)).findFirst().orElse(null);
         Assertions.assertThat(newJurorPool).isNotNull();
         Assertions.assertThat(newJurorPool.getOwner()).isEqualTo("415");
+    }
+
+    @Test
+    public void testReassignJurorCourtUserValidRequestToCourtOwnedPoolNoOpenResponse() {
+
+        String courtOwner = "415";
+        String sourcePoolNumber = "123456789";
+        String targetPoolNumber = "987654321";
+
+        PoolRequest sourcePoolRequest = new PoolRequest();
+        sourcePoolRequest.setPoolNumber(sourcePoolNumber);
+        sourcePoolRequest.setOwner(courtOwner);
+
+        PoolRequest targetpoolRequest = new PoolRequest();
+        targetpoolRequest.setPoolNumber(targetPoolNumber);
+        targetpoolRequest.setOwner(courtOwner);
+
+        CourtLocation primaryCourtLocation = new CourtLocation();
+        primaryCourtLocation.setName("Test Primary Court");
+        primaryCourtLocation.setLocCode(courtOwner);
+        primaryCourtLocation.setOwner(courtOwner);
+
+        CourtLocation satelliteCourtLocation = new CourtLocation();
+        satelliteCourtLocation.setName("Test Satellite Court");
+        String satelliteCourtCode = "767";
+        satelliteCourtLocation.setLocCode(satelliteCourtCode);
+        satelliteCourtLocation.setOwner(courtOwner);
+
+        sourcePoolRequest.setCourtLocation(primaryCourtLocation);
+        targetpoolRequest.setCourtLocation(satelliteCourtLocation);
+
+        JurorStatus reassignedStatus = new JurorStatus();
+        reassignedStatus.setStatus(8);
+        reassignedStatus.setStatusDesc("Reassigned");
+
+        List<JurorPool> poolMemberList = createJurorPoolList(courtOwner);
+
+        when(poolRequestRepository.findByPoolNumber(sourcePoolNumber))
+            .thenReturn(Optional.of(sourcePoolRequest));
+        when(poolRequestRepository.findByPoolNumber(targetPoolNumber))
+            .thenReturn(Optional.of(targetpoolRequest));
+        when(courtLocationRepository.findByLocCode(courtOwner))
+            .thenReturn(Optional.of(primaryCourtLocation));
+        when(courtLocationRepository.findByLocCode(satelliteCourtCode))
+            .thenReturn(Optional.of(satelliteCourtLocation));
+        when(jurorStatusRepository.findById(8)).thenReturn(Optional.of(reassignedStatus));
+        when(jurorPoolRepository.findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
+            anyList(), anyBoolean(), anyString(), any(CourtLocation.class),
+            anyList())).thenReturn(poolMemberList);
+        when(jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(anyString(),
+            anyString(), anyString()))
+            .thenReturn(Optional.empty());
+        when(poolMemberSequenceService
+            .getPoolMemberSequenceNumber(anyString())).thenReturn(1);
+
+        TestUtils.mockCourtUser(courtOwner, "COURT_USER");
+
+        BureauJwtPayload payload = buildPayload(courtOwner);
+        when(jurorResponseService.closeOpenResponseRecord("123456789", payload.getLogin()))
+            .thenReturn(false);
+        JurorManagementRequestDto jurorManagementRequestDto = new JurorManagementRequestDto(sourcePoolNumber,
+            courtOwner, List.of("123456789"), targetPoolNumber, satelliteCourtCode, LocalDate.now());
+
+        ReassignPoolMembersResultDto jurorsMoved =
+            jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
+
+        Assertions.assertThat(jurorsMoved.getNumberReassigned()).isEqualTo(1);
+
+        verify(jurorStatusRepository, times(1))
+            .findById(anyInt());
+        verify(jurorResponseService, times(1))
+            .closeOpenResponseRecord("123456789", payload.getLogin());
+        verify(jurorPoolRepository, times(2)).save(any());
     }
 
     @Test
@@ -411,6 +491,8 @@ public class JurorManagementServiceImplTest {
         TestUtils.mockCourtUser(courtOwner, "COURT_USER");
 
         BureauJwtPayload payload = buildPayload(courtOwner);
+        when(jurorResponseService.closeOpenResponseRecord("123456789", payload.getLogin()))
+            .thenReturn(true);
         JurorManagementRequestDto jurorManagementRequestDto = new JurorManagementRequestDto(sourcePoolNumber,
             courtOwner, List.of("123456789"), targetPoolNumber, primaryCourtLocation.getLocCode(), LocalDate.now());
 
@@ -423,7 +505,7 @@ public class JurorManagementServiceImplTest {
             .findByPoolNumber(anyString());
         verify(courtLocationRepository, times(4))
             .findByLocCode(anyString());
-        verify(jurorStatusRepository, times(1))
+        verify(jurorStatusRepository, times(2))
             .findById(anyInt());
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
@@ -436,11 +518,13 @@ public class JurorManagementServiceImplTest {
             .getPoolMemberSequenceNumber(anyString());
         verify(jurorHistoryService, times(1))
             .createReassignPoolMemberHistory(any(), any(), any());
+        verify(jurorResponseService, times(1))
+            .closeOpenResponseRecord("123456789", payload.getLogin());
         verify(printDataService, never())
             .printConfirmationLetter(any());
 
         ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
-        verify(jurorPoolRepository, times(2)).save(jurorPoolArgumentCaptor.capture());
+        verify(jurorPoolRepository, times(3)).save(jurorPoolArgumentCaptor.capture());
 
         JurorPool newJurorPool =
             jurorPoolArgumentCaptor.getAllValues().stream().filter(jurorPool ->
@@ -508,6 +592,8 @@ public class JurorManagementServiceImplTest {
         TestUtils.mockCourtUser(courtOwner, "COURT_USER");
 
         BureauJwtPayload payload = buildPayload(courtOwner);
+        when(jurorResponseService.closeOpenResponseRecord(jurorNumber, payload.getLogin()))
+            .thenReturn(true);
         JurorManagementRequestDto jurorManagementRequestDto = new JurorManagementRequestDto(sourcePoolNumber,
             courtOwner, List.of(jurorNumber), targetPoolNumber, primaryCourtLocation.getLocCode(), LocalDate.now());
 
@@ -520,7 +606,7 @@ public class JurorManagementServiceImplTest {
             .findByPoolNumber(anyString());
         verify(courtLocationRepository, times(4))
             .findByLocCode(anyString());
-        verify(jurorStatusRepository, times(1))
+        verify(jurorStatusRepository, times(2))
             .findById(anyInt());
         verify(jurorPoolRepository, times(1))
             .findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
@@ -532,11 +618,13 @@ public class JurorManagementServiceImplTest {
 
         verify(jurorHistoryService, times(1))
             .createReassignPoolMemberHistory(any(), any(), any());
+        verify(jurorResponseService, times(1))
+            .closeOpenResponseRecord(jurorNumber, payload.getLogin());
         verify(printDataService, never())
             .printConfirmationLetter(any());
 
         ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
-        verify(jurorPoolRepository, times(2)).save(jurorPoolArgumentCaptor.capture());
+        verify(jurorPoolRepository, times(3)).save(jurorPoolArgumentCaptor.capture());
 
         JurorPool newJurorPool =
             jurorPoolArgumentCaptor.getAllValues().stream().filter(jurorPool ->
@@ -2119,6 +2207,7 @@ public class JurorManagementServiceImplTest {
         JurorPool jurorPool = new JurorPool();
         jurorPool.setOwner(owner);
         jurorPool.setPool(poolRequest);
+        jurorPool.setStatus(createJurorStatus(1, "Summoned"));
 
         juror.setAssociatedPools(Set.of(jurorPool));
         jurorPool.setJuror(juror);
