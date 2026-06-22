@@ -42,4 +42,8 @@ public class ExcusalDecisionDto {
         Schema.RequiredMode.REQUIRED)
     private ReplyMethod replyMethod;
 
+    @JsonProperty("useSummonsAddress")
+    @Schema(description = "If true, update juror address from their summons response before processing")
+    private Boolean useSummonsAddress;
+
 }

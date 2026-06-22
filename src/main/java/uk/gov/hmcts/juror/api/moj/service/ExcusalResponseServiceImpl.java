@@ -48,29 +48,35 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private final JurorHistoryService jurorHistoryService;
     private final JurorPoolService jurorPoolService;
     private final JurorResponseService jurorResponseService;
+    private final JurorRecordService jurorRecordService;
+
 
 
 
 
     @Override
     @Transactional
-    public void respondToExcusalRequest(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
+    public void respondToExcusalRequest(BureauJwtPayload payload,
+                                        ExcusalDecisionDto excusalDecisionDto,
                                         String jurorNumber) {
 
         final String login = payload.getLogin();
         final String owner = payload.getOwner();
-        log.info(String.format("Processing excusal request for Juror %s, by user %s", jurorNumber, login));
+        log.info("Processing excusal request for Juror {}, by user {}", jurorNumber, login);
 
         checkExcusalCodeIsValid(excusalDecisionDto.getExcusalReasonCode());
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
+
+        if (Boolean.TRUE.equals(excusalDecisionDto.getUseSummonsAddress())) {
+            jurorRecordService.updateJurorAddressFromResponse(jurorPool);
+        }
 
         if (excusalDecisionDto.getExcusalDecision().equals(ExcusalDecision.GRANT)) {
             jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
             grantExcusalForJuror(payload, excusalDecisionDto, jurorPool);
             if (!ExcusalCodeEnum.D.getCode().equals(excusalDecisionDto.getExcusalReasonCode())
                 && SecurityUtil.BUREAU_OWNER.equals(owner)) {
-                // Only generate letter for non-deceased jurors and Bureau users
                 sendExcusalLetter(jurorPool, jurorNumber);
             }
         } else {
@@ -96,6 +102,8 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
             throw new ExcusalResponseException.InvalidExcusalCode(excusalCode);
         }
     }
+
+
 
 
     private void grantExcusalForJuror(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
