@@ -30,11 +30,11 @@ v_text_var1 text;
 
 BEGIN
 
-		-- delete rows for monthst that are to be refreshed
+		-- delete rows for months that are to be refreshed
 		-- not using Truncate Table as we only want to commit after the insert
 delete from juror_mod.stats_sitting_days
 where service_year >= to_char(date_trunc('MONTH',current_date - (no_of_months || ' month')::interval)::date,'YYYY')
-  and service_month >= to_char(date_trunc('MONTH',current_date - (no_of_months || ' month')::interval)::date,'YYYY/MM');
+  and service_month >= to_char(date_trunc('MONTH',current_date - (no_of_months || ' month')::interval)::date,'YYYY-MM');
 
 FOR temprow IN
 
@@ -50,7 +50,7 @@ select service_year, service_month, court_code,
        sitting_days_category, courts.loc_name,
        sum(number_of_sitting_days), count(1)
 from juror_mod.court_location courts,
-     (select to_char(p.return_date,'YYYY') service_year, to_char(p.return_date,'YYYY/MM') service_month, temprow.loc_code court_code,
+     (select to_char(p.return_date,'YYYY') service_year, to_char(p.return_date,'YYYY-MM') service_month, temprow.loc_code court_code,
              urm.juror_number, sum(urm.sitting) number_of_sitting_days,
              case when sum(urm.sitting) = 0 then '0'
                   when sum(urm.sitting) = 1 then '1'
@@ -70,7 +70,7 @@ from juror_mod.court_location courts,
         and jp.is_active is true
         and p.pool_no  = jp.pool_number
         and p.return_date between date_trunc('MONTH',current_date - (no_of_months || ' month')::interval)::date and current_date -- pool start date is being used to derive the report month
-      group by to_char(p.return_date,'YYYY'), to_char(p.return_date,'YYYY/MM'), court_code, urm.juror_number) stats
+      group by to_char(p.return_date,'YYYY'), to_char(p.return_date,'YYYY-MM'), court_code, urm.juror_number) stats
 where courts.loc_code = stats.court_code
 group by service_year, service_month, court_code, courts.loc_name, sitting_days_category;
 END LOOP;
