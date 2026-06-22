@@ -80,7 +80,7 @@ public class BureauMessagingServiceImpl implements BureauMessagingService {
                     log.info("Successfully sent bureau email to juror: {} ({})", jurorNumber,
                              detail.getEmailTemplateName());
 
-                    recordJurorHistory(jurorNumber, currentUser);
+                    recordJurorHistory(jurorNumber, currentUser, detail.getEmailTemplateName());
                     successCount++;
 
                 } catch (NotifyApiException e) {
@@ -138,13 +138,13 @@ public class BureauMessagingServiceImpl implements BureauMessagingService {
             .build();
     }
 
-    private void recordJurorHistory(String jurorNumber, String sentBy) {
+    private void recordJurorHistory(String jurorNumber, String sentBy,EmailTemplateName templateName) {
         try {
             JurorHistory history = JurorHistory.builder()
                 .jurorNumber(jurorNumber)
                 .historyCode(EMAIL_SENT_HISTORY_CODE)
                 .createdBy(sentBy)
-                .otherInformation("Bureau email sent")
+                .otherInformation("Bureau email sent: " + templateName.name())
                 .build();
 
             jurorHistoryRepository.save(history);
