@@ -77,10 +77,6 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
     @Query(value = "select nextval('juror_mod.attendance_audit_seq')", nativeQuery = true)
     Long getNextAttendanceAuditNumber();
 
-    @Query(value = "select max(version) from juror_mod.appearance_audit "
-        + "where juror_number = ?1 and attendance_date = ?2 and loc_code = ?3", nativeQuery = true)
-    Long getLastVersionNumber(String jurorNumber, LocalDate attendanceDate, String locCode);
-
     @Query("select count(*) from Appearance a where a.jurorNumber= ?1 "
         + "and a.appearanceStage is not null "
         + "and( a.attendanceType is null or a.attendanceType not in (AttendanceType.ABSENT))")
