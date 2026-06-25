@@ -88,7 +88,6 @@ configurations {
   querydsl.extendsFrom compileClasspath
 }
 
-
 dependencies {
 
   //Internal dependency overrides
@@ -292,8 +291,6 @@ checkstyle {
   toolVersion = '10.26.1'
   getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
-
-
 
 pmdTest {
   maxFailures = 292
