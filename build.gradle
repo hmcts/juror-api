@@ -1,28 +1,28 @@
 buildscript {
-  ext {
-    springBootVersion = '3.5.4'
-    notifyVersion = '5.2.1-RELEASE'
-    springDocVersion = '2.8.9'
-    queryDslVersion = '5.1.0'
-    flywayVersion = '10.22.0'
-    postgresVersion = '42.7.5'
-    envers = '3.5.4'
-    jwtVersion = '0.13.0'
-  }
-  dependencies {
-    classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-    classpath("org.postgresql:postgresql:${postgresVersion}")
-    classpath("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
-  }
+    ext {
+        springBootVersion = '3.5.15'
+        notifyVersion = '5.2.1-RELEASE'
+        springDocVersion = '2.8.9'
+        queryDslVersion = '5.1.0'
+        flywayVersion = '11.20.3'
+        postgresVersion = '42.7.11'
+        envers = '3.5.12'
+        jwtVersion = '0.13.0'
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("org.postgresql:postgresql:${postgresVersion}")
+        classpath("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
+    }
 }
 plugins {
-  id 'org.springframework.boot' version "${springBootVersion}"
-  id "org.flywaydb.flyway" version "${flywayVersion}"
-  id 'org.owasp.dependencycheck' version '12.0.2'
-  id 'checkstyle'
-  id 'pmd'
-  id 'com.github.ben-manes.versions' version '0.52.0'
-  id 'org.sonarqube' version '6.0.1.5171'
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id "org.flywaydb.flyway" version "${flywayVersion}"
+    id 'org.owasp.dependencycheck' version '12.0.2'
+    id 'checkstyle'
+    id 'pmd'
+    id 'com.github.ben-manes.versions' version '0.52.0'
+    id 'org.sonarqube' version '6.0.1.5171'
 }
 apply plugin: 'java'
 apply plugin: 'eclipse'
@@ -32,9 +32,9 @@ apply plugin: 'jacoco'
 apply plugin: 'io.spring.dependency-management'
 
 java {
-  toolchain {
-    languageVersion = JavaLanguageVersion.of(21)
-  }
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
 }
 
 // don't want deprecation and removal warnings to be treated as errors as we have some dependencies
@@ -50,325 +50,325 @@ tasks.withType(JavaCompile) {
 
 // https://github.com/gradle/gradle/issues/16791
 tasks.withType(JavaExec).configureEach {
-  javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
 }
 
 bootJar {
-  archiveFileName = "juror-api.jar"
+    archiveFileName = "juror-api.jar"
 }
 
 jacoco {
-  toolVersion = "0.8.13"
+    toolVersion = "0.8.15"
 }
 
-version = '5.26.0'
+version = '5.27.0'
 
 repositories {
-  mavenLocal()
-  mavenCentral()
-  maven {
-    url 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1'
-  }
+    mavenLocal()
+    mavenCentral()
+    maven {
+      url 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1'
+    }
 }
 
 configurations {
-  dev
-  integrationTestImplementation.extendsFrom testImplementation
-  integrationTestRuntimeOnly.extendsFrom runtimeOnly
+    dev
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom runtimeOnly
 
-  functionalTestImplementation.extendsFrom testImplementation
-  functionalTestRuntimeOnly.extendsFrom runtimeOnly
+    functionalTestImplementation.extendsFrom testImplementation
+    functionalTestRuntimeOnly.extendsFrom runtimeOnly
 
-  smokeTestImplementation.extendsFrom testImplementation
-  smokeTestRuntimeOnly.extendsFrom runtimeOnly
+    smokeTestImplementation.extendsFrom testImplementation
+    smokeTestRuntimeOnly.extendsFrom runtimeOnly
 
-  compileOnly {
-    extendsFrom annotationProcessor
-  }
-  querydsl.extendsFrom compileClasspath
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    querydsl.extendsFrom compileClasspath
 }
 
 dependencies {
 
-  //Internal dependency overrides
-  implementation 'org.yaml:snakeyaml:2.3'
-  implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.41'
-  implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.43'
-  //
-  implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
-  implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
-  implementation("org.springframework.data:spring-data-envers:${envers}")
-  implementation("org.springframework.boot:spring-boot-starter-security:${springBootVersion}")
-  implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
-  implementation("org.springframework.boot:spring-boot-starter-json:${springBootVersion}")
-  implementation("org.springframework.boot:spring-boot-starter-validation:${springBootVersion}")
-  runtimeOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
+    //Internal dependency overrides
+    implementation 'org.yaml:snakeyaml:2.3'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.55'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.55'
+    //
+    implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
+    implementation("org.springframework.data:spring-data-envers:${envers}")
+    implementation("org.springframework.boot:spring-boot-starter-security:${springBootVersion}")
+    implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
+    implementation("org.springframework.boot:spring-boot-starter-json:${springBootVersion}")
+    implementation("org.springframework.boot:spring-boot-starter-validation:${springBootVersion}")
+    runtimeOnly("org.springframework.boot:spring-boot-devtools:${springBootVersion}")
 
 
-  implementation group: 'org.postgresql', name: 'postgresql', version: "${postgresVersion}"
-  implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
-  implementation "org.flywaydb:flyway-core:${flywayVersion}"
+    implementation group: 'org.postgresql', name: 'postgresql', version: "${postgresVersion}"
+    implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
+    implementation "org.flywaydb:flyway-core:${flywayVersion}"
 
-  implementation "io.jsonwebtoken:jjwt-api:${jwtVersion}"
-  implementation 'javax.mail:mail:1.4.7'
-  runtimeOnly "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
-  runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}"
-  implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.4'
+    implementation "io.jsonwebtoken:jjwt-api:${jwtVersion}"
+    implementation 'javax.mail:mail:1.4.7'
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}"
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.4'
 
-  implementation('com.google.guava:guava:33.4.0-jre')
+    implementation('com.google.guava:guava:33.4.0-jre')
 
-  // QueryDSL
-  implementation("com.querydsl:querydsl-core:${queryDslVersion}")
-  implementation("com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta")
+    // QueryDSL
+    implementation("com.querydsl:querydsl-core:${queryDslVersion}")
+    implementation("com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta")
 
-  testImplementation platform("org.junit:junit-bom:5.12.2")
-  testImplementation 'junit:junit:4.13.2'
-  testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-  testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation platform("org.junit:junit-bom:5.12.2")
+    testImplementation 'junit:junit:4.13.2'
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
 
-  annotationProcessor("com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
-  annotationProcessor('jakarta.persistence:jakarta.persistence-api:3.2.0')
+    annotationProcessor("com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
+    annotationProcessor('jakarta.persistence:jakarta.persistence-api:3.2.0')
 
-  implementation('org.projectlombok:lombok:1.18.36')
-  annotationProcessor('org.projectlombok:lombok')
+    implementation('org.projectlombok:lombok:1.18.46')
+    annotationProcessor('org.projectlombok:lombok')
 
-  implementation('org.apache.commons:commons-lang3:3.17.0')
-  implementation('org.apache.commons:commons-text:1.13.0')
-  implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
+    implementation('org.apache.commons:commons-lang3:3.18.0')
+    implementation('org.apache.commons:commons-text:1.13.0')
+    implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
 
-  runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.7.5')
+    runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.7.9')
 
-  implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
-  implementation group: 'io.rest-assured', name: 'rest-assured'
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
+    implementation group: 'io.rest-assured', name: 'rest-assured', version: '5.4.0'
 
-  testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
-  testImplementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
+    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
 
-  testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
-  testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:4.1.1'
-  testImplementation('org.assertj:assertj-core:3.27.3')
-  testImplementation 'org.mockito:mockito-core:5.15.2'
+    testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
+    testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:4.1.1'
+    testImplementation('org.assertj:assertj-core:3.27.7')
+    testImplementation 'org.mockito:mockito-core:5.15.2'
 
-  testImplementation('org.projectlombok:lombok')
-  testAnnotationProcessor('org.projectlombok:lombok')
+    testImplementation('org.projectlombok:lombok')
+    testAnnotationProcessor('org.projectlombok:lombok')
 
-  testImplementation('net.bytebuddy:byte-buddy:1.17.7')
-  testImplementation('junit:junit:4.13.2')
-  testImplementation "org.testcontainers:testcontainers:1.21.4"
-  testImplementation "org.testcontainers:junit-jupiter:1.21.4"
-  testImplementation 'org.testcontainers:postgresql:1.21.4'
+    testImplementation('net.bytebuddy:byte-buddy:1.18.10')
+    testImplementation('junit:junit:4.13.2')
+    testImplementation "org.testcontainers:testcontainers:1.21.4"
+    testImplementation "org.testcontainers:junit-jupiter:1.21.4"
+    testImplementation 'org.testcontainers:postgresql:1.21.4'
 
-  // Validation
-  testImplementation 'org.wiremock:wiremock-standalone:3.10.0'
+    // Validation
+    testImplementation 'org.wiremock:wiremock-standalone:3.10.0'
 }
 
 sonarqube {
-  properties {
-    property "sonar.projectName", "Juror :: juror-api"
-    property "sonar.projectKey", "uk.gov.hmcts.juror:juror-api"
-    property "sonar.sources", "src"
-    property "sonar.java.binaries", "build/classes"
-    property "sonar.exclusions", "**/*, src/**/*"
-    property "sonar.test.exclusions", "**/*, src/test/**/*"
-    property "sonar.cpd.exclusions", "**/*, src/**/*"
-    // property "sonar.exclusions", ".github/**,charts/**/,config/**,infrastructure/**,lib/**,gradle/**,data/*,src/querydsl/**,src/test/**,src/integration-test/**,src/main/resources/**"
-    // property "sonar.cpd.exclusions", "src/main/resources/db/migration/*,src/main/java/uk/gov/hmcts/juror/api/moj/xerox/letters/*"
-  }
+    properties {
+        property "sonar.projectName", "Juror :: juror-api"
+        property "sonar.projectKey", "uk.gov.hmcts.juror:juror-api"
+        property "sonar.sources", "src"
+        property "sonar.java.binaries", "build/classes"
+        property "sonar.exclusions", "**/*, src/**/*"
+        property "sonar.test.exclusions", "**/*, src/test/**/*"
+        property "sonar.cpd.exclusions", "**/*, src/**/*"
+        // property "sonar.exclusions", ".github/**,charts/**/,config/**,infrastructure/**,lib/**,gradle/**,data/*,src/querydsl/**,src/test/**,src/integration-test/**,src/main/resources/**"
+        // property "sonar.cpd.exclusions", "src/main/resources/db/migration/*,src/main/java/uk/gov/hmcts/juror/api/moj/xerox/letters/*"
+    }
 }
 
 bootRun {
-  args = ["--spring.profiles.active=development"]
-  classpath += configurations.dev
+    args = ["--spring.profiles.active=development"]
+    classpath += configurations.dev
 }
 test {
-  useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 tasks.withType(Test).configureEach() {
 
-  dependsOn compileJava
-  if (!System.getenv('BUILD_ID')) {
-    println('NOT running in CI mode! (BUILD_ID env variable not found).')
-    systemProperty "spring.profiles.active", "development,test"
-  } else {
-    println('Running in CI mode! (BUILD_ID env variable present).')
-    systemProperty "spring.profiles.active", "development,test"
-    testLogging {
-      events "failed", "standard_out"
-      exceptionFormat "full"
+    dependsOn compileJava
+    if (!System.getenv('BUILD_ID')) {
+        println('NOT running in CI mode! (BUILD_ID env variable not found).')
+        systemProperty "spring.profiles.active", "development,test"
+    } else {
+        println('Running in CI mode! (BUILD_ID env variable present).')
+        systemProperty "spring.profiles.active", "development,test"
+        testLogging {
+            events "failed", "standard_out"
+            exceptionFormat "full"
+        }
     }
-  }
 
-  jacoco {
-    destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
-  }
+    jacoco {
+        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+    }
 
-  finalizedBy(jacocoTestReport)
+    finalizedBy(jacocoTestReport)
 }
 
 // Flyway must align with application.yml
 flyway {
-  def dbUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/juror"
-  def dbUserName = System.getenv("DB_USERNAME") ?: "system"
-  def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
-  def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: "db/**/*.sql"
+    def dbUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/juror"
+    def dbUserName = System.getenv("DB_USERNAME") ?: "system"
+    def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
+    def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: "db/**/*.sql"
 
-  url = "$dbUrl"
-  user = "$dbUserName"
-  password = "$dbPassword"
-  locations = [ "$flywayLocations" ]
-  schemas = ['juror_dashboard', 'juror_mod', 'juror_er']
-  defaultSchema = 'juror_mod'
-  table = 'schema_history'
-  cleanDisabled = System.getenv("FLYWAY_CLEAN_DISABLED") ?: true
+    url = "$dbUrl"
+    user = "$dbUserName"
+    password = "$dbPassword"
+    locations = [ "$flywayLocations" ]
+    schemas = ['juror_dashboard', 'juror_mod', 'juror_er']
+    defaultSchema = 'juror_mod'
+    table = 'schema_history'
+    cleanDisabled = System.getenv("FLYWAY_CLEAN_DISABLED") ?: true
 }
 
 task migratePostgresDatabase(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
-  if (project.hasProperty("dburl")) {
-    url = "jdbc:postgresql://${dburl}"
-  }
+    if (project.hasProperty("dburl")) {
+        url = "jdbc:postgresql://${dburl}"
+    }
 }
 
 springBoot {
-  buildInfo {
-    properties {
-      additional = [
-        'phase': 'Beta Public'
-      ]
+    buildInfo {
+        properties {
+            additional = [
+                    'phase': 'Beta Public'
+            ]
+        }
     }
-  }
 }
 
 task copyDocs(type: Copy, group: 'documentation') {
-  from "${project.rootDir}/src/docs"
-  into "${project.buildDir}/docs"
+    from "${project.rootDir}/src/docs"
+    into "${project.buildDir}/docs"
 }
 processResources.finalizedBy(copyDocs)
 
 
 wrapper {
-  gradleVersion = '8.12.1'
+    gradleVersion = '8.12.1'
 }
 
 sourceSets {
-  main {
-    java {
-      srcDirs 'src/main/java'
-      //srcDirs 'src/querydsl/java'
+    main {
+        java {
+            srcDirs 'src/main/java'
+            //srcDirs 'src/querydsl/java'
+        }
     }
-  }
-  functionalTest {
-    java {
-      compileClasspath += main.output + test.output + test.compileClasspath
-      runtimeClasspath += main.output + test.output + test.runtimeClasspath
-      annotationProcessorPath += main.output + test.output + main.annotationProcessorPath + test.annotationProcessorPath
-      srcDir file('src/functionalTest/java')
+    functionalTest {
+        java {
+            compileClasspath += main.output + test.output + test.compileClasspath
+            runtimeClasspath += main.output + test.output + test.runtimeClasspath
+            annotationProcessorPath += main.output + test.output + main.annotationProcessorPath + test.annotationProcessorPath
+            srcDir file('src/functionalTest/java')
+        }
+        resources.srcDir file('src/functionalTest/resources')
     }
-    resources.srcDir file('src/functionalTest/resources')
-  }
-  smokeTest {
-    java {
-      compileClasspath += main.output + test.output + test.compileClasspath
-      runtimeClasspath += main.output + test.output + test.runtimeClasspath
-      annotationProcessorPath += main.output + test.output + main.annotationProcessorPath + test.annotationProcessorPath
-      srcDir file('src/smokeTest/java')
+    smokeTest {
+        java {
+            compileClasspath += main.output + test.output + test.compileClasspath
+            runtimeClasspath += main.output + test.output + test.runtimeClasspath
+            annotationProcessorPath += main.output + test.output + main.annotationProcessorPath + test.annotationProcessorPath
+            srcDir file('src/smokeTest/java')
+        }
+        resources.srcDir file('src/smokeTest/resources')
     }
-    resources.srcDir file('src/smokeTest/resources')
-  }
-  integrationTest {
-    java {
-      compileClasspath += main.output + test.output + test.compileClasspath
-      runtimeClasspath += main.output + test.output + test.runtimeClasspath
-      annotationProcessorPath += main.output + test.output + main.annotationProcessorPath + test.annotationProcessorPath
-      srcDir file('src/integration-test/java')
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output + test.compileClasspath
+            runtimeClasspath += main.output + test.output + test.runtimeClasspath
+            annotationProcessorPath += main.output + test.output + main.annotationProcessorPath + test.annotationProcessorPath
+            srcDir file('src/integration-test/java')
+        }
+        resources.srcDir file('src/integration-test/resources')
     }
-    resources.srcDir file('src/integration-test/resources')
-  }
 }
 checkstyle {
-  maxWarnings = 1
-  toolVersion = '10.26.1'
-  getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
+    maxWarnings = 1
+    toolVersion = '10.26.1'
+    getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
 pmdTest {
-  maxFailures = 292
+    maxFailures = 292
 }
 pmdMain {
-  maxFailures = 752
+    maxFailures = 752
 }
 pmd {
-  maxFailures = 0
-  toolVersion = "6.55.0"
-  sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integrationTest,
-                sourceSets.functionalTest, sourceSets.smokeTest]
-  reportsDir = file("$project.buildDir/reports/pmd")
-  // https://github.com/pmd/pmd/issues/876
-  ruleSets = []
-  ruleSetFiles = files("config/pmd/ruleset.xml")
+    maxFailures = 0
+    toolVersion = "6.55.0"
+    sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integrationTest,
+                  sourceSets.functionalTest, sourceSets.smokeTest]
+    reportsDir = file("$project.buildDir/reports/pmd")
+    // https://github.com/pmd/pmd/issues/876
+    ruleSets = []
+    ruleSetFiles = files("config/pmd/ruleset.xml")
 }
 
 test {
-  if (System.getenv('BUILD_ID')) {
-    failFast = true
-  }
+    if (System.getenv('BUILD_ID')) {
+        failFast = true
+    }
 }
 
 task integration(type: Test) {
-  useJUnitPlatform()
-  description = 'Runs integration tests.'
-  group = 'verification'
-  testClassesDirs = sourceSets.integrationTest.output.classesDirs
-  classpath = sourceSets.integrationTest.runtimeClasspath
-  // This forces integration tests to always run if this task is run.
-  outputs.upToDateWhen { false }
-  if (System.getenv('BUILD_ID')) {
-    failFast = true
-  }
+    useJUnitPlatform()
+    description = 'Runs integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    // This forces integration tests to always run if this task is run.
+    outputs.upToDateWhen { false }
+    if (System.getenv('BUILD_ID')) {
+        failFast = true
+    }
 }
 
 task testSuite(dependsOn: [test, integration]) {
-  description = 'Runs both unit tests and integration tests.'
-  group = 'verification'
+    description = 'Runs both unit tests and integration tests.'
+    group = 'verification'
 
-  // This forces the test suite to always run if this task is run.
-  outputs.upToDateWhen { false }
+    // This forces the test suite to always run if this task is run.
+    outputs.upToDateWhen { false }
 }
 
 task smoke(type: Test) {
-  useJUnitPlatform()
-  description = "Runs Smoke Tests"
-  testClassesDirs = sourceSets.smokeTest.output.classesDirs
-  classpath = sourceSets.smokeTest.runtimeClasspath
+    useJUnitPlatform()
+    description = "Runs Smoke Tests"
+    testClassesDirs = sourceSets.smokeTest.output.classesDirs
+    classpath = sourceSets.smokeTest.runtimeClasspath
 }
 
 task functional(type: Test) {
-  useJUnitPlatform()
-  description = "Runs functional tests"
-  group = "Verification"
-  testClassesDirs = sourceSets.functionalTest.output.classesDirs
-  classpath = sourceSets.functionalTest.runtimeClasspath
+    useJUnitPlatform()
+    description = "Runs functional tests"
+    group = "Verification"
+    testClassesDirs = sourceSets.functionalTest.output.classesDirs
+    classpath = sourceSets.functionalTest.runtimeClasspath
 }
 
 jacocoTestReport {
-  executionData(test, integration)
-  reports {
-    xml.required = true
-    csv.required = false
-    html.required = true
-  }
+    executionData(test, integration)
+    reports {
+        xml.required = true
+        csv.required = false
+        html.required = true
+    }
 }
 
 project.tasks['sonarqube'].dependsOn jacocoTestReport
 
 // https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/configuration.html
 dependencyCheck {
-  // Specifies if the build should be failed if a CVSS score above a specified level is identified.
-  // range of 0-10 fails the build, anything greater and it doesn't fail the build
-  failBuildOnCVSS = 10
-  suppressionFile = 'config/owasp/suppressions.xml'
-  scanConfigurations = ['runtimeClasspath', 'compileClasspath']
+    // Specifies if the build should be failed if a CVSS score above a specified level is identified.
+    // range of 0-10 fails the build, anything greater and it doesn't fail the build
+    failBuildOnCVSS = 0
+    suppressionFile = 'config/owasp/suppressions.xml'
+    scanConfigurations = ['runtimeClasspath', 'compileClasspath']
 
 }
 
@@ -377,27 +377,27 @@ project.tasks['check'].dependsOn integration
 check.dependsOn -= testSuite
 
 task runAllStyleChecks {
-  dependsOn 'checkstyleMain'
-  dependsOn 'checkstyleTest'
-  dependsOn 'checkstyleIntegrationTest'
-  dependsOn 'checkstyleSmokeTest'
-  dependsOn 'checkstyleFunctionalTest'
+    dependsOn 'checkstyleMain'
+    dependsOn 'checkstyleTest'
+    dependsOn 'checkstyleIntegrationTest'
+    dependsOn 'checkstyleSmokeTest'
+    dependsOn 'checkstyleFunctionalTest'
 
-  dependsOn 'pmdMain'
-  dependsOn 'pmdTest'
-  dependsOn 'pmdIntegrationTest'
-  dependsOn 'pmdSmokeTest'
-  dependsOn 'pmdFunctionalTest'
+    dependsOn 'pmdMain'
+    dependsOn 'pmdTest'
+    dependsOn 'pmdIntegrationTest'
+    dependsOn 'pmdSmokeTest'
+    dependsOn 'pmdFunctionalTest'
 }
 
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
 rootProject.tasks.named("processSmokeTestResources") {
-  duplicatesStrategy = 'include'
+    duplicatesStrategy = 'include'
 }
 rootProject.tasks.named("processFunctionalTestResources") {
-  duplicatesStrategy = 'include'
+    duplicatesStrategy = 'include'
 }
 
 wrapper {
-  distributionType = Wrapper.DistributionType.ALL
+    distributionType = Wrapper.DistributionType.ALL
 }
