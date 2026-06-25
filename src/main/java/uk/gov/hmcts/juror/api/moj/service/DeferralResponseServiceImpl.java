@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.AgeDisqualifiedJurorDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -29,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsSer
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -108,14 +110,14 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
             // age check - only applies to grant path since we are moving juror to a future date
             LocalDate currentServiceStartDate = jurorPool.getReturnDate();
             LocalDate newDate = deferralRequestDto.getDeferralDate();
-            LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
-                jurorPool, digitalResponseRepository, paperResponseRepository,null);
+            LocalDate dob = JurorUtils.resolveDateOfBirth(
+                jurorPool.getJuror(), digitalResponseRepository, paperResponseRepository,null);
 
-            if (ManageDeferralsService.isAgeDisqualified(dob, newDate)) {
+            if (JurorUtils.isAgeDisqualified(dob, newDate)) {
                 return DeferralAgeDisqualificationResponseDto.builder()
                     .eligible(0)
                     .ageDisqualified(List.of(
-                        DeferralAgeDisqualificationResponseDto.AgeDisqualifiedJurorDto.builder()
+                        AgeDisqualifiedJurorDto.builder()
                             .jurorNumber(jurorNumber)
                             .dob(dob)
                             .currentServiceStartDate(currentServiceStartDate)

@@ -68,6 +68,9 @@ class ExcusalResponseServiceImplTest {
     @Mock
     private JurorResponseService jurorResponseService;
 
+    @Mock
+    private JurorRecordService jurorRecordService;
+
     @InjectMocks
     private ExcusalResponseServiceImpl excusalResponseService;
 
@@ -566,6 +569,168 @@ class ExcusalResponseServiceImplTest {
         verify(jurorPoolService, times(1))
             .getJurorPoolFromUser(any());
 
+        verifyFailedInitialChecksPath();
+    }
+
+    @Test
+    void testRefuseExcusalRequestUseSummonsAddressTrueBureauUser() {
+        TestUtils.mockBureauUser();
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
+
+        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
+        excusalDecisionDto.setUseSummonsAddress(true);
+
+        JurorPool jurorPool = createTestJurorPool("400", JUROR_NUMBER);
+        Mockito.doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_NUMBER);
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
+
+        verify(jurorRecordService, times(1)).updateJurorAddressFromResponse(jurorPool);
+        verifyHappyRefuseJurorPoolPath(2, true);
+        verifyHappyExcusalDeniedLetter();
+    }
+
+    @Test
+    void testGrantExcusalRequestUseSummonsAddressTrueBureauUser() {
+        TestUtils.mockBureauUser();
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
+
+        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
+        excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
+        excusalDecisionDto.setUseSummonsAddress(true);
+
+        JurorPool jurorPool = createTestJurorPool("400", JUROR_NUMBER);
+        Mockito.doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_NUMBER);
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
+
+        verify(jurorRecordService, times(1)).updateJurorAddressFromResponse(jurorPool);
+        verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(JUROR_NUMBER);
+        verifyHappyGrantJurorPoolPath();
+        verifyHappyExcusalLetter(jurorPool, excusalDecisionDto);
+    }
+
+    @Test
+    void testRefuseExcusalRequestUseSummonsAddressTrueCourtUser() {
+        TestUtils.mockCourtUser("415");
+        BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER");
+
+        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
+        excusalDecisionDto.setUseSummonsAddress(true);
+
+        JurorPool jurorPool = createTestJurorPool("415", JUROR_NUMBER2);
+        Mockito.doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_NUMBER2);
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER2);
+
+        verify(jurorRecordService, times(1)).updateJurorAddressFromResponse(jurorPool);
+        verifyHappyRefuseJurorPoolPath(2, false);
+        verify(printDataService, times(0)).printExcusalDeniedLetter(any());
+    }
+
+    @Test
+    void testGrantExcusalRequestUseSummonsAddressTrueCourtUser() {
+        TestUtils.mockCourtUser("415");
+        final BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER");
+
+        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
+        excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
+        excusalDecisionDto.setUseSummonsAddress(true);
+
+        JurorPool jurorPool = createTestJurorPool("415", JUROR_NUMBER2);
+        Mockito.doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_NUMBER2);
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER2);
+
+        verify(jurorRecordService, times(1)).updateJurorAddressFromResponse(jurorPool);
+        verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(JUROR_NUMBER2);
+        verifyHappyGrantJurorPoolPathNoLetter();
+    }
+
+    @Test
+    void testRefuseExcusalRequestUseSummonsAddressFalseDoesNotUpdateAddress() {
+        TestUtils.mockBureauUser();
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
+
+        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
+        excusalDecisionDto.setUseSummonsAddress(false);
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
+
+        verify(jurorRecordService, never()).updateJurorAddressFromResponse(any());
+        verifyHappyRefuseJurorPoolPath(2, true);
+        verifyHappyExcusalDeniedLetter();
+    }
+
+    @Test
+    void testGrantExcusalRequestUseSummonsAddressFalseDoesNotUpdateAddress() {
+        TestUtils.mockBureauUser();
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
+
+        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
+        excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
+        excusalDecisionDto.setUseSummonsAddress(false);
+
+        JurorPool jurorPool = createTestJurorPool("400", JUROR_NUMBER);
+        Mockito.doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_NUMBER);
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
+
+        verify(jurorRecordService, never()).updateJurorAddressFromResponse(any());
+        verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(JUROR_NUMBER);
+        verifyHappyGrantJurorPoolPath();
+        verifyHappyExcusalLetter(jurorPool, excusalDecisionDto);
+    }
+
+    @Test
+    void testRefuseExcusalRequestUseSummonsAddressNullDoesNotUpdateAddress() {
+        TestUtils.mockBureauUser();
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
+
+        // createTestExcusalDecisionRequest does not set useSummonsAddress, so it defaults to null
+        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
+
+        verify(jurorRecordService, never()).updateJurorAddressFromResponse(any());
+        verifyHappyRefuseJurorPoolPath(2, true);
+        verifyHappyExcusalDeniedLetter();
+    }
+
+    @Test
+    void testGrantExcusalRequestUseSummonsAddressNullDoesNotUpdateAddress() {
+        TestUtils.mockBureauUser();
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
+
+        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
+        excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
+        // useSummonsAddress intentionally not set — remains null
+
+        JurorPool jurorPool = createTestJurorPool("400", JUROR_NUMBER);
+        Mockito.doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_NUMBER);
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
+
+        verify(jurorRecordService, never()).updateJurorAddressFromResponse(any());
+        verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(JUROR_NUMBER);
+        verifyHappyGrantJurorPoolPath();
+        verifyHappyExcusalLetter(jurorPool, excusalDecisionDto);
+    }
+
+    @Test
+    void testExcusalRequestUseSummonsAddressTrueFailsOwnershipCheckDoesNotUpdateAddress() {
+        TestUtils.mockBureauUser();
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
+
+        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
+        excusalDecisionDto.setUseSummonsAddress(true);
+
+        // JUROR_NUMBER2 is owned by 415, not 400 — ownership check will throw
+        Assertions.assertThatExceptionOfType(MojException.Forbidden.class)
+            .isThrownBy(() -> excusalResponseService.respondToExcusalRequest(
+                payload, excusalDecisionDto, JUROR_NUMBER2));
+
+        verify(jurorRecordService, never()).updateJurorAddressFromResponse(any());
         verifyFailedInitialChecksPath();
     }
 
