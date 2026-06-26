@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolEditRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.AgeDisqualifiedJurorDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.PoolSummaryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.SummoningProgressResponseDto;
@@ -1669,6 +1670,61 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
+    @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_reassignJurorsOverAgeBureau.sql"})
+    public void test_reassignJurorOverAgeBureauUser() throws Exception {
+
+        final String jurorNumber = "555555563";
+        final String targetPoolNumber = "416220902";
+        final String sourcePool = "415220901";
+        final String owner = "400";
+        final LocalDate expectedServiceStartDate = LocalDate.now().plusDays(10);
+        final LocalDate expectedDob = LocalDate.now().minusYears(76).plusDays(10);
+        List<String> jurorNumbers = List.of(jurorNumber);
+
+        JurorManagementRequestDto requestDto = createJurorManagementRequestDto("415", sourcePool,
+            "416", targetPoolNumber, jurorNumbers, LocalDate.now());
+
+        RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
+            HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
+        ResponseEntity<ReassignPoolMembersResultDto> response = restTemplate.exchange(requestEntity,
+            ReassignPoolMembersResultDto.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+
+        ReassignPoolMembersResultDto resultDto = response.getBody();
+        assertThat(resultDto.getNumberReassigned()).isZero();
+        assertThat(resultDto.getNewPoolNumber()).isEqualTo(targetPoolNumber);
+        assertThat(resultDto.getAgeDisqualified()).hasSize(1);
+
+        AgeDisqualifiedJurorDto ageDisqualifiedJuror = resultDto.getAgeDisqualified().get(0);
+        assertThat(ageDisqualifiedJuror.getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(ageDisqualifiedJuror.getDob()).isEqualTo(expectedDob);
+        assertThat(ageDisqualifiedJuror.getCurrentServiceStartDate()).isEqualTo(expectedServiceStartDate);
+        assertThat(ageDisqualifiedJuror.getNewDate()).isEqualTo(expectedServiceStartDate);
+
+        executeInTransaction(() -> {
+            Optional<JurorPool> oldJurorPoolOpt = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(
+                owner, jurorNumber, sourcePool);
+            assertThat(oldJurorPoolOpt).isPresent();
+            JurorPool oldJurorPool = oldJurorPoolOpt.get();
+            assertThat(oldJurorPool.getStatus().getStatus()).isEqualTo(2L);
+            assertThat(oldJurorPool.getIsActive()).isTrue();
+            assertThat(oldJurorPool.getReassignDate()).isNull();
+
+            Optional<JurorPool> newJurorPoolOpt = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(
+                owner, jurorNumber, targetPoolNumber);
+            assertThat(newJurorPoolOpt).isEmpty();
+
+            List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
+            assertThat(historyEvents).noneMatch(hist ->
+                hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER));
+        });
+
+        assertThat(bulkPrintDataRepository.findAll()).isEmpty();
+    }
+
+    @Test
     public void test_reassignJurorNoJurorsBureauUser() throws Exception {
 
         List<String> jurorNumbers = new ArrayList<>();
@@ -1877,6 +1933,125 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             assertThat(jurorHistory.getOtherInformationRef()).isEqualTo(targetPoolNumber);
         });
 
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/reassignJurors.sql"})
+    public void testReassignJurorCourtUserOverAge() throws Exception {
+
+        final String jurorNumber = "555555561";
+        final String targetPoolNumber = "415220505";
+        final String sourcePool = "415220504";
+        final String owner = "415";
+        final String locCode = "415";
+        final LocalDate expectedServiceStartDate = LocalDate.now().plusDays(12);
+        final LocalDate expectedDob = LocalDate.now().minusYears(76).plusDays(12);
+        List<String> jurorNumbers = List.of(jurorNumber);
+
+        JurorManagementRequestDto requestDto = createJurorManagementRequestDto(locCode, sourcePool,
+            locCode, targetPoolNumber, jurorNumbers, LocalDate.now());
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt(owner, List.of(locCode)));
+
+        RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
+            HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
+        ResponseEntity<ReassignPoolMembersResultDto> response = restTemplate.exchange(requestEntity,
+            ReassignPoolMembersResultDto.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+
+        ReassignPoolMembersResultDto resultDto = response.getBody();
+        assertThat(resultDto.getNumberReassigned()).isZero();
+        assertThat(resultDto.getNewPoolNumber()).isEqualTo(targetPoolNumber);
+        assertThat(resultDto.getAgeDisqualified()).hasSize(1);
+
+        AgeDisqualifiedJurorDto ageDisqualifiedJuror = resultDto.getAgeDisqualified().get(0);
+        assertThat(ageDisqualifiedJuror.getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(ageDisqualifiedJuror.getDob()).isEqualTo(expectedDob);
+        assertThat(ageDisqualifiedJuror.getCurrentServiceStartDate()).isEqualTo(expectedServiceStartDate);
+        assertThat(ageDisqualifiedJuror.getNewDate()).isEqualTo(expectedServiceStartDate);
+
+        executeInTransaction(() -> {
+            Optional<JurorPool> oldJurorPoolOpt = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(
+                owner, jurorNumber, sourcePool);
+            assertThat(oldJurorPoolOpt).isPresent();
+            JurorPool oldJurorPool = oldJurorPoolOpt.get();
+            assertThat(oldJurorPool.getStatus().getStatus()).isEqualTo(2L);
+            assertThat(oldJurorPool.getIsActive()).isTrue();
+            assertThat(oldJurorPool.getReassignDate()).isNull();
+
+            Optional<JurorPool> newJurorPoolOpt = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(
+                owner, jurorNumber, targetPoolNumber);
+            assertThat(newJurorPoolOpt).isEmpty();
+
+            List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
+            assertThat(historyEvents).noneMatch(hist ->
+                hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER));
+        });
+
+        assertThat(bulkPrintDataRepository.findAll()).isEmpty();
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/reassignJurors.sql"})
+    public void testReassignJurorCourtUserOverAgeRemovesNewTargetPool() throws Exception {
+
+        final String jurorNumber = "555555561";
+        final String sourcePool = "415220504";
+        final String owner = "415";
+        final String locCode = "415";
+        final LocalDate expectedServiceStartDate = LocalDate.now().plusDays(12);
+        final LocalDate expectedDob = LocalDate.now().minusYears(76).plusDays(12);
+        List<String> jurorNumbers = List.of(jurorNumber);
+
+        JurorManagementRequestDto requestDto = createJurorManagementRequestDto(locCode, sourcePool,
+            locCode, null, jurorNumbers, expectedServiceStartDate);
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt(owner, List.of(locCode)));
+
+        RequestEntity<?> requestEntity = new RequestEntity<>(requestDto, httpHeaders,
+            HttpMethod.PUT, URI.create("/api/v1/moj/manage-pool/reassign-jurors"));
+        ResponseEntity<ReassignPoolMembersResultDto> response = restTemplate.exchange(requestEntity,
+            ReassignPoolMembersResultDto.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+
+        ReassignPoolMembersResultDto resultDto = response.getBody();
+        assertThat(resultDto.getNumberReassigned()).isZero();
+        assertThat(resultDto.getNewPoolNumber()).isNotBlank();
+        assertThat(resultDto.getAgeDisqualified()).hasSize(1);
+
+        AgeDisqualifiedJurorDto ageDisqualifiedJuror = resultDto.getAgeDisqualified().get(0);
+        assertThat(ageDisqualifiedJuror.getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(ageDisqualifiedJuror.getDob()).isEqualTo(expectedDob);
+        assertThat(ageDisqualifiedJuror.getCurrentServiceStartDate()).isEqualTo(expectedServiceStartDate);
+        assertThat(ageDisqualifiedJuror.getNewDate()).isEqualTo(expectedServiceStartDate);
+
+        executeInTransaction(() -> {
+            Optional<PoolRequest> targetPoolRequest = poolRequestRepository.findByPoolNumber(
+                resultDto.getNewPoolNumber());
+            assertThat(targetPoolRequest).isEmpty();
+
+            Optional<JurorPool> oldJurorPoolOpt = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(
+                owner, jurorNumber, sourcePool);
+            assertThat(oldJurorPoolOpt).isPresent();
+            JurorPool oldJurorPool = oldJurorPoolOpt.get();
+            assertThat(oldJurorPool.getStatus().getStatus()).isEqualTo(2L);
+            assertThat(oldJurorPool.getIsActive()).isTrue();
+            assertThat(oldJurorPool.getReassignDate()).isNull();
+
+            Optional<JurorPool> newJurorPoolOpt = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(
+                owner, jurorNumber, resultDto.getNewPoolNumber());
+            assertThat(newJurorPoolOpt).isEmpty();
+
+            List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
+            assertThat(historyEvents).noneMatch(hist ->
+                hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER));
+        });
+
+        assertThat(bulkPrintDataRepository.findAll()).isEmpty();
     }
 
 

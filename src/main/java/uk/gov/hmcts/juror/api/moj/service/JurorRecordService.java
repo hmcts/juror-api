@@ -34,6 +34,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponse
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
@@ -112,4 +113,7 @@ public interface JurorRecordService {
     void createJurorManual(JurorManualCreationRequestDto jurorCreateRequestDto);
 
     JurorSimpleDetailsResponseDto getJurorSimpleDetails(JurorSimpleDetailsRequestDto request);
+
+    void updateJurorAddressFromResponse(JurorPool jurorPool);
+
 }
