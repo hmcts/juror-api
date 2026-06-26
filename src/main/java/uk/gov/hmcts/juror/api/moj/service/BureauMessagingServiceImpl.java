@@ -13,8 +13,8 @@ import uk.gov.hmcts.juror.api.moj.controller.request.messages.BureauEmailRequest
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.BureauEmailRequestDto.JurorEmailDetail;
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.EmailTemplateName;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.BureauEmailResponseDto;
-import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;

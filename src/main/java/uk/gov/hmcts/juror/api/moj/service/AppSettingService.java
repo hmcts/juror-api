@@ -109,12 +109,12 @@ public interface AppSettingService {
      */
     String getNotifyErReminderTemplateId();
 
-  /**
-   * Notify template ID for emails.
-   *
-   *       @return the Notify template ID for emails
-   */
-  String getWeAreGroupContactInformationTemplateId();
+   /**
+    * Notify template ID for emails.
+    *
+    *       @return the Notify template ID for emails
+    */
+    String getWeAreGroupContactInformationTemplateId();
 
     /**
      * Notify template ID for emails.

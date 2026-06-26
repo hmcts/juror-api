@@ -74,7 +74,7 @@ class BureauMessagingControllerITest extends AbstractIntegrationTest {
     class Positive {
 
         private ResponseEntity<BureauEmailResponseDto> triggerValid(BureauEmailRequestDto request) {
-            final String jwt = createBureauJwt(BUREAU_USER, "400", "400");
+            final String jwt = createJwt(BUREAU_USER, "400", "400");
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
 
             return template.exchange(
@@ -241,4 +241,6 @@ class BureauMessagingControllerITest extends AbstractIntegrationTest {
             // override or moving this to its own @Sql-decorated nested class.
         }
     }
+
+
 }

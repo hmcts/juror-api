@@ -37,8 +37,10 @@ public class AppSettingServiceImpl implements AppSettingService {
     private static final String SMART_SURVEY_SUMMONS_RESPONSE_DAYS = "SMART_SURVEY_SUMMONS_RESPONSE_DAYS";
     private static final String SMART_SURVEY_SUMMONS_RESPONSE_EXPORT_NAME = "SMART_SURVEY_SUMMONS_RESPONSE_EXPORT_NAME";
     private static final String NOTIFY_ER_REMINDER = "NOTIFY_ER_REMINDER";
-    private static final String WE_ARE_GROUP_CONTACT_INFORMATION_TEMPLATE_ID = "WE_ARE_GROUP_CONTACT_INFORMATION_TEMPLATE_ID";
-    private static final String WE_ARE_GROUP_REFERRAL_CONFIRMED_TEMPLATE_ID = "WE_ARE_GROUP_REFERRAL_CONFIRMED_TEMPLATE_ID";
+    private static final String WE_ARE_GROUP_CONTACT_INFORMATION_TEMPLATE_ID =
+        "WE_ARE_GROUP_CONTACT_INFORMATION_TEMPLATE_ID";
+    private static final String WE_ARE_GROUP_REFERRAL_CONFIRMED_TEMPLATE_ID =
+        "WE_ARE_GROUP_REFERRAL_CONFIRMED_TEMPLATE_ID";
 
     private final AppSettingRepository appSettingRepository;
     private final SystemParameterRepository systemParameterRepository;
