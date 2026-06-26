@@ -562,7 +562,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/RequestPoolController_initDeferrals.sql"})
-    public void test_requestNewPoolFromBureau_withCourtDeferrals() throws Exception {
+    public void test_requestNewPoolFromCourtUser_withCourtDeferrals() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, getSatelliteCourtJwt("415", "415", "416"));
         String ownerCourt = "415";
         PoolRequestDto poolRequestDto = createValidPoolRequestDto();
@@ -637,6 +637,9 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         assertThat(newlyRequestedPool.getTotalNoRequired())
             .as("Total Number Required should be mapped from the Pool Request Dto (Number Requested)")
             .isEqualTo(poolRequestDto.getNumberRequested());
+        assertThat(newlyRequestedPool.getNumberRequested())
+            .as("Number Requested should be mapped from the Pool Request Dto (Number Requested - Deferrals Used)")
+            .isEqualTo(poolRequestDto.getNumberRequested() - poolRequestDto.getDeferralsUsed());
         assertThat(newlyRequestedPool.isNilPool())
             .as("Created Pool Request should have a Nil Pool value of false")
             .isFalse();
