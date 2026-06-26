@@ -45,11 +45,12 @@ public interface IAppearanceRepository {
 
     long countPendingApproval(String locCode, boolean isCash);
 
-    Optional<Appearance> findByJurorNumberAndLocCodeAndAttendanceDateAndVersion(
+    Optional<Appearance> findByJurorNumberAndLocCodeAndAttendanceDateAndVersionAndFinancialAudit(
         String jurorNumber,
         String locCode,
         LocalDate attendanceDate,
-        long appearanceVersion);
+        long appearanceVersion,
+        long financialAudit);
 
     List<Tuple> getTrialsWithAttendanceCount(String locationCode, LocalDate attendanceDate);
 
