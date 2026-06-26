@@ -42,6 +42,8 @@ class JurorResponseServiceImplTest {
     private JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
     private StraightThroughProcessorService straightThroughProcessorService;
     private UserRepository userRepository;
+    private SummonsReplyMergeService mergeService;
+    private JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
 
     private JurorResponseServiceImpl jurorResponseService;
 
@@ -55,9 +57,8 @@ class JurorResponseServiceImplTest {
         straightThroughProcessorService = Mockito.mock(StraightThroughProcessorService.class);
         JurorCommonResponseRepositoryMod jurorCommonResponseRepository =
             Mockito.mock(JurorCommonResponseRepositoryMod.class);
-        SummonsReplyMergeService mergeService = Mockito.mock(SummonsReplyMergeService.class);
-        JurorResponseAuditRepositoryMod jurorResponseAuditRepository =
-            Mockito.mock(JurorResponseAuditRepositoryMod.class);
+        mergeService = Mockito.mock(SummonsReplyMergeService.class);
+        jurorResponseAuditRepository = Mockito.mock(JurorResponseAuditRepositoryMod.class);
         this.jurorResponseService = spy(new JurorResponseServiceImpl(jurorPoolRepository,
             jurorPaperResponseRepository,
             jurorDigitalResponseRepository,
@@ -101,6 +102,57 @@ class JurorResponseServiceImplTest {
         PoolRequestRepository poolRequestRepository = Mockito.mock(PoolRequestRepository.class);
         Mockito.when(poolRequestRepository.findByPoolNumber(any()))
             .thenReturn(Optional.of(mockPoolRequest("12345678", "415")));
+    }
+
+    @Test
+    void closeOpenResponseRecordClosesOpenDigitalResponse() {
+        DigitalResponse digitalResponse = new DigitalResponse();
+        digitalResponse.setJurorNumber("123456789");
+        digitalResponse.setProcessingComplete(false);
+
+        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber("123456789");
+
+        boolean responseClosed = jurorResponseService.closeOpenResponseRecord("123456789", "BUREAU_USER");
+
+        Assertions.assertThat(responseClosed).isTrue();
+        Assertions.assertThat(digitalResponse.getProcessingComplete()).isTrue();
+        Assertions.assertThat(digitalResponse.getCompletedAt()).isNotNull();
+        Mockito.verify(mergeService).mergeDigitalResponse(digitalResponse, "BUREAU_USER");
+        Mockito.verify(mergeService, Mockito.never()).mergePaperResponse(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    void closeOpenResponseRecordClosesOpenPaperResponseWhenNoDigitalResponseExists() {
+        PaperResponse paperResponse = new PaperResponse();
+        paperResponse.setJurorNumber("123456789");
+        paperResponse.setProcessingComplete(false);
+
+        Mockito.doReturn(null).when(jurorDigitalResponseRepository).findByJurorNumber("123456789");
+        Mockito.doReturn(paperResponse).when(jurorPaperResponseRepository).findByJurorNumber("123456789");
+
+        boolean responseClosed = jurorResponseService.closeOpenResponseRecord("123456789", "BUREAU_USER");
+
+        Assertions.assertThat(responseClosed).isTrue();
+        Assertions.assertThat(paperResponse.getProcessingComplete()).isTrue();
+        Assertions.assertThat(paperResponse.getCompletedAt()).isNotNull();
+        Mockito.verify(mergeService, Mockito.never()).mergeDigitalResponse(Mockito.any(), Mockito.any());
+        Mockito.verify(mergeService).mergePaperResponse(paperResponse, "BUREAU_USER");
+    }
+
+    @Test
+    void closeOpenResponseRecordDoesNotCloseAlreadyCompletedDigitalResponse() {
+        DigitalResponse digitalResponse = new DigitalResponse();
+        digitalResponse.setJurorNumber("123456789");
+        digitalResponse.setProcessingComplete(true);
+
+        Mockito.doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber("123456789");
+        Mockito.doReturn(null).when(jurorPaperResponseRepository).findByJurorNumber("123456789");
+
+        boolean responseClosed = jurorResponseService.closeOpenResponseRecord("123456789", "BUREAU_USER");
+
+        Assertions.assertThat(responseClosed).isFalse();
+        Mockito.verify(mergeService, Mockito.never()).mergeDigitalResponse(Mockito.any(), Mockito.any());
+        Mockito.verify(mergeService, Mockito.never()).mergePaperResponse(Mockito.any(), Mockito.any());
     }
 
     //Tests related to method updateJurorPersonalDetails()
