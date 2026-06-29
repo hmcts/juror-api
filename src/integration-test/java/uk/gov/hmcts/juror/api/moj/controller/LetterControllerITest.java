@@ -2854,7 +2854,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.get(0).size()).isEqualTo(9);
             assertThat(data.get(0).get(0)).isEqualTo("555555562");
             assertThat(data.get(0).get(1)).isEqualTo("415241001");
-            assertThat(data.get(0).get(2)).isEqualTo("TUESDAY 8 OCTOBER, 2024");
+            assertThat(data.get(0).get(2)).isEqualTo("8 OCTOBER, 2024 DYDD MAWRTH");
             assertThat(data.get(0).get(3)).isEqualTo("FNAMEFIVEFOURZERO");
             assertThat(data.get(0).get(4)).isEqualTo("LNAMEFIVEFOURZERO");
             assertThat(data.get(0).get(5)).isEqualTo("CH1 2AN");
