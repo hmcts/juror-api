@@ -108,6 +108,20 @@ public interface AppSettingService {
      * @return the Notify template ID for LA reminder emails
      */
     String getNotifyErReminderTemplateId();
+
+   /**
+    * Notify template ID for emails.
+    *
+    *       @return the Notify template ID for emails
+    */
+    String getWeAreGroupContactInformationTemplateId();
+
+    /**
+     * Notify template ID for emails.
+     *
+     * @return the Notify template ID for emails
+     */
+    String getWeAreGroupReferralConfirmedTemplateId();
 }
 
 
