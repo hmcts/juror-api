@@ -7,9 +7,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import jakarta.annotation.Nullable;
 import lombok.experimental.SuperBuilder;
 
-import javax.annotation.Nullable;
 
 @Getter
 @Setter
