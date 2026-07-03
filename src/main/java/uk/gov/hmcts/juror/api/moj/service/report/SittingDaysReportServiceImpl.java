@@ -70,7 +70,7 @@ public class SittingDaysReportServiceImpl implements SittingDaysReportService {
                 courtCode -> SittingDaysStatsReportResponse.TableData.DataRow.builder()
                     .courtLocationNameAndCode(formatCourt(data.getCourtName(), courtCode))
                     .build());
-            applyCategory(row, data.getSittingDaysCategory(), data.getNumberOfSittingDays());
+            applyCategory(row, data.getSittingDaysCategory(), data.getNumberOfJurors());
             row.setTotalJurors(row.getTotalJurors() + defaultValue(data.getNumberOfJurors()));
             row.setTotalSittingDays(row.getTotalSittingDays() + defaultValue(data.getNumberOfSittingDays()));
         }
