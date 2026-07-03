@@ -38,4 +38,11 @@
 		<cve>CVE-2026-41843</cve>
 		<cve>CVE-2026-41852</cve>
 	</suppress>
+	<suppress>
+		<notes><![CDATA[
+		Jenkins PR-1192 dependency-check finding for jackson-databind-2.21.4.jar.
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.21\.4$</packageUrl>
+		<cve>CVE-2026-54515</cve>
+	</suppress>
 </suppressions>
