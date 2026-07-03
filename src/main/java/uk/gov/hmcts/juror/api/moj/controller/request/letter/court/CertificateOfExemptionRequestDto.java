@@ -2,12 +2,12 @@ package uk.gov.hmcts.juror.api.moj.controller.request.letter.court;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import jakarta.annotation.Nullable;
 import lombok.experimental.SuperBuilder;
 
 
