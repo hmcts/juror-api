@@ -54,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @Sql(value = {"/db/administration/teardownUsers.sql",
     "/db/administration/createUsers.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/users";

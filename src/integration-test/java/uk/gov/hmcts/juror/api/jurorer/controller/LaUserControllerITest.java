@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.jurorer.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -18,7 +19,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtPayload;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaUserDetailsDto;
-import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.util.Collections;
@@ -31,7 +31,7 @@ import static org.springframework.http.HttpMethod.GET;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + LaUserControllerITest.BASE_URL)
 @Sql({"/db/jurorer/teardownUsers.sql", "/db/jurorer/createUsers.sql"})
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class LaUserControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/juror-er/users";
 

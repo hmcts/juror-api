@@ -25,7 +25,6 @@ import uk.gov.hmcts.juror.api.moj.controller.jurorer.LocalAuthorityInfoResponseD
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateLocalAuthorityNotesRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.jurorer.UpdateLocalAuthorityNotesResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
-import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.time.LocalDate;

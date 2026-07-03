@@ -109,7 +109,7 @@ import static org.springframework.http.HttpMethod.PUT;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + JurorExpenseControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     public static final String JUROR_NUMBER = "641500020";

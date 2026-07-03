@@ -52,7 +52,7 @@ import static org.springframework.http.HttpMethod.POST;
     "PMD.ExcessiveImports",
 //False positive
 })
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class AuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/moj";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";

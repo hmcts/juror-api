@@ -122,17 +122,17 @@ public class JurorDashboardServiceImplTest {
 
         channelResp = new HashMap<>();
 
-        Map<String, Integer > paperHashmapData  = new ConcurrentHashMap<>();
+        Map<String, Integer> paperHashmapData  = new ConcurrentHashMap<>();
         paperHashmapData.put("Within 14 days", 10);
         paperHashmapData.put("Over 21 days", 25);
 
-        Map<String, Integer > onlineHashmapData  = new ConcurrentHashMap<>();
+        Map<String, Integer> onlineHashmapData  = new ConcurrentHashMap<>();
         onlineHashmapData.put("Within 7 days", 20);
         onlineHashmapData.put("Within 14 days", 20);
         onlineHashmapData.put("Within 21 days", 5);
 
-        channelResp.put("paper", paperHashmapData);
-        channelResp.put("online", onlineHashmapData);
+        channelResp.put("Paper", paperHashmapData);
+        channelResp.put("Online", onlineHashmapData);
 
 
         autoOnlineResponseList = new ArrayList<>(Arrays.asList(

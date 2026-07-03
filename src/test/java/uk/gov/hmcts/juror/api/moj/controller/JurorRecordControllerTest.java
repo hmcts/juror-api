@@ -57,13 +57,13 @@ import uk.gov.hmcts.juror.api.moj.service.JurorRecordService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
-	import java.util.Collections;
-	import java.util.List;
+import java.util.Collections;
+import java.util.List;
 
-	import static org.mockito.ArgumentMatchers.any;
-	import static org.mockito.Mockito.doNothing;
-	import static org.mockito.Mockito.doReturn;
-	import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
