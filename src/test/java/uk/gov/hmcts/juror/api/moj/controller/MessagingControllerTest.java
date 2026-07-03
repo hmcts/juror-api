@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.domain.messages.MessageSearch;
 import uk.gov.hmcts.juror.api.moj.domain.messages.MessageType;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.BulkServiceImpl;
+import uk.gov.hmcts.juror.api.moj.service.BureauMessagingService;
 import uk.gov.hmcts.juror.api.moj.service.MessagingService;
 
 import java.util.HashMap;
@@ -64,6 +65,9 @@ class MessagingControllerTest {
 
     @MockBean
     private MessagingService messagingService;
+
+    @MockBean
+    private BureauMessagingService bureauMessagingService;
 
     @Nested
     @DisplayName("GET " + GetMessageDetails.URL)

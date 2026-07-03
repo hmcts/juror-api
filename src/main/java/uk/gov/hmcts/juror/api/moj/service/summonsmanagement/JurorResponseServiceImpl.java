@@ -30,6 +30,7 @@ import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -391,6 +392,35 @@ public class JurorResponseServiceImpl implements JurorResponseService {
 
         if (jurorResponse != null) {
             setResponseProcessingStatusToClosed(jurorResponse);
+        }
+    }
+
+    @Override
+    @Transactional
+    public boolean closeOpenResponseRecord(String jurorNumber, String auditorUsername) {
+        DigitalResponse digitalResponse = jurorDigitalResponseRepository.findByJurorNumber(jurorNumber);
+        if (digitalResponse != null && !Boolean.TRUE.equals(digitalResponse.getProcessingComplete())) {
+            closeOpenResponseRecord(digitalResponse, auditorUsername);
+            return true;
+        }
+
+        PaperResponse paperResponse = jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
+        if (paperResponse != null && !Boolean.TRUE.equals(paperResponse.getProcessingComplete())) {
+            closeOpenResponseRecord(paperResponse, auditorUsername);
+            return true;
+        }
+        return false;
+    }
+
+    private void closeOpenResponseRecord(AbstractJurorResponse jurorResponse, String auditorUsername) {
+        jurorResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
+        jurorResponse.setProcessingComplete(true);
+        jurorResponse.setCompletedAt(LocalDateTime.now());
+
+        if (jurorResponse instanceof DigitalResponse digitalResponse) {
+            mergeService.mergeDigitalResponse(digitalResponse, auditorUsername);
+        } else if (jurorResponse instanceof PaperResponse paperResponse) {
+            mergeService.mergePaperResponse(paperResponse, auditorUsername);
         }
     }
 }

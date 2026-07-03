@@ -38,11 +38,13 @@
 		<cve>CVE-2026-41843</cve>
 		<cve>CVE-2026-41852</cve>
 	</suppress>
-	<suppress>
-		<notes><![CDATA[
-		Jenkins PR-1192 dependency-check finding for jackson-databind-2.21.4.jar.
-		]]></notes>
-		<packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.21\.4$</packageUrl>
-		<cve>CVE-2026-54515</cve>
-	</suppress>
+  <suppress>
+    <notes><![CDATA[
+ dependency-check finding for jackson-databind-2.21.4.jar.
+ CVE-2026-54515 - fix version 2.21.5 not yet published to Maven Central.
+ Suppressed pending release. Review and remove suppression once 2.21.5 is available.
+ ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.21\.4$</packageUrl>
+    <cve>CVE-2026-54515</cve>
+  </suppress>
 </suppressions>
