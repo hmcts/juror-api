@@ -200,18 +200,18 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
     }
 
     private void assertSittingDaysRow(SittingDaysStatsReportResponse.TableData.DataRow dataRow) {
-        assertThat(dataRow.getZeroSittingDays()).isEqualTo(0);
-        assertThat(dataRow.getOneSittingDay()).isEqualTo(2);
-        assertThat(dataRow.getTwoSittingDays()).isEqualTo(3);
-        assertThat(dataRow.getThreeSittingDays()).isEqualTo(50);
-        assertThat(dataRow.getFourSittingDays()).isEqualTo(100);
+        assertThat(dataRow.getZeroSittingDays()).isEqualTo(10);
+        assertThat(dataRow.getOneSittingDay()).isEqualTo(5);
+        assertThat(dataRow.getTwoSittingDays()).isEqualTo(4);
+        assertThat(dataRow.getThreeSittingDays()).isEqualTo(45);
+        assertThat(dataRow.getFourSittingDays()).isEqualTo(90);
         assertThat(dataRow.getFiveSittingDays()).isEqualTo(5);
-        assertThat(dataRow.getSixSittingDays()).isEqualTo(5);
-        assertThat(dataRow.getSevenSittingDays()).isEqualTo(5);
-        assertThat(dataRow.getEightSittingDays()).isEqualTo(3);
+        assertThat(dataRow.getSixSittingDays()).isEqualTo(3);
+        assertThat(dataRow.getSevenSittingDays()).isEqualTo(2);
+        assertThat(dataRow.getEightSittingDays()).isEqualTo(2);
         assertThat(dataRow.getNineSittingDays()).isEqualTo(2);
-        assertThat(dataRow.getTenSittingDays()).isEqualTo(6);
-        assertThat(dataRow.getElevenOrMoreSittingDays()).isEqualTo(11);
+        assertThat(dataRow.getTenSittingDays()).isEqualTo(5);
+        assertThat(dataRow.getElevenOrMoreSittingDays()).isEqualTo(10);
         assertThat(dataRow.getTotalJurors()).isEqualTo(183);
         assertThat(dataRow.getTotalSittingDays()).isEqualTo(192);
     }
