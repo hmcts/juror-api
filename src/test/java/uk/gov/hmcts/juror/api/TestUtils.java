@@ -191,6 +191,7 @@ public final class TestUtils {
             securityUtilMock = null;
         }
     }
+
     @SuppressWarnings("PMD.NonThreadSafeSingleton")
     public static MockedStatic<SecurityUtil> getSecurityUtilMock() {
         if (securityUtilMock == null) {

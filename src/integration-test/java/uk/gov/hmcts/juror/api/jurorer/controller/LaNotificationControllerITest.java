@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.jurorer.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -21,7 +22,6 @@ import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaNotificationRequestDto;
 import uk.gov.hmcts.juror.api.jurorer.domain.ReminderHistory;
 import uk.gov.hmcts.juror.api.jurorer.repository.ReminderHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
-import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.util.Collections;
@@ -48,7 +48,7 @@ import static org.springframework.http.HttpMethod.POST;
     executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
 )
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class LaNotificationControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/notification";

@@ -96,7 +96,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static uk.gov.hmcts.juror.api.TestUtil.getValuesInJsonObject;
-import static uk.gov.hmcts.juror.api.TestUtils.objectMapper;
+import static uk.gov.hmcts.juror.api.TestUtils.OBJECT_MAPPER;
 import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetails;
 
 /**
@@ -1742,7 +1742,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferrals(reissueLetterListResponseDto);
@@ -1787,7 +1787,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferrals(reissueLetterListResponseDto);
@@ -1832,7 +1832,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferrals(reissueLetterListResponseDto);
@@ -1875,7 +1875,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferrals(reissueLetterListResponseDto);
@@ -2003,7 +2003,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesConfirmation(reissueLetterListResponseDto);
@@ -2043,7 +2043,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesConfirmation(reissueLetterListResponseDto);
@@ -2083,7 +2083,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesConfirmation(reissueLetterListResponseDto);
@@ -2114,7 +2114,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesConfirmation(reissueLetterListResponseDto);
@@ -2156,7 +2156,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferralDenied(reissueLetterListResponseDto);
@@ -2201,7 +2201,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferralDenied(reissueLetterListResponseDto);
@@ -2246,7 +2246,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferralDenied(reissueLetterListResponseDto);
@@ -2279,7 +2279,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferralDenied(reissueLetterListResponseDto);
@@ -2313,7 +2313,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesWithdrawal(reissueLetterListResponseDto);
@@ -2358,7 +2358,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesWithdrawal(reissueLetterListResponseDto);
@@ -2402,7 +2402,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesWithdrawal(reissueLetterListResponseDto);
@@ -2440,7 +2440,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesInformationRequest(reissueLetterListResponseDto);
@@ -2482,7 +2482,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesInformationRequest(reissueLetterListResponseDto);
@@ -2525,7 +2525,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesInformationRequest(reissueLetterListResponseDto);
@@ -2559,7 +2559,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesInformationRequest(reissueLetterListResponseDto);
@@ -2772,7 +2772,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesSummons(reissueLetterListResponseDto);
@@ -2816,7 +2816,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesSummons(reissueLetterListResponseDto);
@@ -2850,7 +2850,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesSummons(reissueLetterListResponseDto);
@@ -3857,7 +3857,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertResponseOkay(responseEntity);
 
-            ReissueLetterListResponseDto response = objectMapper.readValue(responseEntity.getBody(),
+            ReissueLetterListResponseDto response = OBJECT_MAPPER.readValue(responseEntity.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesExcusals(response, EXCUSED);
@@ -3885,7 +3885,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertResponseOkay(responseEntity);
 
-            ReissueLetterListResponseDto response = objectMapper.readValue(responseEntity.getBody(),
+            ReissueLetterListResponseDto response = OBJECT_MAPPER.readValue(responseEntity.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesExcusals(response, EXCUSED);
@@ -3909,7 +3909,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertResponseOkay(responseEntity);
 
-            ReissueLetterListResponseDto response = objectMapper.readValue(responseEntity.getBody(),
+            ReissueLetterListResponseDto response = OBJECT_MAPPER.readValue(responseEntity.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesExcusals(response, EXCUSED);
@@ -3946,7 +3946,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertResponseOkay(responseEntity);
 
-            ReissueLetterListResponseDto response = objectMapper.readValue(responseEntity.getBody(),
+            ReissueLetterListResponseDto response = OBJECT_MAPPER.readValue(responseEntity.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesExcusals(response, EXCUSED);
@@ -4010,7 +4010,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertResponseOkay(responseEntity);
 
-            ReissueLetterListResponseDto response = objectMapper.readValue(responseEntity.getBody(),
+            ReissueLetterListResponseDto response = OBJECT_MAPPER.readValue(responseEntity.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesExcusals(response, "refused");

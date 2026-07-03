@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.jurorer.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -22,7 +23,6 @@ import uk.gov.hmcts.juror.api.jurorer.controller.dto.DeadlineDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.FileUploadRequestDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.UploadHistoryDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.UploadStatusDto;
-import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -39,7 +39,7 @@ import static org.springframework.http.HttpMethod.POST;
 @DisplayName("Controller: " + UploadControllerITest.BASE_URL)
 @Sql({"/db/jurorer/teardownUploadTests.sql", "/db/jurorer/setupUploadControllerITest.sql"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UploadControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/juror-er/upload";
 

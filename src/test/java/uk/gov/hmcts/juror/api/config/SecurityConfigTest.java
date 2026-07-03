@@ -38,7 +38,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -203,7 +202,7 @@ class SecurityConfigTest {
                     .roles(new String[]{"juror"})
                     .id("")
                     .build();
-                final Map<String, Object> claimsMap = new ConcurrentHashMap<>();
+                final Map<String, Object> claimsMap = new HashMap<>();
                 claimsMap.put("data", payload);
                 return claimsMap;
             }
@@ -219,7 +218,7 @@ class SecurityConfigTest {
                     .owner("400")
                     .staff(BureauJwtPayload.Staff.builder().courts(Collections.singletonList("415")).build())
                     .build();
-                final Map<String, Object> claimsMap = new ConcurrentHashMap<>();
+                final Map<String, Object> claimsMap = new HashMap<>();
                 claimsMap.put("login", payload.getLogin());
                 claimsMap.put("owner", payload.getOwner());
                 claimsMap.put("userLevel", payload.getUserLevel());
@@ -234,7 +233,7 @@ class SecurityConfigTest {
                     .laName("Local Authority Y")
                     .roles(Collections.singletonList("LA_USER"))
                     .build();
-                final Map<String, Object> claimsMap = new ConcurrentHashMap<>();
+                final Map<String, Object> claimsMap = new HashMap<>();
                 claimsMap.put("username", payload.getUsername());
                 claimsMap.put("laCode", payload.getLaCode());
                 claimsMap.put("laName", payload.getLaName());

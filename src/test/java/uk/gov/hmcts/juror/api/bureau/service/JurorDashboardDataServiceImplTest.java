@@ -68,7 +68,7 @@ public class JurorDashboardDataServiceImplTest {
     @Mock
     private StatsThirdPartyOnlineResponseRepository statsThirdPtyOnlineResponseRepository;
 
-   /* @Mock
+    /* @Mock
     private SurveyResponseRepository surveyResponseRepository;
 
     @Mock
@@ -76,7 +76,7 @@ public class JurorDashboardDataServiceImplTest {
 
     @Mock
     private StatsNotRespondedTotalsRepsoitory statsNotRespondedTotalsRepsoitory;
-*/
+    */
     @InjectMocks
     private JurorDashboardDataServiceImpl jurorDashboardDataService;
 

@@ -1,7 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import lombok.SneakyThrows;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -39,7 +39,7 @@ import static org.springframework.http.HttpMethod.POST;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + StaffControllerITest.BASE_URL)
 @Sql(scripts = "/db/mod/truncate.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class StaffControllerITest extends AbstractIntegrationTest {
     static final String BASE_URL = "/api/v1/moj/staff";
 
