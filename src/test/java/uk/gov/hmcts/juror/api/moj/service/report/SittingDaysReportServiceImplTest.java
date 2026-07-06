@@ -92,7 +92,7 @@ class SittingDaysReportServiceImplTest {
 
             SittingDaysStatsReportResponse response = sittingDaysReportService.getSittingDaysStats(request);
 
-            validateReportHeadings(response.getHeadings(), 665, 780);
+            validateReportHeadings(response.getHeadings(), 665, 5060);
             validateTableHeadings(response.getTableData());
 
             assertThat(response.getTableData().getData()).hasSize(1);
@@ -111,7 +111,7 @@ class SittingDaysReportServiceImplTest {
             assertThat(row.getTenSittingDays()).isEqualTo(100);
             assertThat(row.getElevenOrMoreSittingDays()).isEqualTo(110);
             assertThat(row.getTotalJurors()).isEqualTo(665);
-            assertThat(row.getTotalSittingDays()).isEqualTo(780);
+            assertThat(row.getTotalSittingDays()).isEqualTo(5060);
             verify(statsSittingDaysRepository, times(1))
                 .findStatsByMonthRangeAndCourtCodes("2024-05", "2024-05", List.of("415"));
         }
@@ -155,18 +155,18 @@ class SittingDaysReportServiceImplTest {
 
     private List<StatsSittingDaysRepository.SittingDaysStatsData> getSittingDaysStatsData() {
         return List.of(
-            getSittingDaysStatsData("0", 10, 5),
-            getSittingDaysStatsData("1", 20, 10),
-            getSittingDaysStatsData("2", 30, 20),
-            getSittingDaysStatsData("3", 40, 30),
-            getSittingDaysStatsData("4", 50, 40),
-            getSittingDaysStatsData("5", 60, 50),
-            getSittingDaysStatsData("6", 70, 60),
-            getSittingDaysStatsData("7", 80, 70),
-            getSittingDaysStatsData("8", 90, 80),
-            getSittingDaysStatsData("9", 100, 90),
-            getSittingDaysStatsData("10", 110, 100),
-            getSittingDaysStatsData("11 or more", 120, 110)
+            getSittingDaysStatsData("0", 0, 5),
+            getSittingDaysStatsData("1", 10, 10),
+            getSittingDaysStatsData("2", 40, 20),
+            getSittingDaysStatsData("3", 90, 30),
+            getSittingDaysStatsData("4", 160, 40),
+            getSittingDaysStatsData("5", 250, 50),
+            getSittingDaysStatsData("6", 360, 60),
+            getSittingDaysStatsData("7", 490, 70),
+            getSittingDaysStatsData("8", 640, 80),
+            getSittingDaysStatsData("9", 810, 90),
+            getSittingDaysStatsData("10", 1000, 100),
+            getSittingDaysStatsData("11 or more", 1210, 110)
         );
     }
 
