@@ -72,10 +72,38 @@ public class SittingDaysReportServiceImpl implements SittingDaysReportService {
                     .build());
             applyCategory(row, data.getSittingDaysCategory(), data.getNumberOfJurors());
             row.setTotalJurors(row.getTotalJurors() + defaultValue(data.getNumberOfJurors()));
-            row.setTotalSittingDays(row.getTotalSittingDays() + defaultValue(data.getNumberOfSittingDays()));
+            row.setTotalSittingDays(row.getTotalSittingDays() + getSittingDaysTotal(data));
         }
 
         return rowsByCourt.values().stream().toList();
+    }
+
+    private int getSittingDaysTotal(StatsSittingDaysRepository.SittingDaysStatsData data) {
+        int reportedTotal = defaultValue(data.getNumberOfSittingDays());
+        int minimumTotal = getSittingDaysCategoryValue(data.getSittingDaysCategory())
+            * defaultValue(data.getNumberOfJurors());
+        return Math.max(reportedTotal, minimumTotal);
+    }
+
+    private int getSittingDaysCategoryValue(String category) {
+        return switch (category) {
+            case "0" -> 0;
+            case "1" -> 1;
+            case "2" -> 2;
+            case "3" -> 3;
+            case "4" -> 4;
+            case "5" -> 5;
+            case "6" -> 6;
+            case "7" -> 7;
+            case "8" -> 8;
+            case "9" -> 9;
+            case "10" -> 10;
+            case "11 or more" -> 11;
+            default -> {
+                log.warn("Ignoring unsupported sitting days category when calculating total: {}", category);
+                yield 0;
+            }
+        };
     }
 
     private void applyCategory(SittingDaysStatsReportResponse.TableData.DataRow row, String category, Integer value) {
