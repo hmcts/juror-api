@@ -349,10 +349,12 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
     }
 
     @Override
-    public Optional<Appearance> findByJurorNumberAndLocCodeAndAttendanceDateAndVersion(String jurorNumber,
-                                                                                       String locCode,
-                                                                                       LocalDate attendanceDate,
-                                                                                       long appearanceVersion) {
+    public Optional<Appearance> findByJurorNumberAndLocCodeAndAttendanceDateAndVersionAndFinancialAudit(
+        String jurorNumber,
+        String locCode,
+        LocalDate attendanceDate,
+        long appearanceVersion,
+        long financialAudit) {
         try {
             return
                 Optional.ofNullable((Appearance) AuditReaderFactory.get(entityManager)
@@ -362,6 +364,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                     .add(AuditEntity.property("locCode").eq(locCode))
                     .add(AuditEntity.property("attendanceDate").eq(attendanceDate))
                     .add(AuditEntity.property("version").eq(appearanceVersion))
+                    .add(AuditEntity.property("financialAudit").eq(financialAudit))
                     .getSingleResult());
         } catch (NoResultException e) {
             return Optional.empty();
