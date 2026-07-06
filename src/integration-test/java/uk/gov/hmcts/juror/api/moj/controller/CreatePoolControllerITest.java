@@ -42,6 +42,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolDetailRepository;
@@ -72,7 +73,9 @@ import static org.assertj.core.api.Assertions.assertThat;
     "PMD.LinguisticNaming",
     "PMD.ExcessiveImports",
     "PMD.ExcessivePublicCount"})
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = "feature-flags.flags.digital-by-default=true")
 public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Value("${jwt.secret.bureau}")
@@ -267,6 +270,45 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
                 assertThat(expectedJurorStatus.getStatus()).isEqualTo(IJurorStatus.SUMMONED);
                 assertThat(jurorPool.getIsActive()).isTrue();
             }
+        });
+    }
+
+    @Test
+    @Sql(
+        scripts = {
+            "/db/mod/truncate.sql",
+            "/db/CreatePoolController_loadVoters.sql",
+            "/db/CreatePoolController_createPool.sql"
+        },
+        statements = "UPDATE juror_mod.court_location SET digital_by_default = true WHERE loc_code = '415'")
+    public void createPool_digitalByDefaultCourt_doesNotCreateSummonsLetter() {
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
+            .userType(UserType.BUREAU)
+            .roles(Set.of(Role.MANAGER))
+            .login("BUREAU_USER")
+            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
+            .owner("400")
+            .build());
+
+        PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
+            HttpMethod.POST, uri);
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        executeInTransaction(() -> {
+            List<Juror> jurors = jurorRepository.findAll();
+            assertThat(jurors).hasSize(8);
+            assertThat(jurors).allSatisfy(juror -> {
+                assertThat(juror.isDigitalByDefault()).isTrue();
+                assertThat(juror.getDbdPreference()).isEqualTo(ReplyMethod.DIGITAL.getDescription());
+            });
+
+            assertThat(bulkPrintDataRepository.count()).isZero();
         });
     }
 

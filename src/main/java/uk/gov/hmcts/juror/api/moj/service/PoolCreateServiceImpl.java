@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolAddCitizenRequestDto;
@@ -40,6 +41,7 @@ import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.Voters;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.exception.PoolCreateException;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolDetailRepository;
@@ -83,6 +85,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     private static final String AGE_DISQ_CODE = "A";
 
+    private static final String DIGITAL_BY_DEFAULT_FEATURE_FLAG = "digital-by-default";
+
     private static final int LOWER_REQUEST_LIMIT = 30;
 
     private static final int UPPER_REQUEST_LIMIT = 250;
@@ -105,6 +109,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     private final GenerateCoronerPoolNumberService generateCoronerPoolNumberService;
     private final CoronerPoolDetailRepository coronerPoolDetailRepository;
     private final CoronerPoolRepository coronerPoolRepository;
+    private final FeatureFlagConfigurationProperties featureFlags;
 
     @Override
     @Transactional
@@ -265,8 +270,18 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     @Override
     public void createPool(BureauJwtPayload payload, PoolCreateRequestDto poolCreateRequestDto) {
 
+        String locCode = poolCreateRequestDto.getCatchmentArea();
+        CourtLocation courtLocation = courtLocationRepository.findByLocCode(locCode)
+            .orElseThrow(() -> new MojException.BusinessRuleViolation(
+                "Court location not found for locCode: " + locCode,
+                MojException.BusinessRuleViolation.ErrorCode.INVALID_COURT_LOCATION));
+
+        final boolean isDigitalByDefault = featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+            && courtLocation.isDigitalByDefault();
+
         // Get a list of Pool members from voters table
-        List<JurorPool> jurorPools = getJurorPools(payload.getLogin(), payload.getOwner(), poolCreateRequestDto);
+        List<JurorPool> jurorPools =
+            getJurorPools(payload.getLogin(), payload.getOwner(), poolCreateRequestDto, isDigitalByDefault);
 
         // find the actual number of jurors added and pass to pool history (minus the disq. on selection)
         int numSelected = jurorPools
@@ -289,7 +304,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         PoolCreateRequestDto poolCreateRequestDto = setupPoolRequestDto(poolAdditionalSummonsDto);
 
         // Get a list of Pool members from voters table
-        List<JurorPool> jurorPools = getJurorPools(payload.getLogin(), payload.getOwner(), poolCreateRequestDto);
+        List<JurorPool> jurorPools = getJurorPools(payload.getLogin(), payload.getOwner(), poolCreateRequestDto,
+            false);
         // find the actual number of jurors added and pass to pool history (minus the disq. on selection)
         int numSelected = jurorPools.stream()
             .mapToInt(member -> member.getStatus().getStatus() == IJurorStatus.DISQUALIFIED ? 0 : 1)
@@ -365,7 +381,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         jurorHistoryRepository.saveAll(historyList);
     }
 
-    private List<JurorPool> getJurorPools(String login, String owner, PoolCreateRequestDto poolCreateRequestDto) {
+    private List<JurorPool> getJurorPools(String login, String owner, PoolCreateRequestDto poolCreateRequestDto,
+                                          boolean isDigitalByDefault) {
 
         List<JurorPool> jurorPools = new ArrayList<>();
         final Date attendanceDate = Date.valueOf(poolCreateRequestDto.getStartDate());
@@ -403,6 +420,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 selectedVoters.add(voter);
                 String paddedSequenceNumber = poolMemberSequenceService.leftPadInteger(sequenceNumber);
                 JurorPool jurorPool = createJurorPool(login, owner, voter, poolCreateRequestDto,
+                    isDigitalByDefault,
                     paddedSequenceNumber, poolRequest
                 );
                 jurorPools.add(jurorPool);
@@ -451,9 +469,12 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 .filter(jurorPool -> !Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED))
                 .toList();
 
-            if (!summonedJurors.isEmpty()) {
+            // ToDo need to implement the new light summons letter when we have the specs
+            // the if condition here will change
+            if (!summonedJurors.isEmpty() && !isDigitalByDefault) {
                 printDataService.bulkPrintSummonsLetter(summonedJurors);
             }
+
             // increment the pool total by the number of new pool members
             poolRequest.setNewRequest('N');
             poolRequestRepository.save(poolRequest);
@@ -473,6 +494,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     private JurorPool createJurorPool(String login, String owner, Voters voter,
                                       PoolCreateRequestDto poolCreateRequestDto,
+                                      boolean isDigitalByDefault,
                                       String sequenceNumber, PoolRequest poolRequest) {
 
         if (poolRequest == null) {
@@ -530,7 +552,13 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         juror.setPostcode(voter.getPostcode());
         juror.setDateOfBirth(voter.getDateOfBirth());
         juror.setResponded(false);
-        juror.setContactPreference(null);
+        juror.setDigitalByDefault(isDigitalByDefault);
+
+        if (isDigitalByDefault) {
+            juror.setDbdPreference(ReplyMethod.DIGITAL.getDescription());
+        } else {
+            juror.setContactPreference(null);
+        }
 
         // add the hash id and date created for the juror record, this combination should be unique for
         // each juror and prevent duplicate juror records being created for the same voter on the same day
