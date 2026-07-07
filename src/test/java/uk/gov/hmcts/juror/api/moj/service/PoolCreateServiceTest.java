@@ -276,6 +276,7 @@ public class PoolCreateServiceTest {
         assertThat(juror.isDigitalByDefault()).isTrue();
         assertThat(juror.getDbdPreference()).isEqualTo(ReplyMethod.DIGITAL.getDescription());
         Mockito.verify(printDataService, Mockito.never()).bulkPrintSummonsLetter(Mockito.any());
+        Mockito.verify(jurorHistoryRepository).saveAll(List.of());
     }
 
     @Test
@@ -291,6 +292,12 @@ public class PoolCreateServiceTest {
         assertThat(juror.isDigitalByDefault()).isFalse();
         assertThat(juror.getDbdPreference()).isNull();
         Mockito.verify(printDataService).bulkPrintSummonsLetter(Mockito.any());
+
+        ArgumentCaptor<List<JurorHistory>> jurorHistoryCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(jurorHistoryRepository).saveAll(jurorHistoryCaptor.capture());
+        JurorHistory jurorHistory = jurorHistoryCaptor.getValue().get(0);
+        assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
+        assertThat(jurorHistory.getOtherInformation()).isNull();
     }
 
     @Test

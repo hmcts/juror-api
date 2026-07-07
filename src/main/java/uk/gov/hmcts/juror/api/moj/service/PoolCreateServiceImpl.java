@@ -286,7 +286,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, numSelected,
             PoolHistory.NEW_POOL_REQUEST_SUFFIX, HistoryCode.PHSI);
 
-        updateJurorHistory(userId, jurorPools);
+        updateJurorHistory(userId, jurorPools, isDigitalByDefault);
         processBureauDeferrals(poolCreateRequestDto, userId, true);
     }
 
@@ -310,7 +310,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
         updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, numSelected,
             PoolHistory.ADD_POOL_MEMBERS_SUFFIX, HistoryCode.PHSI);
-        updateJurorHistory(userId, jurorPools);
+        updateJurorHistory(userId, jurorPools, isDigitalByDefault);
         processBureauDeferrals(poolCreateRequestDto, userId, false);
     }
 
@@ -360,7 +360,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             otherInformation));
     }
 
-    private void updateJurorHistory(String userId, List<JurorPool> jurorPools) {
+    private void updateJurorHistory(String userId, List<JurorPool> jurorPools, boolean isDigitalByDefault) {
 
         List<JurorHistory> historyList = new ArrayList<>();
         jurorPools.forEach(jurorPool -> {
@@ -379,10 +379,13 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             if (Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
                 jurorHistBuilder.historyCode(HistoryCodeMod.DISQUALIFY_POOL_MEMBER);
                 jurorHistBuilder.otherInformationRef(HistoryCodeMod.DISQUALIFY_POOL_MEMBER.getCode());
+                historyList.add(jurorHistBuilder.build());
+            } else if (isDigitalByDefault) {
+                log.info("To be implemented - Will update juror history for the new light summons letter");
             } else {
                 jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
+                historyList.add(jurorHistBuilder.build());
             }
-            historyList.add(jurorHistBuilder.build());
         });
         jurorHistoryRepository.saveAll(historyList);
     }
