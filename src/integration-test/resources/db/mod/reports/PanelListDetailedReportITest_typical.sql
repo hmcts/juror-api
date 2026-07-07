@@ -64,4 +64,27 @@ insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_nu
 ('415', '415000002', 'T100000001', 1, current_date - 1, 'J', false),
 ('415', '415000003', 'T100000001', 1, current_date - 1, 'J', false);
 
+-- Additional jurors for currentJurorsOnly flag testing
+INSERT INTO juror_mod.juror (juror_number,title,last_name,first_name,dob,address_line_1,address_line_2,address_line_3,address_line_4,address_line_5,postcode,h_phone,w_phone,w_ph_local,responded,date_excused,excusal_code,acc_exc,date_disq,disq_code,user_edtq,notes,no_def_pos,perm_disqual,reasonable_adj_code,reasonable_adj_msg,smart_card_number,completion_date,sort_code,bank_acct_name,bank_acct_no,bldg_soc_roll_no,welsh,police_check,last_update,summons_file,m_phone,h_email,contact_preference,notifications,date_created,optic_reference,pending_title,pending_first_name,pending_last_name,mileage,financial_loss,travel_time,bureau_transfer_date,claiming_subsistence_allowance,service_comp_comms_status,login_attempts,is_locked)
+VALUES
+('415000004','Mr','Smith4','John4','1980-01-01 00:00:00','4 Test Street','Scotland','Giffnock','United Kingdom',NULL,'G46 6JF','44141101-1113','44141201-1113',NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,'NOT_CHECKED','2024-03-11 23:47:40',NULL,'44776-301-1113','Smith4@email.com',0,0,'2024-03-11 23:47:40',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,0,false),
+('415000005','Mr','Smith5','John5','1980-01-01 00:00:00','5 Test Street','Scotland','Giffnock','United Kingdom',NULL,'G46 6JF','44141101-1114','44141201-1114',NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,'NOT_CHECKED','2024-03-11 23:47:40',NULL,'44776-301-1114','Smith5@email.com',0,0,'2024-03-11 23:47:40',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,0,false),
+('415000006','Mr','Smith6','John6','1980-01-01 00:00:00','6 Test Street','Scotland','Giffnock','United Kingdom',NULL,'G46 6JF','44141101-1115','44141201-1115',NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,'NOT_CHECKED','2024-03-11 23:47:40',NULL,'44776-301-1115','Smith6@email.com',0,0,'2024-03-11 23:47:40',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,false,NULL,0,false);
 
+-- Update existing juror_trial rows to have empanelled_date set (currently sitting)
+UPDATE juror_mod.juror_trial
+SET empanelled_date = current_date
+WHERE trial_number = 'T100000001'
+  AND juror_number IN ('415000001', '415000002', '415000003');
+
+-- Not used — excluded by currentJurorsOnly
+INSERT INTO juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed, empanelled_date, return_date)
+VALUES ('415', '415000004', 'T100000001', 1, current_date - 1, 'NU', false, NULL, NULL);
+
+-- Challenged — excluded by currentJurorsOnly
+INSERT INTO juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed, empanelled_date, return_date)
+VALUES ('415', '415000005', 'T100000001', 1, current_date - 1, 'CD', false, NULL, NULL);
+
+-- Was a juror but discharged mid-trial — excluded by currentJurorsOnly
+INSERT INTO juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed, empanelled_date, return_date)
+VALUES ('415', '415000006', 'T100000001', 1, current_date - 1, 'J', true, current_date - 1, current_date);

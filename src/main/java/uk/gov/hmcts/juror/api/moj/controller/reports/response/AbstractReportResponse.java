@@ -30,6 +30,7 @@ public class AbstractReportResponse<T> {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class DataTypeValue {
         private String displayName;
         private String dataType;
@@ -40,6 +41,7 @@ public class AbstractReportResponse<T> {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class TableData<T> {
         private List<Heading> headings;
         private T data;
@@ -59,6 +61,7 @@ public class AbstractReportResponse<T> {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Heading {
             private String id;
             private String name;

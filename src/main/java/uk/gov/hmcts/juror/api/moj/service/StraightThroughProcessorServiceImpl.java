@@ -249,9 +249,11 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
         log.debug("Juror: {}. Validating {} response is eligible for straight through processing",
             jurorPool.getJurorNumber(), replyMethod.getDescription().toLowerCase());
 
-        if (!ObjectUtils.isEmpty(relationship)) {
-            log.debug("Juror: {}. {} response was submitted by a Third Party so is not eligible for straight through "
-                + "processing", jurorPool.getJurorNumber(), replyMethod);
+        if (!ObjectUtils.isEmpty(relationship)
+            && replyMethod.getType().equals(ReplyMethod.DIGITAL.getDescription())) {
+            log.debug("Juror: {}. {} Digital response was submitted by a Third Party so is "
+                          + "not eligible for straight through processing", jurorPool.getJurorNumber(), replyMethod);
+
             return false;
         }
 

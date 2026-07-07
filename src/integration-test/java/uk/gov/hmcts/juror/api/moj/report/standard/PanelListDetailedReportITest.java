@@ -22,6 +22,7 @@ import java.util.List;
 })
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class PanelListDetailedReportITest extends AbstractStandardReportControllerITest {
+
     @Autowired
     public PanelListDetailedReportITest(TestRestTemplate template) {
         super(template, PanelListDetailedReport.class);
@@ -35,14 +36,27 @@ class PanelListDetailedReportITest extends AbstractStandardReportControllerITest
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-            .trialNumber("T100000001")
-            .locCode(TestConstants.VALID_COURT_LOCATION)
-            .build());
+                                 .trialNumber("T100000001")
+                                 .locCode(TestConstants.VALID_COURT_LOCATION)
+                                 .build());
     }
 
     @Test
     void positiveTypicalCourt() {
         testBuilder()
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveReportCreated)
+            .assertEquals(getTypicalResponse());
+    }
+
+
+
+    @Test
+    void positiveCurrentJurorsOnlyFalse() {
+        StandardReportRequest request = getValidPayload();
+        request.setCurrentJurorsOnly(false);
+        testBuilder()
+            .payload(request)
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
@@ -66,98 +80,106 @@ class PanelListDetailedReportITest extends AbstractStandardReportControllerITest
             .assertMojForbiddenResponse("User not allowed to access this report");
     }
 
+    private ReportHashMap<String, StandardReportResponse.DataTypeValue> getStandardResponseHeadings() {
+        return new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
+            .add("trial_number", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Trial Number")
+                .dataType("String")
+                .value("T100000001")
+                .build())
+            .add("names", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Names")
+                .dataType("String")
+                .value("TEST DEFENDANT")
+                .build())
+            .add("court_room", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Court Room")
+                .dataType("String")
+                .value("large room fits 100 people")
+                .build())
+            .add("judge", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Judge")
+                .dataType("String")
+                .value("Test judge")
+                .build())
+            .add("court_name", StandardReportResponse.DataTypeValue.builder()
+                .displayName("Court Name")
+                .dataType("String")
+                .value("CHESTER (415)")
+                .build());
+    }
+
+    private List<StandardReportResponse.TableData.Heading> getStandardTableHeadings() {
+        return List.of(
+            StandardReportResponse.TableData.Heading.builder()
+                .id("juror_number")
+                .name("Juror Number")
+                .dataType("String")
+                .headings(null)
+                .build(),
+            StandardReportResponse.TableData.Heading.builder()
+                .id("first_name")
+                .name("First Name")
+                .dataType("String")
+                .headings(null)
+                .build(),
+            StandardReportResponse.TableData.Heading.builder()
+                .id("last_name")
+                .name("Last Name")
+                .dataType("String")
+                .headings(null)
+                .build(),
+            StandardReportResponse.TableData.Heading.builder()
+                .id("juror_postcode")
+                .name("Postcode")
+                .dataType("String")
+                .headings(null)
+                .build(),
+            StandardReportResponse.TableData.Heading.builder()
+                .id("contact_details")
+                .name("Contact Details")
+                .dataType("List")
+                .headings(List.of(
+                    StandardReportResponse.TableData.Heading.builder()
+                        .id("main_phone")
+                        .name("Main Phone")
+                        .dataType("String")
+                        .headings(null)
+                        .build(),
+                    StandardReportResponse.TableData.Heading.builder()
+                        .id("other_phone")
+                        .name("Other Phone")
+                        .dataType("String")
+                        .headings(null)
+                        .build(),
+                    StandardReportResponse.TableData.Heading.builder()
+                        .id("work_phone")
+                        .name("Work Phone")
+                        .dataType("String")
+                        .headings(null)
+                        .build(),
+                    StandardReportResponse.TableData.Heading.builder()
+                        .id("email")
+                        .name("Email")
+                        .dataType("String")
+                        .headings(null)
+                        .build()))
+                .build());
+    }
+
     private StandardReportResponse getTypicalResponse() {
         return StandardReportResponse.builder()
-            .headings(new ReportHashMap<String, StandardReportResponse.DataTypeValue>()
-                .add("trial_number", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Trial Number")
-                    .dataType("String")
-                    .value("T100000001")
-                    .build())
-                .add("names", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Names")
-                    .dataType("String")
-                    .value("TEST DEFENDANT")
-                    .build())
-                .add("court_room", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Court Room")
-                    .dataType("String")
-                    .value("large room fits 100 people")
-                    .build())
-                .add("judge", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Judge")
-                    .dataType("String")
-                    .value("Test judge")
-                    .build())
-                .add("court_name", StandardReportResponse.DataTypeValue.builder()
-                    .displayName("Court Name")
-                    .dataType("String")
-                    .value("CHESTER (415)")
-                    .build()))
+            .headings(getStandardResponseHeadings())
             .tableData(
                 StandardReportResponse.TableData.<StandardTableData>builder()
-                    .headings(List.of(
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("juror_number")
-                            .name("Juror Number")
-                            .dataType("String")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("first_name")
-                            .name("First Name")
-                            .dataType("String")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("last_name")
-                            .name("Last Name")
-                            .dataType("String")
-                            .headings(null)
-                            .build(),
-                        StandardReportResponse.TableData.Heading.builder()
-                            .id("juror_postcode")
-                            .name("Postcode")
-                            .dataType("String")
-                            .headings(null)
-                            .build(),
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("contact_details")
-                                .name("Contact Details")
-                                .dataType("List")
-                                .headings(List.of(
-                                    StandardReportResponse.TableData.Heading.builder()
-                                        .id("main_phone")
-                                        .name("Main Phone")
-                                        .dataType("String")
-                                        .headings(null)
-                                        .build(),
-                                    StandardReportResponse.TableData.Heading.builder()
-                                        .id("other_phone")
-                                        .name("Other Phone")
-                                        .dataType("String")
-                                        .headings(null)
-                                        .build(),
-                                    StandardReportResponse.TableData.Heading.builder()
-                                        .id("work_phone")
-                                        .name("Work Phone")
-                                        .dataType("String")
-                                        .headings(null)
-                                        .build(),
-                                    StandardReportResponse.TableData.Heading.builder()
-                                        .id("email")
-                                        .name("Email")
-                                        .dataType("String")
-                                        .headings(null)
-                                        .build()))
-                                .build()))
+                    .headings(getStandardTableHeadings())
                     .data(StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "415000001")
                             .add("first_name", "Jenna")
                             .add("last_name", "Magura")
                             .add("juror_postcode", "G46 6JF")
-                            .add("contact_details",  new ReportLinkedMap<String, Object>()
+                            .add("contact_details", new ReportLinkedMap<String, Object>()
                                 .add("main_phone", "44141101-1110")
                                 .add("other_phone", "44776-301-1110")
                                 .add("work_phone", "44141201-1110")
@@ -167,7 +189,7 @@ class PanelListDetailedReportITest extends AbstractStandardReportControllerITest
                             .add("first_name", "Rhonda")
                             .add("last_name", "Lovejoy")
                             .add("juror_postcode", "G46 6JF")
-                            .add("contact_details",  new ReportLinkedMap<String, Object>()
+                            .add("contact_details", new ReportLinkedMap<String, Object>()
                                 .add("main_phone", "44141101-1111")
                                 .add("other_phone", "44776-301-1111")
                                 .add("work_phone", "44141201-1111")
@@ -177,11 +199,87 @@ class PanelListDetailedReportITest extends AbstractStandardReportControllerITest
                             .add("first_name", "Clarine")
                             .add("last_name", "Rowsey")
                             .add("juror_postcode", "G466JF")
-                            .add("contact_details",  new ReportLinkedMap<String, Object>()
+                            .add("contact_details", new ReportLinkedMap<String, Object>()
                                 .add("main_phone", "44141101-1112")
                                 .add("other_phone", "44776-301-1112")
                                 .add("work_phone", "44141201-1112")
-                                .add("email", "Rowsey2@email.com"))))
+                                .add("email", "Rowsey2@email.com")),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "415000004")
+                            .add("first_name", "John4")
+                            .add("last_name", "Smith4")
+                            .add("juror_postcode", "G46 6JF")
+                            .add("contact_details", new ReportLinkedMap<String, Object>()
+                                .add("main_phone", "44141101-1113")
+                                .add("other_phone", "44776-301-1113")
+                                .add("work_phone", "44141201-1113")
+                                .add("email", "Smith4@email.com")),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "415000005")
+                            .add("first_name", "John5")
+                            .add("last_name", "Smith5")
+                            .add("juror_postcode", "G46 6JF")
+                            .add("contact_details", new ReportLinkedMap<String, Object>()
+                                .add("main_phone", "44141101-1114")
+                                .add("other_phone", "44776-301-1114")
+                                .add("work_phone", "44141201-1114")
+                                .add("email", "Smith5@email.com")),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "415000006")
+                            .add("first_name", "John6")
+                            .add("last_name", "Smith6")
+                            .add("juror_postcode", "G46 6JF")
+                            .add("contact_details", new ReportLinkedMap<String, Object>()
+                                .add("main_phone", "44141101-1115")
+                                .add("other_phone", "44776-301-1115")
+                                .add("work_phone", "44141201-1115")
+                                .add("email", "Smith6@email.com"))))
+                    .build())
+            .build();
+    }
+
+    private StandardReportResponse getCurrentJurorsOnlyResponse() {
+        return StandardReportResponse.builder()
+            .headings(getStandardResponseHeadings())
+            .tableData(
+                StandardReportResponse.TableData.<StandardTableData>builder()
+                    .headings(getStandardTableHeadings())
+                    .data(StandardTableData.of(
+                              // 415000001, 415000002, 415000003 — result J, empanelled, no return date
+                              new ReportLinkedMap<String, Object>()
+                                  .add("juror_number", "415000001")
+                                  .add("first_name", "Jenna")
+                                  .add("last_name", "Magura")
+                                  .add("juror_postcode", "G46 6JF")
+                                  .add("contact_details", new ReportLinkedMap<String, Object>()
+                                      .add("main_phone", "44141101-1110")
+                                      .add("other_phone", "44776-301-1110")
+                                      .add("work_phone", "44141201-1110")
+                                      .add("email", "Magura0@email.com")),
+                              new ReportLinkedMap<String, Object>()
+                                  .add("juror_number", "415000002")
+                                  .add("first_name", "Rhonda")
+                                  .add("last_name", "Lovejoy")
+                                  .add("juror_postcode", "G46 6JF")
+                                  .add("contact_details", new ReportLinkedMap<String, Object>()
+                                      .add("main_phone", "44141101-1111")
+                                      .add("other_phone", "44776-301-1111")
+                                      .add("work_phone", "44141201-1111")
+                                      .add("email", "Lovejoy1@email.com")),
+                              new ReportLinkedMap<String, Object>()
+                                  .add("juror_number", "415000003")
+                                  .add("first_name", "Clarine")
+                                  .add("last_name", "Rowsey")
+                                  .add("juror_postcode", "G466JF")
+                                  .add("contact_details", new ReportLinkedMap<String, Object>()
+                                      .add("main_phone", "44141101-1112")
+                                      .add("other_phone", "44776-301-1112")
+                                      .add("work_phone", "44141201-1112")
+                                      .add("email", "Rowsey2@email.com")))
+                    // 415000004 excluded — result NU
+                    // 415000005 excluded — result CD
+                    // 415000006 excluded — result J but return_date set
+                    )
                     .build())
             .build();
     }

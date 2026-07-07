@@ -255,10 +255,18 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         PaginatedList<PoolRequestActiveDataDto> responseBody = responseEntity.getBody();
         assertThat(responseBody).isNotNull();
         assertThat(responseBody.getData().size())
-            .as("Expect the response body to contain 2 Pool Requests")
+            .as("Expect the response data to contain 2 Pool Requests")
             .isEqualTo(2);
 
-        PoolRequestActiveDataDto data = responseBody.getData().get(1);
+        PoolRequestActiveDataDto data = responseBody.getData().get(0);
+        assertThat(data.getCourtName())
+            .as("Court Name should be CHESTER for the pool request with LOC_CODE 415")
+            .isEqualTo("CHESTER");
+        assertThat(data.getPoolNumber())
+            .as("Pool Number should be mapped from the Pool Request view")
+            .isEqualTo("415220101");
+
+        data = responseBody.getData().get(1);
         assertThat(data.getCourtName())
             .as("Court Name should be populated from the Court Location table using the LOC_CODE foreign key")
             .isEqualTo("CHESTER");
@@ -274,6 +282,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         assertThat(data.getAttendanceDate())
             .as("Attendance Date should be mapped from the RETURN_DATE column in the Pool Request view")
             .hasDayOfMonth(20).hasMonth(Month.JANUARY).hasYear(2022);
+
     }
 
     @Test
@@ -317,7 +326,10 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         PaginatedList<PoolRequestDataDto> responseBody = responseEntity.getBody();
         assertThat(responseBody).isNotNull();
         assertThat(responseBody.getData().size())
-            .as("Expect the response body to be an empty list")
+            .as("Expect the response data to contain 9 pool requests")
+            .isEqualTo(9);
+        assertThat(responseBody.getTotalItems())
+            .as("The total number of entries available in the table")
             .isEqualTo(9);
     }
 
@@ -1904,6 +1916,33 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolRequestActiveDataDto.getAttendanceDate())
             .as("Expect the service start date to be equal today's date minus 10 days")
             .isEqualTo(LocalDate.now().minusDays(10));
+        assertThat(poolRequestActiveDataDto.getRespondedJurors())
+            .as("Expect the responded jurors in pool to be equal to 9")
+            .isEqualTo(9);
+
+        poolRequestActiveDataDto = poolRequestActiveDataDtos.get(1);
+        assertThat(poolRequestActiveDataDto.getPoolNumber())
+            .as("Expect the number to be equal to 415221307")
+            .isEqualTo("415221307");
+        assertThat(poolRequestActiveDataDto.getCourtName())
+            .as("Expect the court name to be equal to CHESTER")
+            .isEqualTo("CHESTER");
+        assertThat(poolRequestActiveDataDto.getPoolCapacity())
+            .as("Expect the pool capacity to be equal to 50")
+            .isEqualTo(50);
+        assertThat(poolRequestActiveDataDto.getJurorsInPool())
+            .as("Expect the jurors in pool to be equal to 1")
+            .isEqualTo(1);
+        assertThat(poolRequestActiveDataDto.getPoolType())
+            .as("Expect the court type to be equal to CROWN COURT")
+            .isEqualTo("CROWN COURT");
+        assertThat(poolRequestActiveDataDto.getAttendanceDate())
+            .as("Expect the service start date to be equal today's date minus 10 days")
+            .isEqualTo(LocalDate.now().minusDays(10));
+        assertThat(poolRequestActiveDataDto.getRespondedJurors())
+            .as("Expect the responded jurors in pool to be equal to 1")
+            .isEqualTo(1);
+
     }
 
     @Test
@@ -1965,6 +2004,30 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolRequestActiveDataDto.getAttendanceDate())
             .as("Expect the service start date to be equal today's date plus 1 week")
             .isEqualTo(LocalDate.now().plusWeeks(1));
+
+        poolRequestActiveDataDto = poolRequestActiveDataDtos.get(1);
+
+        assertThat(poolRequestActiveDataDto.getPoolNumber())
+            .as("Expect the number to be equal to 767221206")
+            .isEqualTo("767221206");
+        assertThat(poolRequestActiveDataDto.getCourtName())
+            .as("Expect the court name to be equal to KNUTSFORD")
+            .isEqualTo("KNUTSFORD");
+        assertThat(poolRequestActiveDataDto.getPoolCapacity())
+            .as("Expect the pool capacity to be equal to 60")
+            .isEqualTo(60);
+        assertThat(poolRequestActiveDataDto.getJurorsInPool())
+            .as("Expect the jurors in pool to be equal to 2")
+            .isEqualTo(2);
+        assertThat(poolRequestActiveDataDto.getPoolType())
+            .as("Expect the court type to be equal to CROWN COURT")
+            .isEqualTo("CROWN COURT");
+        assertThat(poolRequestActiveDataDto.getAttendanceDate())
+            .as("Expect the service start date to be equal today's date minus 10 days")
+            .isEqualTo(LocalDate.now().minusDays(10));
+        assertThat(poolRequestActiveDataDto.getRespondedJurors())
+            .as("Expect the responded jurors in pool to be equal to 2")
+            .isEqualTo(2);
     }
 
     @Test
@@ -2026,6 +2089,23 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolRequestActiveDataDto.getAttendanceDate())
             .as("Expect the service start date to be equal today's date minus 10 days")
             .isEqualTo(LocalDate.now().minusDays(10));
+        assertThat(poolRequestActiveDataDto.getRespondedJurors())
+            .as("Expect the responded jurors in pool to be equal to 2")
+            .isEqualTo(2);
+
+        poolRequestActiveDataDto = poolRequestActiveDataDtos.get(1);
+        assertThat(poolRequestActiveDataDto.getPoolNumber())
+            .as("Expect the number to be equal to 415221331")
+            .isEqualTo("415221331");
+        poolRequestActiveDataDto = poolRequestActiveDataDtos.get(2);
+        assertThat(poolRequestActiveDataDto.getPoolNumber())
+            .as("Expect the number to be equal to 415221330")
+            .isEqualTo("415221330");
+        poolRequestActiveDataDto = poolRequestActiveDataDtos.get(24);
+        assertThat(poolRequestActiveDataDto.getPoolNumber())
+            .as("Expect the number to be equal to 415221308")
+            .isEqualTo("415221308");
+
     }
 
     @Test
@@ -2076,7 +2156,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Expect the court name to be equal to GUILDFORD SITTING AT CHICHESTER")
             .isEqualTo("GUILDFORD SITTING AT CHICHESTER");
         assertThat(poolRequestActiveDataDto.getPoolCapacity())
-            .as("Expect the pool capacity to be equal to 60")
+            .as("Expect the pool capacity to be equal to 50")
             .isEqualTo(50);
         assertThat(poolRequestActiveDataDto.getJurorsInPool())
             .as("Expect the jurors in pool to be equal to 1")
@@ -2087,6 +2167,14 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
         assertThat(poolRequestActiveDataDto.getAttendanceDate())
             .as("Expect the service start date to be equal today's date minus 9 days")
             .isEqualTo(LocalDate.now().minusDays(9));
+        assertThat(poolRequestActiveDataDto.getRespondedJurors())
+            .as("Expect the responded jurors in pool to be equal to 1")
+            .isEqualTo(1);
+
+        poolRequestActiveDataDto = poolRequestActiveDataDtos.get(1);
+        assertThat(poolRequestActiveDataDto.getPoolNumber())
+            .as("Expect the number to be equal to 416221337")
+            .isEqualTo("416221337");
     }
 
     @Test

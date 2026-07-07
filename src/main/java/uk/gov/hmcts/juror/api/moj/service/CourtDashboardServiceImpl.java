@@ -86,7 +86,12 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
 
     private CourtAdminInfoDto getUnpaidAttendancesInfo(String locCode) {
         log.info("Retrieving unpaid attendances for location code: {}", locCode);
-        List<Appearance> unpaidAttendances = appearanceService.getUnpaidAttendancesAtCourt(locCode);
+        List<Appearance> allUnpaidAttendances = appearanceService.getUnpaidAttendancesAtCourt(locCode);
+
+        // need keep unpaid attendances less than a year old - JS-891
+        List<Appearance> unpaidAttendances = allUnpaidAttendances.stream().filter(
+            a -> a.getAttendanceDate().isAfter(LocalDate.now().minusYears(1)))
+            .toList();
 
         CourtAdminInfoDto courtAdminInfoDto = CourtAdminInfoDto.builder()
             .unpaidAttendances(unpaidAttendances.size()).build();

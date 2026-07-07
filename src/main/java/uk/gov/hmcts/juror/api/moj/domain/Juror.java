@@ -317,6 +317,14 @@ public class Juror extends Address implements Serializable {
     @NotAudited
     private JurorThirdParty thirdParty;
 
+    @Column(name = "date_summoned")
+    @NotAudited
+    private LocalDate summonedDate;
+
+    @Column(name = "hash_id")
+    @NotAudited
+    private Long hashId;
+
     @PrePersist
     @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void prePersist() {

@@ -548,6 +548,70 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         return jurorOverviewResponseDto;
     }
 
+
+    @Override
+    @Transactional
+    public void updateJurorAddressFromResponse(JurorPool jurorPool) {
+        AbstractJurorResponse response =
+            jurorResponseCommonRepositoryMod.findByJurorNumber(jurorPool.getJurorNumber());
+        if (response == null) {
+            return;
+        }
+
+        Juror juror = jurorPool.getJuror();
+
+        boolean addressChanged =
+            !Objects.equals(juror.getAddressLine1(), response.getAddressLine1())
+                || !Objects.equals(juror.getAddressLine2(), response.getAddressLine2())
+                || !Objects.equals(juror.getAddressLine3(), response.getAddressLine3())
+                || !Objects.equals(juror.getAddressLine4(), response.getAddressLine4())
+                || !Objects.equals(juror.getAddressLine5(), response.getAddressLine5())
+                || !Objects.equals(juror.getPostcode(), response.getPostcode());
+
+        if (!addressChanged) {
+            return;
+        }
+
+        juror.setAddressLine1(response.getAddressLine1());
+        juror.setAddressLine2(response.getAddressLine2());
+        juror.setAddressLine3(response.getAddressLine3());
+        juror.setAddressLine4(response.getAddressLine4());
+        juror.setAddressLine5(response.getAddressLine5());
+        juror.setPostcode(response.getPostcode());
+
+        jurorRepository.save(juror);
+
+        jurorHistoryService.createEditChangeOfPersonalDetailsHistory(
+            jurorPool,
+            jurorPool.getJurorNumber(),
+            jurorPool.getPoolNumber(),
+            "Address Changed"
+        );
+
+        List<BulkPrintData> queuedLetters =
+            printDataService.getLettersQueuedForJuror(jurorPool.getJurorNumber());
+
+        List<FormCode> formCodes = queuedLetters.stream()
+            .map(BulkPrintData::getFormAttribute)
+            .map(formAttribute -> FormCode.getFormCode(formAttribute.getFormType()))
+            .distinct()
+            .toList();
+
+        if (!formCodes.isEmpty()) {
+            printDataService.removeQueuedLetterForJuror(jurorPool, formCodes);
+
+            formCodes.forEach(formCode -> {
+                try {
+                    formCode.getLetterPrinter().accept(printDataService, jurorPool);
+                    removeRsupHistory(jurorPool.getJurorNumber(), formCode);
+                } catch (Exception e) {
+                    log.info("Failed to update queued letter {} for juror {}: {}",
+                             formCode, jurorPool.getJurorNumber(), e.getMessage());
+                }
+            });
+        }
+    }
+
     private JurorOverviewResponseDto getJurorOverviewResponseDto(JurorPool jurorPool) {
         return new JurorOverviewResponseDto(jurorPool,
             jurorStatusRepository, panelRepository, appearanceRepository,
@@ -726,6 +790,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                 validateOnCall(jurorPool);
                 jurorPool.setOnCall(true);
                 jurorPool.setNextDate(null);
+                jurorHistoryService.createOnCallHistory(jurorPool);
                 log.info("Juror {} has been placed on call", juror);
             } else if (dto.getNextDate() != null) {
                 jurorPool.setOnCall(false);
@@ -819,8 +884,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .contactPreference(null)
             .build();
 
-        jurorRepository.save(juror);
-        return juror;
+        return jurorRepository.save(juror);
     }
 
 
@@ -871,7 +935,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .responseEntered(true)
             .build();
 
-        jurorRepository.save(juror);
+        juror = jurorRepository.save(juror);
+
         log.info("Juror record created for juror {}", pendingJuror.getJurorNumber());
 
         PoolRequest poolRequest =

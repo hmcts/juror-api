@@ -49,6 +49,7 @@ public class YieldPerformanceReportResponse {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class TableData {
         private List<YieldPerformanceReportResponse.TableData.Heading> headings;
         private List<YieldData> data;
@@ -62,6 +63,7 @@ public class YieldPerformanceReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Heading {
             private String id;
             private String name;
@@ -72,6 +74,7 @@ public class YieldPerformanceReportResponse {
         @NoArgsConstructor
         @AllArgsConstructor
         @Builder
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class YieldData {
             private String court;
             private int requested;

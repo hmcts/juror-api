@@ -1,12 +1,13 @@
 buildscript {
     ext {
-        springBootVersion = '3.5.4'
+        springBootVersion = '3.5.15'
         notifyVersion = '5.2.1-RELEASE'
         springDocVersion = '2.8.9'
         queryDslVersion = '5.1.0'
-        flywayVersion = '10.22.0'
-        postgresVersion = '42.7.5'
-        envers = '3.5.4'
+        flywayVersion = '11.20.3'
+        postgresVersion = '42.7.11'
+        envers = '3.5.12'
+        jwtVersion = '0.13.0'
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -32,7 +33,7 @@ apply plugin: 'io.spring.dependency-management'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -57,10 +58,10 @@ bootJar {
 }
 
 jacoco {
-    toolVersion = "0.8.13"
+    toolVersion = "0.8.15"
 }
 
-version = '5.24.0'
+version = '5.27.0'
 
 repositories {
     mavenLocal()
@@ -91,13 +92,12 @@ dependencies {
 
     //Internal dependency overrides
     implementation 'org.yaml:snakeyaml:2.3'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.41'
-    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.43'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.55'
+    implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.55'
     //
     implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
     implementation("org.springframework.data:spring-data-envers:${envers}")
-   // implementation("org.springframework.data:spring-data-envers")
     implementation("org.springframework.boot:spring-boot-starter-security:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
     implementation("org.springframework.boot:spring-boot-starter-json:${springBootVersion}")
@@ -109,15 +109,13 @@ dependencies {
     implementation "org.flywaydb:flyway-database-postgresql:${flywayVersion}"
     implementation "org.flywaydb:flyway-core:${flywayVersion}"
 
-    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    implementation "io.jsonwebtoken:jjwt-api:${jwtVersion}"
     implementation 'javax.mail:mail:1.4.7'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}"
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.4'
 
     implementation('com.google.guava:guava:33.4.0-jre')
-
-    implementation('org.hibernate.orm:hibernate-core:6.3.0.CR1')
 
     // QueryDSL
     implementation("com.querydsl:querydsl-core:${queryDslVersion}")
@@ -132,30 +130,30 @@ dependencies {
     annotationProcessor("com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
     annotationProcessor('jakarta.persistence:jakarta.persistence-api:3.2.0')
 
-    implementation('org.projectlombok:lombok:1.18.36')
+    implementation('org.projectlombok:lombok:1.18.46')
     annotationProcessor('org.projectlombok:lombok')
 
-    implementation('org.apache.commons:commons-lang3:3.17.0')
+    implementation('org.apache.commons:commons-lang3:3.18.0')
     implementation('org.apache.commons:commons-text:1.13.0')
     implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
 
-    runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.7.5')
+    runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.7.9')
 
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
-    implementation group: 'io.rest-assured', name: 'rest-assured'
+    implementation group: 'io.rest-assured', name: 'rest-assured', version: '5.4.0'
 
     testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
 
     testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
     testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:4.1.1'
-    testImplementation('org.assertj:assertj-core:3.27.3')
+    testImplementation('org.assertj:assertj-core:3.27.7')
     testImplementation 'org.mockito:mockito-core:5.15.2'
 
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
 
-    testImplementation('net.bytebuddy:byte-buddy:1.17.7')
+    testImplementation('net.bytebuddy:byte-buddy:1.18.10')
     testImplementation('junit:junit:4.13.2')
     testImplementation "org.testcontainers:testcontainers:1.21.4"
     testImplementation "org.testcontainers:junit-jupiter:1.21.4"
@@ -290,7 +288,7 @@ sourceSets {
 }
 checkstyle {
     maxWarnings = 1
-    toolVersion = '10.17.0'
+    toolVersion = '10.26.1'
     getConfigDirectory().set(new File(rootDir, 'config/checkstyle'))
 }
 
@@ -368,24 +366,10 @@ project.tasks['sonarqube'].dependsOn jacocoTestReport
 dependencyCheck {
     // Specifies if the build should be failed if a CVSS score above a specified level is identified.
     // range of 0-10 fails the build, anything greater and it doesn't fail the build
-    failBuildOnCVSS = 10
+    failBuildOnCVSS = 0
     suppressionFile = 'config/owasp/suppressions.xml'
+    scanConfigurations = ['runtimeClasspath', 'compileClasspath']
 
-    analyzers {
-        // Disable scanning of .NET related binaries
-        assemblyEnabled = false
-    }
-    skipConfigurations = [
-            "checkstyle",
-            "compileOnly",
-            "pmd",
-            "integrationTest",
-            "functionalTest",
-            "test",
-            "smokeTest",
-            "contractTestRuntimeClasspath",
-            "contractTestCompileClasspath"
-    ]
 }
 
 project.tasks['check'].dependsOn integration

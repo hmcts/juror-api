@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.DeceasedJuror;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
@@ -102,6 +103,11 @@ public class JurorServiceImpl implements JurorService {
         }
 
         return builder.build();
+    }
+
+    @Override
+    public List<DeceasedJuror> getDeceasedJurors(List<String> postcodes) {
+        return jurorRepository.findDeceasedJurors(postcodes);
     }
 
     /**
