@@ -219,6 +219,7 @@ public class Juror extends Address implements Serializable {
     @Column(name = "contact_preference")
     private Integer contactPreference;
 
+    @NotAudited
     @Column(name = "digital_by_default")
     private boolean digitalByDefault;
 

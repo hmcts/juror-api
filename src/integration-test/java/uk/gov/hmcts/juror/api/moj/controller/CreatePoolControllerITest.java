@@ -277,10 +277,17 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql(
         scripts = {
             "/db/mod/truncate.sql",
-            "/db/CreatePoolController_loadVoters.sql",
-            "/db/CreatePoolController_createPool.sql"
+            "/db/CreatePoolController_loadVoters.sql"
         },
-        statements = "UPDATE juror_mod.court_location SET digital_by_default = true WHERE loc_code = '415'")
+        statements = {
+            "INSERT INTO juror_mod.court_catchment_area (postcode, loc_code) VALUES ('CH1', '419')",
+            "INSERT INTO juror_mod.court_catchment_area (postcode, loc_code) VALUES ('CH2', '419')",
+            "INSERT INTO juror_mod.court_catchment_area (postcode, loc_code) VALUES ('CH3', '419')",
+            "INSERT INTO juror_mod.pool (owner, pool_no, return_date, total_no_required, no_requested, pool_type, "
+                + "loc_code, new_request, last_update, additional_summons, attend_time) VALUES ('400', '419221201', "
+                + "TIMESTAMP'2022-12-04 00:00:00.0', 5, 5, 'CRO', '419', 'N', "
+                + "TIMESTAMP'2022-10-02 09:22:09.0', NULL, NULL)"
+        })
     public void createPool_digitalByDefaultCourt_doesNotCreateSummonsLetter() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
@@ -290,7 +297,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .owner("400")
             .build());
 
-        PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+        PoolCreateRequestDto poolCreateRequest = setUpDigitalByDefaultPoolCreateRequestDto();
 
         final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
 
@@ -856,6 +863,13 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         postcodes.add("CH3");
         poolCreateRequestDto.setPostcodes(postcodes);
 
+        return poolCreateRequestDto;
+    }
+
+    private PoolCreateRequestDto setUpDigitalByDefaultPoolCreateRequestDto() {
+        PoolCreateRequestDto poolCreateRequestDto = setUpPoolCreateRequestDto();
+        poolCreateRequestDto.setPoolNumber("419221201");
+        poolCreateRequestDto.setCatchmentArea("419");
         return poolCreateRequestDto;
     }
 

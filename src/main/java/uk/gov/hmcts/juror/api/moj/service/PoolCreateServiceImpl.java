@@ -270,14 +270,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     @Override
     public void createPool(BureauJwtPayload payload, PoolCreateRequestDto poolCreateRequestDto) {
 
-        String locCode = poolCreateRequestDto.getCatchmentArea();
-        CourtLocation courtLocation = courtLocationRepository.findByLocCode(locCode)
-            .orElseThrow(() -> new MojException.BusinessRuleViolation(
-                "Court location not found for locCode: " + locCode,
-                MojException.BusinessRuleViolation.ErrorCode.INVALID_COURT_LOCATION));
-
-        final boolean isDigitalByDefault = featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
-            && courtLocation.isDigitalByDefault();
+        final boolean isDigitalByDefault = isIsDigitalByDefault(poolCreateRequestDto.getCatchmentArea());
 
         // Get a list of Pool members from voters table
         List<JurorPool> jurorPools =
@@ -300,12 +293,14 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     @Transactional
     public void summonAdditionalCitizens(BureauJwtPayload payload, PoolAdditionalSummonsDto poolAdditionalSummonsDto) {
 
+        final boolean isDigitalByDefault = isIsDigitalByDefault(poolAdditionalSummonsDto.getCatchmentArea());
+
         //populate the PoolCreateRequestDto object from poolAdditionalSummonsDto
         PoolCreateRequestDto poolCreateRequestDto = setupPoolRequestDto(poolAdditionalSummonsDto);
 
         // Get a list of Pool members from voters table
         List<JurorPool> jurorPools = getJurorPools(payload.getLogin(), payload.getOwner(), poolCreateRequestDto,
-            false);
+                                                   isDigitalByDefault);
         // find the actual number of jurors added and pass to pool history (minus the disq. on selection)
         int numSelected = jurorPools.stream()
             .mapToInt(member -> member.getStatus().getStatus() == IJurorStatus.DISQUALIFIED ? 0 : 1)
@@ -317,6 +312,17 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             PoolHistory.ADD_POOL_MEMBERS_SUFFIX, HistoryCode.PHSI);
         updateJurorHistory(userId, jurorPools);
         processBureauDeferrals(poolCreateRequestDto, userId, false);
+    }
+
+    private boolean isIsDigitalByDefault(String locCode) {
+        CourtLocation courtLocation = courtLocationRepository.findByLocCode(locCode)
+            .orElseThrow(() -> new MojException.BusinessRuleViolation(
+                "Court location not found for locCode: " + locCode,
+                MojException.BusinessRuleViolation.ErrorCode.INVALID_COURT_LOCATION));
+
+        return featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+            && courtLocation.isDigitalByDefault();
+
     }
 
     private PoolCreateRequestDto setupPoolRequestDto(PoolAdditionalSummonsDto poolAdditionalSummonsDto) {
@@ -470,9 +476,12 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 .toList();
 
             // ToDo need to implement the new light summons letter when we have the specs
-            // the if condition here will change
-            if (!summonedJurors.isEmpty() && !isDigitalByDefault) {
-                printDataService.bulkPrintSummonsLetter(summonedJurors);
+            if (!summonedJurors.isEmpty()) {
+                if (isDigitalByDefault) {
+                    log.info("To be implemented - Will send out the new light summons letter");
+                } else {
+                    printDataService.bulkPrintSummonsLetter(summonedJurors);
+                }
             }
 
             // increment the pool total by the number of new pool members
