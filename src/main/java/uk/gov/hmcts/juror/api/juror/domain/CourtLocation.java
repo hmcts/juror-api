@@ -154,6 +154,9 @@ public class CourtLocation implements Serializable, ICourtLocation {
     @NotAudited
     private Integer votersLock;
 
+    @Column(name = "digital_by_default")
+    @NotAudited
+    private boolean digitalByDefault;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id")
