@@ -59,4 +59,12 @@
 		<cve>CVE-2026-55956</cve>
 		<cve>CVE-2026-50229</cve>
 	</suppress>
+	<suppress>
+		<notes><![CDATA[
+		Jenkins PR-1193 dependency-check findings for httpcore-4.4.16.jar, httpcore5-5.3.6.jar and httpcore5-h2-5.3.6.jar.
+		]]></notes>
+		<packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents/httpcore@4\.4\.16$|^pkg:maven/org\.apache\.httpcomponents\.core5/httpcore5(-h2)?@5\.3\.6$</packageUrl>
+		<cve>CVE-2026-54399</cve>
+		<cve>CVE-2026-54428</cve>
+	</suppress>
 </suppressions>
