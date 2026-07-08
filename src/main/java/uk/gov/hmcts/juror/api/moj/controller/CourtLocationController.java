@@ -67,7 +67,7 @@ public class CourtLocationController {
     public ResponseEntity<List<CourtLocationDataDto>> getCourtCatchmentAreasByPostcode(
         @RequestParam(name = "postcode")
         @Length(max = 4)
-        @Pattern(regexp = "[A-Z0-9]{1,4}") @Valid String postcode) {
+        @Pattern(regexp = "(?i)[A-Z0-9]{1,4}") @Valid String postcode) {
         List<CourtLocationDataDto> catchmentAreas = courtLocationService.getCourtLocationsByPostcode(postcode);
         if (Collections.isEmpty(catchmentAreas)) {
             return ResponseEntity.notFound().build();

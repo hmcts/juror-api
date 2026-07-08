@@ -92,26 +92,26 @@ class SittingDaysReportServiceImplTest {
 
             SittingDaysStatsReportResponse response = sittingDaysReportService.getSittingDaysStats(request);
 
-            validateReportHeadings(response.getHeadings(), 665, 780);
+            validateReportHeadings(response.getHeadings(), 665, 5060);
             validateTableHeadings(response.getTableData());
 
             assertThat(response.getTableData().getData()).hasSize(1);
             SittingDaysStatsReportResponse.TableData.DataRow row = response.getTableData().getData().get(0);
             assertThat(row.getCourtLocationNameAndCode()).isEqualTo("CHESTER (415)");
-            assertThat(row.getZeroSittingDays()).isEqualTo(10);
-            assertThat(row.getOneSittingDay()).isEqualTo(20);
-            assertThat(row.getTwoSittingDays()).isEqualTo(30);
-            assertThat(row.getThreeSittingDays()).isEqualTo(40);
-            assertThat(row.getFourSittingDays()).isEqualTo(50);
-            assertThat(row.getFiveSittingDays()).isEqualTo(60);
-            assertThat(row.getSixSittingDays()).isEqualTo(70);
-            assertThat(row.getSevenSittingDays()).isEqualTo(80);
-            assertThat(row.getEightSittingDays()).isEqualTo(90);
-            assertThat(row.getNineSittingDays()).isEqualTo(100);
-            assertThat(row.getTenSittingDays()).isEqualTo(110);
-            assertThat(row.getElevenOrMoreSittingDays()).isEqualTo(120);
+            assertThat(row.getZeroSittingDays()).isEqualTo(5);
+            assertThat(row.getOneSittingDay()).isEqualTo(10);
+            assertThat(row.getTwoSittingDays()).isEqualTo(20);
+            assertThat(row.getThreeSittingDays()).isEqualTo(30);
+            assertThat(row.getFourSittingDays()).isEqualTo(40);
+            assertThat(row.getFiveSittingDays()).isEqualTo(50);
+            assertThat(row.getSixSittingDays()).isEqualTo(60);
+            assertThat(row.getSevenSittingDays()).isEqualTo(70);
+            assertThat(row.getEightSittingDays()).isEqualTo(80);
+            assertThat(row.getNineSittingDays()).isEqualTo(90);
+            assertThat(row.getTenSittingDays()).isEqualTo(100);
+            assertThat(row.getElevenOrMoreSittingDays()).isEqualTo(110);
             assertThat(row.getTotalJurors()).isEqualTo(665);
-            assertThat(row.getTotalSittingDays()).isEqualTo(780);
+            assertThat(row.getTotalSittingDays()).isEqualTo(5060);
             verify(statsSittingDaysRepository, times(1))
                 .findStatsByMonthRangeAndCourtCodes("2024-05", "2024-05", List.of("415"));
         }
@@ -155,18 +155,18 @@ class SittingDaysReportServiceImplTest {
 
     private List<StatsSittingDaysRepository.SittingDaysStatsData> getSittingDaysStatsData() {
         return List.of(
-            getSittingDaysStatsData("0", 10, 5),
-            getSittingDaysStatsData("1", 20, 10),
-            getSittingDaysStatsData("2", 30, 20),
-            getSittingDaysStatsData("3", 40, 30),
-            getSittingDaysStatsData("4", 50, 40),
-            getSittingDaysStatsData("5", 60, 50),
-            getSittingDaysStatsData("6", 70, 60),
-            getSittingDaysStatsData("7", 80, 70),
-            getSittingDaysStatsData("8", 90, 80),
-            getSittingDaysStatsData("9", 100, 90),
-            getSittingDaysStatsData("10", 110, 100),
-            getSittingDaysStatsData("11 or more", 120, 110)
+            getSittingDaysStatsData("0", 0, 5),
+            getSittingDaysStatsData("1", 10, 10),
+            getSittingDaysStatsData("2", 40, 20),
+            getSittingDaysStatsData("3", 90, 30),
+            getSittingDaysStatsData("4", 160, 40),
+            getSittingDaysStatsData("5", 250, 50),
+            getSittingDaysStatsData("6", 360, 60),
+            getSittingDaysStatsData("7", 490, 70),
+            getSittingDaysStatsData("8", 640, 80),
+            getSittingDaysStatsData("9", 810, 90),
+            getSittingDaysStatsData("10", 1000, 100),
+            getSittingDaysStatsData("11 or more", 1210, 110)
         );
     }
 

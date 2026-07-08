@@ -45,6 +45,9 @@ smartsurvey:
     host: ${PROXY_HOST:}
     port: ${PROXY_PORT:}
     type: HTTP     # type is one of DIRECT, HTTP, SOCKS
+feature-flags:
+  flags:
+    digital-by-default: ${DIGITAL_BY_DEFAULT:false}
 server:
   error:
     include-message: always

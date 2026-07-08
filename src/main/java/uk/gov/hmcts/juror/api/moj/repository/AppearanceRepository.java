@@ -225,4 +225,3 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
         @Param("courtLocationRevision") Long courtLocationRevision,
         @Param("locCode") String locCode);
 }
-
