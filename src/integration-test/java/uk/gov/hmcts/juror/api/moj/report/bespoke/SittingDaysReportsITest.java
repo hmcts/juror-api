@@ -131,7 +131,7 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
         Assertions.assertThat(response.getHeadings().get("date_from").getValue()).isEqualTo("2024-05-01");
         Assertions.assertThat(response.getHeadings().get("date_to").getValue()).isEqualTo("2024-05-31");
         Assertions.assertThat(response.getHeadings().get("total_number_of_jurors").getValue()).isEqualTo(183);
-        Assertions.assertThat(response.getHeadings().get("total_sitting_days").getValue()).isEqualTo(192);
+        Assertions.assertThat(response.getHeadings().get("total_sitting_days").getValue()).isEqualTo(759);
         Assertions.assertThat(response.getTableData()).isNotNull();
         Assertions.assertThat(response.getTableData().getHeadings()).hasSize(15);
         Assertions.assertThat(response.getTableData().getData()).hasSize(1);
@@ -150,7 +150,7 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
         assertThat(response.getHeadings().get("date_from").getValue()).isEqualTo("2024-05-01");
         assertThat(response.getHeadings().get("date_to").getValue()).isEqualTo("2024-05-31");
         assertThat(response.getHeadings().get("total_number_of_jurors").getValue()).isEqualTo(366);
-        assertThat(response.getHeadings().get("total_sitting_days").getValue()).isEqualTo(384);
+        assertThat(response.getHeadings().get("total_sitting_days").getValue()).isEqualTo(1518);
         assertThat(response.getTableData()).isNotNull();
         assertThat(response.getTableData().getHeadings()).hasSize(15);
         assertThat(response.getTableData().getData()).hasSize(2);
@@ -176,7 +176,7 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
         assertThat(response.getHeadings().get("date_from").getValue()).isEqualTo("2024-05-01");
         assertThat(response.getHeadings().get("date_to").getValue()).isEqualTo("2024-05-31");
         assertThat(response.getHeadings().get("total_number_of_jurors").getValue()).isEqualTo(549);
-        assertThat(response.getHeadings().get("total_sitting_days").getValue()).isEqualTo(576);
+        assertThat(response.getHeadings().get("total_sitting_days").getValue()).isEqualTo(2277);
         assertThat(response.getTableData()).isNotNull();
         assertThat(response.getTableData().getHeadings()).hasSize(15);
         assertThat(response.getTableData().getData()).hasSize(3);
@@ -200,19 +200,19 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
     }
 
     private void assertSittingDaysRow(SittingDaysStatsReportResponse.TableData.DataRow dataRow) {
-        assertThat(dataRow.getZeroSittingDays()).isEqualTo(0);
-        assertThat(dataRow.getOneSittingDay()).isEqualTo(2);
-        assertThat(dataRow.getTwoSittingDays()).isEqualTo(3);
-        assertThat(dataRow.getThreeSittingDays()).isEqualTo(50);
-        assertThat(dataRow.getFourSittingDays()).isEqualTo(100);
+        assertThat(dataRow.getZeroSittingDays()).isEqualTo(10);
+        assertThat(dataRow.getOneSittingDay()).isEqualTo(5);
+        assertThat(dataRow.getTwoSittingDays()).isEqualTo(4);
+        assertThat(dataRow.getThreeSittingDays()).isEqualTo(45);
+        assertThat(dataRow.getFourSittingDays()).isEqualTo(90);
         assertThat(dataRow.getFiveSittingDays()).isEqualTo(5);
-        assertThat(dataRow.getSixSittingDays()).isEqualTo(5);
-        assertThat(dataRow.getSevenSittingDays()).isEqualTo(5);
-        assertThat(dataRow.getEightSittingDays()).isEqualTo(3);
+        assertThat(dataRow.getSixSittingDays()).isEqualTo(3);
+        assertThat(dataRow.getSevenSittingDays()).isEqualTo(2);
+        assertThat(dataRow.getEightSittingDays()).isEqualTo(2);
         assertThat(dataRow.getNineSittingDays()).isEqualTo(2);
-        assertThat(dataRow.getTenSittingDays()).isEqualTo(6);
-        assertThat(dataRow.getElevenOrMoreSittingDays()).isEqualTo(11);
+        assertThat(dataRow.getTenSittingDays()).isEqualTo(5);
+        assertThat(dataRow.getElevenOrMoreSittingDays()).isEqualTo(10);
         assertThat(dataRow.getTotalJurors()).isEqualTo(183);
-        assertThat(dataRow.getTotalSittingDays()).isEqualTo(192);
+        assertThat(dataRow.getTotalSittingDays()).isEqualTo(759);
     }
 }

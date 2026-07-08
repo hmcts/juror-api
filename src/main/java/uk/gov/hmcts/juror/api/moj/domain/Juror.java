@@ -220,6 +220,15 @@ public class Juror extends Address implements Serializable {
     private Integer contactPreference;
 
     @NotAudited
+    @Column(name = "digital_by_default")
+    private boolean digitalByDefault;
+
+    @Column(name = "dbd_preference")
+    @Length(max = 7)
+    @Pattern(regexp = "Paper|Digital")
+    private String dbdPreference;
+
+    @NotAudited
     @Column(name = "notifications")
     private int notifications;
 

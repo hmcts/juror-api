@@ -67,6 +67,7 @@ import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
+import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -151,6 +152,8 @@ class ManageDeferralsServiceTest {
     private JurorPoolService jurorPoolService;
     @Mock
     private JurorAppearanceService jurorAppearanceService;
+    @Mock
+    private JurorResponseService jurorResponseService;
 
     @InjectMocks
     ManageDeferralsServiceImpl manageDeferralsService;
@@ -3045,8 +3048,7 @@ class ManageDeferralsServiceTest {
             assertThat(response.getDisqualified()).hasSize(1);
             assertThat(response.getFailedToDisqualify()).isEmpty();
 
-            verify(mergeService, times(1)).mergeDigitalResponse(eq(digitalResponse), eq(BUREAU_USER));
-            verify(mergeService, never()).mergePaperResponse(any(), any());
+            verify(jurorResponseService, times(1)).closeOpenResponseRecord(JUROR_123456789, BUREAU_USER);
             verify(jurorHistoryService, times(1))
                 .createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
         }
@@ -3082,8 +3084,7 @@ class ManageDeferralsServiceTest {
             assertThat(response.getDisqualified()).hasSize(1);
             assertThat(response.getFailedToDisqualify()).isEmpty();
 
-            verify(mergeService, never()).mergeDigitalResponse(any(), any());
-            verify(mergeService, times(1)).mergePaperResponse(eq(paperResponse), eq(BUREAU_USER));
+            verify(jurorResponseService, times(1)).closeOpenResponseRecord(JUROR_123456789, BUREAU_USER);
             verify(jurorHistoryService, times(1))
                 .createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
         }
@@ -3118,9 +3119,7 @@ class ManageDeferralsServiceTest {
             assertThat(response.getDisqualified()).hasSize(1);
             assertThat(response.getFailedToDisqualify()).isEmpty();
 
-            // merge should NOT be called since response is already complete
-            verify(mergeService, never()).mergeDigitalResponse(any(), any());
-            verify(mergeService, never()).mergePaperResponse(any(), any());
+            verify(jurorResponseService, times(1)).closeOpenResponseRecord(JUROR_123456789, BUREAU_USER);
             verify(jurorHistoryService, times(1))
                 .createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
         }
