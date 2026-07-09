@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,11 +26,9 @@ import java.util.stream.Collectors;
 @Schema(description = "List of audit records for transport limit changes")
 public class TransportLimitAuditListResponseDto implements Serializable {
 
-    @JsonProperty("audit_records")
     @Schema(description = "List of audit records")
     private List<TransportLimitAuditResponseDto> auditRecords;
 
-    @JsonProperty("total_records")
     @Schema(description = "Total number of audit records", example = "5")
     private Integer totalRecords;
 

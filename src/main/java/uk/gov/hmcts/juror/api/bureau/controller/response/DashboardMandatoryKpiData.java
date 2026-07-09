@@ -106,6 +106,7 @@ public class DashboardMandatoryKpiData implements Serializable {
 
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Builder
     @Data
     @Schema(description = "Counts over periods for a specific response method.")
