@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,7 +23,7 @@ import java.util.List;
 @Schema(description = "Juror record search response")
 public class JurorRecordSearchDto {
 
-    @JsonProperty("jurorRecordSearchData")
+
     @Schema(description = "List of Juror record search results")
     private List<JurorRecordSearchDataDto> data;
 
@@ -32,10 +31,10 @@ public class JurorRecordSearchDto {
     @NoArgsConstructor
     @Getter
     @Schema(description = "Juror Record search result data")
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class JurorRecordSearchDataDto {
 
         @NotNull
-        @JsonProperty("jurorNumber")
         @Schema(name = "Juror number", description = "Jurors Number")
         private String jurorNumber;
 
@@ -54,15 +53,12 @@ public class JurorRecordSearchDto {
         @Schema(description = "Juror address post code", requiredMode = Schema.RequiredMode.REQUIRED)
         private String addressPostcode;
 
-        @JsonProperty("poolNumber")
         @Schema(name = "Pool number", description = "The unique number for a pool request")
         private String poolNumber;
 
-        @JsonProperty("courtName")
         @Schema(name = "Court name", description = "Name for a given court location")
         private String courtName;
 
-        @JsonProperty("locCode")
         @Schema(name = "Court Location Code", description = "3 digit numeric String to identify a Court Location")
         private String courtLocationCode;
 

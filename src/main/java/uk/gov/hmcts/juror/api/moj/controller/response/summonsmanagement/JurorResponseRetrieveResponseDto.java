@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.controller.response.summonsmanagement;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,17 +21,16 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Data
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "A list of juror responses")
 public class JurorResponseRetrieveResponseDto {
-    @JsonProperty("record_count")
+
     @Schema(name = "Record count", description = "The number or responses retrieved matching the search criteria")
     private int recordCount;
 
-    @JsonProperty("limit")
     @Schema(name = "limit", description = "The limit for the number of search results")
     private int limit;
 
-    @JsonProperty("limit_exceeded")
     @Schema(name = "Limit Exceeded", description = "Was the limit exceeded?")
     private boolean limitExceeded;
 
@@ -44,6 +45,7 @@ public class JurorResponseRetrieveResponseDto {
     @Builder
     @Getter
     @Setter
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class JurorResponseDetails {
         @JsonProperty("juror_number")
         @Schema(description = "Juror number")
