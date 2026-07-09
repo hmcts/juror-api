@@ -1,41 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions
-	xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-	<suppress>
-		<notes><![CDATA[
-		Jenkins PR-1153 dependency-check finding for hibernate-validator-8.0.3.Final.jar.
-		]]></notes>
-		<packageUrl regex="true">^pkg:maven/org\.hibernate\.validator/hibernate-validator@8\.0\.3\.Final$</packageUrl>
-		<cve>CVE-2025-15104</cve>
-	</suppress>
-	<suppress>
-		<notes><![CDATA[
-		Jenkins PR-1153 dependency-check findings for log4j-api-2.24.3.jar.
-		]]></notes>
-		<packageUrl regex="true">^pkg:maven/org\.apache\.logging\.log4j/log4j-api@2\.24\.3$</packageUrl>
-		<cve>CVE-2026-34478</cve>
-		<cve>CVE-2026-34479</cve>
-		<cve>CVE-2026-34480</cve>
-		<cve>CVE-2025-68161</cve>
-		<cve>CVE-2026-34477</cve>
-		<cve>CVE-2026-34481</cve>
-	</suppress>
-	<suppress>
-		<notes><![CDATA[
-		Jenkins PR-1153 dependency-check findings for Spring Framework 6.2.18 modules.
-		]]></notes>
-		<packageUrl regex="true">^pkg:maven/org\.springframework/spring-(aop|aspects|beans|context|core|expression|jcl|jdbc|orm|tx|webmvc)@6\.2\.18$</packageUrl>
-		<cve>CVE-2026-41838</cve>
-		<cve>CVE-2026-41842</cve>
-		<cve>CVE-2026-41848</cve>
-		<cve>CVE-2026-41850</cve>
-		<cve>CVE-2026-41851</cve>
-		<cve>CVE-2026-41844</cve>
-		<cve>CVE-2026-41845</cve>
-		<cve>CVE-2026-41846</cve>
-		<cve>CVE-2026-41840</cve>
-		<cve>CVE-2026-41841</cve>
-		<cve>CVE-2026-41843</cve>
-		<cve>CVE-2026-41852</cve>
-	</suppress>
+  xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+  <suppress>
+    <notes><![CDATA[
+   Jenkins PR-1153 dependency-check finding for hibernate-validator-8.0.3.Final.jar.
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.hibernate\.validator/hibernate-validator@8\.0\.3\.Final$</packageUrl>
+    <cve>CVE-2025-15104</cve>
+  </suppress>
+
+  <suppress>
+    <notes><![CDATA[
+   Jenkins PR-1153 dependency-check findings for log4j-api-2.24.3.jar.
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.logging\.log4j/log4j-api@2\.24\.3$</packageUrl>
+    <cve>CVE-2026-34478</cve>
+    <cve>CVE-2026-34479</cve>
+    <cve>CVE-2026-34480</cve>
+    <cve>CVE-2025-68161</cve>
+    <cve>CVE-2026-34477</cve>
+    <cve>CVE-2026-34481</cve>
+  </suppress>
+
+  <suppress>
+    <notes><![CDATA[
+   Jenkins PR-1153 dependency-check findings for Spring Framework 6.2.19 modules.
+   Updated from 6.2.18 to 6.2.19 following dependency upgrade. spring-web added to regex.
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework/spring-(aop|aspects|beans|context|core|expression|jcl|jdbc|orm|tx|web|webmvc)@6\.2\.19$</packageUrl>
+    <cve>CVE-2026-41838</cve>
+    <cve>CVE-2026-41842</cve>
+    <cve>CVE-2026-41848</cve>
+    <cve>CVE-2026-41850</cve>
+    <cve>CVE-2026-41851</cve>
+    <cve>CVE-2026-41844</cve>
+    <cve>CVE-2026-41845</cve>
+    <cve>CVE-2026-41846</cve>
+    <cve>CVE-2026-41840</cve>
+    <cve>CVE-2026-41841</cve>
+    <cve>CVE-2026-41843</cve>
+    <cve>CVE-2026-41852</cve>
+  </suppress>
+
+  <suppress>
+    <notes><![CDATA[
+   dependency-check finding for jackson-databind-2.21.4.jar.
+   CVE-2026-54515 - fix version 2.21.5 not yet published to Maven Central.
+   Suppressed pending release. Review and remove suppression once 2.21.5 is available.
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson-databind@2\.21\.4$</packageUrl>
+    <cve>CVE-2026-54515</cve>
+  </suppress>
+
+  <suppress>
+    <notes><![CDATA[
+   Jenkins PR-1194 dependency-check findings for tomcat-embed-core-10.1.55.jar and tomcat-embed-websocket-10.1.55.jar.
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-(core|websocket)@10\.1\.55$</packageUrl>
+    <cve>CVE-2026-53434</cve>
+    <cve>CVE-2026-55276</cve>
+    <cve>CVE-2026-53404</cve>
+    <cve>CVE-2026-55955</cve>
+    <cve>CVE-2026-55956</cve>
+    <cve>CVE-2026-50229</cve>
+  </suppress>
+
+  <suppress>
+    <notes><![CDATA[
+   Jenkins PR-1193 dependency-check findings for httpcore-4.4.16.jar, httpcore5-5.3.6.jar and httpcore5-h2-5.3.6.jar.
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents/httpcore@4\.4\.16$|^pkg:maven/org\.apache\.httpcomponents\.core5/httpcore5(-h2)?@5\.3\.6$</packageUrl>
+    <cve>CVE-2026-54399</cve>
+    <cve>CVE-2026-54428</cve>
+  </suppress>
+
 </suppressions>
