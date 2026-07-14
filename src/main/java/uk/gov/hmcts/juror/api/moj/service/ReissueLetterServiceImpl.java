@@ -182,7 +182,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private void createPoolHistory(ReissueLetterRequestDto request, Map<String, Integer> poolLetterCount) {
         if (Set.of("5228", "5228C").contains(request.getLetters().get(0).getFormCode())) {
 
-            poolLetterCount.keySet().forEach(poolNumber ->
+            poolLetterCount.keySet().forEach(poolNumber -> {
                 // create pool history
                 poolHistoryService.createPoolHistory(poolNumber, HistoryCode.PHRS,
                     poolLetterCount.get(poolNumber) + " (Number of Reminder letters sent)");

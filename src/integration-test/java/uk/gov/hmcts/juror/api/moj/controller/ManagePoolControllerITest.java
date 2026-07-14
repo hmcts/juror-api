@@ -1720,7 +1720,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
             List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertThat(historyEvents).noneMatch(hist ->
-                hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER));
+                hist.getHistoryCode() == HistoryCodeMod.REASSIGN_POOL_MEMBER);
         });
 
         assertThat(bulkPrintDataRepository.findAll()).isEmpty();
@@ -1989,7 +1989,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
             List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertThat(historyEvents).noneMatch(hist ->
-                hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER));
+                hist.getHistoryCode() == HistoryCodeMod.REASSIGN_POOL_MEMBER);
         });
 
         assertThat(bulkPrintDataRepository.findAll()).isEmpty();
@@ -2050,7 +2050,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
 
             List<JurorHistory> historyEvents = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertThat(historyEvents).noneMatch(hist ->
-                hist.getHistoryCode().equals(HistoryCodeMod.REASSIGN_POOL_MEMBER));
+                hist.getHistoryCode() == HistoryCodeMod.REASSIGN_POOL_MEMBER);
         });
 
         assertThat(bulkPrintDataRepository.findAll()).isEmpty();
