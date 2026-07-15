@@ -22,14 +22,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
+import uk.gov.hmcts.juror.api.moj.controller.request.messages.BureauEmailRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.ExportContactDetailsRequest;
 import uk.gov.hmcts.juror.api.moj.controller.request.messages.MessageSendRequest;
+import uk.gov.hmcts.juror.api.moj.controller.response.messages.BureauEmailResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.JurorToSendMessageBase;
 import uk.gov.hmcts.juror.api.moj.controller.response.messages.ViewMessageTemplateDto;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.messages.MessageSearch;
 import uk.gov.hmcts.juror.api.moj.domain.messages.MessageType;
+import uk.gov.hmcts.juror.api.moj.service.BureauMessagingService;
 import uk.gov.hmcts.juror.api.moj.service.MessagingService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -44,6 +48,7 @@ import java.util.Map;
 public class MessagingController {
 
     private final MessagingService messagingService;
+    private final BureauMessagingService bureauMessagingService;
 
     @GetMapping("/view/{message_type}/{loc_code}")
     @Operation(summary = "returns the message template details"
@@ -96,6 +101,16 @@ public class MessagingController {
     ) {
         messagingService.send(messageType, locCode, messageSendRequest);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/bureau/send")
+    @Operation(summary = "Send bureau emails to a list of jurors")
+    @ResponseStatus(HttpStatus.OK)
+    @IsBureauUser
+    public ResponseEntity<BureauEmailResponseDto> sendBureauEmails(
+        @RequestBody @Valid @NotNull BureauEmailRequestDto request
+    ) {
+        return new ResponseEntity<>(bureauMessagingService.sendEmailsToJurors(request), HttpStatus.OK);
     }
 
     @PostMapping(value = "/csv/{loc_code}",

@@ -34,6 +34,7 @@ import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
+import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -70,6 +71,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
     private final JurorHistoryService jurorHistoryService;
     private final ReissueLetterService reissueLetterService;
     private final JurorAppearanceService appearanceService;
+    private final JurorResponseService jurorResponseService;
     private final JurorPaperResponseRepositoryMod paperResponseRepository;
     private final JurorDigitalResponseRepositoryMod digitalResponseRepository;
 
@@ -186,6 +188,22 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 // add juror history event to old pool member
                 jurorHistoryService.createReassignPoolMemberHistory(sourceJurorPool, targetPoolNumber,
                     receivingCourtLocation);
+
+                // Need to check if there is an open response for court user only for jurors in summoned status
+                if (SecurityUtil.isCourt() && targetJurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED
+                    && Boolean.TRUE.equals(jurorManagementRequestDto.getFromSummonsReply())) {
+                    boolean processingComplete = jurorResponseService.closeOpenResponseRecord(
+                        jurorNumber, payload.getLogin());
+
+                    if (processingComplete) {
+                        // update the juror status to responded
+                        targetJurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(
+                            IJurorStatus.RESPONDED, jurorStatusRepository));
+                        Juror juror = targetJurorPool.getJuror();
+                        juror.setResponded(true);
+                        jurorPoolRepository.save(targetJurorPool);
+                    }
+                }
 
                 // queue a summons confirmation letter only if juror is Bureau owned, has responded and is police
                 // checked

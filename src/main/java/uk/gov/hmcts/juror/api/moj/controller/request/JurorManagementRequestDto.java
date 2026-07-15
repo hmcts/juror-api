@@ -62,7 +62,11 @@ public class JurorManagementRequestDto {
     private String sendingCourtLocCode;
 
     @Schema(description = "Deferral is occurring from deferral maintenance")
-    public Boolean deferralMaintenance;
+    private Boolean deferralMaintenance;
+
+    @JsonProperty("from_summons_reply")
+    @Schema(description = "Reassign is occurring from summons reply")
+    private Boolean fromSummonsReply;
 
     //constructor to handle transfer jurors requests
 
