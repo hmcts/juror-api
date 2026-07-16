@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -65,7 +64,6 @@ public class JurorManagementRequestDto {
     @Schema(description = "Deferral is occurring from deferral maintenance")
     private Boolean deferralMaintenance;
 
-    @JsonProperty("from_summons_reply")
     @Schema(description = "Reassign is occurring from summons reply")
     private Boolean fromSummonsReply;
 
