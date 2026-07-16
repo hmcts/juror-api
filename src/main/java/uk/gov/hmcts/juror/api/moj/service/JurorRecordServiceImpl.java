@@ -263,6 +263,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
 
 
+
         //save reasonable adjustments to reasonable adjustment repository
 
         if (requestDto.getSpecialNeed() != null) {
@@ -285,6 +286,11 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         juror.setOpticRef(requestDto.getOpticReference());
         juror.setWelsh(requestDto.getWelshLanguageRequired());
         juror.setLivingOverseas(requestDto.getLivingOverseas());
+
+        // DBD (Digital By Default) communication preference
+        juror.setDbdPreference(normalizeDbdPreference(requestDto.getDbdPreference()));
+     //   juror.setDigitalByDefault(Boolean.TRUE.equals(requestDto.getDigitalByDefault()));
+
 
         jurorRepository.save(juror);
 
@@ -1796,5 +1802,12 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         // Regular expression for validating mobile phone numbers
         String mobilePhonePattern = "^07\\d{8,9}$";
         return phone.matches(mobilePhonePattern);
+    }
+
+    private String normalizeDbdPreference(String dbdPreference) {
+        if (dbdPreference == null) {
+            return null;
+        }
+        return dbdPreference.substring(0, 1).toUpperCase() + dbdPreference.substring(1).toLowerCase();
     }
 }
