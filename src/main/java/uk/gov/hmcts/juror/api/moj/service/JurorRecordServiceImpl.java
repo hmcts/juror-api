@@ -1696,6 +1696,31 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
+    public void sendPaperSummonsPack(String jurorNumber) {
+        log.info("Sending paper summons pack for juror {} requested by user {}", jurorNumber, SecurityUtil.getActiveLogin());
+
+        final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
+                                                                             SecurityUtil.getActiveOwner());
+        final Juror juror = jurorPool.getJuror();
+
+        if (!jurorPool.getCourt().isDigitalByDefault()) {
+            throw new MojException.BusinessRuleViolation(
+                "Juror's court is not part of the DBD pilot", null);
+        }
+        if (jurorPool.getStatus().getStatus() != IJurorStatus.SUMMONED) {
+            throw new MojException.BusinessRuleViolation(
+                "Juror must be in Summoned status to send a paper summons pack", null);
+        }
+        if (!"Paper".equals(juror.getDbdPreference())) {
+            throw new MojException.BusinessRuleViolation(
+                "Juror's communication preference must be Paper", null);
+        }
+
+        printDataService.reprintSummonsLetter(jurorPool);
+    }
+
+    @Override
+    @Transactional
     public void markResponded(String jurorNumber) {
         log.info("Marking juror {} as responded", jurorNumber);
 

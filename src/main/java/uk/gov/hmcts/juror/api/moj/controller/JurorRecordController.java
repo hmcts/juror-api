@@ -397,6 +397,16 @@ public class JurorRecordController {
         jurorRecordService.editJurorDetails(payload, requestDto, jurorNumber);
     }
 
+    @PostMapping("/send-paper-summons/{juror_number}")
+    @Operation(summary = "Send a paper summons pack to a juror who has switched to Paper communication preference")
+    @IsCourtUser
+    public ResponseEntity<Void> sendPaperSummons(
+        @Valid @JurorNumber @P("juror_number") @PathVariable("juror_number")
+        @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
+        jurorRecordService.sendPaperSummonsPack(jurorNumber);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+
     @PatchMapping("/pnc/{jurorNumber}")
     @Operation(summary = "Updates the juror police national computer check status",
         description = "Updates the juror police national computer check status")
