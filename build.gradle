@@ -5,9 +5,10 @@ buildscript {
         springDocVersion = '2.8.9'
         queryDslVersion = '5.1.0'
         flywayVersion = '11.20.3'
-        postgresVersion = '42.7.11'
+        postgresVersion = '42.7.12'  // upgraded from 42.7.11 - CVE-2026-54291 fix
         envers = '3.5.12'
         jwtVersion = '0.13.0'
+        mockitoVersion = '5.15.2'
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -61,7 +62,7 @@ jacoco {
     toolVersion = "0.8.15"
 }
 
-version = '5.27.0'
+version = '5.28.0'
 
 repositories {
     mavenLocal()
@@ -81,6 +82,8 @@ configurations {
 
     smokeTestImplementation.extendsFrom testImplementation
     smokeTestRuntimeOnly.extendsFrom runtimeOnly
+
+    mockitoAgent
 
     compileOnly {
         extendsFrom annotationProcessor
@@ -115,7 +118,7 @@ dependencies {
     runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}"
     implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.4'
 
-    implementation('com.google.guava:guava:33.4.0-jre')
+    implementation('com.google.guava:guava:33.6.0-jre')
 
     // QueryDSL
     implementation("com.querydsl:querydsl-core:${queryDslVersion}")
@@ -148,7 +151,10 @@ dependencies {
     testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
     testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:4.1.1'
     testImplementation('org.assertj:assertj-core:3.27.7')
-    testImplementation 'org.mockito:mockito-core:5.15.2'
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    mockitoAgent("org.mockito:mockito-core:${mockitoVersion}") {
+        transitive = false
+    }
 
     testImplementation('org.projectlombok:lombok')
     testAnnotationProcessor('org.projectlombok:lombok')
@@ -203,6 +209,8 @@ tasks.withType(Test).configureEach() {
     jacoco {
         destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
     }
+
+    jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
 
     finalizedBy(jacocoTestReport)
 }
@@ -364,12 +372,15 @@ project.tasks['sonarqube'].dependsOn jacocoTestReport
 
 // https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/configuration.html
 dependencyCheck {
-    // Specifies if the build should be failed if a CVSS score above a specified level is identified.
-    // range of 0-10 fails the build, anything greater and it doesn't fail the build
-    failBuildOnCVSS = 0
-    suppressionFile = 'config/owasp/suppressions.xml'
-    scanConfigurations = ['runtimeClasspath', 'compileClasspath']
-
+  // Specifies if the build should be failed if a CVSS score above a specified level is identified.
+  // range of 0-10 fails the build, anything greater and it doesn't fail the build
+  failBuildOnCVSS = 0
+  suppressionFile = 'config/owasp/suppressions.xml'
+  scanConfigurations = ['runtimeClasspath', 'compileClasspath']
+  nvd {
+    apiKey = System.getenv("NVD_API_KEY") ?: ""
+    delay = 6000
+  }
 }
 
 project.tasks['check'].dependsOn integration

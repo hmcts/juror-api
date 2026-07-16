@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -297,6 +298,45 @@ public class FinancialAuditServiceImplTest {
                 )
             );
             verify(appearanceRepository, times(1)).saveAll(List.of(appearance1, appearance2, appearance3));
+        }
+    }
+
+    @Nested
+    @DisplayName("public List<Appearance> getAppearances(FinancialAuditDetails financialAuditDetails)")
+    class GetAppearances {
+        @Test
+        void positiveTypical() {
+            Appearance appearance = mock(Appearance.class);
+            FinancialAuditDetailsAppearances financialAuditDetailsAppearance =
+                FinancialAuditDetailsAppearances.builder()
+                    .financialAuditId(321L)
+                    .locCode(TestConstants.VALID_COURT_LOCATION)
+                    .attendanceDate(LocalDate.of(2023, 1, 1))
+                    .appearanceVersion(3L)
+                    .build();
+            FinancialAuditDetails financialAuditDetails = FinancialAuditDetails.builder()
+                .id(321L)
+                .locCode(TestConstants.VALID_COURT_LOCATION)
+                .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                .financialAuditDetailsAppearances(List.of(financialAuditDetailsAppearance))
+                .build();
+
+            doReturn(Optional.of(appearance)).when(appearanceRepository)
+                .findByJurorNumberAndLocCodeAndAttendanceDateAndVersionAndFinancialAudit(
+                    TestConstants.VALID_JUROR_NUMBER,
+                    TestConstants.VALID_COURT_LOCATION,
+                    LocalDate.of(2023, 1, 1),
+                    3L,
+                    321L);
+
+            assertThat(financialAuditService.getAppearances(financialAuditDetails)).isEqualTo(List.of(appearance));
+            verify(appearanceRepository, times(1))
+                .findByJurorNumberAndLocCodeAndAttendanceDateAndVersionAndFinancialAudit(
+                    TestConstants.VALID_JUROR_NUMBER,
+                    TestConstants.VALID_COURT_LOCATION,
+                    LocalDate.of(2023, 1, 1),
+                    3L,
+                    321L);
         }
     }
 

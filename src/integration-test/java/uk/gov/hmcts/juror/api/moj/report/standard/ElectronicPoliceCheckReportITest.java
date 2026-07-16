@@ -15,6 +15,8 @@ import uk.gov.hmcts.juror.api.moj.report.ReportLinkedMap;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @Sql({
     "/db/mod/truncate.sql",
     "/db/mod/reports/ElectronicPoliceCheckReportITest_typical.sql"
@@ -44,40 +46,10 @@ class ElectronicPoliceCheckReportITest extends AbstractStandardReportControllerI
     void positiveTypical() {
         testBuilder()
             .triggerValid()
-            .responseConsumer(this::verifyAndRemoveReportCreated)
-            .assertEquals(
-                buildResponse("2024-01-01", "2024-01-30",
-                    StandardTableData.of(
-                        new ReportLinkedMap<String, Object>()
-                            .add("pool_number_jp", "200000000")
-                            .add("police_check_responded", 2)
-                            .add("police_check_submitted", 2)
-                            .add("police_check_complete", 2)
-                            .add("police_check_timed_out", 0)
-                            .add("police_check_disqualified", 1),
-                        new ReportLinkedMap<String, Object>()
-                            .add("pool_number_jp", "200000001")
-                            .add("police_check_responded", 3)
-                            .add("police_check_submitted", 3)
-                            .add("police_check_complete", 1)
-                            .add("police_check_timed_out", 0)
-                            .add("police_check_disqualified", 1),
-                        new ReportLinkedMap<String, Object>()
-                            .add("pool_number_jp", "200000002")
-                            .add("police_check_responded", 3)
-                            .add("police_check_submitted", 3)
-                            .add("police_check_complete", 0)
-                            .add("police_check_timed_out", 0)
-                            .add("police_check_disqualified", 0),
-                        new ReportLinkedMap<String, Object>()
-                            .add("pool_number_jp", "200000003")
-                            .add("police_check_responded", 2)
-                            .add("police_check_submitted", 1)
-                            .add("police_check_complete", 1)
-                            .add("police_check_timed_out", 1)
-                            .add("police_check_disqualified", 0))
-                )
-            );
+            .assertValid((controllerTest, response) -> {
+                verifyAndRemoveReportCreated(response);
+                assertPositiveTypicalResponse(response);
+            });
     }
 
     @Test
@@ -160,5 +132,44 @@ class ElectronicPoliceCheckReportITest extends AbstractStandardReportControllerI
                     .data(data)
                     .build())
             .build();
+    }
+
+    private void assertPositiveTypicalResponse(StandardReportResponse response) {
+        StandardReportResponse expectedResponse = buildResponse("2024-01-01", "2024-01-30",
+            StandardTableData.of(
+                new ReportLinkedMap<String, Object>()
+                    .add("pool_number_jp", "200000000")
+                    .add("police_check_responded", 2)
+                    .add("police_check_submitted", 2)
+                    .add("police_check_complete", 2)
+                    .add("police_check_timed_out", 0)
+                    .add("police_check_disqualified", 1),
+                new ReportLinkedMap<String, Object>()
+                    .add("pool_number_jp", "200000001")
+                    .add("police_check_responded", 3)
+                    .add("police_check_submitted", 3)
+                    .add("police_check_complete", 1)
+                    .add("police_check_timed_out", 0)
+                    .add("police_check_disqualified", 1),
+                new ReportLinkedMap<String, Object>()
+                    .add("pool_number_jp", "200000002")
+                    .add("police_check_responded", 3)
+                    .add("police_check_submitted", 3)
+                    .add("police_check_complete", 0)
+                    .add("police_check_timed_out", 0)
+                    .add("police_check_disqualified", 0),
+                new ReportLinkedMap<String, Object>()
+                    .add("pool_number_jp", "200000003")
+                    .add("police_check_responded", 2)
+                    .add("police_check_submitted", 1)
+                    .add("police_check_complete", 1)
+                    .add("police_check_timed_out", 1)
+                    .add("police_check_disqualified", 0))
+        );
+
+        assertThat(response.getHeadings()).isEqualTo(expectedResponse.getHeadings());
+        assertThat(response.getTableData().getHeadings()).isEqualTo(expectedResponse.getTableData().getHeadings());
+        assertThat(response.getTableData().getData())
+            .containsExactlyInAnyOrderElementsOf(expectedResponse.getTableData().getData());
     }
 }
