@@ -1,47 +1,42 @@
-package uk.gov.hmcts.juror.api.moj.controller;
+package uk.gov.hmcts.juror.api.moj.service;
 
-import lombok.SneakyThrows;
+import org.apache.logging.log4j.util.TriConsumer;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.core.ParameterizedTypeReference;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.history.Revision;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
+import org.springframework.util.SerializationUtils;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
+import uk.gov.hmcts.juror.api.bureau.service.BureauService;
+import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
-import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.EditJurorRecordRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.FilterableJurorDetailsRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorAddressDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.JurorCreateRequestDtoTest;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManualCreationRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorNameDetailsDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorNotesRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorNumberAndPoolNumberDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorOpticRefRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorRecordFilterRequestQuery;
-import uk.gov.hmcts.juror.api.moj.controller.request.JurorSimpleDetailsRequestDto;
-import uk.gov.hmcts.juror.api.moj.controller.request.PoliceCheckStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessNameChangeRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ProcessPendingJurorRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.RequestBankDetailsDto;
@@ -51,5155 +46,3184 @@ import uk.gov.hmcts.juror.api.moj.controller.response.ContactLogListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.FilterableJurorDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorAttendanceDetailsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorBankDetailsDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsCommonResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorDetailsResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorNotesDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorOverviewResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorPoolDetailsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorRecordSearchDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorSimpleDetailsResponseDto;
-import uk.gov.hmcts.juror.api.moj.controller.response.JurorSummonsReplyResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.NameDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
-import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
-import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
+import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
-import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
-import uk.gov.hmcts.juror.api.moj.domain.FormCode;
+import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
-import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
+import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.ModJurorDetail;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJuror;
-import uk.gov.hmcts.juror.api.moj.domain.Permission;
+import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
-import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
-import uk.gov.hmcts.juror.api.moj.domain.User;
-import uk.gov.hmcts.juror.api.moj.domain.UserType;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
-import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
-import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
-import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
-import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
+import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorDetailRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PendingJurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolTypeRepository;
-import uk.gov.hmcts.juror.api.moj.repository.SummonsSnapshotRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorReasonableAdjustmentRepository;
-import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.ReasonableAdjustmentsRepository;
+import uk.gov.hmcts.juror.api.moj.repository.trial.PanelRepository;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
+import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAuditChangeService;
 
 import java.math.BigDecimal;
-import java.net.URI;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.http.HttpMethod.POST;
-import static uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus.AWAITING_COURT_REPLY;
-import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD;
-import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_COMPLETION_DATE;
-import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_STATUS_MUST_BE_RESPONDED;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
-
-/**
- * Integration tests for the Juror Record controller.
- */
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.CouplingBetweenObjects",
-    "PMD.ExcessivePublicCount",
-    "PMD.LinguisticNaming",
-    "PMD.NcssCount",
-    "PMD.CyclomaticComplexity",
-    "PMD.TooManyMethods",
-    "PMD.TooManyFields"
-})
-class JurorRecordControllerITest extends AbstractIntegrationTest {
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects",
+    "PMD.TooManyMethods", "PMD.TooManyFields", "PMD.NcssCount"})
+class JurorRecordServiceTest {
 
-    private static final String BASE_URL = "/api/v1/moj/juror-record";
-    private static final String CONTACT_LOG_URL = "/api/v1/moj/juror-record/create/contact-log";
-    private static final String GET_JUROR_NOTES_URL = "/api/v1/moj/juror-record/notes/123456789";
+    private static final String BUREAU_OWNER = "400";
+    private static final String COURT_OWNER = "415";
+    private static final String LOC_CODE = "415";
+    private static final String VALID_JUROR_NUMBER = "123456789";
 
-    @Autowired
-    private Clock clock;
-    @Autowired
-    private TestRestTemplate restTemplate;
-    @Autowired
-    private ContactLogRepository contactLogRepository;
-    @Autowired
-    private ContactCodeRepository contactEnquiryTypeRepository;
-    @Autowired
-    private JurorRepository jurorRepository;
-    @Autowired
-    private JurorPoolRepository jurorPoolRepository;
-    @Autowired
-    private PendingJurorRepository pendingJurorRepository;
-    @Autowired
-    private CourtLocationRepository courtLocationRepository;
-    @Autowired
-    private SummonsSnapshotRepository summonsSnapshotRepository;
-    @Autowired
-    private PoolRequestRepository poolRequestRepository;
-    @Autowired
-    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
-    @Autowired
-    private JurorHistoryRepository jurorHistoryRepository;
-    @Autowired
-    private JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
-    @Autowired
-    private PoolTypeRepository poolTypeRepository;
-    @Autowired
-    private PoolHistoryRepository poolHistoryRepository;
-    @Autowired
-    private BulkPrintDataRepository bulkPrintDataRepository;
+    @Mock
     private JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
-    private HttpHeaders httpHeaders;
+    @Mock
+    private PoolHistoryRepository poolHistoryRepository;
+    @Mock
+    private JurorAppearanceService jurorAppearanceService;
+    @Mock
+    private PanelRepository panelRepository;
+    @Mock
+    private HistoryTemplateService historyTemplateService;
+    @Mock
+    private WelshCourtLocationRepository welshCourtLocationRepository;
+    @Mock
+    private JurorRepository jurorRepository;
+    @Mock
+    private JurorPoolRepository jurorPoolRepository;
+    @Mock
+    private ContactCodeRepository contactCodeRepository;
+    @Mock
+    private JurorStatusRepository jurorStatusRepository;
+    @Mock
+    private JurorHistoryRepository jurorHistoryRepository;
+    @Mock
+    private JurorDigitalResponseRepositoryMod jurorResponseRepository;
+    @Mock
+    private JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
+    @Mock
+    private CourtLocationService courtLocationService;
+    @Mock
+    private ContactLogRepository contactLogRepository;
+    @Mock
+    private JurorDetailRepositoryMod jurorDetailRepositoryMod;
+    @Mock
+    private BureauService bureauService;
+    @Mock
+    private ResponseExcusalService responseExcusalService;
+    @Mock
+    private JurorAuditChangeService jurorAuditChangeService;
+    @Mock
+    private PrintDataService printDataService;
+    @Mock
+    private JurorHistoryService jurorHistoryService;
+    @Mock
+    private PoolTypeRepository poolTypeRepository;
+    @Mock
+    private CourtLocationRepository courtLocationRepository;
+    @Mock
+    private GeneratePoolNumberService generatePoolNumberService;
+    @Mock
+    private PendingJurorRepository pendingJurorRepository;
+    @Mock
+    private PoolRequestRepository poolRequestRepository;
+    @Mock
+    private PendingJurorStatusRepository pendingJurorStatusRepository;
+    @Mock
+    private AppearanceRepository appearanceRepository;
+    @Mock
+    private ReasonableAdjustmentsRepository reasonableAdjustmentsRepository;
+    @Mock
+    private UserServiceModImpl userServiceMod;
+    @Mock
+    private JurorPoolService jurorPoolService;
+    @Mock
+    private FinancialAuditService financialAuditService;
+    @Mock
+    private JurorThirdPartyService jurorThirdPartyService;
+    @Mock
+    private PoolMemberSequenceService poolMemberSequenceService;
 
+    @Mock
+    private Clock clock;
+    @InjectMocks
+    JurorRecordServiceImpl jurorRecordService;
 
-    @BeforeEach
-    public void setUp() throws Exception {
-        initHeaders();
+    @AfterEach
+    void afterEach() {
+        TestUtils.afterAll();
     }
 
-    private void initHeaders() throws Exception {
+    @Nested
+    @DisplayName("void editJurorsBankDetails(RequestBankDetailsDto)")
+    class EditJurorsBankDetails {
 
-        BureauJwtPayload.Staff staff = new BureauJwtPayload.Staff();
-        staff.setCourts(Collections.singletonList("400"));
+        @Test
+        void happyPath() {
+            String jurorNumber = "123456789";
 
-        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userType(UserType.BUREAU)
-            .login("BUREAU_USER")
-            .owner("400")
-            .locCode("400")
-            .staff(staff)
-            .build());
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setSortCode("115578");
+            dto.setAccountNumber("87654321");
+            dto.setAccountHolderName("Mr Fname Lname");
 
-        httpHeaders = new HttpHeaders();
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+
+            when(jurorRepository.findById(jurorNumber)).thenReturn(Optional.of(juror));
+            jurorRecordService.editJurorsBankDetails(dto);
+
+            verify(jurorRepository, times(1)).findById(jurorNumber);
+            verify(jurorRepository, times(1)).save(juror);
+            verify(jurorHistoryService, times(1)).createEditBankSortCodeHistory(jurorNumber);
+            verify(jurorHistoryService, times(1)).createEditBankAccountNameHistory(jurorNumber);
+            verify(jurorHistoryService, times(1))
+                .createEditBankAccountNumberHistory(jurorNumber);
+
+            assertThat(juror.getBankAccountName()).isEqualTo(dto.getAccountHolderName());
+            assertThat(juror.getBankAccountNumber()).isEqualTo(dto.getAccountNumber());
+            assertThat(juror.getSortCode()).isEqualTo(dto.getSortCode());
+        }
+
+        @Test
+        void jurorNumberNotFound() {
+            String jurorNumber = "123456789";
+
+            RequestBankDetailsDto dto = new RequestBankDetailsDto();
+            dto.setJurorNumber(jurorNumber);
+            dto.setSortCode("115578");
+            dto.setAccountNumber("987654321");
+            dto.setAccountHolderName("Mr Fname Lname");
+
+            Juror juror = new Juror();
+
+            assertThatExceptionOfType(MojException.NotFound.class)
+                .isThrownBy(() -> jurorRecordService.editJurorsBankDetails(dto));
+
+            verify(jurorRepository, times(1)).findById(jurorNumber);
+            verify(jurorRepository, never()).save(juror);
+            verify(jurorHistoryService, never()).createEditBankSortCodeHistory(jurorNumber);
+            verify(jurorHistoryService, never()).createEditBankAccountNameHistory(jurorNumber);
+            verify(jurorHistoryService, never()).createEditBankAccountNumberHistory(jurorNumber);
+        }
     }
 
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorRecord.sql"})
-    void createJurorRecordHappyPath() throws Exception {
+    @Nested
+    @DisplayName("public void sendPaperSummonsPack(String jurorNumber)")
+    class SendPaperSummonsPack {
 
-        String poolNumber = "415220502";
-        JurorCreateRequestDto requestDto = createJurorRequestDto(poolNumber);
+        private JurorPool buildJurorPool(int statusCode, String dbdPreference, boolean courtInPilot) {
+            JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+            jurorPool.setStatus(createJurorStatus(statusCode));
+            jurorPool.getJuror().setDbdPreference(dbdPreference);
+            jurorPool.getCourt().setDigitalByDefault(courtInPilot);
+            return jurorPool;
+        }
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+        @Test
+        void happyPath() {
+            TestUtils.mockBureauUser();
+            JurorPool jurorPool = buildJurorPool(IJurorStatus.SUMMONED, "Paper", true);
 
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create-juror")), String.class);
+            doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be CREATED")
-            .isEqualTo(HttpStatus.CREATED);
+            jurorRecordService.sendPaperSummonsPack(VALID_JUROR_NUMBER);
 
-    }
+            verify(printDataService, times(1)).reprintSummonsLetter(jurorPool);
+            verifyNoMoreInteractions(printDataService);
+        }
 
-    private JurorCreateRequestDto createJurorRequestDto(String poolNumber) {
-        JurorCreateRequestDto requestDto = new JurorCreateRequestDto();
-        requestDto.setTitle("Mr");
-        requestDto.setFirstName("John");
-        requestDto.setLastName("Smith");
+        @Test
+        void negativeCourtNotInPilot() {
+            TestUtils.mockBureauUser();
+            JurorPool jurorPool = buildJurorPool(IJurorStatus.SUMMONED, "Paper", false);
 
-        JurorAddressDto addressDto = JurorAddressDto.builder()
-            .lineOne("1 High Street")
-            .lineTwo("Test")
-            .lineThree("Test")
-            .town("Test")
-            .county("Test")
-            .postcode("TE1 1ST")
-            .build();
-        requestDto.setAddress(addressDto);
+            doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
 
-        requestDto.setDateOfBirth(LocalDate.of(1990, 1, 1));
-        requestDto.setPrimaryPhone("01234567890");
-        requestDto.setEmailAddress("test@mail.com");
-        requestDto.setPoolNumber(poolNumber);
-        requestDto.setLocationCode("415");
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
+                .isThrownBy(() -> jurorRecordService.sendPaperSummonsPack(VALID_JUROR_NUMBER))
+                .withMessage("Juror's court is not part of the DBD pilot");
 
-        return requestDto;
-    }
+            verifyNoInteractions(printDataService);
+        }
 
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorRecordProcess.sql"})
-    void testGAllPendingJurorRecordsHappyPath() throws Exception {
+        @Test
+        void negativeWrongStatus() {
+            TestUtils.mockBureauUser();
+            JurorPool jurorPool = buildJurorPool(IJurorStatus.RESPONDED, "Paper", true);
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+            doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
 
-        ResponseEntity<PendingJurorsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/pending-jurors/416")), PendingJurorsResponseDto.class);
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
+                .isThrownBy(() -> jurorRecordService.sendPaperSummonsPack(VALID_JUROR_NUMBER))
+                .withMessage("Juror must be in Summoned status to send a paper summons pack");
 
-        assertThat(response.getStatusCode()).as("Expect the HTTP Response Status to be OK")
-            .isEqualTo(HttpStatus.OK);
+            verifyNoInteractions(printDataService);
+        }
 
-        verifyAllPendingJurorResponse(response);
-    }
+        @Test
+        void negativeWrongPreference() {
+            TestUtils.mockBureauUser();
+            JurorPool jurorPool = buildJurorPool(IJurorStatus.SUMMONED, "Digital", true);
 
-    private static void verifyAllPendingJurorResponse(ResponseEntity<PendingJurorsResponseDto> response) {
-        PendingJurorsResponseDto pendingJurorsResponseDto = response.getBody();
-        assertThat(pendingJurorsResponseDto).isNotNull();
+            doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
 
-        List<PendingJurorsResponseDto.PendingJurorsResponseData> pendingJuror = pendingJurorsResponseDto.getData();
-        assertThat(pendingJuror).isNotNull();
-        assertThat(pendingJuror.size()).as("Expect there to be four records returned").isEqualTo(4);
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
+                .isThrownBy(() -> jurorRecordService.sendPaperSummonsPack(VALID_JUROR_NUMBER))
+                .withMessage("Juror's communication preference must be Paper");
 
-        // verify the records are as expected
-        assertThat(pendingJuror.get(0).getJurorNumber()).isEqualTo("041600001");
-        assertThat(pendingJuror.get(0).getFirstName()).isEqualTo("Johna");
-        assertThat(pendingJuror.get(0).getLastName()).isEqualTo("Smitha");
-        assertThat(pendingJuror.get(0).getPendingJurorStatus().getCode()).isEqualTo(
-            PendingJurorStatusEnum.QUEUED.getCode());
-        assertThat(pendingJuror.get(0).getNotes()).isEqualTo("Notes on record");
-        assertThat(pendingJuror.get(0).getPostcode()).isEqualTo("TE1 1ST");
-
-        assertThat(pendingJuror.get(1).getJurorNumber()).isEqualTo("041600002");
-        assertThat(pendingJuror.get(1).getFirstName()).isEqualTo("Johnb");
-        assertThat(pendingJuror.get(1).getLastName()).isEqualTo("Smithb");
-        assertThat(pendingJuror.get(1).getPendingJurorStatus().getCode()).isEqualTo(
-            PendingJurorStatusEnum.QUEUED.getCode());
-        assertThat(pendingJuror.get(1).getNotes()).isNull();
-        assertThat(pendingJuror.get(1).getPostcode()).isEqualTo("TE1 2ST");
-
-        assertThat(pendingJuror.get(2).getJurorNumber()).isEqualTo("041600003");
-        assertThat(pendingJuror.get(2).getFirstName()).isEqualTo("Johnc");
-        assertThat(pendingJuror.get(2).getLastName()).isEqualTo("Smithc");
-        assertThat(pendingJuror.get(2).getPendingJurorStatus().getCode()).isEqualTo(
-            PendingJurorStatusEnum.REJECTED.getCode());
-        assertThat(pendingJuror.get(2).getNotes()).isEqualTo("Notes on record 3");
-        assertThat(pendingJuror.get(2).getPostcode()).isEqualTo("TE1 3ST");
-
-        assertThat(pendingJuror.get(3).getJurorNumber()).isEqualTo("041600004");
-        assertThat(pendingJuror.get(3).getFirstName()).isEqualTo("Johnd");
-        assertThat(pendingJuror.get(3).getLastName()).isEqualTo("Smithd");
-        assertThat(pendingJuror.get(3).getPendingJurorStatus().getCode()).isEqualTo(
-            PendingJurorStatusEnum.AUTHORISED.getCode());
-        assertThat(pendingJuror.get(3).getNotes()).isEqualTo("Notes on record 4");
-        assertThat(pendingJuror.get(3).getPostcode()).isEqualTo("TE1 4ST");
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorRecordProcess.sql"})
-    void testGQueuedPendingJurorRecordsHappyPath() throws Exception {
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
-
-        ResponseEntity<PendingJurorsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/pending-jurors/416?status=QUEUED")),
-                PendingJurorsResponseDto.class);
-
-        assertThat(response.getStatusCode()).as("Expect the HTTP Response Status to be OK")
-            .isEqualTo(HttpStatus.OK);
-
-        verifyQueuedPendingJurorResponse(response);
-    }
-
-    private static void verifyQueuedPendingJurorResponse(ResponseEntity<PendingJurorsResponseDto> response) {
-        PendingJurorsResponseDto pendingJurorsResponseDto = response.getBody();
-        assertThat(pendingJurorsResponseDto).isNotNull();
-
-        List<PendingJurorsResponseDto.PendingJurorsResponseData> pendingJuror = pendingJurorsResponseDto.getData();
-        assertThat(pendingJuror).isNotNull();
-        assertThat(pendingJuror.size()).as("Expect there to be two records returned").isEqualTo(2);
-
-        // verify the records are as expected
-        assertThat(pendingJuror.get(0).getJurorNumber()).isEqualTo("041600001");
-        assertThat(pendingJuror.get(0).getFirstName()).isEqualTo("Johna");
-        assertThat(pendingJuror.get(0).getLastName()).isEqualTo("Smitha");
-        assertThat(pendingJuror.get(0).getPendingJurorStatus().getCode()).isEqualTo(
-            PendingJurorStatusEnum.QUEUED.getCode());
-        assertThat(pendingJuror.get(0).getNotes()).isEqualTo("Notes on record");
-        assertThat(pendingJuror.get(0).getPostcode()).isEqualTo("TE1 1ST");
-
-        assertThat(pendingJuror.get(1).getJurorNumber()).isEqualTo("041600002");
-        assertThat(pendingJuror.get(1).getFirstName()).isEqualTo("Johnb");
-        assertThat(pendingJuror.get(1).getLastName()).isEqualTo("Smithb");
-        assertThat(pendingJuror.get(1).getPendingJurorStatus().getCode()).isEqualTo(
-            PendingJurorStatusEnum.QUEUED.getCode());
-        assertThat(pendingJuror.get(1).getNotes()).isNull();
-        assertThat(pendingJuror.get(1).getPostcode()).isEqualTo("TE1 2ST");
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorRecordProcess.sql"})
-    void approvePendingJurorRecordHappyPath() throws Exception {
-
-        ProcessPendingJurorRequestDto requestDto = createProcessPendingJurorRequestDto(ApprovalDecision.APPROVE);
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT, Role.SENIOR_JUROR_OFFICER));
-
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/process-pending-juror")), String.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP response to be OK")
-            .isEqualTo(HttpStatus.OK);
-
-        //Check the record has been updated
-        PendingJuror pendingJuror = RepositoryUtils.retrieveFromDatabase("041600001", pendingJurorRepository);
-        assertThat(pendingJuror.getStatus().getCode()).isEqualTo(PendingJurorStatusEnum.AUTHORISED.getCode());
-
-        //Check the Juror record has been created as well
-        RepositoryUtils.retrieveFromDatabase("041600001", jurorRepository);
-        JurorPool jurorPool = jurorPoolRepository.findByPoolCourtLocationLocCodeAndJurorJurorNumberAndIsActiveTrue(
-            "416", "041600001");
-        assertThat(jurorPool.getPool().getPoolNumber()).as("Expect the Juror to be created and in pool 416220503")
-            .isEqualTo("416220503");
-        assertThat(jurorPool.getStatus().getStatus()).as("Expect the Juror to be active")
-            .isEqualTo(IJurorStatus.RESPONDED);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorRecordProcess.sql"})
-    void rejectPendingJurorRecordHappyPath() throws Exception {
-
-        ProcessPendingJurorRequestDto requestDto = createProcessPendingJurorRequestDto(ApprovalDecision.REJECT);
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT, Role.SENIOR_JUROR_OFFICER));
-
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/process-pending-juror")), String.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP response to be OK")
-            .isEqualTo(HttpStatus.OK);
-
+            verifyNoInteractions(printDataService);
+        }
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorRecordProcess.sql"})
-    void approvePendingJurorRecordUnhappyJuryOfficer() throws Exception {
+    void testEditJurorRecord() {
+        JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
 
-        ProcessPendingJurorRequestDto requestDto = createProcessPendingJurorRequestDto(ApprovalDecision.APPROVE);
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+        final ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        reasonableAdjustments.setDescription("Vision impairment");
+        reasonableAdjustments.setCode("V");
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
 
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/process-pending-juror")), String.class);
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
+        jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP response to be FORBIDDEN")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+        ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+        verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
+        Juror juror = jurorArgumentCaptor.getValue();
+        assertThat(juror.getTitle()).isEqualTo(requestDto.getTitle());
+        assertThat(juror.getFirstName()).isEqualTo(requestDto.getFirstName());
+        assertThat(juror.getLastName()).isEqualTo(requestDto.getLastName());
+        assertThat(juror.getDateOfBirth()).isEqualTo(requestDto.getDateOfBirth());
 
+        assertThat(juror.getAddressLine1()).isEqualTo(requestDto.getAddressLineOne());
+        assertThat(juror.getAddressLine2()).isEqualTo(requestDto.getAddressLineTwo());
+        assertThat(juror.getAddressLine3()).isEqualTo(requestDto.getAddressLineThree());
+        assertThat(juror.getAddressLine4()).isEqualTo(requestDto.getAddressTown());
+        assertThat(juror.getAddressLine5()).isEqualTo(requestDto.getAddressCounty());
+        assertThat(juror.getPostcode()).isEqualTo(requestDto.getAddressPostcode());
+
+        assertThat(juror.getPhoneNumber()).isEqualTo(requestDto.getPrimaryPhone());
+        assertThat(juror.getAltPhoneNumber()).isEqualTo(requestDto.getSecondaryPhone());
+        assertThat(juror.getEmail()).isEqualTo(requestDto.getEmailAddress());
+
+        assertThat(juror.getReasonableAdjustmentCode()).isEqualTo(requestDto.getSpecialNeed());
+        assertThat(juror.getReasonableAdjustmentMessage()).isEqualTo(requestDto.getSpecialNeedMessage());
+
+        assertThat(juror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
+        assertThat(juror.getPendingTitle()).isEqualTo(requestDto.getPendingTitle());
+        assertThat(juror.getPendingFirstName()).isEqualTo(requestDto.getPendingFirstName());
+        assertThat(juror.getPendingLastName()).isEqualTo(requestDto.getPendingLastName());
+        assertThat(juror.getWelsh()).isNull();
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorRecordProcess.sql"})
-    void approvePendingJurorRecordUnhappyBureauOfficer() throws Exception {
+    void testEditJurorRecordUpdateWelshFlagFromFalseToTrue() {
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
+        requestDto.setWelshLanguageRequired(true);
 
-        ProcessPendingJurorRequestDto requestDto = createProcessPendingJurorRequestDto(ApprovalDecision.APPROVE);
+        JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+        Juror juror = jurorPool.getJuror();
+        juror.setWelsh(false);
 
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/process-pending-juror")), String.class);
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP response to be FORBIDDEN")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+        ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        reasonableAdjustments.setDescription("Vision impairment");
+        reasonableAdjustments.setCode("V");
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
 
-    }
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
 
+        jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
 
-    private ProcessPendingJurorRequestDto createProcessPendingJurorRequestDto(ApprovalDecision decision) {
-        return ProcessPendingJurorRequestDto.builder()
-            .jurorNumber("041600001")
-            .decision(decision)
-            .comments("Test Comments")
-            .build();
-    }
+        final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+        verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
+        verify(jurorReasonableAdjustmentRepository, times(1)).findByJurorNumber(VALID_JUROR_NUMBER);
+        verify(jurorReasonableAdjustmentRepository, times(1)).save(any());
 
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editJurorRecord.sql"})
-    void editJurorDetailsHappyPathAllFieldsRequired() {
-        String jurorNumber = "123456789";
-
-        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto(true);
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP status to be NO CONTENT")
-            .isEqualTo(HttpStatus.NO_CONTENT);
-        executeInTransaction(() -> {
-            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
-
-            //Check data has been changed and now matches what was in the dto.
-            assertThat(juror.getTitle()).isEqualTo(requestDto.getTitle());
-            assertThat(juror.getFirstName()).isEqualTo(requestDto.getFirstName());
-            assertThat(juror.getLastName()).isEqualTo(requestDto.getLastName());
-            assertThat(juror.getAddressLine1()).isEqualTo(requestDto.getAddressLineOne());
-            assertThat(juror.getAddressLine2()).isEqualTo(requestDto.getAddressLineTwo());
-            assertThat(juror.getAddressLine3()).isEqualTo(requestDto.getAddressLineThree());
-            assertThat(juror.getAddressLine4()).isEqualTo(requestDto.getAddressTown());
-            assertThat(juror.getAddressLine5()).isEqualTo(requestDto.getAddressCounty());
-            assertThat(juror.getPostcode()).isEqualTo(requestDto.getAddressPostcode());
-            assertThat(juror.getDateOfBirth()).isEqualTo(requestDto.getDateOfBirth());
-            assertThat(juror.getPhoneNumber()).isEqualTo(requestDto.getPrimaryPhone());
-            assertThat(juror.getEmail()).isEqualTo(requestDto.getEmailAddress());
-            assertThat(juror.getReasonableAdjustmentCode()).isEqualTo(requestDto.getSpecialNeed());
-            assertThat(juror.getReasonableAdjustmentMessage()).isEqualTo(requestDto.getSpecialNeedMessage());
-
-            assertThat(juror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
-            assertThat(juror.getPendingTitle()).isEqualTo(requestDto.getPendingTitle());
-            assertThat(juror.getPendingFirstName()).isEqualTo(requestDto.getPendingFirstName());
-            assertThat(juror.getPendingLastName()).isEqualTo(requestDto.getPendingLastName());
-            assertThat(juror.getWelsh()).isEqualTo(requestDto.getWelshLanguageRequired());
-        });
+        Juror capturedJuror = jurorArgumentCaptor.getValue();
+        assertThat(capturedJuror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
+        assertThat(capturedJuror.getWelsh()).isTrue();
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editJurorRecord.sql"})
-    void editJurorDetailsHappyPathMandatoryFieldsOnly() {
-        String jurorNumber = "123456789";
+    void testEditJurorRecordUpdateWelshFlagFromTrueToFalse() {
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
+        requestDto.setWelshLanguageRequired(false);
 
-        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto(false);
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
+        JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+        Juror juror = jurorPool.getJuror();
+        juror.setWelsh(true);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP status to be NO CONTENT")
-            .isEqualTo(HttpStatus.NO_CONTENT);
-        executeInTransaction(() -> {
-            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
 
-            //Check data has been changed and now matches what was in the dto.
-            assertThat(juror.getTitle()).isEqualTo(requestDto.getTitle());
-            assertThat(juror.getFirstName()).isEqualTo(requestDto.getFirstName());
-            assertThat(juror.getLastName()).isEqualTo(requestDto.getLastName());
-            assertThat(juror.getAddressLine1()).isEqualTo(requestDto.getAddressLineOne());
-            assertThat(juror.getAddressLine2()).isEqualTo(requestDto.getAddressLineTwo());
-            assertThat(juror.getAddressLine3()).isEqualTo(requestDto.getAddressLineThree());
-            assertThat(juror.getAddressLine4()).isEqualTo(requestDto.getAddressTown());
-            assertThat(juror.getAddressLine5()).isEqualTo(requestDto.getAddressCounty());
-            assertThat(juror.getPostcode()).isEqualTo(requestDto.getAddressPostcode());
-            assertThat(juror.getDateOfBirth()).isEqualTo(requestDto.getDateOfBirth());
-            assertThat(juror.getPhoneNumber()).isEqualTo(requestDto.getPrimaryPhone());
-            assertThat(juror.getEmail()).isEqualTo(requestDto.getEmailAddress());
-            assertThat(juror.getReasonableAdjustmentCode()).isEqualTo(requestDto.getSpecialNeed());
-            assertThat(juror.getReasonableAdjustmentMessage()).isEqualTo(requestDto.getSpecialNeedMessage());
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+        ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        reasonableAdjustments.setDescription("Vision impairment");
+        reasonableAdjustments.setCode("V");
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
 
-            assertThat(juror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
-            assertThat(juror.getPendingTitle()).isEqualTo(requestDto.getPendingTitle());
-            assertThat(juror.getPendingFirstName()).isEqualTo(requestDto.getPendingFirstName());
-            assertThat(juror.getPendingLastName()).isEqualTo(requestDto.getPendingLastName());
-            assertThat(juror.getWelsh()).isEqualTo(requestDto.getWelshLanguageRequired());
-        });
-    }
+        jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
 
-    // need a new test where address details are updated but there are pending letters for the juror
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editJurorRecord.sql"})
-    void editJurorAddressHappyPath() {
-        String jurorNumber = "123456789";
+        final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+        verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
+        verify(jurorReasonableAdjustmentRepository, times(1)).findByJurorNumber(VALID_JUROR_NUMBER);
+        verify(jurorReasonableAdjustmentRepository, times(1)).save(any());
 
-        EditJurorRecordRequestDto requestDto = createEditJurorRequestUpdateAddressOnly();
-
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP status to be NO CONTENT")
-            .isEqualTo(HttpStatus.NO_CONTENT);
-        executeInTransaction(() -> {
-            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
-
-            //Check data has been changed and now matches what was in the dto.
-            assertThat(juror.getAddressLine1()).isEqualTo(requestDto.getAddressLineOne());
-            assertThat(juror.getAddressLine2()).isEqualTo(requestDto.getAddressLineTwo());
-            assertThat(juror.getAddressLine3()).isEqualTo(requestDto.getAddressLineThree());
-            assertThat(juror.getAddressLine4()).isEqualTo(requestDto.getAddressTown());
-            assertThat(juror.getAddressLine5()).isEqualTo(requestDto.getAddressCounty());
-            assertThat(juror.getPostcode()).isEqualTo(requestDto.getAddressPostcode());
-
-            // read the bulk print data records
-            List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository.findAll();
-            assertThat(bulkPrintDataList).isNotNull();
-            assertThat(bulkPrintDataList.size()).as("Expect the bulk print data to have 4 records").isEqualTo(4);
-
-            // validate one of the records for the new address details
-            BulkPrintData bulkPrintData = bulkPrintDataList.get(0);
-            assertThat(bulkPrintData.getJurorNo()).isEqualTo(jurorNumber);
-
-            String detailRec = bulkPrintData.getDetailRec();
-            // check that the address line one is in the detail record
-            assertThat(detailRec).contains(requestDto.getAddressLineOne().toUpperCase());
-            // check that the address line two is in the detail record
-            assertThat(detailRec).contains(requestDto.getAddressLineTwo().toUpperCase());
-            // check that the address line three is in the detail record
-            assertThat(detailRec).contains(requestDto.getAddressLineThree().toUpperCase());
-            // check that the address town is in the detail record
-            assertThat(detailRec).contains(requestDto.getAddressTown().toUpperCase());
-            // check that the address county is in the detail record
-            assertThat(detailRec).contains(requestDto.getAddressCounty().toUpperCase());
-            // check that the address postcode is in the detail record
-            assertThat(detailRec).contains(requestDto.getAddressPostcode().toUpperCase());
-        });
-
-    }
-
-
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editJurorRecord.sql"})
-    void editJurorDetailsWrongAccess() throws Exception {
-        String jurorNumber = "123456789";
-
-        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto(true);
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP status to be FORBIDDEN")
-            .isEqualTo(HttpStatus.FORBIDDEN);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editJurorRecord.sql"})
-    void editJurorDetailsRecordNotFound() {
-        String jurorNumber = "111111111";
-
-        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto(true);
-
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP status to be NOT_FOUND")
-            .isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorOpticReference.sql"})
-    void createJurorOpticReferenceHappyPathDigital() {
-        String jurorNumber = "123456789";
-        String poolNumber = "415220502";
-        String opticRef = "12345678";
-        JurorOpticRefRequestDto requestDto = createOpticRefRequestDto(jurorNumber, poolNumber, opticRef);
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be CREATED")
-            .isEqualTo(HttpStatus.CREATED);
-        executeInTransaction(() -> {
-
-            DigitalResponse digitalResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
-            assertThat(digitalResponse).isNotNull();
-            assertThat(digitalResponse.getProcessingStatus()).isEqualTo(AWAITING_COURT_REPLY);
-
-            //assert optic ref is same as set above
-            JurorPool jurorPool =
-                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, poolNumber,
-                    true).get();
-            Juror juror = jurorPool.getJuror();
-            assertThat(juror.getOpticRef()).isEqualTo(opticRef);
-        });
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorOpticReference.sql"})
-    void createJurorOpticReferenceHappyPathPaper() {
-        String jurorNumber = "987654321";
-        String poolNumber = "415220502";
-        String opticRef = "12345678";
-        JurorOpticRefRequestDto requestDto = createOpticRefRequestDto(jurorNumber, poolNumber, opticRef);
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be CREATED")
-            .isEqualTo(HttpStatus.CREATED);
-        executeInTransaction(() -> {
-            PaperResponse paperResponse =
-                jurorPaperResponseRepository.findByJurorNumber(jurorNumber);
-            assertThat(paperResponse).isNotNull();
-            assertThat(paperResponse.getProcessingStatus()).isEqualTo(AWAITING_COURT_REPLY);
-
-            //assert optic ref is same as set above
-            JurorPool jurorPool =
-                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, poolNumber,
-                    true).get();
-            Juror juror = jurorPool.getJuror();
-            assertThat(juror.getOpticRef()).isEqualTo(opticRef);
-        });
-    }
-
-
-    @ParameterizedTest
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorOpticReference.sql"})
-    @ValueSource(strings = {"123456789", "987654321"})
-    void createJurorOpticReferenceWrongAccess(String jurorNumber) throws Exception {
-        String poolNumber = "415220502";
-        String opticRef = "12345678";
-        JurorOpticRefRequestDto requestDto = createOpticRefRequestDto(jurorNumber, poolNumber, opticRef);
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be FORBIDDEN ")
-            .isEqualTo(HttpStatus.FORBIDDEN);
-
+        Juror capturedJuror = jurorArgumentCaptor.getValue();
+        assertThat(capturedJuror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
+        assertThat(capturedJuror.getWelsh()).isFalse();
     }
 
     @ParameterizedTest
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorOpticReference.sql"})
-    @ValueSource(strings = {"111111111", "211111111"})
-    void createJurorOpticReferencProcessStatusClosed() throws Exception {
-        String jurorNumber = "111111111";
-        String poolNumber = "415220502";
-        String opticRef = "12345678";
-        JurorOpticRefRequestDto requestDto = createOpticRefRequestDto(jurorNumber, poolNumber, opticRef);
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ResponseEntity<String> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be FORBIDDEN ")
-            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-        assertThat(response.getBody()).contains(
-            "Cannot check court accommodation - Response has been completed/closed");
+    @ValueSource(booleans = {true, false})
+    void testEditJurorRecordUpdateNullWelshFlag(Boolean welshLanguageRequired) {
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
+        requestDto.setWelshLanguageRequired(welshLanguageRequired);
 
+        JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+        Juror juror = jurorPool.getJuror();
+        juror.setWelsh(null);
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+
+        ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        reasonableAdjustments.setDescription("Vision impairment");
+        reasonableAdjustments.setCode("V");
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+
+        jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
+
+        final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+        verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
+        verify(jurorReasonableAdjustmentRepository, times(1)).findByJurorNumber(VALID_JUROR_NUMBER);
+        verify(jurorReasonableAdjustmentRepository, times(1)).save(any());
+
+        Juror capturedJuror = jurorArgumentCaptor.getValue();
+        assertThat(capturedJuror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
+        assertThat(capturedJuror.getWelsh()).isEqualTo(welshLanguageRequired);
+    }
+
+    @Test
+    void testEditJurorRecordDbdPreferenceChangedTriggersHistory() {
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
+        requestDto.setDbdPreference("digital"); // lower-case input, should normalize to "Digital"
+
+        JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+        jurorPool.getJuror().setDbdPreference("Paper");
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+
+        ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        reasonableAdjustments.setDescription("Vision impairment");
+        reasonableAdjustments.setCode("V");
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+
+        jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
+
+        ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+        verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
+        assertThat(jurorArgumentCaptor.getValue().getDbdPreference())
+            .as("dbd_preference should be normalized to 'Digital' regardless of input casing")
+            .isEqualTo("Digital");
+
+        verify(jurorHistoryService, times(1)).createEditChangeOfPersonalDetailsHistory(
+            eq(jurorPool), eq(VALID_JUROR_NUMBER), eq(jurorPool.getPool().getPoolNumber()),
+            eq("Communication preference changed"));
+    }
+
+    @Test
+    void testEditJurorRecordDbdPreferenceUnchangedNoHistory() {
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
+        requestDto.setDbdPreference("Paper");
+
+        JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+        jurorPool.getJuror().setDbdPreference("Paper"); // already Paper - no change expected
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+
+        ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        reasonableAdjustments.setDescription("Vision impairment");
+        reasonableAdjustments.setCode("V");
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+
+        jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
+
+        verify(jurorHistoryService, never()).createEditChangeOfPersonalDetailsHistory(
+            any(), any(), any(), eq("Communication preference changed"));
+    }
+
+
+
+    @Test
+    void testEditJurorRecordRemovePendingNameChange() {
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
+        requestDto.setPendingTitle(null);
+        requestDto.setPendingFirstName(null);
+        requestDto.setPendingLastName(null);
+
+        JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+        Juror juror = jurorPool.getJuror();
+        juror.setPendingTitle("Mx");
+        juror.setPendingFirstName("Pending First Name");
+        juror.setPendingLastName("Pending Last Name");
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+
+        ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        reasonableAdjustments.setDescription("Vision impairment");
+        reasonableAdjustments.setCode("V");
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+
+        jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
+
+        final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+        verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
+        Juror capturedJuror = jurorArgumentCaptor.getValue();
+
+        assertThat(capturedJuror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
+        assertThat(capturedJuror.getPendingTitle()).isEqualTo(requestDto.getPendingTitle());
+        assertThat(capturedJuror.getPendingFirstName()).isEqualTo(requestDto.getPendingFirstName());
+        assertThat(capturedJuror.getPendingLastName()).isEqualTo(requestDto.getPendingLastName());
+    }
+
+    @Test
+    void testCheckJurorRecordDetailPhoneMobileAndHomeLandline() {
+        String jurorNumber = "641500094";
+
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
+        Juror juror = jurorPool.getJuror();
+        juror.setPhoneNumber("0123456789");
+        juror.setAltPhoneNumber("0987654321");
+
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
+
+        JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService
+            .getJurorDetails(buildPayload(COURT_OWNER), jurorNumber, LOC_CODE);
+
+        assertThat(jurorDetailsResponseDto.getPrimaryPhone())
+            .as("Expect the primary phone number to be the phone number")
+            .isEqualTo("0123456789");
+        assertThat(jurorDetailsResponseDto.getSecondaryPhone())
+            .as("Expect the secondary phone number to be the alternative number")
+            .isEqualTo("0987654321");
+    }
+
+    @Test
+    void testCheckJurorRecordDetailPhoneMobileAndHome() {
+        String jurorNumber = "641500094";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
+        Juror juror = jurorPool.getJuror();
+        juror.setAltPhoneNumber("0787654321");
+        juror.setPhoneNumber("0543219876");
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
+
+        JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
+                                                                                             jurorNumber, LOC_CODE);
+
+        assertThat(jurorDetailsResponseDto.getPrimaryPhone())
+            .as("Expect the primary phone number to be the mobile number")
+            .isEqualTo("0787654321");
+        assertThat(jurorDetailsResponseDto.getSecondaryPhone())
+            .as("Expect the secondary phone number to be the home number")
+            .isEqualTo("0543219876");
+    }
+
+    @Test
+    void testCheckJurorRecordDetailPhoneHomeAndWork() {
+        String jurorNumber = "641500094";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
+        Juror juror = jurorPool.getJuror();
+        juror.setPhoneNumber("0123456789");
+        juror.setWorkPhone("0543219876");
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
+
+        JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
+                                                                                             jurorNumber, LOC_CODE);
+
+        assertThat(jurorDetailsResponseDto.getPrimaryPhone())
+            .as("Expect the primary phone number to be the home number")
+            .isEqualTo("0123456789");
+    }
+
+    @Test
+    void testCheckJurorRecordDetailPhoneMobile() {
+        String jurorNumber = "641500094";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
+        Juror juror = jurorPool.getJuror();
+        juror.setAltPhoneNumber("0987654321");
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
+
+        JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
+                                                                                             jurorNumber, LOC_CODE);
+
+        assertThat(jurorDetailsResponseDto.getPrimaryPhone())
+            .as("Expect the primary phone number to be the mobile number")
+            .isNull();
+        assertThat(jurorDetailsResponseDto.getSecondaryPhone())
+            .as("Expect the secondary phone number to be null")
+            .isEqualTo("0987654321");
+    }
+
+    @Test
+    void testCheckJurorRecordDetailPhoneHome() {
+        String jurorNumber = "641500094";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
+        Juror juror = jurorPool.getJuror();
+        juror.setPhoneNumber("0123456789");
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
+
+        JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
+                                                                                             jurorNumber, LOC_CODE);
+
+        assertThat(jurorDetailsResponseDto.getPrimaryPhone())
+            .as("Expect the primary phone number to be the home number")
+            .isEqualTo("0123456789");
+        assertThat(jurorDetailsResponseDto.getSecondaryPhone())
+            .as("Expect the secondary phone number to be null")
+            .isNull();
+    }
+
+    @Test
+    void testCheckJurorRecordDetailPhoneWork() {
+        String jurorNumber = "641500094";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
+        Juror juror = jurorPool.getJuror();
+
+        juror.setWorkPhone("0543219876");
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
+
+        JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
+                                                                                             jurorNumber, LOC_CODE);
+
+        assertThat(jurorDetailsResponseDto.getSecondaryPhone())
+            .as("Expect the secondary phone number to be null")
+            .isNull();
+    }
+
+    @Test
+    void testCheckJurorRecordDetailManuallyCreatedJuror() {
+        String jurorNumber = "641500094";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
+        Juror juror = jurorPool.getJuror();
+        juror.setWorkPhone("0543219876");
+
+        PendingJuror pendingJuror = new PendingJuror();
+        pendingJuror.setJurorNumber(jurorPool.getJurorNumber());
+        pendingJuror.setPoolNumber(jurorPool.getPoolNumber());
+
+        doReturn(jurorPool).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(), any());
+        doReturn(Optional.of(pendingJuror)).when(pendingJurorRepository).findById(jurorPool.getJurorNumber());
+
+        JurorDetailsResponseDto jurorDetailsResponseDto = jurorRecordService.getJurorDetails(buildPayload(COURT_OWNER),
+                                                                                             jurorNumber, LOC_CODE);
+
+        assertThat(jurorDetailsResponseDto.getCommonDetails().isManuallyCreated())
+            .as("Expect juror to be manually created")
+            .isEqualTo(true);
+    }
+
+    @Test
+    void testCheckJurorRecordNotFound() {
+
+        String jurorNumber = "641500094";
+        doReturn(new ArrayList<>()).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
+
+        JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("415"),
+                                                                                                jurorNumber, LOC_CODE);
+
+        assertThat(jurorOverviewResponseDto)
+            .as("No Juror record matched the juror number")
+            .isNull();
     }
 
     @ParameterizedTest
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorOpticReference.sql"})
-    @ValueSource(strings = {"111111112", "211111112"})
-    void createJurorOpticReferenceProcessingCompleted(String jurorNumber) throws Exception {
-        String poolNumber = "415220502";
-        String opticRef = "12345678";
-        JurorOpticRefRequestDto requestDto = createOpticRefRequestDto(jurorNumber, poolNumber, opticRef);
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ResponseEntity<String> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
+    @NullSource
+    @ValueSource(booleans = {true, false})
+    void testJurorOverviewResponseDtoContainsWelshFlag(Boolean welshFlag) {
+        final String jurorNumber = "111111111";
+        setupBureauUser();
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(LOC_CODE);
+        final List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be FORBIDDEN ")
-            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
-        assertThat(response.getBody()).contains(
-            "Cannot check court accommodation - Response has been completed/closed");
+        List<JurorHistory> jurorHistoryList = new ArrayList<>();
+        JurorHistory hist = new JurorHistory();
+        hist.setJurorNumber(jurorNumber);
+        hist.setHistoryCode(HistoryCodeMod.RESPONDED_POSITIVELY);
+        jurorHistoryList.add(hist);
+
+        jurorPools.get(0).getJuror().setWelsh(welshFlag);
+        doReturn(jurorHistoryList).when(jurorHistoryRepository)
+            .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
+
+        doReturn(courtLocation).when(courtLocationService).getCourtLocation(LOC_CODE);
+        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+
+        JurorOverviewResponseDto expectedResponse = new JurorOverviewResponseDto();
+        expectedResponse.setWelshLanguageRequired(welshFlag);
+
+        JurorOverviewResponseDto actualResponse =
+            jurorRecordService.getJurorOverview(buildPayload("400"), jurorNumber, LOC_CODE);
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+        verify(jurorHistoryRepository, times(1))
+            .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
+        assertEquals(expectedResponse.getWelshLanguageRequired(), actualResponse.getWelshLanguageRequired(),
+                     "Welsh flag should be set to " + expectedResponse.getWelshLanguageRequired());
     }
 
     @Test
-    void createJurorOpticReferenceWrongJurorNumber() throws Exception {
-        String poolNumber = "415220502";
-        String opticRef = "12345678";
-        JurorOpticRefRequestDto requestDto = createOpticRefRequestDto("900000000", poolNumber, opticRef);
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ResponseEntity<String> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
+    void testCheckJurorRecordOverviewCourtUserDifferentCourt() {
+        String jurorNumber = "416111111";
+        String locCode = "416";
+        when(jurorPoolRepository.findByJurorNumberAndIsActiveAndCourt(any(), anyBoolean(),
+                                                                      any())).thenReturn(createValidJurorPool(jurorNumber, "416"));
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be NOT_FOUND ")
-            .isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody()).contains(
-            "Cannot find juror response record for juror 900000000");
+        when(courtLocationService.getCourtLocation(any())).thenReturn(getCourtLocation());
+
+        assertThatExceptionOfType(MojException.Forbidden.class)
+            .isThrownBy(() -> jurorRecordService.getJurorOverview(buildPayload("415"), jurorNumber, locCode));
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, getCourtLocation());
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorGetOpticalReferenceBureau.sql"})
-    void testGOpticReferenceBureauUser() {
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-            URI.create("/api/v1/moj/juror-record/optic-reference/123456789/415220502")), String.class);
+    void testSearchJurorRecordCourtUser() {
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be OK")
-            .isEqualTo(HttpStatus.OK);
+        String jurorNumber = "416010101";
+        String owner = "416";
+        when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(any(), anyBoolean()))
+            .thenReturn(createJurorPoolList(jurorNumber, owner));
 
-        String opticReference = response.getBody();
+        JurorRecordSearchDto jurorRecordSearchDto = jurorRecordService.searchJurorRecord(
+            buildPayload("416"), jurorNumber);
 
-        assertThat(opticReference).isEqualTo("12345678");
-    }
+        List<JurorRecordSearchDto.JurorRecordSearchDataDto> dataDto = jurorRecordSearchDto.getData();
 
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorGetOpticalReferenceCourt.sql"})
-    void testGOpticReferenceCourtUser() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-            URI.create("/api/v1/moj/juror-record/optic-reference/123456789/415220502")), String.class);
+        assertThat(dataDto)
+            .as("Expect there to be one juror record in the result list")
+            .singleElement();
 
-        assertThat(response.getStatusCode()).as("Expect the HTTP GET request to be OK")
-            .isEqualTo(HttpStatus.OK);
+        JurorRecordSearchDto.JurorRecordSearchDataDto jurorSearchRecord = dataDto.get(0);
 
-        String opticReference = response.getBody();
-
-        assertThat(opticReference).isEqualTo("12345678");
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorGetOpticalReferenceBureau.sql"})
-    void testGOpticReferenceCourtUserWrongAccess() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-            URI.create("/api/v1/moj/juror-record/optic-reference/123456789/415220502")), String.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be NOT_FOUND")
-            .isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorGetOpticalReferenceCourt.sql"})
-    void testGOpticReferenceBureauUserCourtRecord() {
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-            URI.create("/api/v1/moj/juror-record/optic-reference/123456789/415220502")), String.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be OK")
-            .isEqualTo(HttpStatus.OK);
-
-        String opticReference = response.getBody();
-
-        assertThat(opticReference).isEqualTo("12345678");
-    }
-
-    /**
-     * Juror Record Detail tab tests.
-     */
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestCourt.sql"})
-    void testGJurorDetailsCourtUser() throws Exception {
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
-        ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorDetailsResponseDto jurorDetails = response.getBody();
-
-        assertThat(jurorDetails).isNotNull();
-        verifyResponse(jurorDetails);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestCourtOnly.sql"})
-    void testGJurorDetailsCourtUserCourtRecordOnly() throws Exception {
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
-        ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorDetailsResponseDto jurorDetails = response.getBody();
-
-        assertThat(jurorDetails).isNotNull();
-        verifyResponse(jurorDetails);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestCourt.sql"})
-    void testGJurorDetailsBureauUserActiveRecord() {
-
-        ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        //Bureau should still get the active record when there are two records
-        JurorDetailsResponseDto jurorDetails = response.getBody();
-
-        assertThat(jurorDetails).isNotNull();
-        verifyResponse(jurorDetails);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestSummoned.sql"})
-    void testGJurorDetailsBureauUserActiveRecordSummoned() {
-
-        ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600092/416")), JurorDetailsResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorDetailsResponseDto jurorDetails = response.getBody();
-        assertThat(jurorDetails).isNotNull();
-
-        assertThat(jurorDetails.getReplyMethod())
-            .as("Expect the Juror response reply method to be Digital")
-            .isEqualTo("DIGITAL");
-        assertThat(jurorDetails.getReplyProcessingStatus())
-            .as("Expect the Juror response processing status to be To Do")
-            .isEqualTo("To Do");
-
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/truncate.sql",
-        "/db/standing_data.sql", "/db/JurorRecordController_jurorDetailThirdPartyRequestBureau.sql"})
-    void testGJurorDetailsBureauUser() {
-
-        ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600096/416")), JurorDetailsResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-        JurorDetailsResponseDto jurorDetails = response.getBody();
-
-        assertThat(jurorDetails).isNotNull();
-        assertThat(jurorDetails.getThirdParty())
-            .as("Expect the Juror response third party details to be not null")
-            .isNotNull();
-
-        JurorResponseDto.ThirdParty thirdParty = jurorDetails.getThirdParty();
-        verifyJurorAndThirdPartyDetails(jurorDetails, thirdParty);
-    }
-
-    private void verifyJurorAndThirdPartyDetails(JurorDetailsResponseDto jurorDetails,
-                                                 JurorResponseDto.ThirdParty thirdParty) {
-        assertThat(jurorDetails.getCommonDetails().getFirstName())
-            .as("Expect the Juror first name to be FNAMEFIVEFOURZERO")
-            .isEqualTo("FNAMEFIVEFOURZERO");
-        assertThat(jurorDetails.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600096");
-        assertThat(jurorDetails.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror record status to be responded")
-            .isEqualTo("Responded");
-        assertThat(jurorDetails.getCommonDetails().getCourtName())
-            .as("Expect the Juror record to be in Chichester Crown Court")
-            .isEqualTo("GUILDFORD SITTING AT CHICHESTER");
-        assertThat(thirdParty.getThirdPartyFName())
-            .as("Expect the third party first name to be TPFIRSTNAME")
-            .isEqualTo("TPFIRSTNAME");
-        assertThat(thirdParty.getThirdPartyLName())
-            .as("Expect the third party last name to be TPLASTNAME")
-            .isEqualTo("TPLASTNAME");
-        assertThat(thirdParty.getMainPhone())
-            .as("Expect the third party main phone number to be 012033223")
-            .isEqualTo("012033223");
-        assertThat(thirdParty.getOtherPhone())
-            .as("Expect the third party other phone number to be 07878787323")
-            .isEqualTo("07878787323");
-        assertThat(thirdParty.getRelationship())
-            .as("Expect the third party relationship to be Son of the juror")
-            .isEqualTo("Son of the juror");
-        assertThat(thirdParty.getThirdPartyReason())
-            .as("Expect the third party relationship to be Unable to read english or welsh")
-            .isEqualTo("Unable to read english or welsh");
-        assertThat(thirdParty.getUseJurorEmailDetails())
-            .as("Expect the use Juror email flag to be false")
-            .isEqualTo(false);
-        assertThat(thirdParty.getUseJurorPhoneDetails())
-            .as("Expect the use Juror phone flag to be false")
-            .isEqualTo(false);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestCourtOnly.sql"})
-    void testGJurorDetailsBureauUserCourtRecordOnly() {
-
-        ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorDetailsResponseDto jurorDetails = response.getBody();
-
-        assertThat(jurorDetails).isNotNull();
-        verifyResponse(jurorDetails);
-
-    }
-
-    private void verifyResponse(JurorDetailsResponseDto jurorDetails) {
-        assertThat(jurorDetails.getCommonDetails().getFirstName())
-            .as("Expect the Juror first name to be FNAMEFIVEFOURZERO")
-            .isEqualTo("FNAMEFIVEFOURZERO");
-        assertThat(jurorDetails.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
+        assertThat(jurorSearchRecord.getJurorNumber())
+            .as("Expect the juror number to be 416010101")
+            .isEqualTo("416010101");
+        assertThat(jurorSearchRecord.getPoolNumber())
+            .as("Expect the pool number to be 641600090")
             .isEqualTo("641600090");
-        assertThat(jurorDetails.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror record status to be responded")
-            .isEqualTo("Responded");
-        assertThat(jurorDetails.getCommonDetails().getCourtName())
-            .as("Expect the Juror record to be in Chichester Crown Court")
-            .isEqualTo("GUILDFORD SITTING AT CHICHESTER");
-        assertThat(jurorDetails.getThirdParty())
-            .as("Expect the Juror third party details to be null")
-            .isEqualTo(null);
-        assertThat(jurorDetails.getSpecialNeed())
-            .as("Expect the reasonable adjustment code to be M")
-            .isEqualTo("M");
-        assertThat(jurorDetails.getSpecialNeedDescription())
-            .as("Expect the reasonable adjustment description to be Multiple")
-            .isEqualTo("Multiple");
-        assertThat(jurorDetails.getSpecialNeedMessage())
-            .isEqualTo("Reasonable adjustment test message");
-        assertThat(jurorDetails.getOpticReference())
-            .as("Expect the optic reference to be 18273645")
-            .isEqualTo("18273645");
-        assertThat(jurorDetails.getCommonDetails().isResponseEntered())
-            .as("Expect the response entered flag to be true")
-            .isTrue();
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestBureau.sql"})
-    void testGJurorDetailsCourtUserForbiddenBureauRecord() throws Exception {
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
-        ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be forbidden as its a Bureau only record")
-            .isEqualTo(HttpStatus.FORBIDDEN);
-
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestBureau.sql"})
-    void testGJurorDetailsCourtUserForbiddenDifferentCourt() throws Exception {
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("417", Collections.singletonList("417"),
-            UserType.COURT));
-        ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be forbidden as its a different court record")
-            .isEqualTo(HttpStatus.FORBIDDEN);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorDetailRequestCourt.sql"})
-    void testGJurorDetailsCourtUserNoRecordMatch() throws Exception {
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
-        ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600099/416")), JurorDetailsResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP Status for request to be NOT_FOUND")
-            .isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    /**
-     * Juror Record Overview tests.
-     */
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void testGJurorOverviewBureauUserPaperResponse() {
-
-        ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600090/416")), JurorOverviewResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorOverviewResponseDto jurorOverview = response.getBody();
-        assertThat(jurorOverview).isNotNull();
-
-        assertThat(jurorOverview.getCommonDetails().getOwner())
-            .as("Expect the owner to be 416")
+        assertThat(jurorSearchRecord.getCourtName())
+            .as("Expect the court name to be TEST COURT")
+            .isEqualTo("TEST COURT");
+        assertThat(jurorSearchRecord.getCourtLocationCode())
+            .as("Expect the court location to be 416")
             .isEqualTo("416");
-        assertThat(jurorOverview.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
+        assertThat(jurorSearchRecord.getFirstName())
+            .as("Expect the first name to be FIRSTNAME")
+            .isEqualTo("FIRSTNAME");
+        assertThat(jurorSearchRecord.getLastName())
+            .as("Expect the first name to be LASTNAME")
+            .isEqualTo("LASTNAME");
+        assertThat(jurorSearchRecord.getAddressPostcode())
+            .as("Expect the postcode to be M24 4GT")
+            .isEqualTo("M24 4GT");
+    }
+
+    @Test
+    void testSearchJurorRecordBureauUser() {
+        String jurorNumber = "416010101";
+        String owner = "416";
+        when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(any(), anyBoolean()))
+            .thenReturn(createJurorPoolList(jurorNumber, owner));
+
+        JurorRecordSearchDto jurorRecordSearchDto = jurorRecordService.searchJurorRecord(
+            buildPayload("400"), jurorNumber);
+
+        List<JurorRecordSearchDto.JurorRecordSearchDataDto> dataDto = jurorRecordSearchDto.getData();
+
+        assertThat(dataDto)
+            .as("Expect there to be one juror record in the result list")
+            .singleElement();
+
+        JurorRecordSearchDto.JurorRecordSearchDataDto jurorSearchRecord = dataDto.get(0);
+
+        assertThat(jurorSearchRecord.getJurorNumber())
+            .as("Expect the juror number to be 416010101")
+            .isEqualTo("416010101");
+        assertThat(jurorSearchRecord.getPoolNumber())
+            .as("Expect the pool number to be 641600090")
             .isEqualTo("641600090");
-        assertThat(jurorOverview.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror status to be Panel")
-            .isEqualTo("Panel");
-        assertThat(jurorOverview.getSpecialNeed())
-            .as("Expect the reasonable adjustment code to be M")
-            .isEqualTo("M");
-        assertThat(jurorOverview.getSpecialNeedDescription())
-            .as("Expect the reasonable adjustment description to be Multiple")
-            .isEqualTo("Multiple");
-        assertThat(jurorOverview.getSpecialNeedMessage())
-            .isEqualTo("Reasonable adjustment test message");
-        assertThat(jurorOverview.getOpticReference())
-            .as("Expect the optic reference to be 12345678")
-            .isEqualTo("12345678");
-        assertThat(jurorOverview.getWelshLanguageRequired())
-            .as("Expect the Welsh language flag to be true")
-            .isTrue();
+        assertThat(jurorSearchRecord.getCourtName())
+            .as("Expect the court name to be TEST COURT")
+            .isEqualTo("TEST COURT");
+        assertThat(jurorSearchRecord.getCourtLocationCode())
+            .as("Expect the court location to be 416")
+            .isEqualTo("416");
+        assertThat(jurorSearchRecord.getFirstName())
+            .as("Expect the first name to be FIRSTNAME")
+            .isEqualTo("FIRSTNAME");
+        assertThat(jurorSearchRecord.getLastName())
+            .as("Expect the first name to be LASTNAME")
+            .isEqualTo("LASTNAME");
+        assertThat(jurorSearchRecord.getAddressPostcode())
+            .as("Expect the postcode to be M24 4GT")
+            .isEqualTo("M24 4GT");
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/truncate.sql", "/db/standing_data.sql",
-        "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void testGJurorOverviewBureauUserOnlineResponse() {
-
-        ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600091/416")), JurorOverviewResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorOverviewResponseDto jurorOverview = response.getBody();
-        assertThat(jurorOverview).isNotNull();
-
-        assertThat(jurorOverview.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600091");
-        assertThat(jurorOverview.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror status to be Responded")
-            .isEqualTo("Responded");
-        assertThat(jurorOverview.getSpecialNeed())
-            .as("Expect the reasonable adjustment code to be M")
-            .isEqualTo("M");
-        assertThat(jurorOverview.getSpecialNeedDescription())
-            .as("Expect the reasonable adjustment description to be Multiple")
-            .isEqualTo("Multiple");
-        assertThat(jurorOverview.getSpecialNeedMessage())
-            .isEqualTo("Reasonable adjustment test message");
-        assertThat(jurorOverview.getOpticReference())
-            .as("Expect the optic reference to be 87654321")
-            .isEqualTo("87654321");
-        assertThat(jurorOverview.getWelshLanguageRequired())
-            .as("Expect the Welsh language flag to be false")
-            .isFalse();
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void testGJurorOverviewBureauUserSummonedResponse() {
-
-        ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600092/416")), JurorOverviewResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorOverviewResponseDto jurorOverview = response.getBody();
-        assertThat(jurorOverview).isNotNull();
-
-        assertThat(jurorOverview.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600092");
-        assertThat(jurorOverview.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror status to be Summoned")
-            .isEqualTo("Summoned");
-        assertThat(jurorOverview.getReplyMethod())
-            .as("Expect the reply method to be empty for Summoned citizens")
-            .isNull();
-        assertThat(jurorOverview.getSpecialNeed())
-            .as("Expect the reasonable adjustment code to be M")
-            .isEqualTo("M");
-        assertThat(jurorOverview.getSpecialNeedDescription())
-            .as("Expect the reasonable adjustment description to be Multiple")
-            .isEqualTo("Multiple");
-        assertThat(jurorOverview.getSpecialNeedMessage())
-            .isEqualTo("Reasonable adjustment test message");
-        assertThat(jurorOverview.getOpticReference())
-            .as("Expect the optic reference to be 18273645")
-            .isNull();
-        assertThat(jurorOverview.getWelshLanguageRequired())
-            .as("Expect the Welsh language flag to be null")
-            .isNull();
-    }
-
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void testGJurorOverviewBureauUserDisqualifiedOnSelectionResponse() {
-
-        ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600093/416")), JurorOverviewResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorOverviewResponseDto jurorOverview = response.getBody();
-        assertThat(jurorOverview).isNotNull();
-
-        assertThat(jurorOverview.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600093");
-        assertThat(jurorOverview.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror status to be Disqualified")
-            .isEqualTo("Disqualified");
-        assertThat(jurorOverview.getReplyMethod())
-            .as("Expect the reply method to be empty for Disqualified citizens")
-            .isNull();
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void testGJurorOverviewBureauUserDisqualifiedNotOnSelectionResponse() {
-
-        ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600095/416")), JurorOverviewResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorOverviewResponseDto jurorOverview = response.getBody();
-        assertThat(jurorOverview).isNotNull();
-
-        assertThat(jurorOverview.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600095");
-        assertThat(jurorOverview.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror status to be Disqualified")
-            .isEqualTo("Disqualified");
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void testGJurorOverviewBureauUserNotAvailableResponse() {
-
-        ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600094/416")), JurorOverviewResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorOverviewResponseDto jurorOverview = response.getBody();
-        assertThat(jurorOverview).isNotNull();
-
-        assertThat(jurorOverview.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600094");
-        assertThat(jurorOverview.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror status to be Responded")
-            .isEqualTo("Responded");
-    }
-
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorOverviewRequestBureau.sql"})
-    void testGOverviewDetailsCourtUserSummonedResponse() throws Exception {
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
-        ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600092/416")), JurorDetailsResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be forbidden as its a summoned user")
-            .isEqualTo(HttpStatus.FORBIDDEN);
-    }
-
-    /**
-     * Juror Record Summons Reply tests.
-     */
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void testGJurorSummonsReplyBureauUserPaperResponse() {
-
-        ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600090/416")),
-                JurorSummonsReplyResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorSummonsReplyResponseDto jurorSummonsReply = response.getBody();
-        assertNotNull(jurorSummonsReply, "Should not be null");
-
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600090");
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror status to be Panel")
-            .isEqualTo("Panel");
-        assertThat(jurorSummonsReply.getReplyMethod())
-            .as("Expect the reply method to be PAPER")
-            .isEqualTo("PAPER");
-        assertThat(jurorSummonsReply.getReplyDate())
-            .as("Expect the reply date to be empty")
-            .isNull();
-        assertThat(jurorSummonsReply.getReplyStatus())
-            .as("Expect the reply status to be empty")
-            .isNull();
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void testGJurorSummonsReplyBureauUserPaperResponseExcusalRefused() {
-
-        ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600096/416")),
-                JurorSummonsReplyResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorSummonsReplyResponseDto jurorSummonsReply = response.getBody();
-        assertThat(jurorSummonsReply).as("Expect the response to not be empty").isNotNull();
-
-        JurorDetailsCommonResponseDto commonResponseDto = jurorSummonsReply.getCommonDetails();
-
-        assertThat(commonResponseDto.getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600096");
-        assertThat(commonResponseDto.getJurorStatus())
-            .as("Expect the Juror status to be Responded")
-            .isEqualTo("Responded");
-        assertThat(jurorSummonsReply.getReplyMethod())
-            .as("Expect the reply method to be PAPER")
-            .isEqualTo("PAPER");
-        assertThat(jurorSummonsReply.getReplyDate())
-            .as("Expect the reply date to be 08/3/2023")
-            .isEqualTo(LocalDate.of(2023, 3, 8));
-        assertThat(jurorSummonsReply.getReplyStatus())
-            .as("Expect the reply status to be Closed")
-            .isEqualTo("Closed");
-        assertThat(commonResponseDto.getExcusalRejected())
-            .as("Expect the excusal rejected to be 'Y'")
-            .isEqualTo("Y");
-        assertThat(commonResponseDto.getExcusalCode())
-            .as("Expect the excusal code to be 'C'")
-            .isEqualTo("C");
-        assertThat(commonResponseDto.getExcusalDescription())
-            .as("Expect the excusal reason description to be 'Childcare'")
-            .isEqualTo("Childcare");
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void testGJurorSummonsReplyBureauUserDigitalResponseExcusalRefused() {
-
-        ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600097/416")),
-                JurorSummonsReplyResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorSummonsReplyResponseDto jurorSummonsReply = response.getBody();
-        assertNotNull(jurorSummonsReply, "Should not be null");
-
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600097");
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror status to be Responded")
-            .isEqualTo("Responded");
-        assertThat(jurorSummonsReply.getReplyMethod())
-            .as("Expect the reply method to be DIGITAL")
-            .isEqualTo("DIGITAL");
-        assertThat(jurorSummonsReply.getReplyDate().toString())
-            .as("Expect the reply date to be 08/10/2022")
-            .isEqualTo(LocalDate.of(2022, 10, 8).toString());
-        assertThat(jurorSummonsReply.getReplyStatus())
-            .as("Expect the reply status to be Closed")
-            .isEqualTo("Closed");
-        assertThat(jurorSummonsReply.getCommonDetails().getExcusalRejected())
-            .as("Expect the excusal rejected to be 'Y'")
-            .isEqualTo("Y");
-        assertThat(jurorSummonsReply.getCommonDetails().getExcusalCode())
-            .as("Expect the excusal code to be 'C'")
-            .isEqualTo("C");
-        assertThat(jurorSummonsReply.getCommonDetails().getExcusalDescription())
-            .as("Expect the excusal reason description to be 'Childcare'")
-            .isEqualTo("Childcare");
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/truncate.sql", "/db/standing_data.sql",
-        "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void testGJurorSummonsReplyBureauUserOnlineResponse() {
-
-        ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600091/416")),
-                JurorSummonsReplyResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorSummonsReplyResponseDto jurorSummonsReply = response.getBody();
-        assertNotNull(jurorSummonsReply, "Should not be null");
-
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600091");
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror status to be Responded")
-            .isEqualTo("Responded");
-        assertThat(jurorSummonsReply.getReplyMethod())
-            .as("Expect the reply method to be DIGITAL for online response")
-            .isEqualTo("DIGITAL");
-        assertThat(jurorSummonsReply.getReplyDate().toString())
-            .as("Expect the reply date to be 2022-10-08")
-            .isEqualTo("2022-10-08");
-        assertThat(jurorSummonsReply.getReplyStatus())
-            .as("Expect the reply status to be Closed")
-            .isEqualTo("Closed");
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void testGJurorSummonsReplyBureauUserSummonedResponse() {
-
-        ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600092/416")),
-                JurorSummonsReplyResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorSummonsReplyResponseDto jurorSummonsReply = response.getBody();
-        assertNotNull(jurorSummonsReply, "Should not be null");
-
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600092");
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror status to be Summoned")
-            .isEqualTo("Summoned");
-        assertThat(jurorSummonsReply.getReplyMethod())
-            .as("Expect the reply method to be empty for Summoned citizens")
-            .isNull();
-    }
-
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void testGJurorSummonsReplyBureauUserDisqualifiedOnSelectionResponse() {
-
-        ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600093/416")),
-                JurorSummonsReplyResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorSummonsReplyResponseDto jurorSummonsReply = response.getBody();
-        assertNotNull(jurorSummonsReply, "Should not be null");
-
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600093");
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror status to be Disqualified")
-            .isEqualTo("Disqualified");
-        assertThat(jurorSummonsReply.getReplyMethod())
-            .as("Expect the reply method to be empty for Disqualified citizens")
-            .isNull();
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void testGJurorSummonsReplyBureauUserDisqualifiedNotOnSelectionResponse() {
-
-        ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600095/416")),
-                JurorSummonsReplyResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorSummonsReplyResponseDto jurorSummonsReply = response.getBody();
-        assertNotNull(jurorSummonsReply, "Should not be null");
-
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600095");
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror status to be Disqualified")
-            .isEqualTo("Disqualified");
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void testGJurorSummonsReplyBureauUserNotAvailableResponse() {
-
-        ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600094/416")),
-                JurorSummonsReplyResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorSummonsReplyResponseDto jurorSummonsReply = response.getBody();
-        assertNotNull(jurorSummonsReply, "Should not be null");
-
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorNumber())
-            .as("Expect the Juror number to be returned to match request")
-            .isEqualTo("641600094");
-        assertThat(jurorSummonsReply.getReplyMethod())
-            .as("Expect the reply method to be RESPONSE N/A as reply was over 12 months ago")
-            .isEqualTo("RESPONSE N/A");
-        assertThat(jurorSummonsReply.getCommonDetails().getJurorStatus())
-            .as("Expect the Juror status to be Responded")
-            .isEqualTo("Responded");
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSummonsReplyBureau.sql"})
-    void testGJurorSummonsReplyCourtUserSummonedResponse() throws Exception {
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
-        ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600092/416")),
-                JurorSummonsReplyResponseDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be forbidden as its a summoned user")
-            .isEqualTo(HttpStatus.FORBIDDEN);
-
-    }
-
-    /**
-     * Juror record Search tests.
-     */
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSearch.sql"})
-    void searchJurorBureauUserActiveBureauRecord() {
-
-        ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641600091")),
-                JurorRecordSearchDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorRecordSearchDto jurorSearchRecord = response.getBody();
-        assertThat(jurorSearchRecord).isNotNull();
-
-        List<JurorRecordSearchDto.JurorRecordSearchDataDto> dataDto = jurorSearchRecord.getData();
+    void testSearchJurorRecordCourtUserBureauRecord() {
+        String jurorNumber = "416010101";
+        when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(any(), anyBoolean()))
+            .thenReturn(createJurorPoolList(jurorNumber, BUREAU_OWNER));
+
+        JurorRecordSearchDto jurorRecordSearchDto = jurorRecordService.searchJurorRecord(
+            buildPayload("416"), jurorNumber);
+
+        List<JurorRecordSearchDto.JurorRecordSearchDataDto> dataDto = jurorRecordSearchDto.getData();
 
         assertThat(dataDto)
-            .as("Search data is not null")
-            .isNotNull();
-        assertThat(dataDto.size())
-            .as("There is one active record for this juror")
-            .isEqualTo(1);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSearch.sql"})
-    void searchJurorBureauUserActiveCourtRecord() {
-
-        ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641600090")),
-                JurorRecordSearchDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorRecordSearchDto jurorSearchRecord = response.getBody();
-        assertThat(jurorSearchRecord).isNotNull();
-
-        List<JurorRecordSearchDto.JurorRecordSearchDataDto> dataDto = jurorSearchRecord.getData();
-
-        assertThat(dataDto)
-            .as("Search data is not null")
-            .isNotNull();
-        assertThat(dataDto.size())
-            .as("There is one active record for this juror")
-            .isEqualTo(1);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSearch.sql"})
-    void searchJurorBureauUserMultipleActiveRecords() {
-
-        ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641500091")),
-                JurorRecordSearchDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorRecordSearchDto jurorSearchRecord = response.getBody();
-        assertThat(jurorSearchRecord).isNotNull();
-
-        List<JurorRecordSearchDto.JurorRecordSearchDataDto> dataDto = jurorSearchRecord.getData();
-
-        assertThat(dataDto)
-            .as("Search data is not null")
-            .isNotNull();
-        assertThat(dataDto.size())
-            .as("There are two active records for this juror")
-            .isEqualTo(2);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSearch.sql"})
-    void searchJurorBureauUserNoRecordFound() {
-
-        ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641600099")),
-                JurorRecordSearchDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorRecordSearchDto jurorSearchRecord = response.getBody();
-        assertThat(jurorSearchRecord).isNotNull();
-
-        List<JurorRecordSearchDto.JurorRecordSearchDataDto> dataDto = jurorSearchRecord.getData();
-
-        assertThat(dataDto)
-            .as("Search data is empty")
+            .as("Expect the result list to be empty")
             .isEmpty();
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSearch.sql"})
-    void searchJurorCourtUserActiveCourtRecord() throws Exception {
+    void testSearchJurorRecordCourtUserNotOwnedRecord() {
+        String jurorNumber = "416010101";
+        when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(any(), anyBoolean()))
+            .thenReturn(createJurorPoolList(jurorNumber, COURT_OWNER));
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416",
-            Collections.singletonList("416"), UserType.COURT));
+        JurorRecordSearchDto jurorRecordSearchDto = jurorRecordService.searchJurorRecord(
+            buildPayload("416"), jurorNumber);
 
-        ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641600090")),
-                JurorRecordSearchDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorRecordSearchDto jurorSearchRecord = response.getBody();
-        assertThat(jurorSearchRecord).isNotNull();
-
-        List<JurorRecordSearchDto.JurorRecordSearchDataDto> dataDto = jurorSearchRecord.getData();
+        List<JurorRecordSearchDto.JurorRecordSearchDataDto> dataDto = jurorRecordSearchDto.getData();
 
         assertThat(dataDto)
-            .as("Search data is not null")
-            .isNotNull();
-        assertThat(dataDto.size())
-            .as("There is one active record for this juror")
-            .isEqualTo(1);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSearch.sql"})
-    void searchJurorCourtUserMultipleActiveRecords() throws Exception {
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "767"),
-            UserType.COURT));
-
-        ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641500091")),
-                JurorRecordSearchDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorRecordSearchDto jurorSearchRecord = response.getBody();
-        assertThat(jurorSearchRecord).isNotNull();
-
-        List<JurorRecordSearchDto.JurorRecordSearchDataDto> dataDto = jurorSearchRecord.getData();
-
-        assertThat(dataDto)
-            .as("Search data is not null")
-            .isNotNull();
-        assertThat(dataDto.size())
-            .as("There are two active records for this juror")
-            .isEqualTo(2);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void testGJurorContactLogsBureauUserHappyPath() {
-        ResponseEntity<ContactLogListDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/contact-log/123456789")), ContactLogListDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        ContactLogListDto contactLogListDto = response.getBody();
-
-        assertThat(contactLogListDto).isNotNull();
-        assertThat(contactLogListDto.getData().size())
-            .as("Expect the Response to contain two contact log data items")
-            .isEqualTo(2);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSearch.sql"})
-    void searchJurorCourtUserActiveBureauRecord() throws Exception {
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
-
-        ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641600091")),
-                JurorRecordSearchDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorRecordSearchDto jurorSearchRecord = response.getBody();
-        assertThat(jurorSearchRecord).isNotNull();
-
-        List<JurorRecordSearchDto.JurorRecordSearchDataDto> dataDto = jurorSearchRecord.getData();
-
-        assertThat(dataDto)
-            .as("Search data is empty as no records returned")
-            .isEmpty();
-
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorSearch.sql"})
-    void searchJurorCourtUserNoRecordFound() throws Exception {
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
-
-        ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641600099")),
-                JurorRecordSearchDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        JurorRecordSearchDto jurorSearchRecord = response.getBody();
-        assertThat(jurorSearchRecord).isNotNull();
-
-        List<JurorRecordSearchDto.JurorRecordSearchDataDto> dataDto = jurorSearchRecord.getData();
-
-        assertThat(dataDto)
-            .as("Search data is empty")
+            .as("Expect the result list to be empty")
             .isEmpty();
     }
 
-    @Sql(statements = {"DELETE FROM juror_mod.juror_pool", "DELETE FROM juror_mod.juror", "DELETE FROM juror_mod.pool"})
-    void testGJurorContactLogsBureauUserJurorNotFound() {
-        ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/contact-log/123456789")), JurorDetailsResponseDto.class);
+    @Test
+    void testGetJurorContactLogsBureauUserBureauLogs() {
+        final BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER));
+        ContactLog contactLog = createContactLog(VALID_JUROR_NUMBER,
+                                                 IContactCode.GENERAL, "Some test notes");
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be not found as the juror does not exist")
-            .isEqualTo(HttpStatus.NOT_FOUND);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+        doReturn(Collections.singletonList(contactLog)).when(contactLogRepository)
+            .findByJurorNumber(VALID_JUROR_NUMBER);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER, true);
+
+
+        ContactLogListDto contactLogListDto = jurorRecordService.getJurorContactLogs(payload, VALID_JUROR_NUMBER);
+
+        assertThat(contactLogListDto.getData())
+            .as("Expect one contact log data item to be mapped in to the DTO").hasSize(1);
+
+        ContactLogListDto.ContactLogDataDto contactLogDataDto = contactLogListDto.getData().get(0);
+        verifyContactLogData(contactLogDataDto, contactLog);
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void testGJurorContactLogsCourtsUserHappyPath() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ResponseEntity<ContactLogListDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/contact-log/123456789")), ContactLogListDto.class);
+    void testGetJurorContactLogsBureauUserCourtLogs() {
+        final BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, COURT_OWNER));
 
-        ContactLogListDto contactLogListDto = response.getBody();
+        ContactLog contactLog = createContactLog(VALID_JUROR_NUMBER, IContactCode.GENERAL, "Some test notes");
 
-        assertThat(contactLogListDto).isNotNull();
-        assertThat(contactLogListDto.getData().size())
-            .as("Expect the Response to contain two contact log data items")
-            .isEqualTo(2);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+        doReturn(Collections.singletonList(contactLog)).when(contactLogRepository)
+            .findByJurorNumber(VALID_JUROR_NUMBER);
+        doReturn(jurorPools).when(jurorPoolRepository).findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER, true);
+
+
+        ContactLogListDto contactLogListDto = jurorRecordService.getJurorContactLogs(payload, VALID_JUROR_NUMBER);
+
+        assertThat(contactLogListDto.getData())
+            .as("Expect one contact log data item to be mapped in to the DTO").hasSize(1);
+
+        ContactLogListDto.ContactLogDataDto contactLogDataDto = contactLogListDto.getData().get(0);
+        verifyContactLogData(contactLogDataDto, contactLog);
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void testGJurorContactLogsCourtsUserBureauLogs() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/contact-log/123456789")), JurorDetailsResponseDto.class);
+    void testGetJurorContactLogsBureauUserNoLogs() {
+        final BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER));
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be forbidden as the juror is owned by the bureau")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+        doReturn(Collections.emptyList()).when(contactLogRepository)
+            .findByJurorNumber(VALID_JUROR_NUMBER);
+        doReturn(jurorPools).when(jurorPoolRepository).findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER, true);
+
+
+        ContactLogListDto contactLogListDto = jurorRecordService.getJurorContactLogs(payload, VALID_JUROR_NUMBER);
+
+        assertThat(contactLogListDto.getData())
+            .as("Expect no contact log data items to be mapped in to the DTO").isEmpty();
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void testGJurorContactLogsCourtsUserDifferentCourtLogs() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
-        ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/123456789/415")), JurorDetailsResponseDto.class);
+    void testGetJurorContactLogsBureauUserInvalidJuror() {
+        BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be forbidden as the juror is owned by a court this user does "
-                + "not have access to")
-            .isEqualTo(HttpStatus.FORBIDDEN);
-    }
+        List<JurorPool> jurorPools = new ArrayList<>();
 
-    private ContactLogRequestDto createContactLogRequestDto(String jurorNumber, String enquiryCode,
-                                                            String notes, Boolean repeatEnquiry) {
-        ContactLogRequestDto requestDto = new ContactLogRequestDto();
-        requestDto.setJurorNumber(jurorNumber);
-        requestDto.setStartCall(LocalDateTime.now());
-        requestDto.setEnquiryType(enquiryCode);
-        requestDto.setNotes(notes);
-        requestDto.setRepeatEnquiry(repeatEnquiry);
-        return requestDto;
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+
+        assertThat(jurorPools).isEmpty();
+        assertThatExceptionOfType(MojException.NotFound.class)
+            .isThrownBy(() -> jurorRecordService.getJurorContactLogs(payload, VALID_JUROR_NUMBER));
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void createJurorContactLogBureauUserHappyPath() {
-        String jurorNumber = "123456789";
-        ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, "LS",
-            "Repeat Enquiry Notes", true);
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+    void testGetJurorContactLogsCourtUserBureauLogs() {
+        BureauJwtPayload payload = buildPayload(COURT_OWNER);
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER));
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.CREATED);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER, true);
 
-        List<ContactLog> contactLogs =
-            contactLogRepository.findByJurorNumber(jurorNumber);
-
-        assertThat(contactLogs.size())
-            .as("Initial test data contained a single contact log, expect a second, new contact log to be created")
-            .isEqualTo(2);
-        ContactLog contactLog = contactLogs.stream().filter(cl ->
-            cl.getEnquiryType().getCode().equals(IContactCode.LENGTH_OF_SERVICE.getCode())).findFirst().get();
-
-        assertThat(contactLog.getJurorNumber())
-            .as("The newly created contact log should have it's Juror Number value mapped from the request DTO")
-            .isEqualTo(requestDto.getJurorNumber());
-        LocalDateTime startCall = requestDto.getStartCall();
-        assertThat(contactLog.getStartCall())
-            .as("The newly created contact log should have it's Start Call value mapped from the request DTO")
-            .hasDayOfMonth(startCall.getDayOfMonth()).hasMonth(startCall.getMonth()).hasYear(startCall.getYear());
-        assertThat(contactLog.getUsername())
-            .as("The newly created contact log should have it's Username value mapped from the request DTO")
-            .isEqualTo("BUREAU_USER");
-        assertThat(contactLog.getEnquiryType().getCode())
-            .as("The newly created contact log should have it's Enquiry Type value mapped from the request DTO")
-            .isEqualTo(requestDto.getEnquiryType());
-        assertThat(contactLog.getNotes())
-            .as("The newly created contact log should have it's Notes value mapped from the request DTO")
-            .isEqualTo(requestDto.getNotes());
+        assertThatExceptionOfType(MojException.Forbidden.class)
+            .isThrownBy(() -> jurorRecordService.getJurorContactLogs(payload, VALID_JUROR_NUMBER));
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void createJurorContactLogBureauUserDuplicateStartCall() {
-        String jurorNumber = "111111111";
+    void testGetJurorContactLogsCourtUserValidCourtLogs() {
+        final BureauJwtPayload payload = buildPayload(COURT_OWNER);
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, COURT_OWNER));
+        ContactLog contactLog1 = createContactLog(VALID_JUROR_NUMBER,
+                                                  IContactCode.GENERAL,
+                                                  "Some general test notes");
+        ContactLog contactLog2 = createContactLog(VALID_JUROR_NUMBER,
+                                                  IContactCode.DISCUSS_DEFERRAL,
+                                                  "Some deferral test notes");
+
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER, true);
+        doReturn(Arrays.asList(contactLog1, contactLog2)).when(contactLogRepository)
+            .findByJurorNumber(VALID_JUROR_NUMBER);
+
+        ContactLogListDto contactLogListDto = jurorRecordService.getJurorContactLogs(payload, VALID_JUROR_NUMBER);
+
+        assertThat(contactLogListDto.getData())
+            .as("Expect two contact log data items to be mapped in to the DTO").hasSize(2);
+
+        ContactLogListDto.ContactLogDataDto contactLogDataDto1 = contactLogListDto.getData().get(0);
+        ContactLogListDto.ContactLogDataDto contactLogDataDto2 = contactLogListDto.getData().get(1);
+        verifyContactLogData(contactLogDataDto1, contactLog1);
+        verifyContactLogData(contactLogDataDto2, contactLog2);
+    }
+
+    @Test
+    void testGetJurorContactLogsCourtUserDifferentCourt() {
+        BureauJwtPayload payload = buildPayload(COURT_OWNER);
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, "799"));
+
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER, true);
+
+        assertThatExceptionOfType(MojException.Forbidden.class)
+            .isThrownBy(() -> jurorRecordService.getJurorContactLogs(payload, VALID_JUROR_NUMBER));
+    }
+
+    private void verifyContactLogData(ContactLogListDto.ContactLogDataDto contactLogDataDto, ContactLog contactLog) {
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy KK:mm a", Locale.ENGLISH);
+        String logDate = contactLog.getStartCall().format(formatter);
+
+        assertThat(contactLogDataDto.getLogDate())
+            .as("Expect the log date to be mapped from the original contact log object and formatted")
+            .isEqualTo(logDate);
+        assertThat(contactLogDataDto.getUsername())
+            .as("Expect the username to be mapped from the original contact log object")
+            .isEqualTo(contactLog.getUsername());
+        assertThat(contactLogDataDto.getEnquiryType())
+            .as("Expect the enquiry type to be mapped from the original contact log object")
+            .isEqualTo(contactLog.getEnquiryType().getDescription());
+        assertThat(contactLogDataDto.getNotes())
+            .as("Expect the Notes to be mapped from the original contact log object")
+            .isEqualTo(contactLog.getNotes());
+    }
+
+    @Test
+    void testCreateJurorContactLogBureauUserHappyPath() {
+        final ArgumentCaptor<ContactLog> contactArgumentCaptor = ArgumentCaptor.forClass(ContactLog.class);
+        final BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER));
+        ContactCode contactEnquiryType = new ContactCode(IContactCode.GENERAL.getCode(),
+                                                         IContactCode.GENERAL.getDescription());
+        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
         LocalDateTime startCall = LocalDateTime.now();
-        ContactLogRequestDto requestDto1 = createContactLogRequestDto(jurorNumber, "LS",
-            "Repeat Enquiry Notes", true);
-        ContactLogRequestDto requestDto2 = createContactLogRequestDto(jurorNumber, "GE",
-            "General Enquiry Notes", false);
+        requestDto.setStartCall(startCall);
 
-        requestDto1.setStartCall(startCall);
-        requestDto2.setStartCall(startCall);
 
-        ResponseEntity<?> response1 =
-            restTemplate.exchange(new RequestEntity<>(requestDto1, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+        doReturn(Optional.of(contactEnquiryType)).when(contactCodeRepository)
+            .findById(IContactCode.GENERAL.getCode());
+        doReturn(null).when(contactLogRepository)
+            .saveAndFlush(any());
 
-        assertThat(response1.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.CREATED);
+        assertThatNoException().isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
 
-        List<ContactLog> contactLogs =
-            contactLogRepository.findByJurorNumber(jurorNumber);
+        verify(contactLogRepository, times(1))
+            .saveAndFlush(contactArgumentCaptor.capture());
+        ContactLog contactLog = contactArgumentCaptor.getValue();
 
-        assertThat(contactLogs.size())
-            .as("Expect a new contact log to be created")
-            .isEqualTo(1);
-
-        ResponseEntity<?> response2 =
-            restTemplate.exchange(new RequestEntity<>(requestDto2, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
-
-        assertThat(response2.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.CREATED);
-
-        contactLogs = contactLogRepository.findByJurorNumber(jurorNumber);
-
-        assertThat(contactLogs.size())
-            .as("Expect another new contact log to be created for the same call start time")
-            .isEqualTo(2);
+        assertThat(contactLog.getEnquiryType()).isEqualTo(contactEnquiryType);
+        assertThat(contactLog.getJurorNumber()).isEqualTo(VALID_JUROR_NUMBER);
+        assertThat(contactLog.getStartCall()).isEqualTo(startCall);
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void createJurorContactLogBureauUserUniqueStartCall() {
-        String jurorNumber = "111111111";
+    void testCreateJurorContactLogBureauUserJurorNotFound() {
+        BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
+        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
+
+        List<JurorPool> jurorPools = new ArrayList<>();
+
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+
+        assertThat(jurorPools).isEmpty();
+        assertThatExceptionOfType(MojException.NotFound.class)
+            .isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
+
+        verify(contactLogRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void testCreateJurorContactLogBureauUserCourtOwnedRecord() {
+        final ArgumentCaptor<ContactLog> contactArgumentCaptor = ArgumentCaptor.forClass(ContactLog.class);
+        final BureauJwtPayload payload = buildPayload(BUREAU_OWNER);
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, COURT_OWNER));
+
+        ContactCode contactEnquiryType = new ContactCode(IContactCode.GENERAL.getCode(),
+                                                         IContactCode.GENERAL.getDescription());
+        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
         LocalDateTime startCall = LocalDateTime.now();
-        ContactLogRequestDto requestDto1 = createContactLogRequestDto(jurorNumber, "LS",
-            "Repeat Enquiry Notes", true);
-        ContactLogRequestDto requestDto2 = createContactLogRequestDto(jurorNumber, "GE",
-            "General Enquiry Notes", false);
+        requestDto.setStartCall(startCall);
 
-        requestDto1.setStartCall(startCall);
-        requestDto2.setStartCall(startCall.plusSeconds(1));
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+        doReturn(Optional.of(contactEnquiryType)).when(contactCodeRepository)
+            .findById(IContactCode.GENERAL.getCode());
 
-        ResponseEntity<?> response1 =
-            restTemplate.exchange(new RequestEntity<>(requestDto1, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+        ContactLog contactLog = new ContactLog();
+        doReturn(contactLog).when(contactLogRepository)
+            .saveAndFlush(any());
 
-        assertThat(response1.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.CREATED);
+        assertThatNoException().isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
 
-        List<ContactLog> contactLogs =
-            contactLogRepository.findByJurorNumber(jurorNumber);
+        verify(contactLogRepository, times(1))
+            .saveAndFlush(contactArgumentCaptor.capture());
+        ContactLog contactCaptor = contactArgumentCaptor.getValue();
 
-        assertThat(contactLogs.size())
-            .as("Expect a new contact log to be created")
-            .isEqualTo(1);
-
-        ResponseEntity<?> response2 =
-            restTemplate.exchange(new RequestEntity<>(requestDto2, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
-
-        assertThat(response2.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.CREATED);
-
-        contactLogs = contactLogRepository.findByJurorNumber(jurorNumber);
-
-        assertThat(contactLogs.size())
-            .as("Expect a new contact log to be created")
-            .isEqualTo(2);
+        assertThat(contactCaptor.getEnquiryType()).isEqualTo(contactEnquiryType);
+        assertThat(contactCaptor.getJurorNumber()).isEqualTo(VALID_JUROR_NUMBER);
+        assertThat(contactCaptor.getStartCall()).isEqualTo(startCall);
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void createJurorContactLogBureauUserJurorNotFound() {
-        ContactLogRequestDto requestDto = createContactLogRequestDto("123456780", "LS",
-            "Enquiry Notes", false);
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+    void testCreateJurorContactLogCourtUserHappyPath() {
+        final ArgumentCaptor<ContactLog> contactArgumentCaptor = ArgumentCaptor.forClass(ContactLog.class);
+        final BureauJwtPayload payload = buildPayload(COURT_OWNER);
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, "415"));
+        ContactCode contactEnquiryType =
+            new ContactCode(IContactCode.GENERAL.getCode(), IContactCode.GENERAL.getDescription());
+        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
+        LocalDateTime startCall = LocalDateTime.now();
+        requestDto.setStartCall(startCall);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be unsuccessful")
-            .isEqualTo(HttpStatus.NOT_FOUND);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER, true);
+        doReturn(Optional.of(contactEnquiryType)).when(contactCodeRepository)
+            .findById(IContactCode.GENERAL.getCode());
+        doReturn(null).when(contactLogRepository)
+            .saveAndFlush(any());
+
+        assertThatNoException().isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
+
+        verify(contactLogRepository, times(1))
+            .saveAndFlush(contactArgumentCaptor.capture());
+        ContactLog contactLog = contactArgumentCaptor.getValue();
+        assertThat(contactLog.getEnquiryType()).isEqualTo(contactEnquiryType);
+
+        assertThat(contactLog.getJurorNumber()).isEqualTo(VALID_JUROR_NUMBER);
+        assertThat(contactLog.getStartCall()).isEqualTo(startCall);
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void createJurorContactLogBureauUserCourtOwnedJuror() {
+    void testCreateJurorContactLogCourtUserBureauOwnedRecord() {
+        final BureauJwtPayload payload = buildPayload(COURT_OWNER);
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER));
+
+        ContactLog contactLog = new ContactLog();
+        ContactLogRequestDto requestDto = createContactLogRequestDto(VALID_JUROR_NUMBER, IContactCode.GENERAL);
+
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(VALID_JUROR_NUMBER, true);
+        doReturn(contactLog).when(contactLogRepository)
+            .saveAndFlush(any());
+
+        assertThatExceptionOfType(MojException.Forbidden.class)
+            .isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
+
+        verify(contactLogRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void testCreateJurorContactLogCourtUserDifferentCourt() {
+        final BureauJwtPayload payload = buildPayload("415");
         String jurorNumber = "123456789";
-        ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, "LS",
-            "Enquiry Notes", false);
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(jurorNumber, "416"));
+        ContactLog contactLog = new ContactLog();
+        ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, IContactCode.GENERAL);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be successful")
-            .isEqualTo(HttpStatus.CREATED);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(contactLog).when(contactLogRepository)
+            .saveAndFlush(any());
 
-        List<ContactLog> contactLogs = contactLogRepository.findByJurorNumber(jurorNumber);
+        assertThatExceptionOfType(MojException.Forbidden.class)
+            .isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
 
-        assertThat(contactLogs.size())
-            .as("Expect a new contact log to be created")
-            .isEqualTo(3);
+        verify(contactLogRepository, never()).saveAndFlush(any());
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void createJurorContactLogBureauUserInvalidEnquiryType() {
-        ContactLogRequestDto requestDto = createContactLogRequestDto("123456789", "ZZ",
-            "Enquiry Notes", false);
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be unsuccessful")
-            .isEqualTo(HttpStatus.BAD_REQUEST);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void createJurorContactLogCourtUserHappyPath() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+    void testCreateJurorContactLogCourtUserInvalidEnquiryType() {
+        final BureauJwtPayload payload = buildPayload("415");
         String jurorNumber = "123456789";
-        ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, "ER",
-            "Repeat Enquiry Notes", true);
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(jurorNumber, "415"));
+        ContactLog contactLog = new ContactLog();
+        ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, IContactCode.GENERAL);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.CREATED);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(contactLog).when(contactLogRepository).saveAndFlush(any());
 
-        List<ContactLog> contactLogs =
-            contactLogRepository.findByJurorNumber(jurorNumber);
+        assertThatExceptionOfType(IllegalArgumentException.class)
+            .isThrownBy(() -> jurorRecordService.createJurorContactLog(payload, requestDto));
 
-        assertThat(contactLogs.size())
-            .as("Initial test data contained two contact logs, expect a third, new contact log to be created")
-            .isEqualTo(3);
-        ContactLog newContactLog = contactLogs.stream().filter(cl ->
-            cl.getEnquiryType().getCode().equals(IContactCode.EARLY_RELEASE.getCode())).findFirst().get();
-
-
-        assertThat(newContactLog.getJurorNumber())
-            .as("The newly created contact log should have it's Juror Number value mapped from the request DTO")
-            .isEqualTo(requestDto.getJurorNumber());
-        LocalDateTime startCall = requestDto.getStartCall();
-        assertThat(newContactLog.getStartCall())
-            .as("The newly created contact log should have it's Start Call value mapped from the request DTO")
-            .hasDayOfMonth(startCall.getDayOfMonth()).hasMonth(startCall.getMonth()).hasYear(startCall.getYear());
-        assertThat(newContactLog.getUsername())
-            .as("The newly created contact log should have it's Username value mapped from the request DTO")
-            .isEqualTo("COURT_USER");
-        assertThat(newContactLog.getEnquiryType().getCode())
-            .as("The newly created contact log should have it's Enquiry Type value mapped from the request DTO")
-            .isEqualTo(requestDto.getEnquiryType());
-        assertThat(newContactLog.getNotes())
-            .as("The newly created contact log should have it's Notes value mapped from the request DTO")
-            .isEqualTo(requestDto.getNotes());
+        verify(contactLogRepository, never()).saveAndFlush(any());
     }
 
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void createJurorContactLogCourtUserBureauOwnedRecord() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ContactLogRequestDto requestDto = createContactLogRequestDto("123456789", "ER",
-            "Enquiry Notes", false);
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+    private JurorPool createValidJurorPool(String jurorNumber, String owner) {
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode("415");
+        courtLocation.setLocCourtName("CHESTER");
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be unsuccessful")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("415230101");
+        poolRequest.setCourtLocation(courtLocation);
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+        juror.setFirstName("jurorPool1");
+        juror.setLastName("jurorPool1L");
+        juror.setPostcode("M24 4GT");
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner(owner);
+        jurorPool.setPool(poolRequest);
+        jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
+        jurorPool.setDateCreated(LocalDateTime.now().minusDays(3));
+
+        juror.setAssociatedPools(Set.of(jurorPool));
+        jurorPool.setJuror(juror);
+
+        return jurorPool;
     }
 
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void createJurorContactLogCourtUserDifferentCourt() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
-        ContactLogRequestDto requestDto = createContactLogRequestDto("123456789", "ER",
-            "Enquiry Notes", false);
-        ResponseEntity<?> response =
-            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+    private List<JurorPool> createJurorPoolList(String jurorNumber, String owner) {
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP POST request to be unsuccessful")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+        final List<JurorPool> jurorPoolList = new ArrayList<>();
+
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode("416");
+        courtLocation.setName("TEST COURT");
+        courtLocation.setLocCourtName("TEST COURT LONG NAME");
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("641600090");
+        poolRequest.setCourtLocation(courtLocation);
+
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+        juror.setFirstName("FIRSTNAME");
+        juror.setLastName("LASTNAME");
+        juror.setPostcode("M24 4GT");
+
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setOwner(owner);
+        jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
+        jurorPool.setPool(poolRequest);
+        jurorPool.setDateCreated(LocalDateTime.now().minusDays(5));
+
+        juror.setAssociatedPools(Set.of(jurorPool));
+        jurorPool.setJuror(juror);
+
+        jurorPoolList.add(jurorPool);
+
+        return jurorPoolList;
     }
 
-    private String initCourtsJwt(String owner, List<String> courts, UserType userType, Role... roles) throws Exception {
+    private CourtLocation getCourtLocation() {
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCourtName("TEST COURT");
+        courtLocation.setName("TEST NAME");
+        courtLocation.setLocCode("416");
+        return courtLocation;
+    }
 
-        return mintBureauJwt(BureauJwtPayload.builder()
-            .login("COURT_USER")
-            .userType(userType)
-            .roles(Arrays.asList(roles))
+    private BureauJwtPayload buildPayload(String owner) {
+        return BureauJwtPayload.builder()
+            .userLevel("99")
+            .login("SOME_USER")
             .owner(owner)
-            .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
-            .build());
+            .build();
+    }
+
+    private ContactLog createContactLog(String jurorNumber,
+                                        IContactCode contactCode, String notes) {
+        return ContactLog.builder()
+            .username("Test User")
+            .jurorNumber(jurorNumber)
+            .startCall(LocalDateTime.now())
+            .enquiryType(new ContactCode(contactCode.getCode(), contactCode.getDescription()))
+            .notes(notes)
+            .lastUpdate(LocalDateTime.now())
+            .repeatEnquiry(false)
+            .build();
+    }
+
+    private ContactLogRequestDto createContactLogRequestDto(String jurorNumber, IContactCode enquiryCode) {
+        ContactLogRequestDto contactLogRequestDto = new ContactLogRequestDto();
+        contactLogRequestDto.setJurorNumber(jurorNumber);
+        contactLogRequestDto.setEnquiryType(enquiryCode.getCode());
+        return contactLogRequestDto;
     }
 
     @Test
     void testGetContactEnquiryTypes() {
-        ResponseEntity<ContactEnquiryTypeListDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/contact-log/enquiry-types")),
-                ContactEnquiryTypeListDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        assertThat(response.getBody()).isNotNull();
-        List<ContactEnquiryTypeListDto.ContactEnquiry> contactEnquiryTypes = response.getBody().getData();
-
-        Iterable<ContactCode> dbData = contactEnquiryTypeRepository.findAll();
-
-        for (ContactCode contactEnquiryType : dbData) {
-
-            assertThat(contactEnquiryTypes.stream().anyMatch(enquiryType ->
-                enquiryType.getEnquiryCode() == ContactEnquiryCode.valueOf(contactEnquiryType.getCode())
-                    && enquiryType.getDescription().equals(contactEnquiryType.getDescription())))
-                .as("Expect each record from the database to be correctly mapped in to the returned DTO")
-                .isTrue();
+        ContactEnquiryCode[] enquiryCodes = ContactEnquiryCode.values();
+        List<ContactCode> enquiryTypes = new ArrayList<>();
+        for (ContactEnquiryCode enquiryCode : enquiryCodes) {
+            enquiryTypes.add(new ContactCode(enquiryCode.name(), enquiryCode.toString()));
         }
+        doReturn(enquiryTypes).when(contactCodeRepository).findAll();
+
+        ContactEnquiryTypeListDto dto = jurorRecordService.getContactEnquiryTypes();
+
+        assertThat(dto).as("Expect a valid dto to be instantiated").isNotNull();
+        assertThat(dto.getData())
+            .as("Expect all enquiry codes to be mapped in to the dto").hasSize(enquiryCodes.length);
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
     void testGetJurorNotesBureauUserBureauOwnedRecord() {
-        ResponseEntity<JurorNotesDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+        String owner = "415";
+        String jurorNumber = "123456789";
+        String notes = "Some example notes";
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(jurorNumber, owner));
+        JurorPool jurorPool = jurorPools.get(0);
+        Juror juror = jurorPool.getJuror();
+        juror.setNotes(notes);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
 
-        assertThat(response.getBody()).isNotNull();
-        JurorNotesDto responseBody = response.getBody();
-
-        assertThat(responseBody.getNotes())
-            .as("The juror record should be present and available to the current user to view notes")
-            .isEqualTo("SOME EXAMPLE NOTES");
+        assertThat(jurorRecordService.getJurorNotes(jurorNumber, owner).getNotes())
+            .as("Expect the Pool Member to be found and the notes property to be returned")
+            .isEqualTo(notes);
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void testGetJurorNotesBureauUserCourtOwnedRecord() {
-        ResponseEntity<JurorNotesDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+        final String owner = "415";
+        String jurorNumber = "123456789";
+        String notes = "Some example notes";
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(jurorNumber, "415"));
+        JurorPool jurorPool = jurorPools.get(0);
+        Juror juror = jurorPool.getJuror();
+        juror.setNotes(notes);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
 
-        assertThat(response.getBody()).isNotNull();
-        JurorNotesDto responseBody = response.getBody();
-
-        assertThat(responseBody.getNotes())
-            .as("The juror record should be present and available to the current user to view notes")
-            .isEqualTo("SOME EXAMPLE NOTES");
+        assertThat(jurorRecordService.getJurorNotes(jurorNumber, owner).getNotes())
+            .as("Expect the Pool Member to be found and the notes property to be returned")
+            .isEqualTo(notes);
     }
 
     @Test
-    @Sql("/db/mod/truncate.sql")
-    void testGetJurorNotesBureauUserPoolMemberNotFound() {
-        ResponseEntity<JurorNotesDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+    void testGetJurorNotesBureauUserJurorPoolNotFound() {
+        String owner = "415";
+        String jurorNumber = "123456789";
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be unsuccessful")
-            .isEqualTo(HttpStatus.NOT_FOUND);
+        List<JurorPool> jurorPools = new ArrayList<>();
+
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+
+        assertThat(jurorPools).isEmpty();
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+                                                                              jurorRecordService.getJurorNotes(jurorNumber, owner));
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void testGetJurorNotesCourtUserCourtOwnedRecord() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ResponseEntity<JurorNotesDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+    void testGetJurorNotesBureauUserNoNotes() {
+        String owner = "415";
+        String jurorNumber = "123456789";
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(jurorNumber, owner));
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
 
-        assertThat(response.getBody()).isNotNull();
-        JurorNotesDto responseBody = response.getBody();
-
-        assertThat(responseBody.getNotes())
-            .as("The juror record should be present and available to the current user to view notes")
-            .isEqualTo("SOME EXAMPLE NOTES");
+        assertThat(jurorRecordService.getJurorNotes(jurorNumber, owner).getNotes())
+            .as("Expect the Pool Member to be found but no notes data to be present")
+            .isNull();
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void testGetJurorNotesCourtUserBureauOwnedRecord() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ResponseEntity<JurorNotesDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+    void testGetJurorNotesCourtUserCourtOwnedRecord() {
+        String owner = "415";
+        String jurorNumber = "123456789";
+        String notes = "Some example notes";
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(jurorNumber, owner));
+        JurorPool jurorPool = jurorPools.get(0);
+        Juror juror = jurorPool.getJuror();
+        juror.setNotes(notes);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be unsuccessful")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+
+        assertThat(jurorRecordService.getJurorNotes(jurorNumber, owner).getNotes())
+            .as("Expect the Pool Member to be found and the notes property to be returned")
+            .isEqualTo(notes);
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void testGetJurorNotesCourtUserDifferentCourt() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
-        ResponseEntity<JurorNotesDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+    void testGetJurorNotesCourtUserBureauOwnedRecord() {
+        final String owner = "415";
+        String jurorNumber = "123456789";
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(jurorNumber, "400"));
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be unsuccessful")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+
+        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+                                                                               jurorRecordService.getJurorNotes(jurorNumber, owner));
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql"})
-    void testGetJurorNotesCourtUserNoNotes() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ResponseEntity<JurorNotesDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+    void testGetJurorNotesCourtUserDifferentCourt() {
+        final String owner = "415";
+        String jurorNumber = "123456789";
+        String notes = "Some example notes";
+        List<JurorPool> jurorPools = new ArrayList<>();
+        jurorPools.add(createValidJurorPool(jurorNumber, "416"));
+        JurorPool jurorPool = jurorPools.get(0);
+        Juror juror = jurorPool.getJuror();
+        juror.setNotes(notes);
 
-        assertThat(response.getBody()).isNotNull();
-        JurorNotesDto responseBody = response.getBody();
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
 
-        assertThat(responseBody.getNotes())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(null);
+        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+                                                                               jurorRecordService.getJurorNotes(jurorNumber, owner));
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
     void testSetJurorNotesBureauUserBureauOwnedRecord() {
-        JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
-        ResponseEntity<?> patchResponse =
-            restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+        String owner = "400";
+        String jurorNumber = "123456789";
+        String notes = "Some example notes";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, owner);
 
-        assertThat(patchResponse.getStatusCode())
-            .as("Expect the HTTP PATCH request to be successful")
-            .isEqualTo(HttpStatus.NO_CONTENT);
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(jurorNumber);
 
-        ResponseEntity<JurorNotesDto> getResponse =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
-
-        assertThat(getResponse.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        assertThat(getResponse.getBody()).isNotNull();
-        JurorNotesDto responseBody = getResponse.getBody();
-
-        assertThat(responseBody.getNotes())
-            .as("The juror record should be present and available to the current user to view notes")
-            .isEqualTo(updateNotes.getNotes());
+        assertThatNoException().isThrownBy(() -> jurorRecordService.setJurorNotes(jurorNumber, notes, owner));
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void testSetJurorNotesBureauUserCourtOwnedRecord() {
-        JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
-        ResponseEntity<?> patchResponse =
-            restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+        String jurorNumber = "123456789";
+        String notes = "Some example notes";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
 
-        assertThat(patchResponse.getStatusCode())
-            .as("Expect the HTTP PATCH request to be successful")
-            .isEqualTo(HttpStatus.NO_CONTENT);
-
-        ResponseEntity<JurorNotesDto> getResponse =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
-
-        assertThat(getResponse.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        assertThat(getResponse.getBody()).isNotNull();
-        JurorNotesDto responseBody = getResponse.getBody();
-
-        assertThat(responseBody.getNotes())
-            .as("The juror record should be present and available to the current user to view notes")
-            .isEqualTo(updateNotes.getNotes());
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(jurorNumber);
+        assertThatNoException().isThrownBy(() -> jurorRecordService.setJurorNotes(jurorNumber, notes, BUREAU_OWNER));
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void testSetJurorNotesBureauUserNotesTooLong() {
-        JurorNotesRequestDto updateNotes = new JurorNotesRequestDto(generateString(2001));
-        ResponseEntity<?> patchResponse =
-            restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+    void testSetJurorNotesCourtUserCourtOwnedRecord() {
+        String owner = "415";
+        String jurorNumber = "123456789";
+        String notes = "Some example notes";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, owner);
 
-        assertThat(patchResponse.getStatusCode())
-            .as("Expect the HTTP PATCH request to be unsuccessful")
-            .isEqualTo(HttpStatus.BAD_REQUEST);
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(jurorNumber);
+
+        assertThatNoException().isThrownBy(() -> jurorRecordService.setJurorNotes(jurorNumber, notes, owner));
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void testSetJurorNotesCourtUserCourtOwnedRecord() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
-        ResponseEntity<?> patchResponse =
-            restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+    void testSetJurorNotesCourtUserBureauOwnedRecord() {
+        String owner = "415";
+        String jurorNumber = "123456789";
+        String notes = "Some example notes";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, "400");
 
-        assertThat(patchResponse.getStatusCode())
-            .as("Expect the HTTP PATCH request to be successful")
-            .isEqualTo(HttpStatus.NO_CONTENT);
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(jurorNumber);
 
-        ResponseEntity<JurorNotesDto> getResponse =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
-
-        assertThat(getResponse.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-
-        assertThat(getResponse.getBody()).isNotNull();
-        JurorNotesDto responseBody = getResponse.getBody();
-
-        assertThat(responseBody.getNotes())
-            .as("The juror record should be present and available to the current user to view notes")
-            .isEqualTo(updateNotes.getNotes());
+        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+                                                                               jurorRecordService.setJurorNotes(jurorNumber, notes, owner));
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void testSetJurorNotesCourtUserBureauOwnedRecord() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
-        ResponseEntity<?> patchResponse =
-            restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+    void testSetJurorNotesCourtUserDifferentCourt() {
+        String owner = "415";
+        String jurorNumber = "123456789";
+        String notes = "Some example notes";
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, "416");
 
-        assertThat(patchResponse.getStatusCode())
-            .as("Expect the HTTP PATCH request to be unsuccessful")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(jurorNumber);
+
+        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+                                                                               jurorRecordService.setJurorNotes(jurorNumber, notes, owner));
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void testSetJurorNotesCourtsUserMaxNotesLength() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        JurorNotesRequestDto updateNotes = new JurorNotesRequestDto(generateString(2000));
-        ResponseEntity<?> patchResponse =
-            restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+    void testGetBureauDetailsByJurorNumberBureauUserHappyPath() {
+        String bureauOwnerCode = "400";
+        String jurorNumber = "123456789";
 
-        assertThat(patchResponse.getStatusCode())
-            .as("Expect the HTTP PATCH request to be successful")
-            .isEqualTo(HttpStatus.NO_CONTENT);
+        doReturn(createJurorPoolList(jurorNumber, bureauOwnerCode)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(Optional.of(new ModJurorDetail())).when(jurorDetailRepositoryMod).findById(jurorNumber);
+        doReturn(createBureauJurorDetailDto(jurorNumber)).when(bureauService).mapJurorDetailsToDto(any());
 
-        ResponseEntity<JurorNotesDto> getResponse =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+        jurorRecordService.getBureauDetailsByJurorNumber(jurorNumber, bureauOwnerCode);
 
-        assertThat(getResponse.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
+        // current user is bureau so no need to query records and check ownership for read only permission
+        verify(jurorPoolRepository, times(2))
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
 
-        assertThat(getResponse.getBody()).isNotNull();
-        JurorNotesDto responseBody = getResponse.getBody();
-
-        assertThat(responseBody.getNotes())
-            .as("The juror record should be present and available to the current user to view notes")
-            .isEqualTo(updateNotes.getNotes());
+        verify(jurorDetailRepositoryMod, times(1)).findById(jurorNumber);
+        verify(bureauService, times(1)).mapJurorDetailsToDto(any());
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
-    void testSetJurorNotesCourtUserDifferentCourt() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
-        JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
-        ResponseEntity<?> patchResponse =
-            restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+    void testGetBureauDetailsByJurorNumberCourtUserHappyPath() {
+        String courtOwnerCode = "415";
+        String jurorNumber = "123456789";
+        List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, courtOwnerCode);
+        jurorPools.add(createValidJurorPool(jurorNumber, "435"));
 
-        assertThat(patchResponse.getStatusCode())
-            .as("Expect the HTTP PATCH request to be unsuccessful")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+        doReturn(jurorPools).when(jurorPoolRepository).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(Optional.of(new ModJurorDetail())).when(jurorDetailRepositoryMod).findById(jurorNumber);
+
+        doReturn(createBureauJurorDetailDto(jurorNumber)).when(bureauService).mapJurorDetailsToDto(any());
+
+        jurorRecordService.getBureauDetailsByJurorNumber(jurorNumber, courtOwnerCode);
+
+        verify(jurorPoolRepository, times(2)).findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorDetailRepositoryMod, times(1)).findById(jurorNumber);
+        verify(bureauService, times(1)).mapJurorDetailsToDto(any());
     }
 
     @Test
-    @Sql("/db/mod/truncate.sql")
-    void testSetJurorNotesCourtUserPoolMemberNotFound() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
-        ResponseEntity<?> patchResponse =
-            restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+    void testGetBureauDetailsByJurorNumberNoMojDetails() {
+        String bureauOwnerCode = "400";
+        String jurorNumber = "123456789";
+        List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, bureauOwnerCode);
 
-        assertThat(patchResponse.getStatusCode())
-            .as("Expect the HTTP PATCH request to be unsuccessful")
-            .isEqualTo(HttpStatus.NOT_FOUND);
-    }
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        doReturn(Optional.empty()).when(jurorDetailRepositoryMod).findById(jurorNumber);
 
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+                                                                              jurorRecordService.getBureauDetailsByJurorNumber(jurorNumber, bureauOwnerCode));
 
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void testGetJurorNotesBureauUserEtagIsSet() {
-        ResponseEntity<JurorNotesDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
-
-        assertThat(response.getHeaders().size()).isGreaterThan(0);
-
-        assertThat(response.getHeaders().get("ETag"))
-            .as("Expect the eTag header to be set")
-            .isNotNull();
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorDetailRepositoryMod, times(1)).findById(jurorNumber);
+        verify(bureauService, never()).mapJurorDetailsToDto(any());
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void testGetJurorNotesBureauUserEtagIsSetThenNotModifiedReturned() {
-        ResponseEntity<JurorNotesDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+    void testGetBureauDetailsByJurorNumberInvalidPermission() {
+        String jurorNumber = "123456789";
+        List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "415");
+        jurorPools.add(createValidJurorPool(jurorNumber, "435"));
 
-        assertThat(response.getHeaders().getETag()).isNotNull();
+        doReturn(jurorPools).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
 
-        String etagValue = response.getHeaders().getETag();
+        assertThatExceptionOfType(MojException.Forbidden.class).isThrownBy(() ->
+                                                                               jurorRecordService.getBureauDetailsByJurorNumber(jurorNumber, "411"));
 
-        httpHeaders.set("If-none-match", etagValue);
-        ResponseEntity<JurorNotesDto> response2 =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
-
-        assertThat(response2.getStatusCode())
-            .as("Expect the HTTP GET request to return not-modified 304")
-            .isEqualTo(HttpStatus.NOT_MODIFIED);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
-    void testGetJurorNotesBureauUserEtagIsSetThenUpdateNotesThenModifiedReturned() throws Exception {
-        ResponseEntity<JurorNotesDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
-
-        assertThat(response.getHeaders().getETag()).isNotNull();
-
-        String etagValue = response.getHeaders().getETag();
-
-        // update the notes
-        updateNotesForEtag();
-
-        httpHeaders.set("If-none-match", etagValue);
-        ResponseEntity<JurorNotesDto> response2 =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
-
-        // this is 200 but is seen as unsuccessful or modified by the frontend :D
-        assertThat(response2.getStatusCode())
-            .as("Expect the HTTP GET to return OK 200")
-            .isEqualTo(HttpStatus.OK);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauDigitalDetail.sql"})
-    void testRetrieveJurorDetailsByIdBureauUserHappyPath() {
-        final String jurorNumber = "222222222";
-        ResponseEntity<BureauJurorDetailDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/digital-detail/" + jurorNumber)), BureauJurorDetailDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET to return OK 200")
-            .isEqualTo(HttpStatus.OK);
-
-        BureauJurorDetailDto dto = response.getBody();
-        assertThat(dto).isNotNull();
-        executeInTransaction(() -> {
-            JurorPool jurorPool =
-                jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).stream().findFirst().get();
-
-            validateJurorDetailsMapping(dto, jurorPool, "415220502");
-            // use snapshot loc_code 415 instead of latest, reassigned loc code 435
-            validateCourtDetails(dto, "415");
-            validateResponseDetails(dto);
-            assertThat(dto.isWelshCourt()).isFalse();
-        });
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauDigitalDetail.sql"})
-    void testRetrieveJurorDetailsLatestTransferred() {
-        final String jurorNumber = "641500001";
-        ResponseEntity<BureauJurorDetailDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/digital-detail/" + jurorNumber)), BureauJurorDetailDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET to return OK 200")
-            .isEqualTo(HttpStatus.OK);
-        executeInTransaction(() -> {
-            BureauJurorDetailDto dto = response.getBody();
-            assertThat(dto).isNotNull();
-
-            JurorPool jurorPool =
-                jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).stream().findFirst().get();
-
-            assertThat(dto.getCurrentOwner())
-                .as("Expect current owner to be the owner of the transferred to pool")
-                .isEqualToIgnoringCase("471");
-
-            validateJurorDetailsMapping(dto, jurorPool, "415240601");
-            validateCourtDetails(dto, "415");
-            validateResponseDetails(dto);
-            assertThat(dto.isWelshCourt()).isFalse();
-        });
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauDigitalDetail.sql"})
-    void testRetrieveJurorDetailsByIdBureauUserHappyPathWelshCourt() {
-        final String jurorNumber = "555555555";
-        final String poolNumber = "457230801";
-        final String bureauOwner = "400";
-        ResponseEntity<BureauJurorDetailDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/digital-detail/" + jurorNumber)), BureauJurorDetailDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET to return OK 200")
-            .isEqualTo(HttpStatus.OK);
-
-        BureauJurorDetailDto dto = response.getBody();
-        assertThat(dto).isNotNull();
-        executeInTransaction(() -> {
-            JurorPool jurorPool =
-                jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(bureauOwner, jurorNumber,
-                        poolNumber)
-                    .stream().findFirst().get();
-
-            validateJurorDetailsMapping(dto, jurorPool, poolNumber);
-            // use snapshot loc_code 415 instead of latest, reassigned loc code 435
-            validateCourtDetails(dto, "457");
-            validateResponseDetails(dto);
-            assertThat(dto.isWelshCourt()).isTrue();
-        });
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauDigitalDetail.sql"})
-    void testRetrieveJurorDetailsByIdBureauUserNoJurorRecord() {
-        String jurorNumber = "333333333";
-        ResponseEntity<BureauJurorDetailDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/digital-detail/" + jurorNumber)), BureauJurorDetailDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET to return 404 NOT FOUND")
-            .isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauDigitalDetail.sql"})
-    void testRetrieveJurorDetailsByIdCourtUserHappyPathMultipleSummonsHistoryRecords() throws Exception {
-        String jurorNumber = "444444444";
-        String poolNumber = "435220502";
-        String courtOwner = "435";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt(courtOwner, Collections.singletonList(courtOwner),
-            UserType.COURT));
-        ResponseEntity<BureauJurorDetailDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/digital-detail/" + jurorNumber)), BureauJurorDetailDto.class);
-
-        BureauJurorDetailDto dto = response.getBody();
-        assertThat(dto).isNotNull();
-        executeInTransaction(() -> {
-            JurorPool jurorPool = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(courtOwner,
-                jurorNumber, poolNumber).get();
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET to return OK 200")
-                .isEqualTo(HttpStatus.OK);
-
-            validateJurorDetailsMapping(dto, jurorPool, "415220502");
-            // Earliest summons history event should be used (location code 415)
-            validateCourtDetails(dto, "415");
-            validateResponseDetails(dto);
-        });
-    }
-
-    @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauDigitalDetail.sql"})
-    void testRetrieveJurorDetailsByIdCourtUserInvalidPermissions() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION,
-            initCourtsJwt("411", Collections.singletonList("411"), UserType.COURT));
-        ResponseEntity<BureauJurorDetailDto> response =
-            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/digital-detail/111111111")), BureauJurorDetailDto.class);
-
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET to return 403 FORBIDDEN")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+        verify(jurorPoolRepository, times(1))
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+        verify(jurorDetailRepositoryMod, never()).findById(jurorNumber);
+        verify(bureauService, never()).mapJurorDetailsToDto(any());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"111111116"})
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-    void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusNotChecked(String jurorNumber) {
-        ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                JurorOverviewResponseDto.class);
+    @EnumSource(value = PoliceCheck.class, mode = EnumSource.Mode.INCLUDE,
+        names = {"NOT_CHECKED"})
+    @NullSource
+    void testBureauGetJurorOverviewPoliceCheckStatusNotChecked(PoliceCheck policeCheck) {
+        final String jurorNumber = "111111111";
+        final String locCode = "415";
+        setupBureauUser();
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(locCode);
+        List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
+        doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getCommonDetails().getPoliceCheck()).as("Police check status")
-            .isEqualTo(PoliceCheck.NOT_CHECKED);
-    }
+        jurorPools.get(0).setStatus(createJurorStatus(IJurorStatus.RESPONDED));
+        Juror juror = jurorPools.get(0).getJuror();
+        juror.setPoliceCheck(policeCheck);
+        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
-    @ParameterizedTest
-    @ValueSource(strings = {"111111122"})
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-    void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusInsufficientInformation(String jurorNumber) {
-        ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                JurorOverviewResponseDto.class);
+        JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
+                                                                                                jurorNumber, locCode);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getCommonDetails().getPoliceCheck()).as("Police check status")
-            .isEqualTo(PoliceCheck.INSUFFICIENT_INFORMATION);
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'Not "
+                                                                                        + "Checked'").isEqualTo(policeCheck);
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-    void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusNotCheckedThereWasAproblem() {
-        ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/111111112/415")), JurorOverviewResponseDto.class);
+    void testBureauGetJurorOverviewPoliceCheckStatusNotCheckedThereWasAProblem() {
+        final String jurorNumber = "111111111";
+        final String locCode = "415";
+        setupBureauUser();
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getCommonDetails().getPoliceCheck()).as("Police check status")
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(locCode);
+
+        List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
+        JurorPool jurorPool = jurorPools.get(0);
+        jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
+
+        Juror juror = jurorPool.getJuror();
+        juror.setPoliceCheck(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED);
+
+        doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
+        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+
+        JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
+                                                                                                jurorNumber, locCode);
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Police check status")
             .isEqualTo(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"111111113"})
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-    void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusInProgress(String jurorNumber) {
-        ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                JurorOverviewResponseDto.class);
+    @EnumSource(value = PoliceCheck.class, mode = EnumSource.Mode.INCLUDE,
+        names = {"IN_PROGRESS"})
+    void testBureauGetJurorOverviewPoliceCheckStatusInProgress(PoliceCheck policeCheck) {
+        final String jurorNumber = "111111111";
+        final String locCode = "415";
+        setupBureauUser();
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(locCode);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
+        List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
+        JurorPool jurorPool = jurorPools.get(0);
+        jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
 
-        JurorOverviewResponseDto jurorOverviewResponseDto = response.getBody();
-        assertThat(jurorOverviewResponseDto).isNotNull();
+        Juror juror = jurorPool.getJuror();
+        juror.setPoliceCheck(policeCheck);
 
-        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck())
-            .as("Expected police check: 'In Progress'")
-            .isEqualTo(PoliceCheck.IN_PROGRESS);
+        doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
+        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+
+        JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
+                                                                                                jurorNumber, locCode);
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Excepted status to be 'In "
+                                                                                        + "Progress'").isEqualTo(PoliceCheck.IN_PROGRESS);
     }
 
-
-    @Nested
-    class PoliceCheckErrors {
-        @DisplayName("Error Retry - Connection Error")
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-        void connectionError() {
-            final String jurorNumber = "111111117";
-            ResponseEntity<JurorOverviewResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                    JurorOverviewResponseDto.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be successful")
-                .isEqualTo(HttpStatus.OK);
-
-            JurorOverviewResponseDto jurorOverviewResponseDto = response.getBody();
-            assertThat(jurorOverviewResponseDto).isNotNull();
-
-            assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck())
-                .as("Police check status")
-                .isEqualTo(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
-        }
-
-        @DisplayName("Error Retry - Name has numerics")
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-        @Test
-        void nameHasNumerics() {
-            final String jurorNumber = "111111118";
-            ResponseEntity<JurorOverviewResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                    JurorOverviewResponseDto.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be successful")
-                .isEqualTo(HttpStatus.OK);
-
-            JurorOverviewResponseDto jurorOverviewResponseDto = response.getBody();
-            assertThat(jurorOverviewResponseDto).isNotNull();
-
-            assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck())
-                .as("Police check status")
-                .isEqualTo(PoliceCheck.ERROR_RETRY_NAME_HAS_NUMERICS);
-        }
-
-        @DisplayName("Error Retry - Other Error Code")
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-        @Test
-        void otherErrorCode() {
-            final String jurorNumber = "111111119";
-            ResponseEntity<JurorOverviewResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                    JurorOverviewResponseDto.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be successful")
-                .isEqualTo(HttpStatus.OK);
-
-            JurorOverviewResponseDto jurorOverviewResponseDto = response.getBody();
-            assertThat(jurorOverviewResponseDto).isNotNull();
-
-            assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck())
-                .as("Police check status")
-                .isEqualTo(PoliceCheck.ERROR_RETRY_OTHER_ERROR_CODE);
-        }
-
-        @DisplayName("Error Retry -  No Error Reason")
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-        @Test
-        void noErrorReason() {
-            final String jurorNumber = "111111120";
-            ResponseEntity<JurorOverviewResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                    JurorOverviewResponseDto.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be successful")
-                .isEqualTo(HttpStatus.OK);
-
-            JurorOverviewResponseDto jurorOverviewResponseDto = response.getBody();
-            assertThat(jurorOverviewResponseDto).isNotNull();
-
-            assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck())
-                .as("Police check status")
-                .isEqualTo(PoliceCheck.ERROR_RETRY_NO_ERROR_REASON);
-        }
-
-        @DisplayName("Error Retry - Unexpected Exception")
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-        @Test
-        void errorRetryUnexpectedException() {
-            final String jurorNumber = "111111121";
-            ResponseEntity<JurorOverviewResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                    JurorOverviewResponseDto.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be successful")
-                .isEqualTo(HttpStatus.OK);
-
-            JurorOverviewResponseDto jurorOverviewResponseDto = response.getBody();
-            assertThat(jurorOverviewResponseDto).isNotNull();
-
-            assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck())
-                .as("Police check status")
-                .isEqualTo(PoliceCheck.ERROR_RETRY_UNEXPECTED_EXCEPTION);
-        }
+    private void setupBureauUser() {
+        TestUtils.mockBureauUser();
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-    void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusPassed() {
-        ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/111111114/415")), JurorOverviewResponseDto.class);
+    void testBureauGetJurorOverviewPoliceCheckStatusPassed() {
+        final String jurorNumber = "111111111";
+        final String locCode = "415";
+        setupBureauUser();
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getCommonDetails().getPoliceCheck()).as("Expected police check: 'Passed'")
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(locCode);
+
+        List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
+
+        JurorPool jurorPool = jurorPools.get(0);
+        jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
+
+        Juror juror = jurorPool.getJuror();
+        juror.setPoliceCheck(PoliceCheck.ELIGIBLE);
+
+        doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
+        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+
+        JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
+                                                                                                jurorNumber, locCode);
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Police Check status")
             .isEqualTo(PoliceCheck.ELIGIBLE);
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-    void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusFailed() {
-        ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/111111115/415")), JurorOverviewResponseDto.class);
+    void testBureauGetJurorOverviewJurorResponded() {
+        final String jurorNumber = "111111111";
+        final String locCode = "415";
+        setupBureauUser();
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(locCode);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP GET request to be successful")
-            .isEqualTo(HttpStatus.OK);
+        JurorStatus status = new JurorStatus();
+        status.setStatus(IJurorStatus.RESPONDED);
 
-        JurorOverviewResponseDto jurorOverviewResponseDto = response.getBody();
-        assertThat(jurorOverviewResponseDto).isNotNull();
+        List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
 
-        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Expected police check: 'Failed'")
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+        jurorPools.get(0).setStatus(jurorStatus);
+
+        JurorResponse response = new JurorResponse();
+        response.setJurorNumber(jurorNumber);
+
+        doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
+        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+
+        jurorRecordService.getJurorOverview(buildPayload("400"),
+                                            jurorNumber, locCode);
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+        verify(jurorResponseRepository, times(1)).findByJurorNumber(any(String.class));
+    }
+
+    @Test
+    void testBureauGetJurorOverviewPoliceCheckStatusFailed() {
+        final String jurorNumber = "111111111";
+        final String locCode = "415";
+        setupBureauUser();
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(locCode);
+        List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
+
+        Juror juror = jurorPools.get(0).getJuror();
+        juror.setPoliceCheck(PoliceCheck.INELIGIBLE);
+
+        doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
+        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+
+        JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
+                                                                                                jurorNumber, locCode);
+
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+        assertThat(jurorOverviewResponseDto.getCommonDetails().getPoliceCheck()).as("Police check status")
             .isEqualTo(PoliceCheck.INELIGIBLE);
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_fixJurorName.sql"})
-    void testFixJurorNameCourtUserHappyPath() throws Exception {
-        String username = "COURT_AGENT";
-        String owner = "415";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initPayloadWithStaffRank(owner, username, UserType.COURT));
+    void testBureauGetJurorSummonsReplyPaperResponse() {
+        final String jurorNumber = "111111111";
+        final String locCode = "415";
+        setupBureauUser();
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode(locCode);
+        final List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
 
-        JurorNameDetailsDto dto = new JurorNameDetailsDto("Mr", "First", "Last");
-        String jurorNumber = "111111111";
-        String poolNumber = "415230701";
+        List<JurorHistory> jurorHistoryList = new ArrayList<>();
+        JurorHistory hist = new JurorHistory();
+        hist.setJurorNumber(jurorNumber);
+        hist.setHistoryCode(HistoryCodeMod.RESPONDED_POSITIVELY);
+        jurorHistoryList.add(hist);
 
-        ResponseEntity<Void> response =
-            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/fix-name/" + jurorNumber)), Void.class);
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0); // same for minutes and seconds
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP PATCH request to be successful")
-            .isEqualTo(HttpStatus.NO_CONTENT);
-        executeInTransaction(() -> {
-            JurorPool jurorPool =
-                jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber,
-                    poolNumber).get();
-            Juror juror = jurorPool.getJuror();
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(IJurorStatus.RESPONDED);
 
-            assertThat(juror.getTitle()).isEqualTo(dto.getTitle());
-            assertThat(juror.getFirstName()).isEqualTo(dto.getFirstName());
-            assertThat(juror.getLastName()).isEqualTo(dto.getLastName());
-            assertThat(juror.getUserEdtq()).isEqualTo(username);
-            List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-            assertThat(jurorHistoryList.size()).isEqualTo(3);
-            for (JurorHistory jurorHistory : jurorHistoryList) {
-                assertThat(jurorHistory.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
-                assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
-            }
+        jurorPools.get(0).setStatus(jurorStatus);
+        doReturn(jurorHistoryList).when(jurorHistoryRepository)
+            .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
 
-            List<String> historyInfoList = initChangedHistoryProperties();
+        doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
+        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
-            for (String historyInfo : historyInfoList) {
-                assertThat(jurorHistoryList.stream().filter(hist ->
-                        hist.getOtherInformation().equalsIgnoreCase(historyInfo))
-                    .findFirst()
-                    .orElse(null))
-                    .isNotNull();
-            }
+        jurorRecordService.getJurorOverview(buildPayload("400"), jurorNumber, locCode);
 
-            List<Juror> jurorAuditHistory =
-                jurorRepository.findRevisions(jurorNumber).stream()
-                    .sorted(Comparator.comparingLong(rev -> rev.getRevisionNumber().orElse(0L)))
-                    .map(Revision::getEntity).toList();
-            assertThat(jurorAuditHistory.size()).isEqualTo(2);
-
-            Juror originalJurorVersion = jurorAuditHistory.get(0);
-            assertThat(originalJurorVersion.getTitle()).isNull();
-            assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
-            assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
-
-            Juror updatedJurorVersion = jurorAuditHistory.get(1);
-            assertThat(updatedJurorVersion.getTitle()).isEqualToIgnoringCase("Mr");
-            assertThat(updatedJurorVersion.getFirstName()).isEqualToIgnoringCase("First");
-            assertThat(updatedJurorVersion.getLastName()).isEqualToIgnoringCase("Last");
-        });
+        verify(jurorPoolRepository, times(1))
+            .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
+        verify(jurorHistoryRepository, times(1))
+            .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_fixJurorName.sql"})
-    void testFixJurorNameBureauUserHappyPath() throws Exception {
-        final String username = "TEAM_LEADER";
-        final String owner = "400";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initPayloadWithStaffRank(owner, username, UserType.BUREAU,
-            Role.MANAGER));
+    void testSetPendingNameChangeExistingJurorNoNameValues() {
+        final String bureauOwner = "400";
+        final String jurorNumber = "111111111";
+        String poolNumber = "415230101";
 
-        JurorNameDetailsDto dto = new JurorNameDetailsDto("Mr", "First", "Last");
-        final String jurorNumber = "222222222";
-        final String poolNumber = "415230701";
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode("415");
+        courtLocation.setLocCourtName("CHESTER");
 
-        ResponseEntity<Void> response =
-            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/fix-name/" + jurorNumber)), Void.class);
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber(poolNumber);
+        poolRequest.setCourtLocation(courtLocation);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP PATCH request to be successful")
-            .isEqualTo(HttpStatus.NO_CONTENT);
-        executeInTransaction(() -> {
-            JurorPool jurorPool =
-                jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber, poolNumber)
-                    .get();
-            Juror juror = jurorPool.getJuror();
+        Juror originalJuror = new Juror();
+        originalJuror.setJurorNumber(jurorNumber);
+        originalJuror.setOpticRef("12345678");
+        originalJuror.setTitle(null);
+        originalJuror.setFirstName("First");
+        originalJuror.setLastName("Last");
 
-            assertThat(juror.getTitle()).isEqualTo(dto.getTitle());
-            assertThat(juror.getFirstName()).isEqualTo(dto.getFirstName());
-            assertThat(juror.getLastName()).isEqualTo(dto.getLastName());
-            assertThat(juror.getUserEdtq()).isEqualTo(username);
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setPool(poolRequest);
+        jurorPool.setOwner(bureauOwner);
 
-            List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-            assertThat(jurorHistoryList.size()).isEqualTo(3);
-            for (JurorHistory jurorHistory : jurorHistoryList) {
-                assertThat(jurorHistory.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
-                assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
-            }
+        originalJuror.setAssociatedPools(Set.of(jurorPool));
+        jurorPool.setJuror(originalJuror);
 
-            List<String> historyInfoList = initChangedHistoryProperties();
+        doReturn(null).when(jurorRepository).save(any(Juror.class));
 
-            for (String historyInfo : historyInfoList) {
-                assertThat(jurorHistoryList.stream().filter(hist ->
-                        hist.getOtherInformation().equalsIgnoreCase(historyInfo))
-                    .findFirst()
-                    .orElse(null))
-                    .isNotNull();
-            }
+        String pendingTitle = "Mx";
+        String pendingFirstName = "Test";
+        String pendingLastName = "Person";
 
-            List<Juror> jurorAuditHistory =
-                jurorRepository.findRevisions(jurorNumber).stream()
-                    .sorted(Comparator.comparingLong(rev -> rev.getRevisionNumber().orElse(0L)))
-                    .map(Revision::getEntity).toList();
-            assertThat(jurorAuditHistory.size()).isEqualTo(2);
+        jurorRecordService.setPendingNameChange(originalJuror, pendingTitle, pendingFirstName, pendingLastName);
 
-            Juror originalJurorVersion = jurorAuditHistory.get(0);
-            assertThat(originalJurorVersion.getTitle()).isNull();
-            assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
-            assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
+        verify(jurorRepository, times(1)).save(any(Juror.class));
 
-            Juror updatedJurorVersion = jurorAuditHistory.get(1);
-            assertThat(updatedJurorVersion.getTitle()).isEqualToIgnoringCase("Mr");
-            assertThat(updatedJurorVersion.getFirstName()).isEqualToIgnoringCase("First");
-            assertThat(updatedJurorVersion.getLastName()).isEqualToIgnoringCase("Last");
-        });
+        Juror updatedJuror = jurorPool.getJuror();
+        assertThat(updatedJuror)
+            .as("Expect a Pool Member Ext record to exist")
+            .isNotNull();
+        assertThat(updatedJuror.getPendingTitle())
+            .as("Expect the Pool Member Ext record to be updated with the pending values")
+            .isEqualTo(pendingTitle);
+        assertThat(updatedJuror.getPendingFirstName())
+            .as("Expect the Pool Member Ext record to be updated with the pending values")
+            .isEqualTo(pendingFirstName);
+        assertThat(updatedJuror.getPendingLastName())
+            .as("Expect the Pool Member Ext record to be updated with the pending values")
+            .isEqualTo(pendingLastName);
+
+        assertThat(originalJuror.getTitle())
+            .as("Expect Pool Member record not to be updated")
+            .isNull();
+        assertThat(originalJuror.getFirstName())
+            .as("Expect Pool Member record not to be updated")
+            .isEqualToIgnoringCase("First");
+        assertThat(originalJuror.getLastName())
+            .as("Expect Pool Member record not to be updated")
+            .isEqualToIgnoringCase("Last");
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_processNameChangeApproval.sql"})
-    void testProcessNameChangeApprovalCourtUserApprovedHappyPath() throws Exception {
-        String username = "COURT_AGENT";
-        String owner = "415";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initPayloadWithStaffRank(owner, username, UserType.COURT));
+    void testSetPendingNameChangeExistingJurorExistingNameValues() {
+        final String bureauOwner = "400";
+        final String jurorNumber = "111111111";
+        String poolNumber = "415230101";
 
-        ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.APPROVE, "Some notes");
-        String jurorNumber = "111111111";
-        String poolNumber = "415230701";
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode("415");
+        courtLocation.setLocCourtName("CHESTER");
 
-        ResponseEntity<Void> response =
-            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/change-name/" + jurorNumber)), Void.class);
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber(poolNumber);
+        poolRequest.setCourtLocation(courtLocation);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP PATCH request to be successful")
-            .isEqualTo(HttpStatus.NO_CONTENT);
-        executeInTransaction(() -> {
-            JurorPool jurorPool =
-                jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber, poolNumber)
-                    .get();
-            Juror juror = jurorPool.getJuror();
+        Juror originalJuror = new Juror();
+        originalJuror.setJurorNumber(jurorNumber);
+        originalJuror.setOpticRef("12345678");
+        originalJuror.setPendingTitle("Dr");
+        originalJuror.setPendingFirstName("Some");
+        originalJuror.setPendingLastName("Name");
+        originalJuror.setTitle(null);
+        originalJuror.setFirstName("First");
+        originalJuror.setLastName("Last");
 
-            assertThat(juror.getTitle()).isEqualTo("Mr");
-            assertThat(juror.getFirstName()).isEqualTo("Test");
-            assertThat(juror.getLastName()).isEqualTo("Person");
-            assertThat(juror.getUserEdtq()).isEqualTo(username);
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setPool(poolRequest);
+        jurorPool.setOwner(bureauOwner);
+        jurorPool.setJuror(originalJuror);
 
-            assertThat(juror.getPendingTitle()).isNull();
-            assertThat(juror.getPendingFirstName()).isNull();
-            assertThat(juror.getPendingLastName()).isNull();
+        doReturn(null).when(jurorRepository).save(any(Juror.class));
 
-            List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-            assertThat(jurorHistoryList.size()).isEqualTo(4);
-            for (JurorHistory jurorHistory : jurorHistoryList) {
-                assertThat(jurorHistory.getPoolNumber()).isEqualTo(jurorPool.getPoolNumber());
-                assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
-            }
+        String pendingTitle = "Mx";
+        String pendingFirstName = "Test";
+        String pendingLastName = "Person";
 
-            List<String> historyInfoList = initChangedHistoryProperties();
-            historyInfoList.add("Name change approved");
+        jurorRecordService.setPendingNameChange(originalJuror, pendingTitle, pendingFirstName, pendingLastName);
 
-            for (String historyInfo : historyInfoList) {
-                assertThat(jurorHistoryList.stream().filter(hist ->
-                        hist.getOtherInformation().equalsIgnoreCase(historyInfo))
-                    .findFirst()
-                    .orElse(null))
-                    .isNotNull();
-            }
+        verify(jurorRepository, times(1)).save(any(Juror.class));
 
-            List<Juror> jurorAuditHistory =
-                jurorRepository.findRevisions(jurorNumber).stream()
-                    .sorted(Comparator.comparingLong(rev -> rev.getRevisionNumber().orElse(0L)))
-                    .map(Revision::getEntity).toList();
-            assertThat(jurorAuditHistory.size()).isEqualTo(2);
+        Juror updatedJuror = jurorPool.getJuror();
+        assertThat(updatedJuror)
+            .as("Expect a Pool Member Ext record to exist")
+            .isNotNull();
+        assertThat(updatedJuror.getPendingTitle())
+            .as("Expect the Pool Member Ext record to be updated with the pending values")
+            .isEqualTo(pendingTitle);
+        assertThat(updatedJuror.getPendingFirstName())
+            .as("Expect the Pool Member Ext record to be updated with the pending values")
+            .isEqualTo(pendingFirstName);
+        assertThat(updatedJuror.getPendingLastName())
+            .as("Expect the Pool Member Ext record to be updated with the pending values")
+            .isEqualTo(pendingLastName);
 
-            Juror originalJurorVersion = jurorAuditHistory.get(0);
-            assertThat(originalJurorVersion.getTitle()).isNull();
-            assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
-            assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
-            assertThat(originalJurorVersion.getPendingTitle()).isEqualToIgnoringCase("Mr");
-            assertThat(originalJurorVersion.getPendingFirstName()).isEqualToIgnoringCase("Test");
-            assertThat(originalJurorVersion.getPendingLastName()).isEqualToIgnoringCase("Person");
-
-            Juror updatedJurorVersion = jurorAuditHistory.get(1);
-            assertThat(updatedJurorVersion.getTitle()).isEqualToIgnoringCase("Mr");
-            assertThat(updatedJurorVersion.getFirstName()).isEqualToIgnoringCase("Test");
-            assertThat(updatedJurorVersion.getLastName()).isEqualToIgnoringCase("Person");
-            assertThat(updatedJurorVersion.getPendingTitle()).isNull();
-            assertThat(updatedJurorVersion.getPendingFirstName()).isNull();
-            assertThat(updatedJurorVersion.getPendingLastName()).isNull();
-        });
+        assertThat(originalJuror.getTitle())
+            .as("Expect Pool Member record not to be updated")
+            .isNull();
+        assertThat(originalJuror.getFirstName())
+            .as("Expect Pool Member record not to be updated")
+            .isEqualToIgnoringCase("First");
+        assertThat(originalJuror.getLastName())
+            .as("Expect Pool Member record not to be updated")
+            .isEqualToIgnoringCase("Last");
     }
 
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_processNameChangeApproval.sql"})
-    void testProcessNameChangeApprovalCourtUserRejectedHappyPath() throws Exception {
-        String username = "COURT_AGENT";
-        String owner = "415";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initPayloadWithStaffRank(owner, username, UserType.COURT));
+    void testSetPendingNameChangeNoExistingJuror() {
+        final String bureauOwner = "400";
+        final String jurorNumber = "111111111";
+        String poolNumber = "415230101";
 
-        ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, "Some notes");
-        String jurorNumber = "111111111";
-        String poolNumber = "415230701";
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setLocCode("415");
+        courtLocation.setLocCourtName("CHESTER");
 
-        ResponseEntity<Void> response =
-            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/change-name/" + jurorNumber)), Void.class);
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber(poolNumber);
+        poolRequest.setCourtLocation(courtLocation);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP PATCH request to be successful")
-            .isEqualTo(HttpStatus.NO_CONTENT);
-        executeInTransaction(() -> {
-            JurorPool jurorPool =
-                jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber, poolNumber)
-                    .get();
-            Juror juror = jurorPool.getJuror();
-            assertThat(juror.getTitle()).isNull();
-            assertThat(juror.getFirstName()).isEqualTo("FNAMEONE");
-            assertThat(juror.getLastName()).isEqualTo("LNAMEONE");
-            assertThat(juror.getUserEdtq()).isEqualTo(username);
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+        juror.setTitle(null);
+        juror.setFirstName("First");
+        juror.setLastName("Last");
 
-            assertThat(juror.getPendingTitle()).isNull();
-            assertThat(juror.getPendingFirstName()).isNull();
-            assertThat(juror.getPendingLastName()).isNull();
+        JurorPool jurorPool = new JurorPool();
+        jurorPool.setPool(poolRequest);
+        jurorPool.setOwner(bureauOwner);
 
-            List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-            assertThat(jurorHistoryList.size()).isEqualTo(1);
-            JurorHistory jurorHistory = jurorHistoryList.get(0);
-            assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
-            assertThat(jurorHistory.getOtherInformation()).isEqualTo("Name change rejected");
+        juror.setAssociatedPools(Set.of(jurorPool));
+        jurorPool.setJuror(juror);
 
-            List<Juror> jurorAuditHistory =
-                jurorRepository.findRevisions(jurorNumber).stream()
-                    .sorted(Comparator.comparingLong(rev -> rev.getRevisionNumber().orElse(0L)))
-                    .map(Revision::getEntity).toList();
-            assertThat(jurorAuditHistory.size()).isEqualTo(2);
+        doReturn(null).when(jurorRepository).save(any(Juror.class));
 
-            Juror originalJurorVersion = jurorAuditHistory.get(0);
-            assertThat(originalJurorVersion.getTitle()).isNull();
-            assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
-            assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
-            assertThat(originalJurorVersion.getPendingTitle()).isEqualToIgnoringCase("Mr");
-            assertThat(originalJurorVersion.getPendingFirstName()).isEqualToIgnoringCase("Test");
-            assertThat(originalJurorVersion.getPendingLastName()).isEqualToIgnoringCase("Person");
+        String pendingTitle = "Mx";
+        String pendingFirstName = "Test";
+        String pendingLastName = "Person";
 
-            Juror updatedJurorVersion = jurorAuditHistory.get(1);
-            assertThat(updatedJurorVersion.getTitle()).isNull();
-            assertThat(updatedJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
-            assertThat(updatedJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
-            assertThat(updatedJurorVersion.getPendingTitle()).isNull();
-            assertThat(updatedJurorVersion.getPendingFirstName()).isNull();
-            assertThat(updatedJurorVersion.getPendingLastName()).isNull();
-        });
+        jurorRecordService.setPendingNameChange(juror, pendingTitle, pendingFirstName, pendingLastName);
+
+        verify(jurorRepository, times(1)).save(any(Juror.class));
+
+        assertThat(juror)
+            .as("Expect a Pool Member Ext record to be created")
+            .isNotNull();
+        assertThat(juror.getPendingTitle())
+            .as("Expect the Pool Member Ext record to be initialised with the pending values")
+            .isEqualTo(pendingTitle);
+        assertThat(juror.getPendingFirstName())
+            .as("Expect the Pool Member Ext record to be initialised with the pending values")
+            .isEqualTo(pendingFirstName);
+        assertThat(juror.getPendingLastName())
+            .as("Expect the Pool Member Ext record to be initialised with the pending values")
+            .isEqualTo(pendingLastName);
+
+        assertThat(juror.getTitle())
+            .as("Expect Pool Member record not to be updated")
+            .isNull();
+        assertThat(juror.getFirstName())
+            .as("Expect Pool Member record not to be updated")
+            .isEqualToIgnoringCase("First");
+        assertThat(juror.getLastName())
+            .as("Expect Pool Member record not to be updated")
+            .isEqualToIgnoringCase("Last");
     }
 
-
     @Test
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_processNameChangeApproval.sql"})
-    void testProcessNameChangeApprovalBureauUserForbidden() throws Exception {
+    void testFixErrorInJurorNameAllChanged() {
+        final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+        String bureauOwner = "400";
         String username = "BUREAU_USER";
-        String owner = "400";
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, initPayloadWithStaffRank(owner, username, UserType.BUREAU));
-
-        ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, "Some notes");
         String jurorNumber = "111111111";
 
-        ResponseEntity<Void> response =
-            restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/change-name/" + jurorNumber)), Void.class);
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, username);
 
-        assertThat(response.getStatusCode())
-            .as("Expect the HTTP PATCH request to be unsuccessful")
-            .isEqualTo(HttpStatus.FORBIDDEN);
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, bureauOwner);
+        jurorPool.getPool().setPoolNumber("123456789");
+        final JurorNameDetailsDto dto = new JurorNameDetailsDto("Mr", "First", "Last");
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+        doReturn(initChangedPropertyMap(Boolean.TRUE)).when(jurorAuditChangeService)
+            .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
+        doNothing().when(jurorAuditChangeService).recordPersonalDetailsHistory(anyString(),
+                                                                               any(Juror.class), anyString(), anyString());
+
+        jurorRecordService.fixErrorInJurorName(payload, jurorNumber, dto);
+
+        verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
+        Juror capturedJuror = jurorArgumentCaptor.getValue();
+        assertThat(capturedJuror.getTitle()).isEqualTo(dto.getTitle());
+        assertThat(capturedJuror.getFirstName()).isEqualTo(dto.getFirstName());
+        assertThat(capturedJuror.getLastName()).isEqualTo(dto.getLastName());
+
+        verify(jurorAuditChangeService, times(1))
+            .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
+        verify(jurorAuditChangeService, times(3))
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class), anyString(),
+                                          anyString());
     }
 
-    private void updateNotesForEtag() throws Exception {
-        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userType(UserType.BUREAU)
-            .login("BUREAU_USER")
-            .owner("400")
-            .build());
+    @Test
+    void testFixErrorInJurorNameNoChanges() {
+        final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+        String bureauOwner = "400";
+        String username = "BUREAU_USER";
+        String jurorNumber = "111111111";
 
-        HttpHeaders httpHeaders2 = new HttpHeaders();
-        httpHeaders2.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        httpHeaders2.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, username);
 
-        JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
-        restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders2, HttpMethod.PATCH,
-            URI.create(GET_JUROR_NOTES_URL)), Void.class);
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, bureauOwner);
+        jurorPool.getPool().setPoolNumber("123456789");
+
+        final Juror juror = jurorPool.getJuror();
+
+        JurorNameDetailsDto dto = new JurorNameDetailsDto();
+        BeanUtils.copyProperties(jurorPool, dto);
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
+        doReturn(initChangedPropertyMap(Boolean.FALSE)).when(jurorAuditChangeService)
+            .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
+        doNothing().when(jurorAuditChangeService).recordPersonalDetailsHistory(anyString(),
+                                                                               any(Juror.class), anyString(), anyString());
+
+        jurorRecordService.fixErrorInJurorName(payload, jurorNumber, dto);
+
+        verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
+        Juror capturedJuror = jurorArgumentCaptor.getValue();
+        assertThat(capturedJuror.getTitle()).isEqualTo(juror.getTitle());
+        assertThat(capturedJuror.getFirstName()).isEqualTo(juror.getFirstName());
+        assertThat(capturedJuror.getLastName()).isEqualTo(juror.getLastName());
+
+        verify(jurorAuditChangeService, times(1))
+            .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
+        verify(jurorAuditChangeService, never()).recordPersonalDetailsHistory(anyString(),
+                                                                              any(Juror.class), anyString(), anyString());
     }
 
-    private String generateString(int length) {
-        int index = 0;
-        StringBuilder sb = new StringBuilder();
+    @Test
+    void testFixErrorInJurorNameJurorPoolNotFound() {
+        String bureauOwner = "400";
+        String username = "BUREAU_USER";
+        String jurorNumber = "111111111";
 
-        while (index < length) {
-            sb.append('a');
-            index++;
-        }
-        return sb.toString();
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, username);
+
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, bureauOwner);
+        jurorPool.getPool().setPoolNumber("123456789");
+        JurorNameDetailsDto dto = new JurorNameDetailsDto();
+        BeanUtils.copyProperties(jurorPool, dto);
+
+        doReturn(new ArrayList<JurorPool>()).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+
+        assertThatExceptionOfType(MojException.NotFound.class)
+            .isThrownBy(() -> jurorRecordService.fixErrorInJurorName(payload, jurorNumber, dto));
+
+        verify(jurorPoolRepository, never()).save(any());
+
+        verify(jurorAuditChangeService, never())
+            .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
+        verify(jurorAuditChangeService, never())
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class), anyString(),
+                                          anyString());
     }
 
-    private void validateJurorDetailsMapping(BureauJurorDetailDto dto, JurorPool jurorPool,
-                                             String expectedPoolNumber) {
+    @Test
+    void testFixErrorInJurorNameCourtUserBureauOwned() {
+        String bureauOwner = "400";
+        String courtOwner = "415";
+        String username = "BUREAU_USER";
+        String jurorNumber = "111111111";
+
+        final BureauJwtPayload payload = TestUtils.createJwt(courtOwner, username);
+
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, bureauOwner);
+        jurorPool.getPool().setPoolNumber("123456789");
+        JurorNameDetailsDto dto = new JurorNameDetailsDto();
+        BeanUtils.copyProperties(jurorPool, dto);
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+
+        assertThatExceptionOfType(MojException.Forbidden.class)
+            .isThrownBy(() -> jurorRecordService.fixErrorInJurorName(payload, jurorNumber, dto));
+
+        verify(jurorPoolRepository, never()).save(any());
+
+        verify(jurorAuditChangeService, never())
+            .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
+        verify(jurorAuditChangeService, never())
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class), anyString(),
+                                          anyString());
+    }
+
+    @Test
+    void testFixErrorInJurorNameBureauUserCourtOwned() {
+        String bureauOwner = "400";
+        String courtOwner = "415";
+        String username = "BUREAU_USER";
+        String jurorNumber = "111111111";
+
+        final BureauJwtPayload payload = TestUtils.createJwt(bureauOwner, username);
+
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
+        jurorPool.getPool().setPoolNumber("123456789");
+        JurorNameDetailsDto dto = new JurorNameDetailsDto();
+        BeanUtils.copyProperties(jurorPool, dto);
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+
+        assertThatExceptionOfType(MojException.NotFound.class)
+            .isThrownBy(() -> jurorRecordService.fixErrorInJurorName(payload, jurorNumber, dto));
+
+        verify(jurorPoolRepository, never()).save(any());
+
+        verify(jurorAuditChangeService, never())
+            .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
+        verify(jurorAuditChangeService, never())
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class), anyString(),
+                                          anyString());
+    }
+
+    @Test
+    void testProcessPendingNameChangeApproved() {
+        final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+
+        String courtOwner = "415";
+        String username = "COURT_USER";
+        String jurorNumber = "111111111";
+
+        String pendingTitle = "Mr";
+        final String pendingFirstName = "First";
+        final String pendingLastName = "Last";
+
+        TestUtils.mockCourtUser(courtOwner);
+        final BureauJwtPayload payload = TestUtils.createJwt(courtOwner, username);
+
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
+        jurorPool.getPool().setPoolNumber("123456789");
+
         Juror juror = jurorPool.getJuror();
+        juror.setPendingTitle(pendingTitle);
+        juror.setPendingFirstName(pendingFirstName);
+        juror.setPendingLastName(pendingLastName);
 
-        // verify personal details
-        assertThat(dto.getJurorNumber())
-            .as("Expect Juror Number property to be mapped from the Juror record")
-            .isEqualToIgnoringCase(juror.getJurorNumber());
-        assertThat(dto.getTitle())
-            .as("Expect Title property to be mapped from the Juror record")
-            .isEqualToIgnoringCase(juror.getTitle());
-        assertThat(dto.getFirstName())
-            .as("Expect First Name property to be mapped from the Juror record")
-            .isEqualToIgnoringCase(juror.getFirstName());
-        assertThat(dto.getLastName())
-            .as("Expect Last Name property to be mapped from the Juror record")
-            .isEqualToIgnoringCase(juror.getLastName());
-        LocalDate dob = dto.getDateOfBirth();
-        assertThat(dob)
-            .as("Expect Date Of Birth property to be mapped from the Juror record")
-            .isEqualTo(juror.getDateOfBirth());
+        String changeOfNameCode = "CN";
+        String notes = "Marriage certificate and passport";
 
-        // verify address details
-        assertThat(dto.getJurorAddress1())
-            .as("Expect Address Line 1 property to be mapped from the Juror record")
-            .isEqualToIgnoringCase(juror.getAddressLine1());
-        assertThat(dto.getJurorAddress2())
-            .as("Expect Address Line 2 property to be mapped from the Juror record")
-            .isEqualToIgnoringCase(juror.getAddressLine2());
-        assertThat(dto.getJurorAddress3())
-            .as("Expect Address Line 3 property to be mapped from the Juror record")
-            .isEqualToIgnoringCase(juror.getAddressLine3());
-        assertThat(dto.getJurorAddress4())
-            .as("Expect Address Line 4 property to be mapped from the Juror record")
-            .isEqualToIgnoringCase(juror.getAddressLine4());
-        assertThat(dto.getJurorAddress5())
-            .as("Expect Address Line 5 property to be mapped from the Juror record")
-            .isEqualToIgnoringCase(juror.getAddressLine5());
-        assertThat(dto.getJurorPostcode())
-            .as("Expect Postcode property to be mapped from the Juror record")
-            .isEqualToIgnoringCase(juror.getPostcode());
+        ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.APPROVE, notes);
 
-        // verify contact details
-        if (dto.getThirdPartyRelationship() == null) {
-            assertThat(dto.getPhoneNumber())
-                .as("Expect Phone Number property to be mapped from the Juror record")
-                .isEqualToIgnoringCase(juror.getPhoneNumber());
-            assertThat(dto.getAltPhoneNumber())
-                .as("Expect Alt Phone Number property to be mapped from the Juror record")
-                .isEqualToIgnoringCase(juror.getAltPhoneNumber());
-            assertThat(dto.getEmail())
-                .as("Expect Email property to be mapped from the Juror record")
-                .isEqualToIgnoringCase(juror.getEmail());
-        }
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
+        doReturn(null).when(jurorPoolRepository)
+            .save(any());
+        doReturn(null).when(jurorPoolRepository)
+            .saveAndFlush(any());
+        doNothing().when(jurorAuditChangeService).recordContactLog(jurorPool.getJuror(), username,
+                                                                   changeOfNameCode, notes);
+        doNothing().when(jurorAuditChangeService).recordApprovalHistoryEvent(jurorNumber,
+                                                                             dto.getDecision(), username, jurorPool.getPoolNumber());
+        doReturn(initChangedPropertyMap(Boolean.TRUE)).when(jurorAuditChangeService)
+            .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
+        doNothing().when(jurorAuditChangeService).recordPersonalDetailsHistory(anyString(),
+                                                                               any(Juror.class), anyString(), anyString());
 
-        // verify pool details
-        assertThat(dto.getPoolNumber()).as("Expect Pool Number property to be mapped from Part_Hist lookup")
-            .isEqualTo(expectedPoolNumber);
-        assertThat(dto.getHearingDate())
-            .as("Expect Hearing Date property to be mapped from the Juror record")
-            .isEqualTo(jurorPool.getNextDate());
-        // verify additional details
-        assertThat(TestUtils.compareDateToLocalDate(dto.getPoolDate(), jurorPool.getReturnDate()));
-        assertThat(dto.getStatus()).as("Expect Status property to be mapped from the Juror record")
-            .isEqualTo(jurorPool.getStatus().getStatus());
-        assertThat(dto.getNotes()).as("Expect Notes property to be mapped from the Juror record")
-            .isEqualToIgnoringCase(juror.getNotes());
+        jurorRecordService.processPendingNameChange(payload, jurorNumber, dto);
 
-        // verify reply method
-        assertThat(dto.getReplyMethod()).as("Expect Reply Method property to be Digital")
-            .isEqualTo(ReplyMethod.DIGITAL);
+        verify(jurorRepository, times(1))
+            .saveAndFlush(jurorArgumentCaptor.capture());
+        Juror capturedJuror = jurorArgumentCaptor.getValue();
+        assertThat(capturedJuror.getTitle()).isEqualTo(pendingTitle);
+        assertThat(capturedJuror.getFirstName()).isEqualTo(pendingFirstName);
+        assertThat(capturedJuror.getLastName()).isEqualTo(pendingLastName);
+
+        assertThat(capturedJuror.getPendingTitle()).isNull();
+        assertThat(capturedJuror.getPendingFirstName()).isNull();
+        assertThat(capturedJuror.getPendingLastName()).isNull();
+
+        verify(jurorAuditChangeService, times(1))
+            .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
+        verify(jurorAuditChangeService, times(3))
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class), anyString(),
+                                          anyString());
+        verify(jurorAuditChangeService, times(1))
+            .recordContactLog(jurorPool.getJuror(), username, changeOfNameCode,
+                              "Approved the juror's name change. " + notes);
+        verify(jurorAuditChangeService, times(1))
+            .recordApprovalHistoryEvent(jurorNumber, dto.getDecision(), username,
+                                        jurorPool.getPoolNumber());
     }
 
-    private void validateCourtDetails(BureauJurorDetailDto dto, String expectedLocCode) {
-        CourtLocation courtLocation = courtLocationRepository.findByLocCode(expectedLocCode).get();
+    @Test
+    void testProcessPendingNameChangeRejected() {
+        final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
 
-        assertThat(dto.getCourtName())
-            .as("Expect Court Name property to be mapped from the expected loc code")
-            .isEqualTo(courtLocation.getName());
-        assertThat(dto.getCourtLocName())
-            .as("Expect Court Location Name property to be mapped from the expected loc code")
-            .isEqualTo(courtLocation.getLocCourtName());
-        assertThat(LocalTime.parse(dto.getHearingTime()))
-            .as("Expect Hearing Time property to be mapped from the expected loc code")
-            .isEqualTo(courtLocation.getCourtAttendTime());
+        String courtOwner = "415";
+        String username = "COURT_USER";
+        String jurorNumber = "111111111";
 
-        // validate court location address data
-        assertThat(dto.getCourtAddress1())
-            .as("Expect Court Address 1 property to be mapped from the expected loc code")
-            .isEqualTo(courtLocation.getAddress1());
-        assertThat(dto.getCourtAddress2())
-            .as("Expect Court Address 2 property to be mapped from the expected loc code")
-            .isEqualTo(courtLocation.getAddress2());
-        assertThat(dto.getCourtAddress3())
-            .as("Expect Court Address 3 property to be mapped from the expected loc code")
-            .isEqualTo(courtLocation.getAddress3());
-        assertThat(dto.getCourtAddress4())
-            .as("Expect Court Address 4 property to be mapped from the expected loc code")
-            .isEqualTo(courtLocation.getAddress4());
-        assertThat(dto.getCourtAddress5())
-            .as("Expect Court Address 5 property to be mapped from the expected loc code")
-            .isEqualTo(courtLocation.getAddress5());
-        assertThat(dto.getCourtAddress6())
-            .as("Expect Court Address 6 property to be mapped from the expected loc code")
-            .isEqualTo(courtLocation.getAddress6());
-        assertThat(dto.getCourtPostcode())
-            .as("Expect Court Postcode property to be mapped from the expected loc code")
-            .isEqualTo(courtLocation.getPostcode());
+        String pendingTitle = "Mr";
+        final String pendingFirstName = "First";
+        final String pendingLastName = "Last";
+
+        TestUtils.mockCourtUser(courtOwner);
+        final BureauJwtPayload payload = TestUtils.createJwt(courtOwner, username);
+
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
+        jurorPool.getPool().setPoolNumber("123456789");
+
+        Juror juror = jurorPool.getJuror();
+        juror.setPendingTitle(pendingTitle);
+        juror.setPendingFirstName(pendingFirstName);
+        juror.setPendingLastName(pendingLastName);
+
+        String changeOfNameCode = "CN";
+        String notes = "Their name has not been legally changed";
+
+        ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, notes);
+
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
+        doReturn(null).when(jurorPoolRepository)
+            .save(any());
+        doReturn(null).when(jurorPoolRepository)
+            .saveAndFlush(any());
+        doNothing().when(jurorAuditChangeService).recordContactLog(jurorPool.getJuror(), username,
+                                                                   changeOfNameCode, notes);
+        doNothing().when(jurorAuditChangeService).recordApprovalHistoryEvent(jurorPool.getJurorNumber(),
+                                                                             dto.getDecision(), username, jurorPool.getPoolNumber());
+        doReturn(initChangedPropertyMap(Boolean.TRUE)).when(jurorAuditChangeService)
+            .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
+        doNothing().when(jurorAuditChangeService).recordPersonalDetailsHistory(anyString(),
+                                                                               any(Juror.class), anyString(), anyString());
+
+        jurorRecordService.processPendingNameChange(payload, jurorNumber, dto);
+
+        verify(jurorPoolRepository, never()).save(any());
+
+        verify(jurorRepository, times(1))
+            .saveAndFlush(jurorArgumentCaptor.capture());
+        Juror capturedJuror = jurorArgumentCaptor.getValue();
+        assertThat(capturedJuror.getPendingTitle()).isNull();
+        assertThat(capturedJuror.getPendingFirstName()).isNull();
+        assertThat(capturedJuror.getPendingLastName()).isNull();
+
+        verify(jurorAuditChangeService, never())
+            .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
+        verify(jurorAuditChangeService, never())
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class),
+                                          anyString(), anyString());
+        verify(jurorAuditChangeService, times(1))
+            .recordContactLog(jurorPool.getJuror(), username, changeOfNameCode,
+                              "Rejected the juror's name change. " + notes);
+        verify(jurorAuditChangeService, times(1))
+            .recordApprovalHistoryEvent(jurorNumber, dto.getDecision(), username,
+                                        jurorPool.getPoolNumber());
     }
 
-    private void validateResponseDetails(BureauJurorDetailDto dto) {
-        DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(dto.getJurorNumber());
+    @Test
+    void testProcessPendingNameChangeInvalidPermission() {
+        String username = "COURT_USER";
+        String jurorNumber = "111111111";
+        TestUtils.mockBureauUser();
+        BureauJwtPayload payload = TestUtils.createJwt("416", username);
+        String notes = "Their name has not been legally changed";
 
-        // verify personal details
-        assertThat(dto.getNewTitle())
-            .as("Expect New Title property to be mapped from the Juror Response record")
-            .isEqualToIgnoringCase(jurorResponse.getTitle());
-        assertThat(dto.getNewFirstName())
-            .as("Expect New First Name property to be mapped from the Juror Response record")
-            .isEqualToIgnoringCase(jurorResponse.getFirstName());
-        assertThat(dto.getNewLastName())
-            .as("Expect New Last Name property to be mapped from the Juror Response record")
-            .isEqualToIgnoringCase(jurorResponse.getLastName());
-        LocalDate convertedDob =
-            jurorResponse.getDateOfBirth();
-        assertThat(dto.getNewDateOfBirth())
-            .as("Expect New Date Of Birth property to be mapped from the Juror Response record")
-            .isEqualTo(convertedDob);
+        ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, notes);
 
-        // verify address details
-        assertThat(dto.getNewJurorAddress1())
-            .as("Expect New Address Line 1 property to be mapped from the Juror Response record")
-            .isEqualToIgnoringCase(jurorResponse.getAddressLine1());
-        assertThat(dto.getNewJurorAddress2())
-            .as("Expect New Address Line 2 property to be mapped from the Juror Response record")
-            .isEqualToIgnoringCase(jurorResponse.getAddressLine2());
-        assertThat(dto.getNewJurorAddress3())
-            .as("Expect New Address Line 3 property to be mapped from the Juror Response record")
-            .isEqualToIgnoringCase(jurorResponse.getAddressLine3());
-        assertThat(dto.getNewJurorAddress4())
-            .as("Expect New Address Line 4 property to be mapped from the Juror Response record")
-            .isEqualToIgnoringCase(jurorResponse.getAddressLine4());
-        assertThat(dto.getNewJurorAddress5())
-            .as("Expect New Address Line 5 property to be mapped from the Juror Response record")
-            .isEqualToIgnoringCase(jurorResponse.getAddressLine5());
-        assertThat(dto.getNewJurorPostcode())
-            .as("Expect New Postcode property to be mapped from the Juror Response record")
-            .isEqualToIgnoringCase(jurorResponse.getPostcode());
+        doThrow(MojException.NotFound.class).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
 
-        // verify contact details
-        assertThat(dto.getNewPhoneNumber())
-            .as("Expect New Phone Number property to be mapped from the Juror Response record")
-            .isEqualToIgnoringCase(jurorResponse.getPhoneNumber());
-        assertThat(dto.getNewAltPhoneNumber())
-            .as("Expect New Alt Phone Number property to be mapped from the Juror Response record")
-            .isEqualToIgnoringCase(jurorResponse.getAltPhoneNumber());
-        assertThat(dto.getNewEmail())
-            .as("Expect New Email property to be mapped from the Juror Response record")
-            .isEqualToIgnoringCase(jurorResponse.getEmail());
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+                                                                              jurorRecordService.processPendingNameChange(payload, jurorNumber, dto));
 
-        // verify response details
-        LocalDate convertedDateReceived =
-            jurorResponse.getDateReceived().toLocalDate();
-        assertThat(dto.getDateReceived())
-            .as("Expect Date Received property to be mapped from the Juror Response record")
-            .isEqualTo(convertedDateReceived);
-        assertThat(dto.getProcessingStatus())
-            .as("Expect Processing Status property to be mapped from the Juror Response record")
-            .isEqualToIgnoringCase(jurorResponse.getProcessingStatus().toString());
+        verify(jurorPoolRepository, never()).save(any());
+        verify(jurorPoolRepository, never()).saveAndFlush(any());
 
-        // verify third party details
-        if (jurorResponse.getRelationship() != null) {
-            assertThat(dto.getThirdPartyRelationship())
-                .as("Expect Third Party data to be mapped from the Juror Response record")
-                .isEqualToIgnoringCase(jurorResponse.getRelationship());
-            assertThat(dto.getThirdPartyFirstName())
-                .as("Expect Third Party data to be mapped from the Juror Response record")
-                .isEqualToIgnoringCase(jurorResponse.getThirdPartyFName());
-            assertThat(dto.getThirdPartyLastName())
-                .as("Expect Third Party data to be mapped from the Juror Response record")
-                .isEqualToIgnoringCase(jurorResponse.getThirdPartyLName());
-            assertThat(dto.getThirdPartyReason())
-                .as("Expect Third Party data to be mapped from the Juror Response record")
-                .isEqualToIgnoringCase(jurorResponse.getThirdPartyReason());
-            assertThat(dto.getThirdPartyReason())
-                .as("Expect Third Party data to be mapped from the Juror Response record")
-                .isEqualToIgnoringCase(jurorResponse.getThirdPartyReason());
-            assertThat(dto.getThirdPartyOtherReason())
-                .as("Expect Third Party data to be mapped from the Juror Response record")
-                .isEqualToIgnoringCase(jurorResponse.getThirdPartyOtherReason());
-        }
+        verify(jurorAuditChangeService, never())
+            .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
+        verify(jurorAuditChangeService, never())
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class),
+                                          anyString(), anyString());
+        verify(jurorAuditChangeService, never())
+            .recordContactLog(any(Juror.class), anyString(),
+                              anyString(), anyString());
+        verify(jurorAuditChangeService, never())
+            .recordApprovalHistoryEvent(anyString(), any(ApprovalDecision.class),
+                                        anyString(), anyString());
+    }
 
-        // verify eligibility details
-        assertThat(dto.getResidency())
-            .as("Expect Residency property to be mapped from the Juror Response record")
-            .isEqualTo(jurorResponse.getResidency());
-        if (dto.getResidencyDetail() != null) {
-            assertThat(dto.getResidencyDetail())
-                .as("Expect Residency Detail property to be mapped from the Juror Response record")
-                .isEqualTo(jurorResponse.getResidencyDetail());
-        }
-        assertThat(dto.getMentalHealthAct())
-            .as("Expect Mental Health Act property to be mapped from the Juror Response record")
-            .isEqualTo(jurorResponse.getMentalHealthAct());
-        if (dto.getMentalHealthActDetails() != null) {
-            assertThat(dto.getMentalHealthActDetails())
-                .as("Expect Mental Health Act Details property to be mapped from the Juror Response record")
-                .isEqualTo(jurorResponse.getMentalHealthActDetails());
-        }
-        assertThat(dto.getBail())
-            .as("Expect Bail property to be mapped from the Juror Response record")
-            .isEqualTo(jurorResponse.getBail());
-        if (dto.getBailDetails() != null) {
-            assertThat(dto.getBailDetails())
-                .as("Expect Bail Details property to be mapped from the Juror Response record")
-                .isEqualTo(jurorResponse.getBailDetails());
-        }
-        assertThat(dto.getConvictions())
-            .as("Expect Convictions property to be mapped from the Juror Response record")
-            .isEqualTo(jurorResponse.getConvictions());
-        if (dto.getConvictionsDetails() != null) {
-            assertThat(dto.getConvictionsDetails())
-                .as("Expect Convictions Details property to be mapped from the Juror Response record")
-                .isEqualTo(jurorResponse.getConvictionsDetails());
-        }
+    @Test
+    void testProcessPendingNameChangeNoJurorRecord() {
+        String courtOwner = "415";
+        String username = "COURT_USER";
+        String jurorNumber = "111111111";
 
-        assertThat(dto.getWelsh())
-            .as("Expect Welsh flag property to be mapped from the Juror Response record")
-            .isEqualTo(jurorResponse.getWelsh());
+        TestUtils.mockCourtUser(courtOwner);
+        BureauJwtPayload payload = TestUtils.createJwt(courtOwner, username);
+
+        String notes = "Their name has not been legally changed";
+
+        ProcessNameChangeRequestDto dto = new ProcessNameChangeRequestDto(ApprovalDecision.REJECT, notes);
+
+        doThrow(MojException.NotFound.class).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+                                                                              jurorRecordService.processPendingNameChange(payload, jurorNumber, dto));
+
+        verify(jurorPoolRepository, never()).save(any());
+        verify(jurorPoolRepository, never()).saveAndFlush(any());
+
+        verify(jurorAuditChangeService, never())
+            .initChangedPropertyMap(any(Juror.class), any(JurorNameDetailsDto.class));
+        verify(jurorAuditChangeService, never())
+            .recordPersonalDetailsHistory(anyString(), any(Juror.class),
+                                          anyString(), anyString());
+        verify(jurorAuditChangeService, never())
+            .recordContactLog(any(Juror.class), anyString(),
+                              anyString(), anyString());
+        verify(jurorAuditChangeService, never())
+            .recordApprovalHistoryEvent(anyString(), any(ApprovalDecision.class),
+                                        anyString(), anyString());
+    }
+
+    @Test
+    void updateAttendanceHappyPathOnCall() {
+        String courtOwner = "415";
+        String jurorNumber = "111111111";
+
+        UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
+        dto.setOnCall(true);
+        dto.setJurorNumbers(Collections.singletonList(jurorNumber));
+        dto.setNextDate(null);
+
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
+        jurorPool.setOnCall(false);
+        jurorPool.setNextDate(LocalDate.now().plusWeeks(1));
+
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
+
+        jurorRecordService.updateAttendance(dto);
+
+        verify(jurorPoolRepository, times(1)).save(jurorPool);
+
+        assertThat(jurorPool.isOnCall()).isTrue();
+        assertThat(jurorPool.getNextDate()).isNull();
+
+    }
+
+    @Test
+    void updateAttendanceHappyPathChangeNextDate() {
+        String courtOwner = "415";
+        String jurorNumber = "111111111";
+
+        UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
+        dto.setOnCall(false);
+        dto.setJurorNumbers(Collections.singletonList(jurorNumber));
+        dto.setNextDate(LocalDate.now().plusWeeks(3));
+
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
+        jurorPool.setOnCall(false);
+        jurorPool.setNextDate(LocalDate.now().plusWeeks(1));
+
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
+
+        jurorRecordService.updateAttendance(dto);
+
+        verify(jurorPoolRepository, times(1)).save(jurorPool);
+
+        assertThat(jurorPool.getNextDate()).isEqualTo(dto.getNextDate());
+        assertThat(jurorPool.isOnCall()).isFalse();
+
+    }
+
+    @Test
+    void updateAttendanceOnCallAndNextDateBadRequest() {
+        String courtOwner = "415";
+        String jurorNumber = "111111111";
+
+        UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
+        dto.setJurorNumbers(Collections.singletonList(jurorNumber));
+        dto.setOnCall(true);
+        dto.setNextDate(LocalDate.now().plusWeeks(2));
+
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
+        jurorPool.setOnCall(false);
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+
+        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+                                                                                jurorRecordService.updateAttendance(dto));
+
+        verify(jurorPoolRepository, never()).save(any());
+    }
+
+    @Test
+    void updateAttendanceNoJurorPoolFound() {
+        String courtOwner = "415";
+        String jurorNumber = "111111111";
+        String jurorNumberNotExist = "000111222";
+
+        UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
+        dto.setJurorNumbers(Collections.singletonList(jurorNumberNotExist));
+        dto.setOnCall(true);
+        dto.setNextDate(null);
+
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
+        jurorPool.setOnCall(false);
+
+        doThrow(MojException.NotFound.class).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumberNotExist);
+
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+                                                                              jurorRecordService.updateAttendance(dto));
+
+        verify(jurorPoolRepository, never()).save(any());
+    }
+
+    @Test
+    void updateAttendanceJurorAlreadyOnCall() {
+        String courtOwner = "415";
+        String jurorNumber = "111111111";
+
+        UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
+        dto.setJurorNumbers(Collections.singletonList(jurorNumber));
+        dto.setOnCall(true);
+        dto.setNextDate(null);
+
+        JurorPool jurorPool = createValidJurorPool(jurorNumber, courtOwner);
+        jurorPool.setOnCall(true);
+
+        doReturn(jurorPool).when(jurorPoolService)
+            .getJurorPoolFromUser(jurorNumber);
+
+        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+                                                                                jurorRecordService.updateAttendance(dto));
+
+        verify(jurorPoolRepository, never()).save(any());
+
+    }
+
+    private Map<String, Boolean> initChangedPropertyMap(Boolean defaultValue) {
+        Map<String, Boolean> changedProperties = new ConcurrentHashMap<>();
+        changedProperties.put("title", defaultValue);
+        changedProperties.put("first Name", defaultValue);
+        changedProperties.put("last Name", defaultValue);
+        return changedProperties;
+    }
+
+    private EditJurorRecordRequestDto createEditJurorRecordRequestDto() {
+        EditJurorRecordRequestDto editJurorRecordRequestDto = new EditJurorRecordRequestDto();
+
+        editJurorRecordRequestDto.setTitle("Mr");
+        editJurorRecordRequestDto.setFirstName("NewFirstName");
+        editJurorRecordRequestDto.setLastName("NewLastName");
+        editJurorRecordRequestDto.setAddressLineOne("addressLineOne");
+        editJurorRecordRequestDto.setAddressLineTwo("addressLineTwo");
+        editJurorRecordRequestDto.setAddressLineThree("addressLineThree");
+        editJurorRecordRequestDto.setAddressTown("addressTown");
+        editJurorRecordRequestDto.setAddressCounty("addressCounty");
+        editJurorRecordRequestDto.setAddressPostcode("M24 4BP");
+        editJurorRecordRequestDto.setDateOfBirth(LocalDate.parse("2022-02-01"));
+        editJurorRecordRequestDto.setPrimaryPhone("071234566790");
+        editJurorRecordRequestDto.setSecondaryPhone(null);
+        editJurorRecordRequestDto.setEmailAddress("someEmail@exampleEmail.co.uk");
+        editJurorRecordRequestDto.setSpecialNeed("V");
+        editJurorRecordRequestDto.setSpecialNeedMessage("Vision impairment");
+        editJurorRecordRequestDto.setOpticReference("22222222");
+        editJurorRecordRequestDto.setPendingTitle("Mx");
+        editJurorRecordRequestDto.setPendingFirstName("Pending First Name");
+        editJurorRecordRequestDto.setPendingLastName("Pending Last Name");
+
+        return editJurorRecordRequestDto;
+    }
+
+    private JurorStatus createJurorStatus(int statusCode) {
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(statusCode);
+        return jurorStatus;
     }
 
     @Nested
-    @DisplayName("GET Juror Record Attendance Tab")
-    class JurorRecordAttendanceTab {
+    @DisplayName("public void updatePncStatus(final String jurorNumber, final PoliceCheck policeCheck)")
+    class UpdatePncCheckStatus {
+        @BeforeEach
+        void beforeEach() {
+            when(clock.instant())
+                .thenReturn(Instant.now());
 
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_initAttendanceTests.sql"})
-        void testGJurorAttendanceHappy() {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, getCourtJwt("415"));
-            ResponseEntity<JurorAttendanceDetailsResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/attendance-detail/111111111")),
-                    JurorAttendanceDetailsResponseDto.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be successful")
-                .isEqualTo(HttpStatus.OK);
-
-            validateHappyResponse(response);
-
+            when(clock.getZone())
+                .thenReturn(ZoneId.systemDefault());
+            TestUtils.mockSystemUser();
         }
 
-        private void validateHappyResponse(ResponseEntity<JurorAttendanceDetailsResponseDto> response) {
-            assertThat(response.getBody()).isNotNull();
-            JurorAttendanceDetailsResponseDto jurorAttendanceDetailsResponseDto = response.getBody();
-            assertThat(jurorAttendanceDetailsResponseDto.getData().size()).isEqualTo(5);
+        private JurorPool setupJurorPool(PoliceCheck policeCheck) {
+            JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_JUROR_NUMBER, "400");
+            jurorPool.getJuror().setPoliceCheck(policeCheck);
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            return jurorPool;
+        }
 
-            assertThat(jurorAttendanceDetailsResponseDto.getAttendances()).isEqualTo(3);
-            assertThat(jurorAttendanceDetailsResponseDto.isHasAppearances()).isEqualTo(true);
-            assertThat(jurorAttendanceDetailsResponseDto.getAbsences()).isEqualTo(1);
-            assertThat(jurorAttendanceDetailsResponseDto.getNonAttendances()).isEqualTo(1);
-            assertThat(jurorAttendanceDetailsResponseDto.getNextDate()).isEqualTo(LocalDate.now().minusDays(4));
-            assertThat(jurorAttendanceDetailsResponseDto.isOnCall()).isEqualTo(false);
+        @ParameterizedTest(name = "Straight forward only update police check field")
+        @EnumSource(value = PoliceCheck.class, mode = EnumSource.Mode.EXCLUDE,
+            names = {"ELIGIBLE", "INELIGIBLE", "UNCHECKED_MAX_RETRIES_EXCEEDED",
+                "IN_PROGRESS", "INSUFFICIENT_INFORMATION"})
+        void positiveStraightForwardUpdateOnly(PoliceCheck policeCheck) {
+            JurorPool jurorPool = setupJurorPool(null);
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, policeCheck);
 
-            JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData jurorAttendanceDetailsDto =
-                jurorAttendanceDetailsResponseDto.getData().get(0);
-            assertThat(jurorAttendanceDetailsDto.getAttendanceDate())
-                .isEqualTo(LocalDate.now().minusDays(5));
-            assertThat(jurorAttendanceDetailsDto.getAttendanceType())
-                .isEqualTo(AttendanceType.NON_ATTENDANCE);
+            assertEquals(policeCheck, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status must be " + policeCheck);
+            verifyNoInteractions(
+                jurorHistoryService,
+                printDataService
+            );
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
 
-            jurorAttendanceDetailsDto =
-                jurorAttendanceDetailsResponseDto.getData().get(1);
-            assertThat(jurorAttendanceDetailsDto.getAttendanceDate())
-                .isEqualTo(LocalDate.now().minusDays(4));
-            assertThat(jurorAttendanceDetailsDto.getAttendanceType())
-                .isEqualTo(AttendanceType.ABSENT);
+        @ParameterizedTest(name = "None-Straight forward max retries exceeded")
+        @EnumSource(value = PoliceCheck.class, mode = EnumSource.Mode.EXCLUDE,
+            names = {"NOT_CHECKED", "IN_PROGRESS", "ELIGIBLE", "INELIGIBLE", "INSUFFICIENT_INFORMATION"})
+        void positiveNonMaxRetiesExceeded(PoliceCheck policeCheck) {
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, policeCheck);
+            assertEquals(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be UNCHECKED_MAX_RETRIES_EXCEEDED. If old status was error and new status is : "
+                             + policeCheck);
 
-            jurorAttendanceDetailsDto =
-                jurorAttendanceDetailsResponseDto.getData().get(2);
-            assertThat(jurorAttendanceDetailsDto.getAttendanceDate())
-                .isEqualTo(LocalDate.now().minusDays(3));
-            assertThat(jurorAttendanceDetailsDto.getHours())
-                .isEqualTo("3.9");
-            assertThat(jurorAttendanceDetailsDto.getAttendanceType())
-                .isEqualTo(AttendanceType.HALF_DAY);
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckQualifyHistory(jurorPool, false);
 
-            jurorAttendanceDetailsDto =
-                jurorAttendanceDetailsResponseDto.getData().get(3);
-            assertThat(jurorAttendanceDetailsDto.getAttendanceDate())
-                .isEqualTo(LocalDate.now().minusDays(2));
-            assertThat(jurorAttendanceDetailsDto.getHours())
-                .isEqualTo("4.0");
-            assertThat(jurorAttendanceDetailsDto.getAttendanceType())
-                .isEqualTo(AttendanceType.FULL_DAY);
-
-            jurorAttendanceDetailsDto =
-                jurorAttendanceDetailsResponseDto.getData().get(4);
-            assertThat(jurorAttendanceDetailsDto.getAttendanceDate())
-                .isEqualTo(LocalDate.now().minusDays(1));
-            assertThat(jurorAttendanceDetailsDto.getHours())
-                .isEqualTo("8.0");
-            assertThat(jurorAttendanceDetailsDto.getAttendanceType())
-                .isEqualTo(AttendanceType.FULL_DAY);
-
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verify(printDataService, times(1)).printConfirmationLetter(jurorPool);
+            verify(jurorHistoryService, times(1)).createConfirmationLetterHistory(jurorPool,
+                                                                                  "Confirmation Letter Auto");
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
 
         @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_initAttendanceTests.sql"})
-        void testGJurorAttendanceOnCall() {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, getCourtJwt("415"));
-            ResponseEntity<JurorAttendanceDetailsResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/attendance-detail/222222222")),
-                    JurorAttendanceDetailsResponseDto.class);
+        @DisplayName("ELIGIBLE")
+        void positiveEligible() {
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.ELIGIBLE);
+            assertEquals(PoliceCheck.ELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be ELIGIBLE.");
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be successful")
-                .isEqualTo(HttpStatus.OK);
-
-            validateOnCallResponse(response);
-
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckQualifyHistory(jurorPool, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verify(printDataService, times(1)).printConfirmationLetter(jurorPool);
+            verify(jurorHistoryService, times(1)).createConfirmationLetterHistory(jurorPool,
+                                                                                  "Confirmation Letter Auto");
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
 
-        private void validateOnCallResponse(ResponseEntity<JurorAttendanceDetailsResponseDto> response) {
-            assertThat(response.getBody()).isNotNull();
-            JurorAttendanceDetailsResponseDto jurorAttendanceDetailsResponseDto = response.getBody();
-            assertThat(jurorAttendanceDetailsResponseDto.getData().size()).isEqualTo(1);
+        @Test
+        @DisplayName("ELIGIBLE - Court")
+        void positiveEligibleCourt() {
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            jurorPool.setOwner(TestConstants.VALID_COURT_LOCATION);
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.ELIGIBLE);
+            assertEquals(PoliceCheck.ELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be ELIGIBLE.");
 
-            assertThat(jurorAttendanceDetailsResponseDto.getAttendances()).isEqualTo(1);
-            assertThat(jurorAttendanceDetailsResponseDto.getNextDate()).isNull();
-            assertThat(jurorAttendanceDetailsResponseDto.isOnCall()).isEqualTo(true);
-
-            JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData jurorAttendanceDetailsDto =
-                jurorAttendanceDetailsResponseDto.getData().get(0);
-            assertThat(jurorAttendanceDetailsDto.getAttendanceDate())
-                .isEqualTo(LocalDate.now().minusDays(2));
-            assertThat(jurorAttendanceDetailsDto.getAttendanceType())
-                .isEqualTo(AttendanceType.FULL_DAY);
-            assertThat(jurorAttendanceDetailsDto.getHours())
-                .isEqualTo("8.0");
-            assertThat(jurorAttendanceDetailsDto.getTravelTime())
-                .isEqualTo(LocalTime.of(1, 0));
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckQualifyHistory(jurorPool, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
 
+        @Test
+        @DisplayName("ELIGIBLE - Court with confirmation letter")
+        void positiveEligibleCourtConfirmationLetter() {
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            jurorPool.setNextDate(LocalDate.now(clock).plusDays(7));
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+            jurorPool.setStatus(jurorStatus);
+            jurorPool.setOwner(TestConstants.VALID_COURT_LOCATION);
+
+            JurorHistory jurorHistory = new JurorHistory();
+            jurorHistory.setJurorNumber(jurorPool.getJurorNumber());
+            jurorHistory.setHistoryCode(HistoryCodeMod.RESPONDED_POSITIVELY);
+            jurorHistory.setDateCreated(LocalDate.now(clock).atTime(LocalTime.MIN));
+            when(jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
+                jurorPool.getJurorNumber(), LocalDate.now(clock).atTime(LocalTime.MIN)))
+                .thenReturn(Collections.singletonList(jurorHistory));
+
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.ELIGIBLE);
+            assertEquals(PoliceCheck.ELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be ELIGIBLE.");
+
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckQualifyHistory(jurorPool, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verify(printDataService, times(1)).printConfirmationLetter(jurorPool);
+            verify(jurorHistoryService, times(1)).createConfirmationLetterHistory(jurorPool,
+                                                                                  "Confirmation Letter Auto");
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
+
+
+        @Test
+        @DisplayName("ELIGIBLE - Court without confirmation letter, already present at court")
+        void positiveEligibleCourtNoConfirmationLetter() {
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            jurorPool.setNextDate(LocalDate.now(clock)); // next date is today, so no confirmation letter
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+            jurorPool.setStatus(jurorStatus);
+            jurorPool.setOwner(TestConstants.VALID_COURT_LOCATION);
+
+            JurorHistory jurorHistory = new JurorHistory();
+            jurorHistory.setJurorNumber(jurorPool.getJurorNumber());
+            jurorHistory.setHistoryCode(HistoryCodeMod.RESPONDED_POSITIVELY);
+            jurorHistory.setDateCreated(LocalDate.now(clock).atTime(LocalTime.MIN));
+            when(jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
+                jurorPool.getJurorNumber(), LocalDate.now(clock).atTime(LocalTime.MIN)))
+                .thenReturn(Collections.singletonList(jurorHistory));
+
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.ELIGIBLE);
+            assertEquals(PoliceCheck.ELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be ELIGIBLE.");
+
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckQualifyHistory(jurorPool, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
+
+
+        @Test
+        @DisplayName("ELIGIBLE - Court without confirmation letter, wasn't responded today")
+        void positiveEligibleCourtNoConfirmationLetterNotRespondedToday() {
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            jurorPool.setNextDate(LocalDate.now(clock).plusDays(4));
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+            jurorPool.setStatus(jurorStatus);
+            jurorPool.setOwner(TestConstants.VALID_COURT_LOCATION);
+
+            when(jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
+                jurorPool.getJurorNumber(), LocalDate.now(clock).atTime(LocalTime.MIN)))
+                .thenReturn(Collections.emptyList()); // wasn't responded today
+
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.ELIGIBLE);
+            assertEquals(PoliceCheck.ELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be ELIGIBLE.");
+
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckQualifyHistory(jurorPool, true);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
+
+        @Test
+        @DisplayName("INELIGIBLE")
+        void positiveInEligible() {
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(6);
+            when(jurorStatusRepository.findById(6)).thenReturn(Optional.of(jurorStatus));
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.INELIGIBLE);
+            assertEquals(PoliceCheck.INELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be INELIGIBLE.");
+
+            assertEquals(6, jurorPool.getStatus().getStatus(),
+                         "Juror pool status must be '6'");
+            assertEquals("E", jurorPool.getJuror().getDisqualifyCode(),
+                         "Juror disqualify code must be 'E'");
+            assertEquals(LocalDate.now(clock), jurorPool.getJuror().getDisqualifyDate(),
+                         "Just disqualify date must be today");
+
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckDisqualifyHistory(jurorPool);
+            verify(printDataService, times(1)).printWithdrawalLetter(jurorPool);
+            verify(jurorHistoryService, times(1))
+                .createWithdrawHistory(jurorPool, "Withdrawal Letter Auto", "E");
+
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
+
+        @Test
+        @DisplayName("INELIGIBLE - Court")
+        void positiveInEligibleCourt() {
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(6);
+            when(jurorStatusRepository.findById(6)).thenReturn(Optional.of(jurorStatus));
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            jurorPool.setOwner(TestConstants.VALID_COURT_LOCATION);
+
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.INELIGIBLE);
+            assertEquals(PoliceCheck.INELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be INELIGIBLE.");
+
+            assertEquals(6, jurorPool.getStatus().getStatus(),
+                         "Juror pool status must be '6'");
+            assertEquals("E", jurorPool.getJuror().getDisqualifyCode(),
+                         "Juror disqualify code must be 'E'");
+            assertEquals(LocalDate.now(clock), jurorPool.getJuror().getDisqualifyDate(),
+                         "Just disqualify date must be today");
+
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckDisqualifyHistory(jurorPool);
+            verifyNoMoreInteractions(printDataService);
+
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
+
+        @Test
+        @DisplayName("Old value and new value are same no update")
+        void negativeNoUpdateOldAndSameMatch() {
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ELIGIBLE);
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.ELIGIBLE);
+            assertEquals(PoliceCheck.ELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be ELIGIBLE.");
+            verifyNoInteractions(jurorHistoryService);
+            verifyNoInteractions(printDataService);
+
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+            verifyNoInteractions(jurorRepository);
+        }
+
+        @Test
+        @DisplayName("Police Check IN_PROGRESS: update police check field and trigger part history")
+        void positivePoliceCheckUpdateInProgress() {
+            JurorPool jurorPool = setupJurorPool(null);
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.IN_PROGRESS);
+
+            assertEquals(PoliceCheck.IN_PROGRESS, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status must be IN_PROGRESS");
+            verifyNoInteractions(
+                printDataService
+            );
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckInProgressHistory(jurorPool);
+            verifyNoMoreInteractions(jurorHistoryService);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
+
+        @Test
+        @DisplayName("Police Check INSUFFICIENT_INFORMATION : update police check field and trigger part history")
+        void positivePoliceCheckUpdateInsufficientInformation() {
+            JurorPool jurorPool = setupJurorPool(null);
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.INSUFFICIENT_INFORMATION);
+
+            assertEquals(PoliceCheck.INSUFFICIENT_INFORMATION, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status must be INSUFFICIENT_INFORMATION");
+            verifyNoInteractions(
+                printDataService
+            );
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckInsufficientInformationHistory(jurorPool);
+            verifyNoMoreInteractions(jurorHistoryService);
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorRepository, times(1)).save(jurorPool.getJuror());
+            verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
     }
 
     @Nested
-    @Sql({"/db/mod/truncate.sql", "/db/mod/reports/TrialAttendanceReportITest.sql"})
-    class JurorAttendance {
-        HttpHeaders courtHeaders;
+    @DisplayName("public void updateJurorToFailedToAttend(final String jurorNumber, final String poolNumber)")
+    class UpdateJurorToFailedToAttend {
+
+        @Test
+        void typical() {
+            JurorStatus failedToAttendStatus = new JurorStatus();
+            when(jurorStatusRepository.findById(IJurorStatus.FAILED_TO_ATTEND))
+                .thenReturn(Optional.of(failedToAttendStatus));
+
+
+            JurorStatus status = mock(JurorStatus.class);
+            when(status.getStatus()).thenReturn(IJurorStatus.RESPONDED);
+            JurorPool jurorPool = mock(JurorPool.class);
+            when(jurorPool.getStatus()).thenReturn(status);
+
+            Juror juror = mock(Juror.class);
+            when(jurorPool.getJuror()).thenReturn(juror);
+            when(juror.getCompletionDate()).thenReturn(null);
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
+                                                                             TestConstants.VALID_POOL_NUMBER)).thenReturn(jurorPool);
+
+
+            jurorRecordService.updateJurorToFailedToAttend(
+                TestConstants.VALID_JUROR_NUMBER,
+                TestConstants.VALID_POOL_NUMBER);
+
+            verify(jurorPool, times(1)).setStatus(failedToAttendStatus);
+            verify(jurorPool, times(1)).getStatus();
+            verify(jurorPool, times(1)).getJuror();
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(
+                TestConstants.VALID_JUROR_NUMBER,
+                TestConstants.VALID_POOL_NUMBER);
+            verify(jurorHistoryService, times(1)).createFailedToAttendHistory(jurorPool);
+            verifyNoMoreInteractions(jurorPoolRepository, jurorHistoryService, jurorPool);
+        }
+
+        @Test
+        void notFound() {
+            when(jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
+                                                                             TestConstants.VALID_POOL_NUMBER)).thenReturn(null);
+
+            MojException.NotFound exception
+                = assertThrows(MojException.NotFound.class, () -> jurorRecordService.updateJurorToFailedToAttend(
+                TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER), "Not found");
+            assertEquals("Juror number " + TestConstants.VALID_JUROR_NUMBER
+                             + " not found in pool " + TestConstants.VALID_POOL_NUMBER,
+                         exception.getMessage(), "Exception message should match");
+            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(
+                TestConstants.VALID_JUROR_NUMBER,
+                TestConstants.VALID_POOL_NUMBER);
+
+            verifyNoMoreInteractions(jurorPoolRepository);
+            verifyNoInteractions(jurorHistoryService);
+        }
+
+        @Test
+        void wrongStatus() {
+            JurorStatus failedToAttendStatus = new JurorStatus();
+            when(jurorStatusRepository.findById(IJurorStatus.FAILED_TO_ATTEND))
+                .thenReturn(Optional.of(failedToAttendStatus));
+
+            JurorStatus status = mock(JurorStatus.class);
+            when(status.getStatus()).thenReturn(IJurorStatus.JUROR);
+            JurorPool jurorPool = mock(JurorPool.class);
+            when(jurorPool.getStatus()).thenReturn(status);
+
+            Juror juror = mock(Juror.class);
+            when(jurorPool.getJuror()).thenReturn(juror);
+            when(juror.getCompletionDate()).thenReturn(null);
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
+                                                                             TestConstants.VALID_POOL_NUMBER)).thenReturn(jurorPool);
+
+            MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
+                                                                        () -> jurorRecordService.updateJurorToFailedToAttend(
+                                                                            TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER),
+                                                                        "Juror status must be responded in order to undo the failed to attend status.");
+
+            assertEquals("Juror status must be responded in order to undo the failed to attend status.",
+                         exception.getMessage(), "Exception message should match");
+            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(
+                TestConstants.VALID_JUROR_NUMBER,
+                TestConstants.VALID_POOL_NUMBER);
+
+            verifyNoMoreInteractions(jurorPoolRepository);
+            verifyNoInteractions(jurorHistoryService);
+        }
+
+        @Test
+        void hasCompletionDate() {
+            JurorStatus failedToAttendStatus = new JurorStatus();
+            when(jurorStatusRepository.findById(IJurorStatus.FAILED_TO_ATTEND))
+                .thenReturn(Optional.of(failedToAttendStatus));
+
+            JurorStatus status = mock(JurorStatus.class);
+            when(status.getStatus()).thenReturn(IJurorStatus.RESPONDED);
+            JurorPool jurorPool = mock(JurorPool.class);
+            when(jurorPool.getStatus()).thenReturn(status);
+
+            Juror juror = mock(Juror.class);
+            when(jurorPool.getJuror()).thenReturn(juror);
+            when(juror.getCompletionDate()).thenReturn(LocalDate.now());
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
+                                                                             TestConstants.VALID_POOL_NUMBER)).thenReturn(jurorPool);
+
+            MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
+                                                                        () -> jurorRecordService.updateJurorToFailedToAttend(
+                                                                            TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER),
+                                                                        "Juror must not have a completion_date in order to undo the failed to attend status.");
+
+            assertEquals(
+                "This juror cannot be given a Failed To Attend status because they have been given a completion date. "
+                    + "Only a Senior Jury Officer can be remove the completion date",
+
+                exception.getMessage(), "Exception message should match");
+            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(
+                TestConstants.VALID_JUROR_NUMBER,
+                TestConstants.VALID_POOL_NUMBER);
+
+            verifyNoMoreInteractions(jurorPoolRepository);
+            verifyNoInteractions(jurorHistoryService);
+        }
+
+        @Test
+        void hasApperances() {
+            JurorStatus failedToAttendStatus = new JurorStatus();
+            when(jurorStatusRepository.findById(IJurorStatus.FAILED_TO_ATTEND))
+                .thenReturn(Optional.of(failedToAttendStatus));
+
+            when(jurorAppearanceService.hasAttendances(TestConstants.VALID_JUROR_NUMBER))
+                .thenReturn(true);
+
+            JurorStatus status = mock(JurorStatus.class);
+            when(status.getStatus()).thenReturn(IJurorStatus.RESPONDED);
+            JurorPool jurorPool = mock(JurorPool.class);
+            when(jurorPool.getStatus()).thenReturn(status);
+
+            Juror juror = mock(Juror.class);
+            when(jurorPool.getJuror()).thenReturn(juror);
+            when(juror.getCompletionDate()).thenReturn(null);
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(TestConstants.VALID_JUROR_NUMBER,
+                                                                             TestConstants.VALID_POOL_NUMBER)).thenReturn(jurorPool);
+
+            MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
+                                                                        () -> jurorRecordService.updateJurorToFailedToAttend(
+                                                                            TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER),
+                                                                        "Juror must not have any appearances in order to undo the failed to attend status.");
+
+            assertEquals(
+                "This juror cannot be given a Failed To Attend status because they have had attendances recorded."
+                    + " The Failed To Attend status is only for jurors who have not attended at all",
+                exception.getMessage(), "Exception message should match");
+            verify(jurorPoolRepository, times(1)).findByJurorJurorNumberAndPoolPoolNumber(
+                TestConstants.VALID_JUROR_NUMBER,
+                TestConstants.VALID_POOL_NUMBER);
+
+            verifyNoMoreInteractions(jurorPoolRepository);
+            verifyNoInteractions(jurorHistoryService);
+        }
+    }
+
+    @Nested
+    @DisplayName("public void createJurorRecord(BureauJWTPayload payload, JurorCreateRequestDto jurorCreateRequestDto)")
+    class CreateJurorRecord {
+        private PendingJurorStatus pendingJurorStatus;
 
         @BeforeEach
         void beforeEach() {
-            BureauJwtPayload.Staff staff = new BureauJwtPayload.Staff();
-            staff.setCourts(Collections.singletonList("415"));
+            pendingJurorStatus = mock(PendingJurorStatus.class);
+            when(pendingJurorStatusRepository.findById(PendingJurorStatusEnum.QUEUED.getCode()))
+                .thenReturn(Optional.ofNullable(pendingJurorStatus));
+        }
 
-            final String courtJwt = mintBureauJwt(BureauJwtPayload.builder()
-                .userType(UserType.COURT)
-                .login("COURT_USER")
-                .owner("415")
-                .locCode("415")
-                .staff(staff)
-                .build());
-
-            courtHeaders = new HttpHeaders();
-            courtHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
-            courtHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
+        private BureauJwtPayload createBureauJwtPayload(String owner, String login) {
+            BureauJwtPayload payload = new BureauJwtPayload();
+            payload.setOwner(owner);
+            payload.setLogin(login);
+            return payload;
         }
 
         @Test
-        //False positive BigDecimal.ZERO != new BigDecimal("0.00")
-        @SuppressWarnings("PMD.BigIntegerInstantiation")
-        void getJurorPayments() {
-            ResponseEntity<JurorPaymentsResponseDto> response =
-                restTemplate.exchange(new RequestEntity<>(courtHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/200956973/payments")),
-                    JurorPaymentsResponseDto.class);
+        void positiveTypicalExistingPool() {
+            TestUtils.mockCourtUser("415");
+            final BureauJwtPayload payload = createBureauJwtPayload("415", "COURT_USER");
+            JurorCreateRequestDto dto = JurorCreateRequestDtoTest.createValidJurorCreateRequestExistingPoolDto();
+            PoolRequest poolRequest = mock(PoolRequest.class);
+            when(poolRequest.getOwner()).thenReturn("415");
+            when(poolRequest.getPoolNumber()).thenReturn(dto.getPoolNumber());
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be successful")
-                .isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody()).isEqualTo(JurorPaymentsResponseDto.builder()
-                .attendances(6)
-                .nonAttendances(0)
-                .financialLoss(new BigDecimal("77.00"))
-                .travel(new BigDecimal("18.63"))
-                .subsistence(new BigDecimal("5.71"))
-                .totalPaid(new BigDecimal("101.34"))
-                .data(List.of(JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024, 5, 6))
-                        .attendanceAudit("P10011777")
-                        .paymentAudit("F12")
-                        .datePaid(LocalDateTime.of(2024, 5, 15, 18, 15, 6, 147_000_000))
-                        .travel(new BigDecimal("7.63"))
-                        .financialLoss(new BigDecimal("12.00"))
-                        .subsistence(new BigDecimal("0.00"))
-                        .smartcard(new BigDecimal("0"))
-                        .totalDue(new BigDecimal("19.63"))
-                        .totalPaid(new BigDecimal("19.63"))
-                        .build(),
-                    JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024, 5, 7))
-                        .attendanceAudit("P10012682")
-                        .paymentAudit("F16")
-                        .datePaid(LocalDateTime.of(2024, 5, 15, 18, 29, 58, 575_000_000))
-                        .travel(new BigDecimal("4.00"))
-                        .financialLoss(new BigDecimal("16.00"))
-                        .subsistence(new BigDecimal("0.00"))
-                        .smartcard(new BigDecimal("0"))
-                        .totalDue(new BigDecimal("20.00"))
-                        .totalPaid(new BigDecimal("20.00"))
-                        .build(),
-                    JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024, 5, 8))
-                        .attendanceAudit("P10013503")
-                        .paymentAudit("F12")
-                        .datePaid(LocalDateTime.of(2024, 5, 15, 18, 15, 6, 147_000_000))
-                        .travel(new BigDecimal("3.00"))
-                        .financialLoss(new BigDecimal("12.00"))
-                        .subsistence(new BigDecimal("5.71"))
-                        .smartcard(new BigDecimal("0"))
-                        .totalDue(new BigDecimal("20.71"))
-                        .totalPaid(new BigDecimal("20.71"))
-                        .build(),
-                    JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024, 5, 9))
-                        .attendanceAudit("P10014275")
-                        .paymentAudit("F10")
-                        .datePaid(LocalDateTime.of(2024, 5, 14, 18, 13, 17, 637_000_000))
-                        .travel(new BigDecimal("4.00"))
-                        .financialLoss(new BigDecimal("12.00"))
-                        .subsistence(new BigDecimal("0.00"))
-                        .smartcard(new BigDecimal("0"))
-                        .totalDue(new BigDecimal("16.00"))
-                        .totalPaid(new BigDecimal("16.00"))
-                        .build(),
-                    JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024, 5, 10))
-                        .attendanceAudit("P10014995")
-                        .paymentAudit("F10")
-                        .datePaid(LocalDateTime.of(2024, 5, 14, 18, 13, 17, 637_000_000))
-                        .travel(new BigDecimal("0.00"))
-                        .financialLoss(new BigDecimal("13.00"))
-                        .subsistence(new BigDecimal("0.00"))
-                        .smartcard(new BigDecimal("0"))
-                        .totalDue(new BigDecimal("13.00"))
-                        .totalPaid(new BigDecimal("13.00"))
-                        .build(),
-                    JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024, 5, 13))
-                        .attendanceAudit("P10016300")
-                        .paymentAudit("F10")
-                        .datePaid(LocalDateTime.of(2024, 5, 14, 18, 13, 17, 637_000_000))
-                        .travel(new BigDecimal("0"))
-                        .financialLoss(new BigDecimal("12.00"))
-                        .subsistence(new BigDecimal("0"))
-                        .smartcard(new BigDecimal("0"))
-                        .totalDue(new BigDecimal("12.00"))
-                        .totalPaid(new BigDecimal("12.00"))
-                        .build()))
-                .build());
+            when(pendingJurorRepository.generatePendingJurorNumber(dto.getLocationCode()))
+                .thenReturn("012345678");
+
+            when(poolRequestRepository.findById(dto.getPoolNumber()))
+                .thenReturn(Optional.ofNullable(poolRequest));
+
+            jurorRecordService.createJurorRecord(payload, dto);
+
+            ArgumentCaptor<PendingJuror> pendingJurorArgumentCaptor = ArgumentCaptor.forClass(PendingJuror.class);
+
+            verify(pendingJurorRepository, times(1))
+                .save(pendingJurorArgumentCaptor.capture());
+
+            validateMatch(dto, pendingJurorArgumentCaptor.getValue(), "012345678", dto.getPoolNumber());
+
+            verify(poolRequestRepository, times(1)).findById(dto.getPoolNumber());
+            verify(pendingJurorRepository, times(1)).generatePendingJurorNumber(dto.getLocationCode());
+            verify(pendingJurorStatusRepository, times(1)).findById(PendingJurorStatusEnum.QUEUED.getCode());
+
+            verifyNoMoreInteractions(
+                poolRequestRepository,
+                pendingJurorStatusRepository,
+                pendingJurorRepository);
+            verifyNoInteractions(poolHistoryRepository);
         }
 
         @Test
-        void noJuror() {
-            ResponseEntity<JurorPaymentsResponseDto> response =
-                restTemplate.exchange(new RequestEntity<>(courtHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/200950000/payments")),
-                    JurorPaymentsResponseDto.class);
+        void positiveTypicalNewPool() {
+            TestUtils.mockCourtUser("415");
+            final BureauJwtPayload payload = createBureauJwtPayload("415", "COURT_USER");
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be okay")
-                .isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody())
-                .isEqualTo(JurorPaymentsResponseDto.builder()
-                    .data(new ArrayList<>())
-                    .attendances(0)
-                    .nonAttendances(0)
-                    .financialLoss(BigDecimal.ZERO)
-                    .travel(BigDecimal.ZERO)
-                    .subsistence(BigDecimal.ZERO)
-                    .totalPaid(BigDecimal.ZERO)
-                    .build());
+            JurorCreateRequestDto dto = JurorCreateRequestDtoTest.createValidJurorCreateRequestNewPoolDto();
+
+            PoolRequest poolRequest = mock(PoolRequest.class);
+            when(poolRequest.getOwner()).thenReturn("415");
+            when(poolRequest.getPoolNumber()).thenReturn(dto.getPoolNumber());
+
+            CourtLocation courtLocation = mock(CourtLocation.class);
+            when(courtLocationRepository.findById(dto.getLocationCode()))
+                .thenReturn(Optional.ofNullable(courtLocation));
+
+            when(courtLocation.getCourtAttendTime()).thenReturn(LocalTime.of(9, 15));
+
+            PoolType poolType = mock(PoolType.class);
+            when(poolTypeRepository.findById(dto.getPoolType()))
+                .thenReturn(Optional.ofNullable(poolType));
+
+            when(pendingJurorRepository.generatePendingJurorNumber(dto.getLocationCode()))
+                .thenReturn("012345678");
+
+            when(generatePoolNumberService.generatePoolNumber(dto.getLocationCode(), dto.getStartDate()))
+                .thenReturn("87654321");
+
+            when(poolRequestRepository.findById(dto.getPoolNumber()))
+                .thenReturn(Optional.ofNullable(poolRequest));
+
+            jurorRecordService.createJurorRecord(payload, dto);
+
+            ArgumentCaptor<PoolRequest> poolRequestArgumentCaptor = ArgumentCaptor.forClass(PoolRequest.class);
+            verify(poolRequestRepository, times(1))
+                .saveAndFlush(poolRequestArgumentCaptor.capture());
+
+            validateMatch(dto, poolRequestArgumentCaptor.getValue(), "87654321",
+                          "415", courtLocation, poolType);
+
+            ArgumentCaptor<PendingJuror> pendingJurorArgumentCaptor = ArgumentCaptor.forClass(PendingJuror.class);
+            verify(pendingJurorRepository, times(1))
+                .save(pendingJurorArgumentCaptor.capture());
+
+            validateMatch(dto, pendingJurorArgumentCaptor.getValue(), "012345678", "87654321");
+
+            verify(pendingJurorRepository, times(1))
+                .generatePendingJurorNumber(dto.getLocationCode());
+            verify(pendingJurorStatusRepository, times(1))
+                .findById(PendingJurorStatusEnum.QUEUED.getCode());
+
+            ArgumentCaptor<PoolHistory> poolHistoryArgumentCaptor = ArgumentCaptor.forClass(PoolHistory.class);
+            verify(poolHistoryRepository, times(1))
+                .save(poolHistoryArgumentCaptor.capture());
+
+            PoolHistory poolHistory = poolHistoryArgumentCaptor.getValue();
+            assertEquals("87654321", poolHistory.getPoolNumber(), "Pool number must match");
+            assertNotNull(poolHistory.getHistoryDate(), "History date must not be null");
+            assertEquals(HistoryCode.PREQ, poolHistory.getHistoryCode(), "History code must match");
+            assertEquals("COURT_USER", poolHistory.getUserId(), "UserId must match");
+            assertEquals("Pool Request 87654321 created for pending Juror", poolHistory.getOtherInformation(),
+                         "Other info must match");
+
+
+            verifyNoMoreInteractions(
+                poolHistoryRepository,
+                poolRequestRepository,
+                pendingJurorStatusRepository,
+                pendingJurorRepository);
         }
 
         @Test
-        void noPermissions() {
-            BureauJwtPayload.Staff staff = new BureauJwtPayload.Staff();
-            staff.setCourts(Collections.singletonList("417"));
+        void negativeOwnersDoNotMatch() {
+            JurorCreateRequestDto dto = JurorCreateRequestDtoTest.createValidJurorCreateRequestExistingPoolDto();
+            BureauJwtPayload payload = createBureauJwtPayload("415", "COURT_USER");
+            PoolRequest poolRequest = mock(PoolRequest.class);
+            when(poolRequest.getOwner()).thenReturn("406");
+            when(poolRequest.getPoolNumber()).thenReturn(dto.getPoolNumber());
 
-            final String courtJwt = mintBureauJwt(BureauJwtPayload.builder()
-                .userType(UserType.COURT)
-                .login("COURT_USER")
-                .owner("417")
-                .locCode("417")
-                .staff(staff)
-                .build());
+            when(poolRequestRepository.findById(dto.getPoolNumber()))
+                .thenReturn(Optional.ofNullable(poolRequest));
 
-            HttpHeaders otherCourtHeaders = new HttpHeaders();
-            otherCourtHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
-            otherCourtHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            MojException.Forbidden exception =
+                assertThrows(MojException.Forbidden.class, () -> jurorRecordService.createJurorRecord(payload, dto),
+                             "Pool not owned by same owner as pool");
+            assertEquals("Court user cannot create a juror record in pool " + dto.getPoolNumber(),
+                         exception.getMessage(),
+                         "Exception message must match");
 
-            ResponseEntity<JurorPaymentsResponseDto> response =
-                restTemplate.exchange(
-                    new RequestEntity<>(otherCourtHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/200956973/payments")
-                    ),
-                    JurorPaymentsResponseDto.class
-                );
+            verify(poolRequestRepository, times(1)).findById(dto.getPoolNumber());
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be okay")
-                .isEqualTo(HttpStatus.OK);
-            assertThat(response.getBody())
-                .isEqualTo(JurorPaymentsResponseDto.builder()
-                    .data(new ArrayList<>())
-                    .attendances(0)
-                    .nonAttendances(0)
-                    .financialLoss(BigDecimal.ZERO)
-                    .travel(BigDecimal.ZERO)
-                    .subsistence(BigDecimal.ZERO)
-                    .totalPaid(BigDecimal.ZERO)
-                    .build());
+            verifyNoMoreInteractions(poolRequestRepository);
+            verifyNoInteractions(poolHistoryRepository,
+                                 pendingJurorStatusRepository,
+                                 pendingJurorRepository);
         }
 
         @Test
-        void noAccessAsBureau() {
+        void negativePendingJurorStatusNotFound() {
+            final BureauJwtPayload payload = createBureauJwtPayload("415", "COURT_USER");
+            JurorCreateRequestDto dto = JurorCreateRequestDtoTest.createValidJurorCreateRequestExistingPoolDto();
+            PoolRequest poolRequest = mock(PoolRequest.class);
+            when(poolRequest.getOwner()).thenReturn("415");
+            when(poolRequest.getPoolNumber()).thenReturn(dto.getPoolNumber());
 
-            ResponseEntity<JurorPaymentsResponseDto> response =
-                restTemplate.exchange(
-                    new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/200956973/payments")
-                    ),
-                    JurorPaymentsResponseDto.class
-                );
+            reset(pendingJurorStatusRepository);
+            when(pendingJurorStatusRepository.findById(PendingJurorStatusEnum.QUEUED.getCode()))
+                .thenReturn(Optional.empty());
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to fail")
-                .isEqualTo(HttpStatus.FORBIDDEN);
-        }
-    }
+            when(poolRequestRepository.findById(dto.getPoolNumber()))
+                .thenReturn(Optional.ofNullable(poolRequest));
 
-    @Nested
-    @Sql({"/db/mod/truncate.sql", "/db/mod/JurorRecordHistory.sql"})
-    class GetJurorHistory {
-        @Test
-        void getJurorHistory() {
-            ResponseEntity<JurorHistoryResponseDto> response =
-                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/141500073/history")),
-                    JurorHistoryResponseDto.class);
+            MojException.NotFound exception =
+                assertThrows(MojException.NotFound.class, () -> jurorRecordService.createJurorRecord(payload, dto),
+                             "Pending Juror Status not found");
+            assertEquals("Pending Juror Status not found",
+                         exception.getMessage(),
+                         "Exception message must match");
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be successful")
-                .isEqualTo(HttpStatus.OK);
+            verify(poolRequestRepository, times(1)).findById(dto.getPoolNumber());
+            verify(pendingJurorStatusRepository, times(1)).findById(PendingJurorStatusEnum.QUEUED.getCode());
 
-            assertThat(response.getBody().toString()).isEqualTo(JurorHistoryResponseDto.builder()
-                .data(List.of(
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
-                        .description("Juror responded")
-                        .username("Court_user")
-                        .dateCreated(LocalDateTime.of(2024, 6, 6, 15, 41, 20, 162_000_000))
-                        .poolNumber("415240801")
-                        .details(List.of("Responded"))
-                        .build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
-                        .description("Juror record updated")
-                        .username("Court_user")
-                        .dateCreated(LocalDateTime.of(2024, 6, 6, 15, 41, 20, 281_000_000))
-                        .poolNumber("415240801")
-                        .details(List.of("Date Of Birth Changed"))
-                        .build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
-                        .description("Pool attendance confirmed")
-                        .username("Court_user")
-                        .dateCreated(LocalDateTime.of(2024, 6, 6, 15, 41, 57, 117_000_000))
-                        .poolNumber("415240801")
-                        .details(List.of("Attendance date 1 Jan 2024",
-                            "Pool attendance audit report P10000000"
-                        )).build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
-                        .description("Expenses submitted for approval")
-                        .username("Court_user")
-                        .dateCreated(LocalDateTime.of(2024, 6, 6, 15, 42, 18, 754_000_000))
-                        .poolNumber("415240801")
-                        .details(List.of("Attendance date 6 Jun 2024",
-                            "Attendance audit report F1",
-                            "Total due £20.00"))
-                        .build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
-                        .description("Expenses approved")
-                        .username("MODCOURT")
-                        .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 15, 53, 433_000_000))
-                        .poolNumber("")
-                        .details(List.of("Attendance date 6 Jun 2024",
-                            "Attendance audit report F2",
-                            "Total paid £20.00"))
-                        .build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
-                        .description("Pool attendance confirmed")
-                        .username("Court_user")
-                        .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 18, 7, 342_000_000))
-                        .poolNumber("415240801")
-                        .details(List.of("Attendance date 2 Jan 2024",
-                            "Pool attendance audit report P10000001"))
-                        .build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
-                        .description("Expenses submitted for approval")
-                        .username("Court_user")
-                        .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 18, 36, 476_000_000))
-                        .poolNumber("415240801")
-                        .details(List.of("Attendance date 7 Jun 2024",
-                            "Attendance audit report F3",
-                            "Total due £5.00"))
-                        .build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
-                        .description("Pool attendance confirmed")
-                        .username("Court_user")
-                        .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 19, 0, 505_000_000))
-                        .poolNumber("415240801")
-                        .details(List.of("Attendance date 3 Jan 2024",
-                            "Pool attendance audit report P10000002"))
-                        .build()))
-                .build().toString());
+            verifyNoMoreInteractions(poolRequestRepository,
+                                     pendingJurorStatusRepository);
+            verifyNoInteractions(poolHistoryRepository,
+                                 pendingJurorRepository);
         }
 
-        @Test
-        void noJuror() {
-            ResponseEntity<JurorHistoryResponseDto> response =
-                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/141500000/history")),
-                    JurorHistoryResponseDto.class);
+        private void validateMatch(JurorCreateRequestDto dto, PendingJuror pendingJuror, String jurorNumber,
+                                   String poolNumber) {
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to fail")
-                .isEqualTo(HttpStatus.NOT_FOUND);
-        }
-
-        @Test
-        void noPermissions() {
-            BureauJwtPayload.Staff staff = new BureauJwtPayload.Staff();
-            staff.setCourts(Collections.singletonList("417"));
-
-            final String courtJwt = mintBureauJwt(BureauJwtPayload.builder()
-                .userType(UserType.COURT)
-                .login("COURT_USER")
-                .owner("417")
-                .locCode("417")
-                .staff(staff)
-                .build());
-
-            HttpHeaders otherCourtHeaders = new HttpHeaders();
-            otherCourtHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
-            otherCourtHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-
-            ResponseEntity<JurorHistoryResponseDto> response =
-                restTemplate.exchange(
-                    new RequestEntity<>(otherCourtHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/141500073/history")
-                    ),
-                    JurorHistoryResponseDto.class
-                );
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to fail")
-                .isEqualTo(HttpStatus.FORBIDDEN);
-        }
-    }
-
-    @Nested
-    class UpdatePncCheckStatus {
-        @ParameterizedTest
-        @ValueSource(strings = {
-            "111111111",
-            "111111112",
-            "111111113",
-            "111111115",
-            "111111116",
-            "111111117",
-            "111111118",
-            "111111119",
-            "111111120",
-            "111111121",
-            "111111122"})
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-        void updatePncCheckStatusEligible(String jurorNumber) {
-            ResponseEntity<PoliceCheckStatusDto> response =
-                restTemplate.exchange(new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.ELIGIBLE),
-                        httpHeaders, HttpMethod.PATCH,
-                        URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    PoliceCheckStatusDto.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be accepted")
-                .isEqualTo(HttpStatus.ACCEPTED);
-
-            assertThat(response.getBody())
-                .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.ELIGIBLE));
-
-            Juror juror = jurorRepository.findById(jurorNumber).get();
-            final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
-
-            assertEquals(PoliceCheck.ELIGIBLE, juror.getPoliceCheck(),
-                "Police check should match");
-
-            assertNull(juror.getDisqualifyCode(),
-                "Disqualify code should be null");
-            assertNull(juror.getDisqualifyDate(),
-                "Disqualify date should be null");
-            assertEquals(2, jurorPool.getStatus().getStatus(),
-                "Juror pool status should match");
-
-            List<JurorHistory> jurorHistoryList = new ArrayList<>(
-                jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber));
-            jurorHistoryList.sort(Comparator.comparing(JurorHistory::getHistoryCode));
-            verifyStandardJurorHistory(jurorPool, jurorHistoryList,
-                new JurorHistoryExpectedValues("RRES", "Confirmation Letter Auto", null, null),
-                new JurorHistoryExpectedValues("POLG", "Passed", null, null)
-            );
-            verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
-        }
-
-
-        @ParameterizedTest
-        @ValueSource(strings = {
-            "111111111",
-            "111111112",
-            "111111113",
-            "111111114",
-            "111111116",
-            "111111117",
-            "111111118",
-            "111111119",
-            "111111120",
-            "111111121",
-            "111111122"})
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-        void updatePncCheckStatusIneligible(String jurorNumber) {
-            ResponseEntity<PoliceCheckStatusDto> response =
-                restTemplate.exchange(new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.INELIGIBLE),
-                        httpHeaders, HttpMethod.PATCH,
-                        URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    PoliceCheckStatusDto.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be accepted")
-                .isEqualTo(HttpStatus.ACCEPTED);
-
-            assertThat(response.getBody())
-                .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.INELIGIBLE));
-
-            Juror juror = jurorRepository.findById(jurorNumber).get();
-            final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
-
-            assertEquals(PoliceCheck.INELIGIBLE, juror.getPoliceCheck(),
-                "Police check should match");
-
-            assertEquals("E", juror.getDisqualifyCode(),
-                "Disqualify code should match");
-            assertEquals(LocalDate.now(clock), juror.getDisqualifyDate(),
-                "Disqualify date should match");
-            assertEquals(6, jurorPool.getStatus().getStatus(),
-                "Juror pool status should match");
-
-            List<JurorHistory> jurorHistoryList = new ArrayList<>(
-                jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber));
-
-            verifyStandardJurorHistory(jurorPool,
-                jurorHistoryList,
-                new JurorHistoryExpectedValues("POLF", "Failed", null, null),
-                new JurorHistoryExpectedValues("PDIS", null, null, "E"),
-                new JurorHistoryExpectedValues("RDIS", "Withdrawal Letter Auto", null, "E")
-            );
-            verifyBulkPrintData(jurorNumber, FormCode.ENG_WITHDRAWAL.getCode());
-        }
-
-
-        @ParameterizedTest
-        @ValueSource(strings = {
-            "111111111",
-            "111111113",
-            "111111114",
-            "111111115",
-            "111111116",
-            "111111122"
-        })
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-        void updatePncCheckStatusInError(String jurorNumber) {
-            ResponseEntity<PoliceCheckStatusDto> response =
-                restTemplate.exchange(
-                    new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR),
-                        httpHeaders, HttpMethod.PATCH,
-                        URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    PoliceCheckStatusDto.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be accepted")
-                .isEqualTo(HttpStatus.ACCEPTED);
-
-            assertThat(response.getBody())
-                .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR));
-
-
-            Juror juror = jurorRepository.findById(jurorNumber).get();
-            final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
-
-            assertEquals(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR, juror.getPoliceCheck(),
-                "Police check should match");
-
-            assertNull(juror.getDisqualifyCode(),
-                "Disqualify code should be null");
-            assertNull(juror.getDisqualifyDate(),
-                "Disqualify date should be null");
-            assertEquals(2, jurorPool.getStatus().getStatus(),
-                "Juror pool status should match");
-            verifyNoBulkPrintData(jurorNumber);
-        }
-
-
-        @ParameterizedTest
-        @ValueSource(strings = {
-            "111111117",
-            "111111118",
-            "111111119",
-            "111111120",
-            "111111121"
-        })
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
-        void updatePncCheckStatusMaxRetiesError(String jurorNumber) {
-            ResponseEntity<PoliceCheckStatusDto> response =
-                restTemplate.exchange(
-                    new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR),
-                        httpHeaders, HttpMethod.PATCH,
-                        URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    PoliceCheckStatusDto.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP GET request to be accepted")
-                .isEqualTo(HttpStatus.ACCEPTED);
-
-            assertThat(response.getBody())
-                .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED));
-
-            Juror juror = jurorRepository.findById(jurorNumber).get();
-            final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
-
-            assertEquals(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED, juror.getPoliceCheck(),
-                "Police check should match");
-
-            assertNull(juror.getDisqualifyCode(),
-                "Disqualify code should be null");
-            assertNull(juror.getDisqualifyDate(),
-                "Disqualify date should be null");
-            assertEquals(2, jurorPool.getStatus().getStatus(),
-                "Juror pool status should match");
-
-            List<JurorHistory> jurorHistoryList =
-                jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-            JurorHistory jurorHistory = jurorHistoryList.get(0);
-            verifyStandardJurorHistory(jurorPool, List.of(jurorHistory),
-                new JurorHistoryExpectedValues("POLG", "Unchecked - timed out", null, null)
-            );
-            verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
-        }
-    }
-
-    @Nested
-    @DisplayName("PATCH " + UpdateJurorToFailedToAttend.URL)
-    @Sql({"/db/mod/truncate.sql",
-        "/db/JurorRecordControllerITest_failedToAttend_typical.sql"})
-    class UpdateJurorToFailedToAttend {
-
-        private static final String URL = BASE_URL + "/failed-to-attend";
-
-        private static final String JUROR_NUMBER = "641500005";
-        private static final String POOL_NUMBER = "415220901";
-
-        private JurorNumberAndPoolNumberDto createDto(String jurorNumber, String poolNumber) {
-            JurorNumberAndPoolNumberDto dto = new JurorNumberAndPoolNumberDto();
-            dto.setJurorNumber(jurorNumber);
-            dto.setPoolNumber(poolNumber);
-            return dto;
-        }
-
-        @Test
-        void positiveTypical() {
-            setAuthorization("COURT_USER", "414", UserType.COURT);
-            JurorNumberAndPoolNumberDto dto = createDto(JUROR_NUMBER, POOL_NUMBER);
-            ResponseEntity<Void> response =
-                restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), Void.class);
-
-            assertThat(response).isNotNull();
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
-
-            JurorPool jurorPool =
-                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
-            assertEquals(IJurorStatus.FAILED_TO_ATTEND, jurorPool.getStatus().getStatus(),
-                "Juror pool status should be failed to attend");
-
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
-            assertEquals(1, jurorHistories.size(), "Should only be one history entry");
-            JurorHistory jurorHistory = jurorHistories.get(0);
-            assertEquals(POOL_NUMBER, jurorHistory.getPoolNumber(), "Pool number should match");
-            assertEquals(JUROR_NUMBER, jurorHistory.getJurorNumber(), "Juror number should match");
-            assertEquals("COURT_USER", jurorHistory.getCreatedBy(), "User id should match");
-            assertEquals(HistoryCodeMod.FAILED_TO_ATTEND, jurorHistory.getHistoryCode(), "History code should match");
-            assertEquals("FTA after responding", jurorHistory.getOtherInformation(),
-                "Info should match");
-        }
-
-        @Test
-        void negativeNotFound() {
-            setAuthorization("COURT_USER", "414", UserType.COURT);
-            JurorNumberAndPoolNumberDto dto = createDto("123456789", POOL_NUMBER);
-            ResponseEntity<String> response =
-                restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            assertErrorResponse(response,
-                HttpStatus.NOT_FOUND,
-                URL,
-                MojException.NotFound.class,
-                "Juror number 123456789 not found in pool " + POOL_NUMBER);
-        }
-
-        @Test
-        void negativeNotResponded() {
-            final String jurorNumber = "641500004";
-            setAuthorization("COURT_USER", "415", UserType.COURT, Role.SENIOR_JUROR_OFFICER);
-            JurorNumberAndPoolNumberDto dto = createDto(jurorNumber, POOL_NUMBER);
-
-            ResponseEntity<String> response =
-                restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            assertBusinessRuleViolation(response,
-                "Juror status must be responded in order to undo the failed to attend status.",
-                JUROR_STATUS_MUST_BE_RESPONDED
-            );
-
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, POOL_NUMBER);
-            assertEquals(IJurorStatus.PANEL, jurorPool.getStatus().getStatus(),
-                "Juror pool status should not change");
-
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-            assertEquals(0, jurorHistories.size(),
-                "No new history entry as request should be rejected before processing");
-        }
-
-        @Test
-        void negativeHasCompletionDate() {
-            final String jurorNumber = "641500003";
-            setAuthorization("COURT_USER", "415", UserType.COURT, Role.SENIOR_JUROR_OFFICER);
-            JurorNumberAndPoolNumberDto dto = createDto(jurorNumber, POOL_NUMBER);
-
-            ResponseEntity<String> response =
-                restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            assertBusinessRuleViolation(response,
-                "This juror cannot be given a Failed To Attend status because they have been given a completion date. "
-                    + "Only a Senior Jury Officer can be remove the completion date",
-                FAILED_TO_ATTEND_HAS_COMPLETION_DATE
-            );
-
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, POOL_NUMBER);
-            assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                "Juror pool status should not change");
-
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-            assertEquals(0, jurorHistories.size(),
-                "No new history entry as request should be rejected before processing");
-        }
-
-        @Test
-        void negativeHasAppearances() {
-            final String jurorNumber = "641500002";
-            setAuthorization("COURT_USER", "415", UserType.COURT, Role.SENIOR_JUROR_OFFICER);
-            JurorNumberAndPoolNumberDto dto = createDto(jurorNumber, POOL_NUMBER);
-
-            ResponseEntity<String> response =
-                restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            assertBusinessRuleViolation(response,
-                "This juror cannot be given a Failed To Attend status because they have had attendances recorded."
-                    + " The Failed To Attend status is only for jurors who have not attended at all",
-                FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD
-            );
-
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, POOL_NUMBER);
-            assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                "Juror pool status should not change");
-
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-            assertEquals(0, jurorHistories.size(),
-                "No new history entry as request should be rejected before processing");
-        }
-
-        @Test
-        void negativeInvalidPayload() {
-            setAuthorization("COURT_USER", "414", UserType.COURT);
-            JurorNumberAndPoolNumberDto dto = createDto("INVALID", POOL_NUMBER);
-            ResponseEntity<String> response =
-                restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-            assertInvalidPayload(response,
-                new RestResponseEntityExceptionHandler.FieldError("jurorNumber", "must match \"^\\d{9}$\""));
-
-            JurorPool jurorPool =
-                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
-            assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                "Juror pool status should not change");
-
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
-            assertEquals(0, jurorHistories.size(),
-                "No new history entry as request should be rejected before processing");
-        }
-
-        @Test
-        void negativeUnauthorised() {
-            setAuthorization("COURT_USER", "400", UserType.BUREAU);
-            JurorNumberAndPoolNumberDto dto = createDto(JUROR_NUMBER, POOL_NUMBER);
-            ResponseEntity<String> response =
-                restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
-
-            assertForbiddenResponse(response, URL);
-
-            JurorPool jurorPool =
-                jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
-            assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                "Juror pool status should not change");
-
-            List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
-            assertEquals(0, jurorHistories.size(),
-                "No new history entry as request should be rejected before processing");
-        }
-    }
-
-    @Nested
-    @DisplayName("GET" + GetJurorBankDetails.URL)
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordControllerITest_getJurorBankDetails.sql"})
-    class GetJurorBankDetails {
-
-        private static final String URL = BASE_URL + "/{juror_number}/bank-details";
-
-        private String toUrl(String jurorNumber) {
-            return URL.replace("{juror_number}", jurorNumber);
-        }
-
-        @Test
-        @DisplayName("GetJurorBankDetailsHappyPath")
-        void testGJurorBankDetailsHappyPath() throws Exception {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<JurorBankDetailsDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toUrl("123456789"))),
-                    JurorBankDetailsDto.class);
-
-            assertThat(response.getStatusCode()).as("Expect the HTTP Response Status to be OK")
-                .isEqualTo(HttpStatus.OK);
-
-            JurorBankDetailsDto jurorBankDetailsDto = response.getBody();
-            assertThat(jurorBankDetailsDto).isNotNull();
-
-            //verify address details match
-            assertThat(jurorBankDetailsDto.getAddressLineOne())
-                .as("AddressLineOne - Expect property and dto match")
-                .isEqualTo("Address Line 1");
-            assertThat(jurorBankDetailsDto.getAddressLineTwo())
-                .as("AddressLineTwo - Expect property and dto match")
-                .isEqualTo("Address Line 2");
-            assertThat(jurorBankDetailsDto.getAddressLineThree())
-                .as("AddressLineThree - Expect property and dto match")
-                .isEqualTo("Address Line 3");
-            assertThat(jurorBankDetailsDto.getAddressLineFour())
-                .as("AddressLineFour - Expect property and dto match")
-                .isEqualTo("Address Line 4");
-            assertThat(jurorBankDetailsDto.getAddressLineFive())
-                .as("AddressLineFive - Expect property and dto match")
-                .isEqualTo("Address Line 5");
-
-            //verify bank details and notes match
-            assertThat(jurorBankDetailsDto.getBankAccountNumber())
-                .as("BankAccountNumber - Expect property and dto match")
-                .isEqualTo("12345678");
-            assertThat(jurorBankDetailsDto.getSortCode())
-                .as("SortCode - Expect property and dto match")
-                .isEqualTo("123456");
-            assertThat(jurorBankDetailsDto.getAccountHolderName())
-                .as("AccountHolderName - Expect property and dto match")
-                .isEqualTo("Account Name");
-            assertThat(jurorBankDetailsDto.getNotes())
-                .as("Notes - Expect property and dto match")
-                .isEqualTo("Notes");
-
-        }
-
-        @Test
-        void testGJurorBankDetailsUnhappyPathBureauUserDoesNotHaveAccess() throws Exception {
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
-                UserType.BUREAU));
-
-            ResponseEntity<JurorBankDetailsDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toUrl("111111111"))),
-                    JurorBankDetailsDto.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP Response Status to be Forbidden")
-                .isEqualTo(HttpStatus.FORBIDDEN);
-
-        }
-
-        @Test
-        void testGJurorBankDetailsUnhappyPathCourtUserDoesNotHaveAccessToJuror() throws Exception {
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-                UserType.COURT));
-
-            ResponseEntity<JurorBankDetailsDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toUrl("123456789"))),
-                    JurorBankDetailsDto.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP Response Status to be Forbidden")
-                .isEqualTo(HttpStatus.FORBIDDEN);
-
-        }
-
-        @Test
-        void testGJurorBankDetailsUnhappyPathJurorNotFound() throws Exception {
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<JurorBankDetailsDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toUrl("000000000"))),
-                    JurorBankDetailsDto.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP Response Status to be Not Found")
-                .isEqualTo(HttpStatus.NOT_FOUND);
-
-            assertThat(response.getBody().getBankAccountNumber())
-                .as("Expect BankAccountNumber to be null").isNull();
-            assertThat(response.getBody().getSortCode())
-                .as("Expect SortCode to be null").isNull();
-            assertThat(response.getBody().getAddressLineOne())
-                .as("Expect AddressLineOne to be null").isNull();
-            assertThat(response.getBody().getAddressLineTwo())
-                .as("Expect AddressLineTwo to be null").isNull();
-            assertThat(response.getBody().getAddressLineThree())
-                .as("Expect AddressLineThree to be null").isNull();
-            assertThat(response.getBody().getAddressLineFour())
-                .as("Expect AddressLineFour to be null").isNull();
-            assertThat(response.getBody().getAddressLineFive())
-                .as("Expect AddressLineFive to be null").isNull();
-            assertThat(response.getBody().getNotes())
-                .as("Expect Notes to be null").isNull();
-        }
-
-        @Test
-        void testGJurorBankDetailsUnhappyPathInvalidJurorNumber() throws Exception {
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<String> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toUrl("INVALID"))),
-                    String.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP Response Status to be Bad Request")
-                .isEqualTo(HttpStatus.BAD_REQUEST);
-
-            assertThat(response.getBody())
-                .as("Expect the HTTP Response Body to be a JSON string").isNotNull();
-            assertThat(response.getBody())
-                .as("Expect the HTTP Response Body to contain the expected error message")
-                .contains("getJurorBankDetails.jurorNumber: must match \\\"^\\\\d{9}$\\\"");
-        }
-    }
-
-    @Nested
-    @DisplayName("POST " + GetJurorDetailsBulkFilterable.URL)
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordControllerITest_getJurorDetailsFiltered_typical.sql"})
-    class GetJurorDetailsBulkFilterable {
-        private static final String URL = BASE_URL + "/details";
-
-        private FilterableJurorDetailsRequestDto createDto(String jurorNumber, Long version,
-                                                           FilterableJurorDetailsRequestDto.IncludeType... include) {
-            return FilterableJurorDetailsRequestDto.builder()
-                .jurorNumber(jurorNumber)
-                .jurorVersion(version)
-                .include(List.of(include))
-                .build();
-        }
-
-        @DisplayName("Positive")
-        @Nested
-        class Positive {
-
-            private ResponseEntity<FilterableJurorDetailsResponseDto[]> triggerValid(
-                FilterableJurorDetailsRequestDto dto) {
-                return triggerValid(Collections.singletonList(dto));
-            }
-
-            private ResponseEntity<FilterableJurorDetailsResponseDto[]> triggerValid(
-                List<FilterableJurorDetailsRequestDto> dto) {
-                setAuthorization("COURT_USER", "415", UserType.COURT);
-
-                ResponseEntity<FilterableJurorDetailsResponseDto[]> response = restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, POST, URI.create(URL)),
-                    FilterableJurorDetailsResponseDto[].class);
-
-                assertThat(response).isNotNull();
-                assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-                assertThat(response.getBody()).isNotNull();
-                assertThat(response.getBody().length).isEqualTo(dto.size());
-
-                return response;
-            }
-
-            @Test
-            void typicalBureauGetAllDetails() {
-                setAuthorization("BUREAU_USER", "400", UserType.BUREAU, Role.MANAGER);
-
-                ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
-                    createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL)
-                );
-
-                //Count validated in triggerValid so no need to do here
-                FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
-                assertThat(responseDto.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
-                assertThat(responseDto.getJurorVersion()).isNull();
-
-                assertThat(responseDto.getNameDetails()).isNotNull();
-                assertThat(responseDto.getPaymentDetails()).isNotNull();
-                assertThat(responseDto.getAddress()).isNotNull();
-                assertThat(responseDto.getActivePool()).isNotNull();
-
-
-                NameDetails nameDetails = responseDto.getNameDetails();
-                assertThat(nameDetails.getTitle()).isEqualTo("Mr");
-                assertThat(nameDetails.getFirstName()).isEqualTo("FNAME");
-                assertThat(nameDetails.getLastName()).isEqualTo("LNAME");
-
-                PaymentDetails paymentDetails = responseDto.getPaymentDetails();
-                assertThat(paymentDetails.getSortCode()).isEqualTo("112233");
-                assertThat(paymentDetails.getBankAccountName()).isEqualTo("Bank NAME");
-                assertThat(paymentDetails.getBankAccountNumber()).isEqualTo("12345678");
-                assertThat(paymentDetails.getBuildingSocietyRollNumber()).isNull();
-
-                JurorAddressDto jurorAddressDto = responseDto.getAddress();
-                assertThat(jurorAddressDto.getLineOne()).isEqualTo("Address Line 1");
-                assertThat(jurorAddressDto.getLineTwo()).isEqualTo("Address Line 2");
-                assertThat(jurorAddressDto.getLineThree()).isEqualTo("Address Line 3");
-                assertThat(jurorAddressDto.getTown()).isEqualTo("Address Line 4");
-                assertThat(jurorAddressDto.getCounty()).isEqualTo("Address Line 5");
-                assertThat(jurorAddressDto.getPostcode()).isEqualTo("CH1 2AN");
-
-                JurorPoolDetailsDto jurorPoolDetailsDto = responseDto.getActivePool();
-                assertThat(jurorPoolDetailsDto.getPoolNumber()).isEqualTo("415220502");
-                assertThat(jurorPoolDetailsDto.getCourtName()).isEqualTo("CHESTER");
-                assertThat(jurorPoolDetailsDto.getStatus()).isEqualTo("Responded");
-            }
-
-            @Test
-            void testGSingleGetNameDetails() {
-                ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
-                    createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS));
-                //Count validated in triggerValid so no need to do here
-                FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
-                assertThat(responseDto.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
-                assertThat(responseDto.getJurorVersion()).isNull();
-
-                assertThat(responseDto.getNameDetails()).isNotNull();
-                assertThat(responseDto.getPaymentDetails()).isNull();
-                assertThat(responseDto.getAddress()).isNull();
-
-                NameDetails nameDetails = responseDto.getNameDetails();
-                assertThat(nameDetails.getTitle()).isEqualTo("Mr");
-                assertThat(nameDetails.getFirstName()).isEqualTo("FNAME");
-                assertThat(nameDetails.getLastName()).isEqualTo("LNAME");
-            }
-
-            @Test
-            void testGSingleGetPaymentDetails() {
-                ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
-                    createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS));
-                //Count validated in triggerValid so no need to do here
-                FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
-                assertThat(responseDto.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
-                assertThat(responseDto.getJurorVersion()).isNull();
-
-                assertThat(responseDto.getNameDetails()).isNull();
-                assertThat(responseDto.getPaymentDetails()).isNotNull();
-                assertThat(responseDto.getAddress()).isNull();
-
-                PaymentDetails paymentDetails = responseDto.getPaymentDetails();
-                assertThat(paymentDetails.getSortCode()).isEqualTo("112233");
-                assertThat(paymentDetails.getBankAccountName()).isEqualTo("Bank NAME");
-                assertThat(paymentDetails.getBankAccountNumber()).isEqualTo("12345678");
-                assertThat(paymentDetails.getBuildingSocietyRollNumber()).isNull();
-            }
-
-            @Test
-            void testGSingleGetAddressDetails() {
-                ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
-                    createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                        FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS));
-                //Count validated in triggerValid so no need to do here
-                FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
-                assertThat(responseDto.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
-                assertThat(responseDto.getJurorVersion()).isNull();
-
-                assertThat(responseDto.getNameDetails()).isNull();
-                assertThat(responseDto.getPaymentDetails()).isNull();
-                assertThat(responseDto.getAddress()).isNotNull();
-
-                JurorAddressDto jurorAddressDto = responseDto.getAddress();
-                assertThat(jurorAddressDto.getLineOne()).isEqualTo("Address Line 1");
-                assertThat(jurorAddressDto.getLineTwo()).isEqualTo("Address Line 2");
-                assertThat(jurorAddressDto.getLineThree()).isEqualTo("Address Line 3");
-                assertThat(jurorAddressDto.getTown()).isEqualTo("Address Line 4");
-                assertThat(jurorAddressDto.getCounty()).isEqualTo("Address Line 5");
-                assertThat(jurorAddressDto.getPostcode()).isEqualTo("CH1 2AN");
-            }
-
-            @Test
-            void testGSingleGetAll() {
-                ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
-                    createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS)
-                );
-                //Count validated in triggerValid so no need to do here
-                FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
-                assertThat(responseDto.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
-                assertThat(responseDto.getJurorVersion()).isNull();
-
-                assertThat(responseDto.getNameDetails()).isNotNull();
-                assertThat(responseDto.getPaymentDetails()).isNotNull();
-                assertThat(responseDto.getAddress()).isNotNull();
-
-
-                NameDetails nameDetails = responseDto.getNameDetails();
-                assertThat(nameDetails.getTitle()).isEqualTo("Mr");
-                assertThat(nameDetails.getFirstName()).isEqualTo("FNAME");
-                assertThat(nameDetails.getLastName()).isEqualTo("LNAME");
-
-                PaymentDetails paymentDetails = responseDto.getPaymentDetails();
-                assertThat(paymentDetails.getSortCode()).isEqualTo("112233");
-                assertThat(paymentDetails.getBankAccountName()).isEqualTo("Bank NAME");
-                assertThat(paymentDetails.getBankAccountNumber()).isEqualTo("12345678");
-                assertThat(paymentDetails.getBuildingSocietyRollNumber()).isNull();
-
-                JurorAddressDto jurorAddressDto = responseDto.getAddress();
-                assertThat(jurorAddressDto.getLineOne()).isEqualTo("Address Line 1");
-                assertThat(jurorAddressDto.getLineTwo()).isEqualTo("Address Line 2");
-                assertThat(jurorAddressDto.getLineThree()).isEqualTo("Address Line 3");
-                assertThat(jurorAddressDto.getTown()).isEqualTo("Address Line 4");
-                assertThat(jurorAddressDto.getCounty()).isEqualTo("Address Line 5");
-                assertThat(jurorAddressDto.getPostcode()).isEqualTo("CH1 2AN");
-            }
-
-            @Test
-            void testGSingleGetAllFromVersion() {
-                ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
-                    createDto(TestConstants.VALID_JUROR_NUMBER, 2L,
-                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS)
-                );
-                //Count validated in triggerValid so no need to do here
-                FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
-                assertThat(responseDto.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
-                assertThat(responseDto.getJurorVersion()).isEqualTo(2L);
-
-                assertThat(responseDto.getNameDetails()).isNotNull();
-                assertThat(responseDto.getPaymentDetails()).isNotNull();
-                assertThat(responseDto.getAddress()).isNotNull();
-
-
-                NameDetails nameDetails = responseDto.getNameDetails();
-                assertThat(nameDetails.getTitle()).isEqualTo("Mr2");
-                assertThat(nameDetails.getFirstName()).isEqualTo("FNAME2");
-                assertThat(nameDetails.getLastName()).isEqualTo("LNAME2");
-
-                PaymentDetails paymentDetails = responseDto.getPaymentDetails();
-                assertThat(paymentDetails.getSortCode()).isNull();
-                assertThat(paymentDetails.getBankAccountName()).isNull();
-                assertThat(paymentDetails.getBankAccountNumber()).isNull();
-                assertThat(paymentDetails.getBuildingSocietyRollNumber()).isEqualTo("Roll Number2");
-
-                JurorAddressDto jurorAddressDto = responseDto.getAddress();
-                assertThat(jurorAddressDto.getLineOne()).isEqualTo("2Address Line 1");
-                assertThat(jurorAddressDto.getLineTwo()).isEqualTo("2Address Line 2");
-                assertThat(jurorAddressDto.getLineThree()).isEqualTo("2Address Line 3");
-                assertThat(jurorAddressDto.getTown()).isEqualTo("2Address Line 4");
-                assertThat(jurorAddressDto.getCounty()).isEqualTo("2Address Line 5");
-                assertThat(jurorAddressDto.getPostcode()).isEqualTo("CH2 2AN");
-            }
-
-            @Test
-            void testGMultiple() {
-                ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
-                    List.of(
-                        createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                            FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
-                            FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
-                            FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS),
-                        createDto("223456789", null,
-                            FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS),
-                        createDto("323456789", null,
-                            FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
-                            FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS)
-                    )
-                );
-                //Count validated in triggerValid so no need to do here
-
-                //Validate Person 1
-                FilterableJurorDetailsResponseDto responseDto1 = Objects.requireNonNull(responseEntity.getBody())[0];
-                assertThat(responseDto1.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
-                assertThat(responseDto1.getJurorVersion()).isNull();
-
-                assertThat(responseDto1.getNameDetails()).isNotNull();
-                assertThat(responseDto1.getPaymentDetails()).isNotNull();
-                assertThat(responseDto1.getAddress()).isNotNull();
-
-
-                NameDetails nameDetails1 = responseDto1.getNameDetails();
-                assertThat(nameDetails1.getTitle()).isEqualTo("Mr");
-                assertThat(nameDetails1.getFirstName()).isEqualTo("FNAME");
-                assertThat(nameDetails1.getLastName()).isEqualTo("LNAME");
-
-                PaymentDetails paymentDetails1 = responseDto1.getPaymentDetails();
-                assertThat(paymentDetails1.getSortCode()).isEqualTo("112233");
-                assertThat(paymentDetails1.getBankAccountName()).isEqualTo("Bank NAME");
-                assertThat(paymentDetails1.getBankAccountNumber()).isEqualTo("12345678");
-                assertThat(paymentDetails1.getBuildingSocietyRollNumber()).isNull();
-
-                JurorAddressDto jurorAddressDto1 = responseDto1.getAddress();
-                assertThat(jurorAddressDto1.getLineOne()).isEqualTo("Address Line 1");
-                assertThat(jurorAddressDto1.getLineTwo()).isEqualTo("Address Line 2");
-                assertThat(jurorAddressDto1.getLineThree()).isEqualTo("Address Line 3");
-                assertThat(jurorAddressDto1.getTown()).isEqualTo("Address Line 4");
-                assertThat(jurorAddressDto1.getCounty()).isEqualTo("Address Line 5");
-                assertThat(jurorAddressDto1.getPostcode()).isEqualTo("CH1 2AN");
-
-                //Validate Person 2
-                FilterableJurorDetailsResponseDto responseDto2 = Objects.requireNonNull(responseEntity.getBody())[1];
-                assertThat(responseDto2.getJurorNumber()).isEqualTo("223456789");
-                assertThat(responseDto2.getJurorVersion()).isNull();
-
-                assertThat(responseDto2.getNameDetails()).isNotNull();
-                assertThat(responseDto2.getPaymentDetails()).isNull();
-                assertThat(responseDto2.getAddress()).isNull();
-
-
-                NameDetails nameDetails2 = responseDto2.getNameDetails();
-                assertThat(nameDetails2.getTitle()).isEqualTo("Miss");
-                assertThat(nameDetails2.getFirstName()).isEqualTo("FNAME2");
-                assertThat(nameDetails2.getLastName()).isEqualTo("LNAME2");
-
-                //Validate Person 3
-                FilterableJurorDetailsResponseDto responseDto3 = Objects.requireNonNull(responseEntity.getBody())[2];
-                assertThat(responseDto3.getJurorNumber()).isEqualTo("323456789");
-                assertThat(responseDto3.getJurorVersion()).isNull();
-
-                assertThat(responseDto3.getNameDetails()).isNotNull();
-                assertThat(responseDto3.getPaymentDetails()).isNull();
-                assertThat(responseDto3.getAddress()).isNotNull();
-
-
-                NameDetails nameDetails3 = responseDto3.getNameDetails();
-                assertThat(nameDetails3.getTitle()).isEqualTo("Dr");
-                assertThat(nameDetails3.getFirstName()).isEqualTo("John");
-                assertThat(nameDetails3.getLastName()).isEqualTo("Joe");
-
-                JurorAddressDto jurorAddressDto3 = responseDto3.getAddress();
-                assertThat(jurorAddressDto3.getLineOne()).isEqualTo("Road 1");
-                assertThat(jurorAddressDto3.getLineTwo()).isEqualTo("Unknown");
-                assertThat(jurorAddressDto3.getLineThree()).isEqualTo("Person");
-                assertThat(jurorAddressDto3.getTown()).isEqualTo("Street");
-                assertThat(jurorAddressDto3.getCounty()).isEqualTo("Country123");
-                assertThat(jurorAddressDto3.getPostcode()).isEqualTo("BH2 4AN");
-            }
-
-            @Test
-            void typicalCourtGetActivePoolDetails() {
-                ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
-                    createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                        FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL));
-                //Count validated in triggerValid so no need to do here
-                FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
-                assertThat(responseDto.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
-                assertThat(responseDto.getJurorVersion()).isNull();
-
-                assertThat(responseDto.getNameDetails()).isNull();
-                assertThat(responseDto.getPaymentDetails()).isNull();
-                assertThat(responseDto.getAddress()).isNull();
-                assertThat(responseDto.getActivePool()).isNotNull();
-
-                JurorPoolDetailsDto jurorPoolDetailsDto = responseDto.getActivePool();
-                assertThat(jurorPoolDetailsDto.getPoolNumber()).isEqualTo("415220502");
-                assertThat(jurorPoolDetailsDto.getCourtName()).isEqualTo("CHESTER");
-                assertThat(jurorPoolDetailsDto.getStatus()).isEqualTo("Responded");
-            }
-        }
-
-        @DisplayName("Negative")
-        @Nested
-        class Negative {
-
-            private ResponseEntity<String> triggerInvalid(FilterableJurorDetailsRequestDto request) {
-                return triggerInvalid(List.of(request));
-            }
-
-            private ResponseEntity<String> triggerInvalid(
-                List<FilterableJurorDetailsRequestDto> dto) {
-                setAuthorization("COURT_USER", "415", UserType.COURT);
-                return restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, POST, URI.create(URL)),
-                    String.class);
-            }
-
-            @Test
-            void jurorNotFound() throws Exception {
-                FilterableJurorDetailsRequestDto request = createDto("023456789", null,
-                    FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
-                assertNotFound(triggerInvalid(request), URL,
-                    "Juror not found: JurorNumber: 023456789 Revision: null");
-            }
-
-            @Test
-            void jurorVersionNotFound() throws Exception {
-                FilterableJurorDetailsRequestDto request = createDto(TestConstants.VALID_JUROR_NUMBER, 9L,
-                    FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
-                assertNotFound(triggerInvalid(request), URL,
-                    "Juror not found: JurorNumber: " + TestConstants.VALID_JUROR_NUMBER + " Revision: 9");
-            }
-
-            @Test
-            void invalidPayload() throws Exception {
-                FilterableJurorDetailsRequestDto request = createDto("INVALID", 9L,
-                    FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
-
-                assertInvalidPathParam(triggerInvalid(request),
-                    "getJurorDetailsBulkFilterable.request[0].jurorNumber: must match \"^\\d{9}$\"");
-            }
-
-            @Test
-            @DisplayName("Empty request body")
-            void emptyRequest() throws Exception {
-                assertInvalidPathParam(triggerInvalid(List.of()),
-                    "getJurorDetailsBulkFilterable.request: size must be between 1 and 20");
-            }
-
-            @Test
-            @DisplayName("Request body with null")
-            void requestWithNullItem() throws Exception {
-                List<FilterableJurorDetailsRequestDto> request = new ArrayList<>();
-                request.add(null);
-                assertInvalidPathParam(triggerInvalid(request),
-                    "getJurorDetailsBulkFilterable.request[0].<list element>: must not be null");
-            }
-
-            @Test
-            @DisplayName("Request has too many items")
-            void tooManyItems() throws Exception {
-                List<FilterableJurorDetailsRequestDto> request = new ArrayList<>();
-                final int maxRequests = 20;
-                for (int index = 0;
-                     index < maxRequests + 1;
-                     index++) {
-                    request.add(FilterableJurorDetailsRequestDto.builder()
-                        .jurorNumber(String.valueOf(100_000_000 + index))
-                        .include(List.of(FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS))
-                        .build());
-                }
-
-                assertInvalidPathParam(triggerInvalid(request),
-                    "getJurorDetailsBulkFilterable.request: size must be between 1 and 20");
-            }
-        }
-
-    }
-
-    @Nested
-    @DisplayName("POST " + CreateJurorRecord.URL)
-    class CreateJurorRecord {
-
-        private static final String URL = BASE_URL + "/create-juror";
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorRecord.sql"})
-        void createJurorRecordExistingPoolHappyPath() throws Exception {
-            String poolNumber = "415220502";
-            JurorCreateRequestDto requestDto = createJurorRequestDto(poolNumber, "415");
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be CREATED")
-                .isEqualTo(HttpStatus.CREATED);
-
-
-            List<PoolRequest> pools = poolRequestRepository.findAll();
-
-            assertEquals(1, pools.size(), "Should only be one juror pool");
-            PoolRequest pool = pools.get(0);
-            assertEquals(LocalDateTime.of(2023, 11, 29, 9, 0, 0),
-                pool.getLastUpdate(), "Last updated should not change as pool should not be updated");
-
-            validatePendingJuror(requestDto, poolNumber, pool.getReturnDate());
-        }
-
-        @Test
-        @Sql(scripts = {"/db/mod/truncate.sql"},
-            statements = "insert into juror_mod.users(username, name, email, created_by, updated_by)"
-                + "values ('COURT_USER', 'COURT_USER', 'COURT_USER@hmcts.net','COURT_USER','COURT_USER')")
-        void createJurorRecordNewPoolHappyPath() throws Exception {
-            JurorCreateRequestDto requestDto = createJurorRequestDto(null, "415");
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be CREATED")
-                .isEqualTo(HttpStatus.CREATED);
-
-            List<PoolRequest> pools = poolRequestRepository.findAll();
-
-            assertEquals(1, pools.size(), "Should only be one pools (The newly created one)");
-            PoolRequest pool = pools.get(0);
-            validatePoolCreation(requestDto, pool, "415");
-            validatePendingJuror(requestDto, pool.getPoolNumber(), pool.getReturnDate());
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql"})
-        void negativeInvalidPayload() throws Exception {
-            JurorCreateRequestDto requestDto = createJurorRequestDto(null, "415");
-            requestDto.setFirstName(null);
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be BAD_REQUEST")
-                .isEqualTo(HttpStatus.BAD_REQUEST);
-            List<PendingJuror> pendingJurors = pendingJurorRepository.findAll();
-            assertEquals(0, pendingJurors.size(), "Should be no pending jurors");
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql"})
-        void negativeBureauUser() throws Exception {
-            JurorCreateRequestDto requestDto = createJurorRequestDto(null, "415");
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("415"),
-                UserType.BUREAU));
-
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be FORBIDDEN")
-                .isEqualTo(HttpStatus.FORBIDDEN);
-            List<PendingJuror> pendingJurors = pendingJurorRepository.findAll();
-            assertEquals(0, pendingJurors.size(), "Should be no pending jurors");
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorRecord.sql"})
-        void negativeOwnersDoNotMatch() throws Exception {
-            String poolNumber = "415220502";
-            JurorCreateRequestDto requestDto = createJurorRequestDto(poolNumber, "415");
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be FORBIDDEN")
-                .isEqualTo(HttpStatus.FORBIDDEN);
-
-            List<PendingJuror> pendingJurors = pendingJurorRepository.findAll();
-            assertEquals(0, pendingJurors.size(), "Should be no pending jurors");
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_updateAttendance.sql"})
-        void updateAttendanceHappyPathPlaceOnCall() throws Exception {
-            final String url = BASE_URL + "/update-attendance";
-
-            UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
-            dto.setOnCall(true);
-            dto.setJurorNumbers(Collections.singletonList("121212121"));
-            dto.setNextDate(null);
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), String.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be ACCEPTED")
-                .isEqualTo(HttpStatus.ACCEPTED);
-        }
-
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_updateAttendance.sql"})
-        void updateAttendanceHappyPathPlaceOnCallMultiple() throws Exception {
-            final String url = BASE_URL + "/update-attendance";
-
-            UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
-            dto.setOnCall(true);
-            dto.setJurorNumbers(Arrays.asList("121212121", "131313131"));
-            dto.setNextDate(null);
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                                                                     UserType.COURT));
-
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                                                          URI.create(url)), String.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be ACCEPTED")
-                .isEqualTo(HttpStatus.ACCEPTED);
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_updateAttendance.sql"})
-        void updateAttendanceHappyPathUpdateNextDate() throws Exception {
-            final String url = BASE_URL + "/update-attendance";
-
-            UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
-            dto.setOnCall(false);
-            dto.setJurorNumbers(Collections.singletonList("121212121"));
-            dto.setNextDate(LocalDate.now().plusWeeks(4));
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), String.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be ACCEPTED")
-                .isEqualTo(HttpStatus.ACCEPTED);
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_updateAttendance.sql"})
-        void updateAttendanceNoJurorPoolWithJurorNumber() throws Exception {
-            final String url = BASE_URL + "/update-attendance";
-
-            UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
-            dto.setOnCall(true);
-            dto.setJurorNumbers(Collections.singletonList("111111111"));
-            dto.setNextDate(null);
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), String.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be NOT_FOUND")
-                .isEqualTo(HttpStatus.NOT_FOUND);
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_updateAttendance.sql"})
-        void updateAttendanceAlreadyOnCall() throws Exception {
-            final String url = BASE_URL + "/update-attendance";
-
-            UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
-            dto.setOnCall(true);
-            dto.setJurorNumbers(Collections.singletonList("641600096"));
-            dto.setNextDate(null);
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), String.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be NOT_FOUND")
-                .isEqualTo(HttpStatus.BAD_REQUEST);
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_updateAttendance.sql"})
-        void updateAttendanceInvalidAccess() {
-            final String url = BASE_URL + "/update-attendance";
-            setAuthorization("BUREAU_USER", "400", UserType.BUREAU);
-
-            UpdateAttendanceRequestDto dto = new UpdateAttendanceRequestDto();
-            dto.setOnCall(true);
-            dto.setJurorNumbers(Collections.singletonList("641600096"));
-            dto.setNextDate(null);
-
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), String.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be NOT_FOUND")
-                .isEqualTo(HttpStatus.FORBIDDEN);
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editBankDetails.sql"})
-        void editJurorsBankDetails() throws Exception {
-            final String url = BASE_URL + "/update-bank-details";
-            String jurorNumber = "123456789";
-
-            RequestBankDetailsDto dto = new RequestBankDetailsDto();
-            dto.setJurorNumber(jurorNumber);
-            dto.setAccountNumber("12345678");
-            dto.setSortCode("112233");
-            dto.setAccountHolderName("Mr Fname Lname");
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be OK")
-                .isEqualTo(HttpStatus.OK);
-
-            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
-
-            List<JurorHistory> historyList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-
-            assertThat(juror.getSortCode()).isEqualTo(dto.getSortCode());
-            assertThat(juror.getBankAccountName()).isEqualTo(dto.getAccountHolderName());
-            assertThat(juror.getBankAccountNumber()).isEqualTo(dto.getAccountNumber());
-
-            assertThat(historyList.get(0).getJurorNumber()).isEqualTo(jurorNumber);
-            assertThat(historyList.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
-            assertThat(historyList.get(0).getOtherInformation()).isEqualTo("Bank Account Name Changed");
-
-            assertThat(historyList.get(1).getJurorNumber()).isEqualTo(jurorNumber);
-            assertThat(historyList.get(1).getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
-            assertThat(historyList.get(1).getOtherInformation()).isEqualTo("Bank Acct No Changed");
-
-            assertThat(historyList.get(2).getJurorNumber()).isEqualTo(jurorNumber);
-            assertThat(historyList.get(2).getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
-            assertThat(historyList.get(2).getOtherInformation()).isEqualTo("Bank Sort Code Changed");
-
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editBankDetails.sql"})
-        void editJurorsBankDetailsJurorNumberNotFound() throws Exception {
-            final String url = BASE_URL + "/update-bank-details";
-            String jurorNumber = "987654321";
-
-            RequestBankDetailsDto dto = new RequestBankDetailsDto();
-            dto.setJurorNumber(jurorNumber);
-            dto.setAccountNumber("12345678");
-            dto.setSortCode("112233");
-            dto.setAccountHolderName("Mr Fname Lname");
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be NOT_FOUND")
-                .isEqualTo(HttpStatus.NOT_FOUND);
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editBankDetails.sql"})
-        void editJurorsBankDetailsInvalidAccess() throws Exception {
-            final String url = BASE_URL + "/update-bank-details";
-            String jurorNumber = "987654321";
-
-            RequestBankDetailsDto dto = new RequestBankDetailsDto();
-            dto.setJurorNumber(jurorNumber);
-            dto.setAccountNumber("12345678");
-            dto.setSortCode("112233");
-            dto.setAccountHolderName("Mr Fname Lname");
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("415"),
-                UserType.BUREAU));
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be FORBIDDEN")
-                .isEqualTo(HttpStatus.FORBIDDEN);
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editBankDetails.sql"})
-        void editJurorsBankDetailsInvalidBankAccNo() throws Exception {
-            final String url = BASE_URL + "/update-bank-details";
-            String jurorNumber = "123456789";
-
-            RequestBankDetailsDto dto = new RequestBankDetailsDto();
-            dto.setJurorNumber(jurorNumber);
-            dto.setAccountNumber("123456789");
-            dto.setSortCode("112233");
-            dto.setAccountHolderName("Mr Fname Lname");
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be BAD_REQUEST")
-                .isEqualTo(HttpStatus.BAD_REQUEST);
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editBankDetails.sql"})
-        void editJurorsBankDetailsInvalidBankAccSortCode() throws Exception {
-            final String url = BASE_URL + "/update-bank-details";
-            String jurorNumber = "123456789";
-
-            RequestBankDetailsDto dto = new RequestBankDetailsDto();
-            dto.setJurorNumber(jurorNumber);
-            dto.setAccountNumber("12345678");
-            dto.setSortCode("11223344");
-            dto.setAccountHolderName("Mr Fname Lname");
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be BAD_REQUEST")
-                .isEqualTo(HttpStatus.BAD_REQUEST);
-        }
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editBankDetails.sql"})
-        void editJurorsBankDetailsInvalidBankAccName() throws Exception {
-            final String url = BASE_URL + "/update-bank-details";
-            String jurorNumber = "123456789";
-
-            RequestBankDetailsDto dto = new RequestBankDetailsDto();
-            dto.setJurorNumber(jurorNumber);
-            dto.setAccountNumber("12345678");
-            dto.setSortCode("112233");
-            dto.setAccountHolderName("Mr Fname Lname Too Long");
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be BAD_REQUEST")
-                .isEqualTo(HttpStatus.BAD_REQUEST);
-        }
-
-
-        private void validatePendingJuror(JurorCreateRequestDto dto, String poolNumber, LocalDate returnDate) {
-            List<PendingJuror> pendingJurors = pendingJurorRepository.findAll();
-            assertEquals(1, pendingJurors.size(), "Should be one pending jurors");
-            PendingJuror pendingJuror = pendingJurors.get(0);
-
-            assertNotNull(pendingJuror.getJurorNumber(), "Juror number must be set");
+            assertEquals(jurorNumber, pendingJuror.getJurorNumber(), "Juror number must match");
             assertEquals(poolNumber, pendingJuror.getPoolNumber(), "Pool number must match");
             assertEquals(dto.getTitle(), pendingJuror.getTitle(), "Title must match");
             assertEquals(dto.getFirstName(), pendingJuror.getFirstName(), "First name must match");
@@ -5216,286 +3240,45 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(expected.getPostcode(), pendingJuror.getPostcode(), "Address postcode must match");
             assertEquals(dto.getEmailAddress(), pendingJuror.getEmail(), "Email address must match");
             assertEquals(dto.getNotes(), pendingJuror.getNotes(), "Notes must match");
-            assertEquals('Q', pendingJuror.getStatus().getCode(), "Status must match");
-            assertEquals(returnDate, pendingJuror.getNextDate(), "Next day must match");
+            assertEquals(pendingJurorStatus, pendingJuror.getStatus(), "Status must match");
+            assertEquals(dto.getStartDate(), pendingJuror.getNextDate(), "Next day must match");
             assertTrue(pendingJuror.isResponded(), "Responded must be true");
         }
 
-        private void validatePoolCreation(JurorCreateRequestDto dto, PoolRequest poolRequest, String owner) {
-            final CourtLocation courtLocation = courtLocationRepository.findByLocCode(dto.getLocationCode()).get();
+        private void validateMatch(JurorCreateRequestDto dto, PoolRequest poolRequest, String poolNumber,
+                                   String owner, CourtLocation courtLocation, PoolType poolType) {
 
-            assertNotNull(poolRequest.getPoolNumber(), "Pool number must be created");
+            assertEquals(poolNumber, poolRequest.getPoolNumber(), "Pool number must match");
             assertEquals(owner, poolRequest.getOwner(), "Owner must match");
-            assertEquals(dto.getLocationCode(), poolRequest.getCourtLocation().getLocCode(),
-                "CourtLocation must match");
+            assertEquals(courtLocation, poolRequest.getCourtLocation(), "CourtLocation must match");
             assertEquals('N', poolRequest.getNewRequest(), "new Request must match");
             assertEquals(dto.getStartDate(), poolRequest.getReturnDate(), "Return date must match");
             assertNull(poolRequest.getNumberRequested(), "Number requested must be null");
 
             assertEquals(LocalDateTime.of(dto.getStartDate(),
-                    courtLocation.getCourtAttendTime()),
-                poolRequest.getAttendTime(), "Attend Time must match");
+                                          courtLocation.getCourtAttendTime()),
+                         poolRequest.getAttendTime(), "Attend Time must match");
 
-            assertEquals(dto.getPoolType(), poolRequest.getPoolType().getPoolType(),
-                "Pool type must match");
-
-            List<PoolHistory> poolHistories = poolHistoryRepository.findAll();
-            assertEquals(1, poolHistories.size(), "Should be one pool history");
-            PoolHistory poolHistory = poolHistories.get(0);
-            assertEquals(poolRequest.getPoolNumber(), poolHistory.getPoolNumber(), "Pool number must match");
-            assertEquals("COURT_USER", poolHistory.getUserId(), "User id must match");
-            assertEquals(HistoryCode.PREQ, poolHistory.getHistoryCode(), "History code must match");
-            assertEquals(String.format("Pool Request %s created for pending Juror",
-                    poolRequest.getPoolNumber()),
-                poolHistory.getOtherInformation(), "Info must match");
-        }
-
-        private JurorCreateRequestDto createJurorRequestDto(String poolNumber, String locationCode) {
-            JurorCreateRequestDto requestDto = new JurorCreateRequestDto();
-            requestDto.setTitle("Mr");
-            requestDto.setFirstName("John");
-            requestDto.setLastName("Smith");
-
-            JurorAddressDto addressDto = JurorAddressDto.builder()
-                .lineOne("1 High Street")
-                .lineTwo("Test")
-                .lineThree("Test")
-                .town("Test")
-                .county("Test")
-                .postcode("TE1 1ST")
-                .build();
-            requestDto.setAddress(addressDto);
-            requestDto.setDateOfBirth(LocalDate.of(1990, 1, 1));
-            requestDto.setPrimaryPhone("01234567890");
-            requestDto.setEmailAddress("test@mail.com");
-            requestDto.setLocationCode(locationCode);
-
-            if (poolNumber == null) {
-                requestDto.setStartDate(LocalDate.now().plusDays(10));
-                requestDto.setPoolType("CRO");
-            } else {
-                requestDto.setPoolNumber(poolNumber);
-            }
-
-            return requestDto;
-        }
-    }
-
-    @Nested
-    @DisplayName("Confirm Juror Identity")
-    class ConfirmJurorIdentity {
-
-        @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_InitConfirmJurorIdentity.sql"})
-        void confirmJurorIdentityHappyPath() throws Exception {
-            final String url = BASE_URL + "/confirm-identity";
-            String jurorNumber = "111111111";
-
-            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
-                .jurorNumber(jurorNumber)
-                .idCheckCode(IdCheckCodeEnum.C)
-                .build();
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be OK")
-                .isEqualTo(HttpStatus.OK);
-
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
-
-            assertThat(jurorPool.getIdChecked()).isEqualTo('C');
-
-        }
-
-        @Test
-        void confirmJurorIdentityBureauNoAccess() throws Exception {
-            final String url = BASE_URL + "/confirm-identity";
-            String jurorNumber = "111111111";
-
-            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
-                .jurorNumber(jurorNumber)
-                .idCheckCode(IdCheckCodeEnum.C)
-                .build();
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be FORBIDDEN")
-                .isEqualTo(HttpStatus.FORBIDDEN);
-        }
-
-    }
-
-
-    @Nested
-    @DisplayName("Mark as responded")
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_InitMarkAsResponded.sql"})
-    class MarkAsResponded {
-
-        @Test
-        void markJurorAsRespondedCourtHappyPath() throws Exception {
-
-            String jurorNumber = "111111111";
-            final String url = BASE_URL + "/mark-responded/" + jurorNumber;
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be OK")
-                .isEqualTo(HttpStatus.OK);
-            executeInTransaction(() -> {
-                JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
-
-                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
-                assertThat(jurorPool.getReturnDate()).isEqualTo(LocalDate.now().minusWeeks(2));
-            });
-
-        }
-
-        @Test
-        void markJurorAsRespondedBureauHappyPath() throws Exception {
-
-            String jurorNumber = "222222222";
-            final String url = BASE_URL + "/mark-responded/" + jurorNumber;
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
-                UserType.BUREAU));
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be OK")
-                .isEqualTo(HttpStatus.OK);
-            executeInTransaction(() -> {
-                JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
-
-                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
-                assertThat(jurorPool.getReturnDate()).isEqualTo(LocalDate.now().minusWeeks(2));
-            });
-        }
-
-        @Test
-        void markJurorAsRespondedBureauJurorNotFound() throws Exception {
-
-            String jurorNumber = "333333333";
-            final String url = BASE_URL + "/mark-responded/" + jurorNumber;
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
-                UserType.BUREAU));
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be NOT_FOUND")
-                .isEqualTo(HttpStatus.NOT_FOUND);
+            assertEquals(poolType, poolRequest.getPoolType(), "Pool type must match");
 
         }
 
     }
 
     @Nested
-    @DisplayName("Mark a juror as summoned")
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_InitMarkAsSummoned.sql"})
-    class MarkJurorSummoned {
-
-        @Test
-        void markJurorSummonedCourtHappyPath() throws Exception {
-
-            String jurorNumber = "111111111";
-            final String url = BASE_URL + "/mark-summoned/" + jurorNumber;
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                                                                     UserType.COURT));
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
-                                                          URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be OK")
-                .isEqualTo(HttpStatus.OK);
-            executeInTransaction(() -> {
-                JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
-
-                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.SUMMONED);
-                assertThat(jurorPool.getNextDate()).isEqualTo(LocalDate.now().minusWeeks(2));
-                assertThat(jurorPool.getReturnDate()).isEqualTo(LocalDate.now().minusWeeks(2));
-            });
-
-        }
-
-        @Test
-        void markJurorSummonedBureauHappyPath() throws Exception {
-
-            String jurorNumber = "222222222";
-            final String url = BASE_URL + "/mark-summoned/" + jurorNumber;
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
-                                                                     UserType.BUREAU));
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
-                                                          URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be OK")
-                .isEqualTo(HttpStatus.OK);
-            executeInTransaction(() -> {
-                JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumber(jurorNumber);
-
-                assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.SUMMONED);
-                assertThat(jurorPool.getNextDate()).isEqualTo(LocalDate.now().minusWeeks(2));
-                assertThat(jurorPool.getReturnDate()).isEqualTo(LocalDate.now().minusWeeks(2));
-            });
-        }
-
-        @Test
-        void markJurorSummonedBureauJurorNotFound() throws Exception {
-
-            String jurorNumber = "333333333";
-            final String url = BASE_URL + "/mark-responded/" + jurorNumber;
-
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
-                                                                     UserType.BUREAU));
-
-            ResponseEntity<Void> response =
-                restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
-                                                          URI.create(url)), Void.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be NOT_FOUND")
-                .isEqualTo(HttpStatus.NOT_FOUND);
-
-        }
-
-    }
-
-    @Nested
-    @DisplayName("POST " + CreateManualJurorRecord.URL)
+    @DisplayName("public void createJurorManual(JurorManualCreationRequestDto jurorCreationRequestDto)")
     class CreateManualJurorRecord {
 
-        private static final String URL = BASE_URL + "/create-juror-manual";
-
         @Test
-        @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createManualJurorRecord.sql"})
-        void createManualJurorRecordPoolHappyPath() throws Exception {
+        void positiveTypical() {
+
+            TestUtils.mockSecurityUtil(
+                BureauJwtPayload.builder()
+                    .owner("400")
+                    .build()
+            );
+
+
             String poolNumber = "415220502";
             final JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
                 .poolNumber(poolNumber)
@@ -5503,800 +3286,1069 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .title("Mr")
                 .firstName("John")
                 .lastName("Smith")
-                    .address(JurorAddressDto.builder()
-                            .lineOne("1 High Street")
-                            .lineTwo("Test")
-                            .lineThree("Test")
-                            .town("Chester")
-                            .county("Test")
-                            .postcode("CH1 2AB")
-                    .build())
+                .dateOfBirth(LocalDate.now().minusYears(20))
+                .address(JurorAddressDto.builder()
+                             .lineOne("1 High Street")
+                             .lineTwo("Test")
+                             .lineThree("Test")
+                             .town("Chester")
+                             .county("Test")
+                             .postcode("CH1 2AB")
+                             .build())
                 .primaryPhone("01234567890")
                 .emailAddress("test@test.com")
                 .notes("A manually created juror")
                 .build();
 
-            Set<Role> roles = new HashSet<>();
-            roles.add(Role.MANAGER);
-            Set<Permission> permissions = new HashSet<>();
-            permissions.add(Permission.CREATE_JUROR);
-            User user = User.builder()
-                .username("BUREAU_USER")
-                .roles(roles)
-                .permissions(permissions)
-                .build();
+            PoolRequest poolRequest = mock(PoolRequest.class);
+            when(poolRequest.getOwner()).thenReturn("400");
+            when(poolRequest.getPoolNumber()).thenReturn(poolNumber);
+            when(poolRequest.getReturnDate()).thenReturn(LocalDate.now().plusDays(10));
 
-            final BureauJwtPayload bureauJwtPayload = new BureauJwtPayload(user, UserType.BUREAU, "400",
-                Collections.singletonList(CourtLocation.builder()
-                    .locCode("400")
-                    .name("Bureau")
-                    .owner("400")
-                    .build()));
+            when(pendingJurorRepository.generatePendingJurorNumber(requestDto.getLocationCode()))
+                .thenReturn("041500022");
 
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(bureauJwtPayload));
+            when(poolRequestRepository.findById(requestDto.getPoolNumber())).thenReturn(Optional.of(poolRequest));
 
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.SUMMONED);
+            when(jurorStatusRepository.findById(IJurorStatus.SUMMONED)).thenReturn(Optional.of(jurorStatus));
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be CREATED")
-                .isEqualTo(HttpStatus.CREATED);
+            when(poolMemberSequenceService.getPoolMemberSequenceNumber(poolNumber)).thenReturn(22);
 
-            validateCreatedJuror(poolNumber);
+            when(poolMemberSequenceService.leftPadInteger(1)).thenReturn("0022");
+
+            Juror jurorSaved = new Juror();
+            jurorSaved.setJurorNumber("041500022");
+            when(jurorRepository.save(any())).thenReturn(jurorSaved);
+
+            jurorRecordService.createJurorManual(requestDto);
+
+            verify(poolRequestRepository, times(1))
+                .findById(requestDto.getPoolNumber());
+
+            ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+
+            verify(jurorRepository, times(1))
+                .save(jurorArgumentCaptor.capture());
+
+            Juror juror = jurorArgumentCaptor.getValue();
+            assertEquals("041500022", juror.getJurorNumber(), "Juror number must match");
+
+            assertEquals("Mr", juror.getTitle(), "Title must match");
+            assertEquals("John", juror.getFirstName(), "First name must match");
+            assertEquals("Smith", juror.getLastName(), "Last name must match");
+            assertEquals(LocalDate.now().minusYears(20), juror.getDateOfBirth(), "Date of birth must match");
+
+            //Validate address
+            JurorAddressDto expected = requestDto.getAddress();
+            assertEquals(expected.getLineOne(), juror.getAddressLine1(), "Address line one must match");
+            assertEquals(expected.getLineTwo(), juror.getAddressLine2(), "Address line two must match");
+            assertEquals(expected.getLineThree(), juror.getAddressLine3(), "Address line three must match");
+            assertEquals(expected.getTown(), juror.getAddressLine4(), "Address town must match");
+            assertEquals(expected.getCounty(), juror.getAddressLine5(), "Address county must match");
+            assertEquals(expected.getPostcode(), juror.getPostcode(), "Address postcode must match");
+            assertEquals(requestDto.getPrimaryPhone(), juror.getPhoneNumber(), "Primary phone must match");
+            assertEquals(requestDto.getEmailAddress(), juror.getEmail(), "Email address must match");
+            assertEquals(requestDto.getNotes(), juror.getNotes(), "Notes must match");
+
+            ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
+
+            verify(jurorPoolRepository, times(1))
+                .save(jurorPoolArgumentCaptor.capture());
+
+            JurorPool jurorPool = jurorPoolArgumentCaptor.getValue();
+            assertEquals("041500022", jurorPool.getJuror().getJurorNumber(), "Juror number must match");
+            assertEquals(poolNumber, jurorPool.getPoolNumber(), "Pool number must match");
+            assertEquals(IJurorStatus.SUMMONED, jurorPool.getStatus().getStatus(), "Status must match");
+            assertEquals(LocalDate.now().plusDays(10), jurorPool.getNextDate(), "Return date must match");
+
+            verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
+            verify(poolMemberSequenceService, times(1)).getPoolMemberSequenceNumber(poolNumber);
+            verify(poolMemberSequenceService, times(1)).leftPadInteger(22);
+
         }
-
-        private void validateCreatedJuror(String poolNumber) {
-            // expect this to be the first juror manually created for court 415
-            Juror juror = jurorRepository.findByJurorNumber("041500001");
-            assertThat(juror).isNotNull();
-            assertThat(juror.getTitle()).isEqualTo("Mr");
-            assertThat(juror.getFirstName()).isEqualTo("John");
-            assertThat(juror.getLastName()).isEqualTo("Smith");
-            assertThat(juror.getDateOfBirth()).isNull();
-            assertThat(juror.getPhoneNumber()).isEqualTo("01234567890");
-            assertThat(juror.getEmail()).isEqualTo("test@test.com");
-            assertThat(juror.getNotes()).isEqualTo("A manually created juror");
-
-            assertThat(juror.getAddressLine1()).isEqualTo("1 High Street");
-            assertThat(juror.getAddressLine2()).isEqualTo("Test");
-            assertThat(juror.getAddressLine3()).isEqualTo("Test");
-            assertThat(juror.getAddressLine4()).isEqualTo("Chester");
-            assertThat(juror.getAddressLine5()).isEqualTo("Test");
-            assertThat(juror.getPostcode()).isEqualTo("CH1 2AB");
-
-            JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(juror.getJurorNumber(),
-                poolNumber);
-            assertThat(jurorPool).isNotNull();
-            assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.SUMMONED);
-            assertThat(jurorPool.getOwner()).isEqualTo("400");
-            assertThat(jurorPool.getNextDate()).isEqualTo(LocalDate.now().plusDays(10));
-            assertThat(jurorPool.getPoolNumber()).isEqualTo(poolNumber);
-
-            List<JurorHistory> jurorHistory = jurorHistoryRepository
-                .findByJurorNumberOrderById(juror.getJurorNumber());
-            assertThat(jurorHistory).isNotEmpty();
-            assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
-
-            List<BulkPrintData> letters = bulkPrintDataRepository.findByJurorNo(juror.getJurorNumber());
-            assertThat(letters).isNotEmpty();
-            BulkPrintData bulkPrintData = letters.get(0);
-            assertThat(bulkPrintData.getJurorNo()).isEqualTo(juror.getJurorNumber());
-            assertThat(bulkPrintData.getFormAttribute().getFormType()).isEqualTo(FormCode.ENG_SUMMONS.getCode());
-        }
-
 
         @Test
-        void createManualJurorRecordBureauManagerNoCreateForbidden() throws Exception {
+        void invalidPool() {
+
             String poolNumber = "415220502";
-            JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
+            final JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
                 .poolNumber(poolNumber)
                 .locationCode("415")
                 .title("Mr")
                 .firstName("John")
                 .lastName("Smith")
+                .dateOfBirth(LocalDate.now().minusYears(20))
                 .address(JurorAddressDto.builder()
-                    .lineOne("1 High Street")
-                    .lineTwo("Test")
-                    .lineThree("Test")
-                    .town("Chester")
-                    .county("Test")
-                    .postcode("CH1 2AB")
-                    .build())
+                             .lineOne("1 High Street")
+                             .lineTwo("Test")
+                             .lineThree("Test")
+                             .town("Chester")
+                             .county("Test")
+                             .postcode("CH1 2AB")
+                             .build())
                 .primaryPhone("01234567890")
                 .emailAddress("test@test.com")
                 .notes("A manually created juror")
                 .build();
 
-            Set<Role> roles = new HashSet<>();
-            roles.add(Role.MANAGER);
-            Set<Permission> permissions = new HashSet<>();
-            User user = User.builder()
-                .username("BUREAU2")
-                .roles(roles)
-                .permissions(permissions)
-                .build();
+            when(poolRequestRepository.findById(requestDto.getPoolNumber())).thenReturn(Optional.empty());
 
-            BureauJwtPayload bureauJwtPayload = new BureauJwtPayload(user, UserType.BUREAU, "400",
-                Collections.singletonList(CourtLocation.builder()
-                    .locCode("400")
-                    .name("Bureau")
-                    .owner("400")
-                    .build()));
+            MojException.NotFound exception =
+                assertThrows(MojException.NotFound.class,
+                             () -> jurorRecordService.createJurorManual(requestDto),
+                             "Unable to find a valid Record in the database for 415220502.");
+            assertEquals("Unable to find a valid Record in the database for 415220502.",
+                         exception.getMessage(),
+                         "Exception message must match");
 
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(bureauJwtPayload));
+            verify(poolRequestRepository, times(1))
+                .findById(requestDto.getPoolNumber());
 
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be FORBIDDEN")
-                .isEqualTo(HttpStatus.FORBIDDEN);
-
+            verifyNoMoreInteractions(poolRequestRepository);
+            verifyNoInteractions(jurorRepository, jurorStatusRepository, poolMemberSequenceService,
+                                 jurorPoolRepository);
         }
 
         @Test
-        void createManualJurorRecordCourtUserForbidden() throws Exception {
+        void errorGeneratingJurorNumber() {
+
             String poolNumber = "415220502";
-            JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
+            final JurorManualCreationRequestDto requestDto = JurorManualCreationRequestDto.builder()
                 .poolNumber(poolNumber)
                 .locationCode("415")
                 .title("Mr")
                 .firstName("John")
                 .lastName("Smith")
+                .dateOfBirth(LocalDate.now().minusYears(20))
                 .address(JurorAddressDto.builder()
-                    .lineOne("1 High Street")
-                    .lineTwo("Test")
-                    .lineThree("Test")
-                    .town("Chester")
-                    .county("Test")
-                    .postcode("CH1 2AB")
-                    .build())
+                             .lineOne("1 High Street")
+                             .lineTwo("Test")
+                             .lineThree("Test")
+                             .town("Chester")
+                             .county("Test")
+                             .postcode("CH1 2AB")
+                             .build())
                 .primaryPhone("01234567890")
                 .emailAddress("test@test.com")
                 .notes("A manually created juror")
                 .build();
 
-            httpHeaders.set(HttpHeaders.AUTHORIZATION,  initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+            PoolRequest poolRequest = mock(PoolRequest.class);
+            when(poolRequest.getOwner()).thenReturn("400");
+            when(poolRequest.getPoolNumber()).thenReturn(poolNumber);
+            when(poolRequest.getReturnDate()).thenReturn(LocalDate.now().plusDays(10));
 
-            ResponseEntity<?> response =
-                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
+            when(pendingJurorRepository.generatePendingJurorNumber(requestDto.getLocationCode()))
+                .thenReturn("null");
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be FORBIDDEN")
-                .isEqualTo(HttpStatus.FORBIDDEN);
+            when(poolRequestRepository.findById(requestDto.getPoolNumber())).thenReturn(Optional.of(poolRequest));
 
+            MojException.InternalServerError exception =
+                assertThrows(MojException.InternalServerError.class,
+                             () -> jurorRecordService.createJurorManual(requestDto),
+                             "Error generating new Juror Number");
+            assertEquals("Error generating new Juror Number",
+                         exception.getMessage(),
+                         "Exception message must match");
+
+            verify(poolRequestRepository, times(1))
+                .findById(requestDto.getPoolNumber());
+            verify(pendingJurorRepository, times(1))
+                .generatePendingJurorNumber(requestDto.getLocationCode());
+
+            verifyNoMoreInteractions(poolRequestRepository, poolMemberSequenceService);
+            verifyNoInteractions(jurorRepository, jurorStatusRepository, jurorPoolRepository);
         }
-
     }
 
     @Nested
-    @DisplayName("Search for Juror records")
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_searchForJurorRecords.sql"})
-    class SearchForJurorRecords {
+    @DisplayName("public JurorAttendanceDetailsResponseDto getJurorAttendanceDetails(String jurorNumber,"
+        + " String poolNumber, BureauJWTPayload payload) ")
+    class JurorRecordAttendanceTab {
 
-        private static final String URL = BASE_URL + "/search";
+        @ParameterizedTest
+        @ValueSource(strings = {"416", "400"})
+        void positiveJurorAttendanceTab(String owner) {
+            TestUtils.mockCourtUser("415");
 
-        @Test
-        void searchForJurorRecordsBureauHappyPath() throws Exception {
-            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
-                .jurorNumber("641600091")
-                .pageNumber(1)
-                .pageLimit(10)
-                .sortMethod(SortMethod.ASC)
-                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
-                .build();
+            //test scenario where juror has attended
+            final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
 
-            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                        URI.create(URL)),
-                    new ParameterizedTypeReference<>() {
-                    });
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request (GET With Body) to be successful")
-                .isEqualTo(HttpStatus.OK);
+            List<Appearance> appearances = new ArrayList<>();
+            Appearance appearance =
+                Appearance.builder()
+                    .attendanceDate(LocalDate.now())
+                    .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                    .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                    .timeIn(LocalTime.of(9, 0))
+                    .timeOut(LocalTime.of(17, 0))
+                    .attendanceType(AttendanceType.FULL_DAY)
+                    .travelTime(LocalTime.of(1, 30))
+                    .appearanceStage(AppearanceStage.EXPENSE_ENTERED)
+                    .build();
+            appearances.add(appearance);
 
-            assertThat(response.getBody()).isNotNull();
-            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
+            doReturn(appearances).when(appearanceRepository).findAllByCourtLocationLocCodeAndJurorNumber(
+                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER);
 
-            validateSearchResult(responseBody);
+            JurorAttendanceDetailsResponseDto jurorAttendanceDetailsResponseDto =
+                jurorRecordService.getJurorAttendanceDetails(TestConstants.VALID_COURT_LOCATION,
+                                                             TestConstants.VALID_JUROR_NUMBER, buildPayload(owner));
+
+            assertEquals(1, jurorAttendanceDetailsResponseDto.getData().size(),
+                         "One attendance record should be returned");
+
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+
+            verify(appearanceRepository, times(1))
+                .findAllByCourtLocationLocCodeAndJurorNumber(TestConstants.VALID_COURT_LOCATION,
+                                                             TestConstants.VALID_JUROR_NUMBER);
+
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"416", "100"})
+        void negativeWrongOwner(String userOwner) {
+            TestUtils.mockCourtUser("415");
+            final String owner = "415";
+            final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
+
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+
+            MojException.Forbidden exception =
+                assertThrows(MojException.Forbidden.class,
+                             () -> jurorRecordService.getJurorAttendanceDetails(TestConstants.VALID_COURT_LOCATION,
+                                                                                TestConstants.VALID_JUROR_NUMBER, buildPayload(userOwner)), // a different owner to expected
+                             "Current user does not have sufficient permission to view the juror pool record(s)");
+            assertEquals("Current user does not have sufficient permission to view the juror pool record(s)",
+                         exception.getMessage(),
+                         "Exception message must match");
+
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verifyNoInteractions(appearanceRepository);
 
         }
 
         @Test
-        void searchForJurorRecordsCourtHappyPath() throws Exception {
+        void negativeJurorAttendanceTabNoRecords() {
+            TestUtils.mockCourtUser("415");
+            String owner = "415";
+            final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
 
-            String bureauJwt = createBureauJwt("Court_User", "416", "416");
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
-                .jurorNumber("641600091")
-                .pageNumber(1)
-                .pageLimit(10)
-                .sortMethod(SortMethod.ASC)
-                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
-                .build();
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(anyString());
 
-            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                        URI.create(URL)),
-                    new ParameterizedTypeReference<>() {
-                    });
+            List<Appearance> appearances = new ArrayList<>();
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request (GET With Body) to be successful")
-                .isEqualTo(HttpStatus.OK);
+            doReturn(appearances).when(appearanceRepository)
+                .findAllByCourtLocationLocCodeAndJurorNumber(
+                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER);
 
-            assertThat(response.getBody()).isNotNull();
-            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
+            JurorAttendanceDetailsResponseDto jurorAttendanceDetailsResponseDto =
+                jurorRecordService.getJurorAttendanceDetails(TestConstants.VALID_COURT_LOCATION,
+                                                             TestConstants.VALID_JUROR_NUMBER, buildPayload(owner));
 
-            validateSearchResult(responseBody);
+            assertEquals(0, jurorAttendanceDetailsResponseDto.getData().size(),
+                         "No attendance records should be returned");
 
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(anyString());
+            verify(appearanceRepository, times(1))
+                .findAllByCourtLocationLocCodeAndJurorNumber(TestConstants.VALID_COURT_LOCATION,
+                                                             TestConstants.VALID_JUROR_NUMBER);
         }
 
         @Test
-        void searchForJurorRecordsCourtUserBureauOwnedJuror() throws Exception {
+        void jurorAttendanceDetailsExcludeCheckInAndCheckOutFromFilter() {
+            String owner = "415";
+            TestUtils.mockCourtUser(owner);
+            final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
 
-            String bureauJwt = createBureauJwt("Court_User", "416", "416");
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
-                .jurorNumber("641500101")
-                .pageNumber(1)
-                .pageLimit(10)
-                .sortMethod(SortMethod.ASC)
-                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
-                .build();
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
 
-            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+            List<Appearance> appearances = new ArrayList<>();
+            Appearance appearance1 = buildAppearance();
+            appearances.add(appearance1);
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request (GET With Body) to be NO CONTENT")
-                .isEqualTo(HttpStatus.NO_CONTENT);
+            Appearance appearance2 = SerializationUtils.clone(appearance1);
+            appearance2.setAppearanceStage(AppearanceStage.CHECKED_IN);
+            appearances.add(appearance2);
 
+            Appearance appearance3 = SerializationUtils.clone(appearance1);
+            appearance3.setAppearanceStage(AppearanceStage.CHECKED_OUT);
+            appearances.add(appearance3);
+
+            doReturn(appearances).when(appearanceRepository).findAllByCourtLocationLocCodeAndJurorNumber(
+                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER);
+
+            JurorAttendanceDetailsResponseDto jurorAttendanceDetailsResponseDto =
+                jurorRecordService.getJurorAttendanceDetails(TestConstants.VALID_COURT_LOCATION,
+                                                             TestConstants.VALID_JUROR_NUMBER, buildPayload(owner));
+
+            assertEquals(1, jurorAttendanceDetailsResponseDto.getData().size(),
+                         "One attendance record should be returned");
+
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+
+            verify(appearanceRepository, times(1))
+                .findAllByCourtLocationLocCodeAndJurorNumber(TestConstants.VALID_COURT_LOCATION,
+                                                             TestConstants.VALID_JUROR_NUMBER);
         }
 
         @Test
-        void searchForJurorRecordsBureauByPool() throws Exception {
-            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
-                .poolNumber("415220901")
-                .pageNumber(2)
-                .pageLimit(6)
-                .sortMethod(SortMethod.ASC)
-                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
+        void jurorAttendanceDetailsAppearanceStageIsNull() {
+            String owner = "415";
+            TestUtils.mockCourtUser(owner);
+
+            final JurorPool jurorPool = createValidJurorPool(TestConstants.VALID_POOL_NUMBER, owner);
+
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+
+            List<Appearance> appearances = new ArrayList<>();
+            Appearance appearance1 = buildAppearance();
+            appearances.add(appearance1);
+
+            Appearance appearance2 = SerializationUtils.clone(appearance1);
+            appearance2.setAppearanceStage(null);
+            appearance2.setAttendanceType(AttendanceType.ABSENT);
+            appearances.add(appearance2);
+
+            doReturn(appearances).when(appearanceRepository).findAllByCourtLocationLocCodeAndJurorNumber(
+                TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER);
+
+            JurorAttendanceDetailsResponseDto jurorAttendanceDetailsResponseDto =
+                jurorRecordService.getJurorAttendanceDetails(TestConstants.VALID_COURT_LOCATION,
+                                                             TestConstants.VALID_JUROR_NUMBER, buildPayload(owner));
+
+            assertEquals(2, jurorAttendanceDetailsResponseDto.getData().size(),
+                         "Two attendance record should be returned");
+
+            verify(jurorPoolService, times(1))
+                .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);
+            verify(appearanceRepository, times(1))
+                .findAllByCourtLocationLocCodeAndJurorNumber(
+                    TestConstants.VALID_COURT_LOCATION, TestConstants.VALID_JUROR_NUMBER);
+        }
+
+        private Appearance buildAppearance() {
+            return Appearance.builder()
+                .attendanceDate(LocalDate.now())
+                .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                .poolNumber(TestConstants.VALID_POOL_NUMBER)
+                .timeIn(LocalTime.of(9, 0))
+                .timeOut(LocalTime.of(17, 0))
+                .attendanceType(AttendanceType.FULL_DAY)
+                .travelTime(LocalTime.of(1, 30))
+                .appearanceStage(AppearanceStage.EXPENSE_ENTERED)
                 .build();
-
-            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request (GET With Body) to be successful")
-                .isEqualTo(HttpStatus.OK);
-
-            assertThat(response.getBody()).isNotNull();
-            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
-
-            validateSearchResultByPool(responseBody);
-
         }
-
-
-        @Test
-        void searchForJurorRecordsCourtSorted() throws Exception {
-
-            String bureauJwt = createBureauJwt("Court_User", "415", "415");
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
-                .poolNumber("415220901")
-                .pageNumber(1)
-                .pageLimit(10)
-                .sortMethod(SortMethod.DESC)
-                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
-                .build();
-
-            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request (GET With Body) to be successful")
-                .isEqualTo(HttpStatus.OK);
-
-            assertThat(response.getBody()).isNotNull();
-            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
-
-            validateSearchResultSortedDesc(responseBody);
-
-        }
-
-        @Test
-        void searchForJurorRecordsByNameFNameInitialNotSupplied() throws Exception {
-
-            String bureauJwt = createBureauJwt("Court_User", "417", "417");
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
-                .jurorName("fnametwo lnametwo")
-                .pageNumber(1)
-                .pageLimit(10)
-                .sortMethod(SortMethod.DESC)
-                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
-                .build();
-
-            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request (GET With Body) to be successful")
-                .isEqualTo(HttpStatus.OK);
-
-            assertThat(response.getBody()).isNotNull();
-            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
-
-            List<FilterJurorRecord> data = responseBody.getData();
-            assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
-            FilterJurorRecord juror = data.get(0);
-            assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
-                .isEqualTo("641700120");
-            assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
-                .isEqualTo("Fnametwo I Lnametwo");
-
-        }
-
-        @Test
-        void searchForJurorRecordsByNameLastnameFirstPartOnly() throws Exception {
-
-            String bureauJwt = createBureauJwt("Court_User", "417", "417");
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
-                .jurorName("fnamethree lnamethree")
-                .pageNumber(1)
-                .pageLimit(10)
-                .sortMethod(SortMethod.DESC)
-                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
-                .build();
-
-            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request (GET With Body) to be successful")
-                .isEqualTo(HttpStatus.OK);
-
-            assertThat(response.getBody()).isNotNull();
-            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
-
-            List<FilterJurorRecord> data = responseBody.getData();
-            assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
-            FilterJurorRecord juror = data.get(0);
-            assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
-                .isEqualTo("641700123");
-            assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
-                .isEqualTo("Fnamethree Lnamethree I");
-
-        }
-
-        @Test
-        void searchForJurorRecordsByNameLastnameTwoParts() throws Exception {
-
-            String bureauJwt = createBureauJwt("Court_User", "417", "417");
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
-                .jurorName("fnamethree lnamethree I")
-                .pageNumber(1)
-                .pageLimit(10)
-                .sortMethod(SortMethod.DESC)
-                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
-                .build();
-
-            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request (GET With Body) to be successful")
-                .isEqualTo(HttpStatus.OK);
-
-            assertThat(response.getBody()).isNotNull();
-            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
-
-            List<FilterJurorRecord> data = responseBody.getData();
-            assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
-            FilterJurorRecord juror = data.get(0);
-            assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
-                .isEqualTo("641700123");
-            assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
-                .isEqualTo("Fnamethree Lnamethree I");
-
-        }
-
-        @Test
-        void searchForJurorRecordsByName() throws Exception {
-
-            String bureauJwt = createBureauJwt("Court_User", "415", "415");
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
-                .jurorName("LNAMENINEFIVE")
-                .pageNumber(1)
-                .pageLimit(10)
-                .sortMethod(SortMethod.DESC)
-                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
-                .build();
-
-            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request (GET With Body) to be successful")
-                .isEqualTo(HttpStatus.OK);
-
-            assertThat(response.getBody()).isNotNull();
-            PaginatedList<FilterJurorRecord> responseBody = response.getBody();
-
-            validateSearchResultByName(responseBody);
-
-        }
-
-        @Test
-        void searchForJurorRecordsCourtNoResult() throws Exception {
-
-            String bureauJwt = createBureauJwt("Court_User", "415", "415");
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-            JurorRecordFilterRequestQuery request = JurorRecordFilterRequestQuery.builder()
-                .jurorNumber("641600091")
-                .pageNumber(1)
-                .pageLimit(10)
-                .sortMethod(SortMethod.ASC)
-                .sortField(JurorRecordFilterRequestQuery.SortField.JUROR_NUMBER)
-                .build();
-
-            ResponseEntity<PaginatedList<FilterJurorRecord>> response =
-                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
-
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request (GET With Body) to be NO CONTENT")
-                .isEqualTo(HttpStatus.NO_CONTENT);
-
-        }
-
-        private void validateSearchResult(PaginatedList<FilterJurorRecord> responseBody) {
-            assertThat(responseBody.getTotalItems()).as("Expect the response body to contain a total count value of 1")
-                .isEqualTo(1);
-            List<FilterJurorRecord> data = responseBody.getData();
-            assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
-            FilterJurorRecord juror = data.get(0);
-            assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
-                .isEqualTo("641600091");
-            assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
-                .isEqualTo("FNAMEFIVEFOURZERO LNAMEFIVEFOURZERO");
-            assertThat(juror.getPostcode()).as("Expect the response body to contain the correct postcode")
-                .isEqualTo("CH1 2AN");
-            assertThat(juror.getPoolNumber()).as("Expect the response body to contain the correct pool number")
-                .isEqualTo("416220902");
-            assertThat(juror.getCourtName()).as("Expect the response body to contain the correct court name")
-                .isEqualTo("GUILDFORD SITTING AT CHICHESTER");
-            assertThat(juror.getStatus()).as("Expect the response body to contain the correct status")
-                .isEqualTo("Responded");
-        }
-
-        private void validateSearchResultByPool(PaginatedList<FilterJurorRecord> responseBody) {
-            assertThat(responseBody.getTotalItems()).as("Expect the response body to contain a total count "
-                + "value of 10").isEqualTo(10);
-            assertThat(responseBody.getTotalPages()).as("Expect the response body to contain a total page value of 2")
-                .isEqualTo(2);
-            assertThat(responseBody.getCurrentPage()).as("Expect the response body to contain a current page value of"
-                    + " 2")
-                .isEqualTo(2);
-            List<FilterJurorRecord> data = responseBody.getData();
-            assertThat(data.size()).as("Expect the response body to contain all 4 data items").isEqualTo(4);
-            // validate the first juror in the response
-            FilterJurorRecord juror = data.get(0);
-            assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
-                .isEqualTo("641500097");
-            assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
-                .isEqualTo("Fnamenineseven Lnamenineseven");
-            assertThat(juror.getPostcode()).as("Expect the response body to contain the correct postcode")
-                .isEqualTo("CH1 2AN");
-            assertThat(juror.getPoolNumber()).as("Expect the response body to contain the correct pool number")
-                .isEqualTo("415220901");
-            assertThat(juror.getCourtName()).as("Expect the response body to contain the correct court name")
-                .isEqualTo("CHESTER");
-            assertThat(juror.getStatus()).as("Expect the response body to contain the correct status")
-                .isEqualTo("Responded");
-        }
-
-        private void validateSearchResultSortedDesc(PaginatedList<FilterJurorRecord> responseBody) {
-            assertThat(responseBody.getTotalItems()).as("Expect the response body to contain a total count value "
-                + "of 10").isEqualTo(10);
-            assertThat(responseBody.getTotalPages()).as("Expect the response body to contain a total page value of 1")
-                .isEqualTo(1);
-            assertThat(responseBody.getCurrentPage()).as("Expect the response body to contain a current page value of"
-                    + " 1")
-                .isEqualTo(1);
-            List<FilterJurorRecord> data = responseBody.getData();
-            assertThat(data.size()).as("Expect the response body to contain all 10 data items").isEqualTo(10);
-            // validate the first juror in the response
-            FilterJurorRecord juror = data.get(0);
-            assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
-                .isEqualTo("641500100");
-            assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
-                .isEqualTo("Fnamenineten Lnamenineten");
-            assertThat(juror.getPostcode()).as("Expect the response body to contain the correct postcode")
-                .isEqualTo("CH1 2AN");
-            assertThat(juror.getPoolNumber()).as("Expect the response body to contain the correct pool number")
-                .isEqualTo("415220901");
-            assertThat(juror.getCourtName()).as("Expect the response body to contain the correct court name")
-                .isEqualTo("CHESTER");
-            assertThat(juror.getStatus()).as("Expect the response body to contain the correct status")
-                .isEqualTo("Responded");
-        }
-
-        private void validateSearchResultByName(PaginatedList<FilterJurorRecord> responseBody) {
-            assertThat(responseBody.getTotalItems()).as("Expect the response body to contain a total count value of 1")
-                .isEqualTo(1);
-            assertThat(responseBody.getTotalPages()).as("Expect the response body to contain a total page value of 1")
-                .isEqualTo(1);
-            assertThat(responseBody.getCurrentPage()).as("Expect the response body to contain a current page value of"
-                    + " 1")
-                .isEqualTo(1);
-            List<FilterJurorRecord> data = responseBody.getData();
-            assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
-            FilterJurorRecord juror = data.get(0);
-            assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
-                .isEqualTo("641500095");
-            assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
-                .isEqualTo("Fnameninefive Lnameninefive");
-            assertThat(juror.getPostcode()).as("Expect the response body to contain the correct postcode")
-                .isEqualTo("CH1 2AN");
-            assertThat(juror.getPoolNumber()).as("Expect the response body to contain the correct pool number")
-                .isEqualTo("415220901");
-            assertThat(juror.getCourtName()).as("Expect the response body to contain the correct court name")
-                .isEqualTo("CHESTER");
-            assertThat(juror.getStatus()).as("Expect the response body to contain the correct status")
-                .isEqualTo("Responded");
-        }
-
     }
 
     @Nested
-    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_searchForJurorRecords.sql"})
-    class GetJurorSimpleDetails {
+    @DisplayName("public JurorPaymentsResponseDto getJurorPayments(String jurorNumber)")
+    class GetJurorPayments {
+        Appearance generateData(Integer value) {
+            Appearance appearance = spy(new Appearance());
+
+            appearance.setAttendanceDate(LocalDate.now().minusDays(value + 3));
+            appearance.setDraftExpense(false);
+            if (value == 0) {
+                appearance.setAttendanceType(AttendanceType.NON_ATTENDANCE);
+            } else {
+                appearance.setAttendanceType(AttendanceType.FULL_DAY);
+                appearance.setFinancialAudit(Long.valueOf(value));
+
+                doReturn(BigDecimal.valueOf(value)).when(appearance)
+                    .getTotalTravelDue();
+                doReturn(BigDecimal.valueOf(value)).when(appearance)
+                    .getTotalFinancialLossDue();
+                appearance.setSubsistenceDue(BigDecimal.valueOf(value));
+                appearance.setSmartCardAmountDue(BigDecimal.valueOf(value));
+                doReturn(BigDecimal.valueOf(2 * value)).when(appearance)
+                    .getTotalDue();
+
+                if (value < 3) {
+                    doReturn(Long.valueOf(value)).when(appearance)
+                        .getFinancialAudit();
+                    doReturn(BigDecimal.valueOf(2 * value)).when(appearance)
+                        .getTotalPaid();
+
+                    doReturn(Optional.of(
+                        FinancialAuditDetails.builder()
+                            .id(Long.valueOf(value))
+                            .createdOn(LocalDateTime.now().minusDays(value))
+                            .build()
+                    )).when(financialAuditService)
+                        .getLastFinancialAuditDetailsFromAppearanceAndGenericType(appearance,
+                                                                                  FinancialAuditDetails.Type.GenericType.APPROVED);
+                }
+            }
+            return appearance;
+        }
 
         @Test
-        void getJurorSimpleDetailsHappy() {
+        void positiveGetPayments() {
+            String jurorNumber = "641500094";
+            JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
+            TestUtils.mockCourtUser("415");
 
-            String jurorNumber = "641500101";
-            String url = BASE_URL + "/simple-details";
+            doReturn(jurorPool.getJuror()).when(jurorRepository)
+                .findByJurorNumber(any());
+            doReturn(List.of(jurorPool)).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
 
-            JurorSimpleDetailsRequestDto requestDto = new JurorSimpleDetailsRequestDto();
-            requestDto.setJurorNumbers(Collections.singletonList(jurorNumber));
-            requestDto.setLocationCode("767");
+            doReturn(List.of(generateData(0), generateData(1), generateData(2), generateData(3)))
+                .when(appearanceRepository).findAllByCourtLocationLocCodeAndJurorNumberAndAppearanceStageIn(
+                    "415", jurorNumber, AppearanceStage.getConfirmedAppearanceStages());
 
-            ResponseEntity<JurorSimpleDetailsResponseDto> response =
-                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(url)), JurorSimpleDetailsResponseDto.class);
+            JurorPaymentsResponseDto payments = jurorRecordService.getJurorPayments(jurorNumber);
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be OK")
-                .isEqualTo(HttpStatus.OK);
+            assertEquals(3, payments.getAttendances(), "Incorrect number of attendances");
+            assertEquals(1, payments.getNonAttendances(), "Incorrect number of non-attendances");
+            assertEquals(BigDecimal.valueOf(6), payments.getFinancialLoss(),
+                         "Incorrect financial loss total");
+            assertEquals(BigDecimal.valueOf(6), payments.getTravel(), "Incorrect travel total");
+            assertEquals(new BigDecimal("6.00"), payments.getSubsistence(), "Incorrect subsistence total");
+            assertEquals(BigDecimal.valueOf(6), payments.getTotalPaid(), "Incorrect total paid");
+            assertEquals(4, payments.getData().size(), "Incorrect number of attendance entries");
+        }
+    }
 
-            JurorSimpleDetailsResponseDto responseBody = response.getBody();
-            assertThat(responseBody).isNotNull();
-            assertThat(responseBody.getJurorDetails()).hasSize(1);
-            JurorSimpleDetailsResponseDto.SimpleDetails jurorDetails = responseBody.getJurorDetails().get(0);
-            assertThat(jurorDetails.getJurorNumber()).isEqualTo(jurorNumber);
-            assertThat(jurorDetails.getFirstName()).isEqualTo("Fnamenineten");
-            assertThat(jurorDetails.getLastName()).isEqualTo("Lnamenineten");
-            assertThat(jurorDetails.getStatus()).isEqualTo(JurorStatusEnum.RESPONDED);
+    @Nested
+    @DisplayName("public JurorHistoryResponseDto getJurorHistory(String jurorNumber)")
+    class GetJurorHistory {
+        String poolNumber = "1234567";
+
+        JurorHistory generateData(String item, Integer dateOffset) {
+            JurorHistory historyItem = mock(JurorHistory.class);
+            HistoryCodeMod code = mock(HistoryCodeMod.class);
+
+            doReturn(item).when(code).getDescription();
+
+            doReturn(code).when(historyItem).getHistoryCode();
+            doReturn(LocalDateTime.now().minusDays(dateOffset)).when(historyItem).getDateCreated();
+            doReturn(LocalDate.now().minusDays(dateOffset)).when(historyItem).getOtherInformationDate();
+            doReturn(poolNumber).when(historyItem).getPoolNumber();
+            doReturn(item).when(historyItem).getOtherInformation();
+            doReturn(String.valueOf(item.charAt(0))).when(historyItem).getOtherInformationRef();
+            doReturn("USER").when(historyItem).getCreatedBy();
+
+            return historyItem;
+        }
+
+        @Test
+        void positiveGetHistory() {
+            String jurorNumber = "641500094";
+            JurorPool jurorPool = createValidJurorPool(jurorNumber, COURT_OWNER);
+            TestUtils.mockSecurityUtil(
+                BureauJwtPayload.builder()
+                    .owner("415")
+                    .build()
+            );
+
+            doReturn(List.of(jurorPool)).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActive(any(), anyBoolean());
+
+            doReturn(List.of(generateData("First", 1), generateData("Second", 2)))
+                .when(jurorHistoryRepository).findByJurorNumberOrderById(jurorNumber);
+
+            JurorHistoryResponseDto history = jurorRecordService.getJurorHistory(jurorNumber);
+
+            assertEquals(2, history.data.size(), "Incorrect history length");
+        }
+    }
+
+    @Nested
+    @DisplayName("public void processPendingJuror(ProcessPendingJurorRequestDto processPendingJurorRequestDto)")
+    class ProcessJurorRecord {
+
+        @Test
+        void positiveApprovePendingJuror() {
+
+            TestUtils.mockCourtUser("415", "415", Set.of(Role.SENIOR_JUROR_OFFICER));
+
+            ProcessPendingJurorRequestDto processPendingJurorRequestDto =
+                getProcessPendingJurorRequestDto(ApprovalDecision.APPROVE);
+
+            PendingJurorStatus pendingJurorStatus =
+                PendingJurorStatus.builder().code(PendingJurorStatusEnum.AUTHORISED.getCode()).build();
+
+            when(pendingJurorStatusRepository.findById(PendingJurorStatusEnum.AUTHORISED.getCode()))
+                .thenReturn(Optional.of(pendingJurorStatus));
+
+            PendingJuror pendingJuror = getPendingJuror();
+            when(pendingJurorRepository.findById(processPendingJurorRequestDto.getJurorNumber()))
+                .thenReturn(Optional.of(pendingJuror));
+
+            PoolRequest poolRequest = getPoolRequest();
+            when(poolRequestRepository.findById("123456789"))
+                .thenReturn(Optional.of(poolRequest));
+
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+            when(jurorStatusRepository.findById(IJurorStatus.RESPONDED))
+                .thenReturn(Optional.of(jurorStatus));
+
+            jurorRecordService.processPendingJuror(processPendingJurorRequestDto);
+
+            verify(pendingJurorRepository, times(1)).findById(any(String.class));
+            verify(pendingJurorStatusRepository, times(1)).findById(any(Character.class));
+            verify(poolRequestRepository, times(1)).findById(any(String.class));
+            verify(jurorRepository, times(1)).save(any(Juror.class));
+            verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
+            verify(pendingJurorRepository, times(1)).save(any(PendingJuror.class));
+        }
+
+        @Test
+        void positiveRejectPendingJuror() {
+            TestUtils.mockCourtUser("415", "415", Set.of(Role.SENIOR_JUROR_OFFICER));
+
+            ProcessPendingJurorRequestDto processPendingJurorRequestDto =
+                getProcessPendingJurorRequestDto(ApprovalDecision.REJECT);
+            PendingJuror pendingJuror = getPendingJuror();
+            PendingJurorStatus pendingJurorStatus =
+                PendingJurorStatus.builder().code(PendingJurorStatusEnum.QUEUED.getCode()).build();
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+            when(pendingJurorStatusRepository.findById(PendingJurorStatusEnum.REJECTED.getCode()))
+                .thenReturn(Optional.of(pendingJurorStatus));
+
+            when(pendingJurorRepository.findById(processPendingJurorRequestDto.getJurorNumber()))
+                .thenReturn(Optional.of(pendingJuror));
+
+            jurorRecordService.processPendingJuror(processPendingJurorRequestDto);
+
+            verify(pendingJurorRepository, times(1)).findById(any(String.class));
+            verify(pendingJurorStatusRepository, times(1)).findById(any(Character.class));
+            verify(pendingJurorRepository, times(1)).save(any(PendingJuror.class));
+
+            verifyNoInteractions(poolRequestRepository);
+            verifyNoInteractions(jurorRepository);
+            verifyNoInteractions(jurorPoolRepository);
+
+        }
+
+        @ParameterizedTest
+        @ValueSource(chars = {'R', 'A'})
+        void negativePendingJurorWrongStatus(char pendingJurorStatusCode) {
+            TestUtils.mockCourtUser("415", "415", Set.of(Role.SENIOR_JUROR_OFFICER));
+
+            ProcessPendingJurorRequestDto processPendingJurorRequestDto =
+                getProcessPendingJurorRequestDto(ApprovalDecision.APPROVE);
+            PendingJuror pendingJuror = getPendingJuror();
+            pendingJuror.setStatus(
+                PendingJurorStatus.builder().code(pendingJurorStatusCode).build());
+
+            when(pendingJurorRepository.findById(processPendingJurorRequestDto.getJurorNumber()))
+                .thenReturn(Optional.of(pendingJuror));
+
+            MojException.BadRequest exception =
+                assertThrows(MojException.BadRequest.class,
+                             () -> jurorRecordService.processPendingJuror(processPendingJurorRequestDto),
+                             "Pending Juror has already been processed");
+            assertEquals("Pending Juror has already been processed",
+                         exception.getMessage(),
+                         "Exception message must match");
+
+            verify(pendingJurorRepository, times(1)).findById(any(String.class));
+            verifyNoInteractions(pendingJurorStatusRepository);
+            verifyNoInteractions(poolRequestRepository);
+            verifyNoInteractions(jurorRepository);
+            verifyNoInteractions(jurorPoolRepository);
+
+        }
+
+        @Nested
+        @DisplayName("public FilterableJurorDetailsResponseDto getJurorDetails(FilterableJurorDetailsRequestDto "
+            + "request)")
+        class GetJurorDetailsFilterable {
+            private MockedStatic<PaymentDetails> paymentDetailsMockedStatic;
+            private MockedStatic<NameDetails> nameDetailsMockedStatic;
+            private MockedStatic<JurorAddressDto> jurorAddressDtoMockedStatic;
+
+            @AfterEach
+            void mockCurrentUser() {
+                TestUtils.afterAll();
+                if (paymentDetailsMockedStatic != null) {
+                    paymentDetailsMockedStatic.close();
+                }
+                if (nameDetailsMockedStatic != null) {
+                    nameDetailsMockedStatic.close();
+                }
+                if (jurorAddressDtoMockedStatic != null) {
+                    jurorAddressDtoMockedStatic.close();
+                }
+            }
+
+            @Test
+            void typicalWithJurorVersion() {
+                assertAndTrigger(FilterableJurorDetailsRequestDto.builder()
+                                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                                     .jurorVersion(1L)
+                                     .include(List.of(
+                                         FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
+                                         FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
+                                         FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS,
+                                         FilterableJurorDetailsRequestDto.IncludeType.MILEAGE))
+                                     .build());
+            }
+
+            @Test
+            void typicalWithOutJurorVersion() {
+                assertAndTrigger(FilterableJurorDetailsRequestDto.builder()
+                                     .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
+                                     .jurorVersion(null)
+                                     .include(List.of(
+                                         FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
+                                         FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
+                                         FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS,
+                                         FilterableJurorDetailsRequestDto.IncludeType.MILEAGE))
+                                     .build());
+            }
+
+            private void assertAndTrigger(FilterableJurorDetailsRequestDto request) {
+                Juror juror = mock(Juror.class);
+                PaymentDetails paymentDetails = mock(PaymentDetails.class);
+                paymentDetailsMockedStatic = mockStatic(PaymentDetails.class);
+                paymentDetailsMockedStatic.when(() -> PaymentDetails.from(juror)).thenReturn(paymentDetails);
+
+                NameDetails nameDetails = mock(NameDetails.class);
+                nameDetailsMockedStatic = mockStatic(NameDetails.class);
+                nameDetailsMockedStatic.when(() -> NameDetails.from(juror)).thenReturn(nameDetails);
+
+                JurorAddressDto jurorAddressDto = mock(JurorAddressDto.class);
+                jurorAddressDtoMockedStatic = mockStatic(JurorAddressDto.class);
+                jurorAddressDtoMockedStatic.when(() -> JurorAddressDto.from(juror)).thenReturn(jurorAddressDto);
+
+                jurorRecordService = spy(jurorRecordService);
+
+                doReturn(juror).when(jurorRecordService)
+                    .getJuror(request.getJurorNumber(), request.getJurorVersion());
+
+                FilterableJurorDetailsResponseDto response = jurorRecordService.getJurorDetails(request);
+
+                assertThat(response).isNotNull();
+                assertThat(response.getJurorNumber()).isNotNull().isEqualTo(request.getJurorNumber());
+                assertThat(response.getJurorVersion()).isEqualTo(request.getJurorVersion());
+
+                TriConsumer<Object, Object, FilterableJurorDetailsRequestDto.IncludeType> includeTypeValidator =
+                    (mock, actual, includeType) -> {
+                        if (request.getInclude().contains(includeType)) {
+                            assertThat(actual).isNotNull().isEqualTo(mock);
+                        } else {
+                            assertThat(actual).isNull();
+                        }
+                    };
+                includeTypeValidator.accept(paymentDetails, response.getPaymentDetails(),
+                                            FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS);
+                includeTypeValidator.accept(nameDetails, response.getNameDetails(),
+                                            FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
+                includeTypeValidator.accept(jurorAddressDto, response.getAddress(),
+                                            FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS);
+
+
+                verify(jurorRecordService, times(1))
+                    .getJuror(request.getJurorNumber(), request.getJurorVersion());
+            }
+        }
+
+        @Nested
+        @DisplayName("Juror getJuror(String jurorNumber, Long jurorVersion)")
+        class GetJuror {
+            @Test
+            void positiveJurorNumberWithNoVersion() {
+                Juror juror = mock(Juror.class);
+                when(jurorRepository.findByJurorNumber(TestConstants.VALID_JUROR_NUMBER))
+                    .thenReturn(juror);
+
+                assertThat(
+                    jurorRecordService.getJuror(TestConstants.VALID_JUROR_NUMBER, null)
+                ).isEqualTo(juror);
+
+                verify(jurorRepository, times(1))
+                    .findByJurorNumber(TestConstants.VALID_JUROR_NUMBER);
+                verifyNoMoreInteractions(jurorRepository);
+            }
+
+            @Test
+            @SuppressWarnings("unchecked")
+            void positiveJurorNumberWithVersion() {
+                Juror juror = mock(Juror.class);
+                Revision<Long, Juror> revision = mock(Revision.class);
+                when(revision.getEntity()).thenReturn(juror);
+
+                when(jurorRepository.findRevision(TestConstants.VALID_JUROR_NUMBER, 1L))
+                    .thenReturn(Optional.of(revision));
+
+                assertThat(
+                    jurorRecordService.getJuror(TestConstants.VALID_JUROR_NUMBER, 1L)
+                ).isEqualTo(juror);
+
+                verify(jurorRepository, times(1))
+                    .findRevision(TestConstants.VALID_JUROR_NUMBER, 1L);
+                verifyNoMoreInteractions(jurorRepository);
+            }
+
+            @Test
+            void negativeJurorNumberWithNoVersionNotFound() {
+                when(jurorRepository.findByJurorNumber(TestConstants.VALID_JUROR_NUMBER))
+                    .thenReturn(null);
+
+                MojException.NotFound exception = assertThrows(MojException.NotFound.class,
+                                                               () -> jurorRecordService.getJuror(TestConstants.VALID_JUROR_NUMBER, null),
+                                                               "When juror cannot be found an exception should be thrown");
+
+                assertThat(exception.getMessage()).isNotNull().isEqualTo(
+                    "Juror not found: JurorNumber: " + TestConstants.VALID_JUROR_NUMBER + " Revision: null"
+                );
+                assertThat(exception.getCause()).isNull();
+            }
+
+            @Test
+            void negativeJurorNumberWithVersionNotFound() {
+                when(jurorRepository.findRevision(TestConstants.VALID_JUROR_NUMBER, 1L))
+                    .thenReturn(Optional.empty());
+
+                MojException.NotFound exception = assertThrows(MojException.NotFound.class,
+                                                               () -> jurorRecordService.getJuror(TestConstants.VALID_JUROR_NUMBER, 1L),
+                                                               "When juror cannot be found an exception should be thrown");
+
+                assertThat(exception.getMessage()).isNotNull().isEqualTo(
+                    "Juror not found: JurorNumber: " + TestConstants.VALID_JUROR_NUMBER + " Revision: 1"
+                );
+                assertThat(exception.getCause()).isNull();
+            }
+        }
+
+        private PoolRequest getPoolRequest() {
+            return PoolRequest.builder()
+                .poolNumber("123456789")
+                .owner("123456789")
+                .courtLocation(new CourtLocation())
+                .newRequest('N')
+                .returnDate(LocalDate.of(2021, 1, 1))
+                .attendTime(LocalDateTime.of(LocalDate.of(2021, 1, 1), LocalTime.of(9, 15)))
+                .poolType(new PoolType())
+                .build();
+        }
+
+        private PendingJuror getPendingJuror() {
+            return PendingJuror.builder()
+                .jurorNumber("123456789")
+                .poolNumber("123456789")
+                .title("Mr")
+                .firstName("John")
+                .lastName("Smith")
+                .dateOfBirth(LocalDate.of(1990, 1, 1))
+                .addressLine1("Address Line 1")
+                .addressLine2("Address Line 2")
+                .addressLine3("Address Line 3")
+                .addressLine4("Address Line 4")
+                .addressLine5("Address Line 5")
+                .postcode("M24 4BP")
+                .email("email@com")
+                .notes("Notes")
+                .status(PendingJurorStatus.builder().code(PendingJurorStatusEnum.QUEUED.getCode()).build())
+                .nextDate(LocalDate.now().plusDays(10))
+                .responded(true)
+                .build();
+        }
+
+        private ProcessPendingJurorRequestDto getProcessPendingJurorRequestDto(ApprovalDecision approvalDecision) {
+            return ProcessPendingJurorRequestDto.builder()
+                .jurorNumber("123456789")
+                .decision(approvalDecision)
+                .comments("Some Comments")
+                .build();
+        }
+    }
+
+    @Nested
+    @DisplayName("Juror getJurorBankDetails(String jurorNumber)")
+    class GetJurorBankDetails {
+
+        public static final String JUROR_NUMBER = "123456789";
+
+        @Test
+        void positiveTypical() {
+            String courtOwner = "415";
+            TestUtils.mockCourtUser(courtOwner);
+
+            Juror juror = new Juror();
+            juror.setJurorNumber(JUROR_NUMBER);
+            juror.setBankAccountNumber("12345678");
+            juror.setSortCode("115578");
+            juror.setAddressLine1("Address Line 1");
+            juror.setAddressLine2("Address Line 1");
+            juror.setAddressLine3("Address Line 1");
+            juror.setAddressLine4("Address Line 1");
+            juror.setAddressLine5("Address Line 1");
+            juror.setPostcode("M24 4BP");
+            juror.setNotes("Some notes");
+
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setJuror(juror);
+            jurorPool.setOwner("415");
+
+            juror.setAssociatedPools(Set.of(jurorPool));
+
+            when(jurorRepository.findById(JUROR_NUMBER))
+                .thenReturn(Optional.of(juror));
+
+            JurorBankDetailsDto jurorBankDetailsDto = jurorRecordService.getJurorBankDetails(JUROR_NUMBER);
+
+            verifyJurorBankDetails(jurorBankDetailsDto, juror);
+            verify(jurorRepository, times(1)).findById(JUROR_NUMBER);
+
+        }
+
+        void verifyJurorBankDetails(JurorBankDetailsDto jurorBankDetailsDto, Juror juror) {
+            assertThat(jurorBankDetailsDto).isNotNull();
+            assertThat(jurorBankDetailsDto.getBankAccountNumber()).isEqualTo(juror.getBankAccountNumber());
+            assertThat(jurorBankDetailsDto.getSortCode()).isEqualTo(juror.getSortCode());
+            assertThat(jurorBankDetailsDto.getAddressLineOne()).isEqualTo(juror.getAddressLine1());
+            assertThat(jurorBankDetailsDto.getAddressLineTwo()).isEqualTo(juror.getAddressLine2());
+            assertThat(jurorBankDetailsDto.getAddressLineThree()).isEqualTo(juror.getAddressLine3());
+            assertThat(jurorBankDetailsDto.getAddressLineFour()).isEqualTo(juror.getAddressLine4());
+            assertThat(jurorBankDetailsDto.getAddressLineFive()).isEqualTo(juror.getAddressLine5());
+            assertThat(jurorBankDetailsDto.getPostCode()).isEqualTo(juror.getPostcode());
+            assertThat(jurorBankDetailsDto.getNotes()).isEqualTo(juror.getNotes());
+        }
+
+        @Test
+        void negativeUserForbidden() {
+            String courtOwner = "415";
+
+            TestUtils.mockCourtUser(courtOwner);
+
+            Juror juror = new Juror();
+            juror.setJurorNumber(JUROR_NUMBER);
+
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setJuror(juror);
+            jurorPool.setOwner("416"); // different owner to the current user
+
+            juror.setAssociatedPools(Set.of(jurorPool));
+
+            when(jurorRepository.findById(JUROR_NUMBER))
+                .thenReturn(Optional.of(juror));
+
+            MojException.Forbidden exception = assertThrows(MojException.Forbidden.class,
+                                                            () -> jurorRecordService.getJurorBankDetails(JUROR_NUMBER),
+                                                            "When user does not have access to juror record an exception should be thrown");
+
+            assertThat(exception.getMessage()).isNotNull().isEqualTo(
+                "User does not have ownership of the supplied juror record");
+            assertThat(exception.getCause()).isNull();
+        }
+
+
+        @Test
+        void negativeJurorRecordNotFound() {
+            when(jurorRepository.findById(JUROR_NUMBER))
+                .thenReturn(Optional.empty());
+
+            MojException.NotFound exception = assertThrows(MojException.NotFound.class,
+                                                           () -> jurorRecordService.getJurorBankDetails(JUROR_NUMBER),
+                                                           "When juror cannot be found an exception should be thrown");
+
+            assertThat(exception.getMessage()).isNotNull().isEqualTo(
+                "Unable to find valid juror record for Juror Number: " + JUROR_NUMBER);
+            assertThat(exception.getCause()).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("Confirm juror identity")
+    class ConfirmJurorIdentity {
+
+        @Test
+        void happyPath() {
+            TestUtils.mockCourtUser("415");
+            String jurorNumber = "111111111";
+
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.L)
+                .build();
+
+            JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, "415");
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(Collections.singletonList(jurorPool));
+            jurorRecordService.confirmIdentity(dto);
+
+            ArgumentCaptor<JurorPool> jurorPoolArgumentCaptor = ArgumentCaptor.forClass(JurorPool.class);
+
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            verify(jurorPoolRepository, times(1))
+                .save(jurorPoolArgumentCaptor.capture());
+
+            JurorPool updatedJurorPool = jurorPoolArgumentCaptor.getValue();
+            assertEquals(IdCheckCodeEnum.L.getCode(), updatedJurorPool.getIdChecked(), "Id check code must match");
+
+            verify(jurorHistoryService, times(1)).createIdentityConfirmedHistory(jurorPool);
 
         }
 
         @Test
-        void getJurorSimpleDetailsMultipleHappy() {
-            String bureauJwt = createBureauJwt("Court_User", "415", "415");
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        void wrongCourtUser() {
+            TestUtils.mockCourtUser("416");
+            String jurorNumber = "111111111";
 
-            String url = BASE_URL + "/simple-details";
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.L)
+                .build();
 
-            JurorSimpleDetailsRequestDto requestDto = new JurorSimpleDetailsRequestDto();
-            requestDto.setJurorNumbers(Arrays.asList("641500091","641500092","641500093","641500094","641500095"));
-            requestDto.setLocationCode("415");
+            JurorPool jurorPool = createValidJurorPool(jurorNumber, "415");
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(Collections.singletonList(jurorPool));
 
-            ResponseEntity<JurorSimpleDetailsResponseDto> response =
-                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                                                          URI.create(url)), JurorSimpleDetailsResponseDto.class);
+            MojException.Forbidden exception
+                = assertThrows(MojException.Forbidden.class, () -> jurorRecordService.confirmIdentity(dto),
+                               "Forbidden exception");
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be OK")
-                .isEqualTo(HttpStatus.OK);
+            assertEquals("Current user (416) does not own any Juror "
+                             + "Pool associations for Juror Number: " + jurorNumber,
+                         exception.getMessage(), "Exception message should match");
 
-            JurorSimpleDetailsResponseDto responseBody = response.getBody();
-            assertThat(responseBody).isNotNull();
-            assertThat(responseBody.getJurorDetails()).hasSize(5);
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            verify(jurorPoolRepository, times(0)).save(any(JurorPool.class));
+            verify(jurorHistoryService, times(0)).createIdentityConfirmedHistory(any(JurorPool.class));
+
         }
+
 
         @Test
         void jurorNotFound() {
-            // "123456789" is not a valid juror number
+            TestUtils.mockCourtUser("416");
+            String jurorNumber = "111111111";
 
-            String bureauJwt = createBureauJwt("Court_User", "415", "415");
-            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+            ConfirmIdentityDto dto = ConfirmIdentityDto.builder()
+                .jurorNumber(jurorNumber)
+                .idCheckCode(IdCheckCodeEnum.L)
+                .build();
 
-            String url = BASE_URL + "/simple-details";
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(Collections.emptyList());
 
-            JurorSimpleDetailsRequestDto requestDto = new JurorSimpleDetailsRequestDto();
-            requestDto.setJurorNumbers(Arrays.asList("641500091","123456789","641500093","641500094","641500095"));
-            requestDto.setLocationCode("415");
+            MojException.NotFound exception
+                = assertThrows(MojException.NotFound.class, () -> jurorRecordService.confirmIdentity(dto),
+                               "Not found");
 
-            ResponseEntity<JurorSimpleDetailsResponseDto> response =
-                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                                                          URI.create(url)), JurorSimpleDetailsResponseDto.class);
+            assertEquals("Unable to find any Juror Pool associations for juror number " + jurorNumber,
+                         exception.getMessage(), "Exception message should match");
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be OK")
-                .isEqualTo(HttpStatus.NOT_FOUND);
+            verify(jurorPoolRepository, times(1))
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true);
+            verify(jurorPoolRepository, times(0)).save(any(JurorPool.class));
+            verify(jurorHistoryService, times(0)).createIdentityConfirmedHistory(any(JurorPool.class));
 
+        }
+    }
+
+    @Nested
+    @DisplayName("Mark juror as responded")
+    class MarkAsRespondedTest {
+
+        @Test
+        void shouldMarkJurorAsRespondedWhenJurorExistsAndDateOfBirthIsNotNull() {
+            TestUtils.mockBureauUser();
+
+            final String jurorNumber = "123456789";
+            final Juror juror = new Juror();
+            juror.setDateOfBirth(LocalDate.now().minusYears(20));
+
+            final PoolRequest poolRequest = new PoolRequest();
+            poolRequest.setPoolNumber("123456789");
+
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setOwner("400");
+            jurorPool.setPool(poolRequest);
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setLocCode("415");
+            jurorPool.setLocation(courtLocation.getLocCode());
+            jurorPool.setJuror(juror);
+
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true))
+                .thenReturn(List.of(jurorPool));
+            when(jurorStatusRepository.findById(IJurorStatus.RESPONDED)).thenReturn(Optional.of(jurorStatus));
+
+            jurorRecordService.markResponded(jurorNumber);
+
+            verify(jurorRepository, times(1)).save(juror);
+            verify(jurorPoolRepository, times(1)).save(jurorPool);
+            verify(jurorHistoryRepository, times(1)).save(any(JurorHistory.class));
         }
 
         @Test
-        void noPermissions() {
-            String jurorNumber = "641500091";
-            String url = BASE_URL + "/simple-details";
+        void shouldThrowExceptionWhenJurorDoesNotExist() {
+            TestUtils.mockCourtUser("415");
 
-            JurorSimpleDetailsRequestDto requestDto = new JurorSimpleDetailsRequestDto();
-            requestDto.setJurorNumbers(Collections.singletonList(jurorNumber));
-            requestDto.setLocationCode("415");
+            String jurorNumber = "123456789";
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true)).thenReturn(List.of());
 
-            ResponseEntity<JurorSimpleDetailsResponseDto> response =
-                restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                                                          URI.create(url)), JurorSimpleDetailsResponseDto.class);
+            assertThrows(MojException.NotFound.class, () -> jurorRecordService.markResponded(jurorNumber));
+        }
 
-            assertThat(response.getStatusCode())
-                .as("Expect the HTTP POST request to be OK")
-                .isEqualTo(HttpStatus.FORBIDDEN);
+        @Test
+        void shouldThrowExceptionWhenJurorDateOfBirthIsNull() {
+            TestUtils.mockBureauUser();
+
+            final String jurorNumber = "123456789";
+            final Juror juror = new Juror();
+
+            PoolRequest poolRequest = new PoolRequest();
+            poolRequest.setPoolNumber("123456789");
+
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setOwner("400");
+            jurorPool.setPool(poolRequest);
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setLocCode("415");
+            jurorPool.setLocation(courtLocation.getLocCode());
+            jurorPool.setJuror(juror);
+
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true))
+                .thenReturn(List.of(jurorPool));
+
+            Exception exception = assertThrows(MojException.BusinessRuleViolation.class,
+                                               () -> jurorRecordService.markResponded(jurorNumber));
+
+            assertEquals("Juror date of birth is required to mark as responded", exception.getMessage(),
+                         "Exception message should match");
 
         }
     }
 
-    private void verifyBulkPrintData(String jurorNumber, String formCode) {
-        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
-        assertThat(bulkPrintData).hasSize(1);
-        assertThat(bulkPrintData.get(0).getFormAttribute().getFormType()).isEqualTo(formCode);
+
+    private BureauJurorDetailDto createBureauJurorDetailDto(String jurorNumber) {
+
+        BureauJurorDetailDto bureauJurorDetailDto = new BureauJurorDetailDto();
+        bureauJurorDetailDto.setJurorNumber(jurorNumber);
+
+        return bureauJurorDetailDto;
     }
-
-    private void verifyNoBulkPrintData(String jurorNumber) {
-        List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
-        assertThat(bulkPrintData).isEmpty();
-    }
-
-    private void verifyStandardJurorHistory(JurorPool jurorPool,
-                                            List<JurorHistory> jurorHistoryList,
-                                            JurorHistoryExpectedValues... expectedValues) {
-        Iterator<JurorHistory> jurorHistoryValues = jurorHistoryList.iterator();
-        for (JurorHistoryExpectedValues expectedValue : expectedValues) {
-            JurorHistory jurorHistory = jurorHistoryValues.next();
-            assertEquals(jurorPool.getPoolNumber(), jurorHistory.getPoolNumber(),
-                "Pool Number must match");
-            assertEquals(jurorPool.getJuror().getJurorNumber(), jurorHistory.getJurorNumber(),
-                "Juror Number must match");
-            assertEquals(jurorPool.getPoolNumber(), jurorHistory.getPoolNumber(),
-                "Pool Number must match");
-            assertEquals("SYSTEM", jurorHistory.getCreatedBy(),
-                "User Id must match");
-            assertEquals(expectedValue.historyCode, jurorHistory.getHistoryCode().getCode(),
-                "History Code must match");
-            assertEquals(expectedValue.info, jurorHistory.getOtherInformation(),
-                "Info must match");
-            assertEquals(expectedValue.date, jurorHistory.getOtherInformationDate(),
-                "Other info Date must match");
-            assertEquals(expectedValue.ref, jurorHistory.getOtherInformationRef(),
-                "Other info Ref must match");
-            assertThat(jurorHistory.getDateCreated())
-                .as("Date Part must match")
-                .isEqualToIgnoringHours(LocalDateTime.now());
-        }
-    }
-
-    private record JurorHistoryExpectedValues(String historyCode, String info, LocalDate date, String ref) {
-    }
-
-    private String initPayloadWithStaffRank(String owner, String username, UserType userType,
-                                            Role... roles) throws Exception {
-        return mintBureauJwt(BureauJwtPayload.builder()
-            .userType(userType)
-            .roles(List.of(roles))
-            .login(username)
-            .owner(owner)
-            .staff(BureauJwtPayload.Staff.builder().build())
-            .build());
-    }
-
-    private List<String> initChangedHistoryProperties() {
-        List<String> historyInfoList = new ArrayList<>();
-        historyInfoList.add("Title Changed");
-        historyInfoList.add("First Name Changed");
-        historyInfoList.add("Last Name Changed");
-        return historyInfoList;
-    }
-
-    private EditJurorRecordRequestDto createEditJurorRecordRequestDto(boolean allFieldsRequired) {
-        EditJurorRecordRequestDto editJurorRecordRequestDto = new EditJurorRecordRequestDto();
-
-        editJurorRecordRequestDto.setFirstName("NewFirstName");
-        editJurorRecordRequestDto.setLastName("NewLastName");
-        editJurorRecordRequestDto.setAddressLineOne("addressLineOne");
-        editJurorRecordRequestDto.setAddressPostcode("M24 4BP");
-        editJurorRecordRequestDto.setAddressTown("addressTown");
-
-        if (allFieldsRequired) {
-            editJurorRecordRequestDto.setTitle("Mr");
-            editJurorRecordRequestDto.setAddressLineTwo("addressLineTwo");
-            editJurorRecordRequestDto.setAddressLineThree("addressLineThree");
-            editJurorRecordRequestDto.setAddressCounty("addressCounty");
-            editJurorRecordRequestDto.setDateOfBirth(LocalDate.parse("2022-02-01"));
-            editJurorRecordRequestDto.setPrimaryPhone("071234566790");
-            editJurorRecordRequestDto.setSecondaryPhone(null);
-            editJurorRecordRequestDto.setEmailAddress("someEmail@exampleEmail.co.uk");
-            editJurorRecordRequestDto.setSpecialNeed("M");
-            editJurorRecordRequestDto.setSpecialNeedMessage("Multiple");
-            editJurorRecordRequestDto.setOpticReference("22222222");
-            editJurorRecordRequestDto.setPendingTitle("Mx");
-            editJurorRecordRequestDto.setPendingFirstName("Pending First Name");
-            editJurorRecordRequestDto.setPendingLastName("Pending Last Name");
-            editJurorRecordRequestDto.setWelshLanguageRequired(true);
-        }
-
-        return editJurorRecordRequestDto;
-    }
-
-
-    private EditJurorRecordRequestDto createEditJurorRequestUpdateAddressOnly() {
-        EditJurorRecordRequestDto editJurorRecordRequestDto = new EditJurorRecordRequestDto();
-
-        // current mandatory details
-        editJurorRecordRequestDto.setFirstName("FNAME");
-        editJurorRecordRequestDto.setLastName("LNAME");
-        editJurorRecordRequestDto.setDateOfBirth(LocalDate.parse("1989-03-31"));
-
-        // new address details
-
-        // address line one is mandatory
-        editJurorRecordRequestDto.setAddressLineOne("123 STREET NAME");
-        editJurorRecordRequestDto.setAddressTown("addressTown");
-        editJurorRecordRequestDto.setAddressLineTwo("addressLineTwo");
-        editJurorRecordRequestDto.setAddressLineThree("addressLineThree");
-        editJurorRecordRequestDto.setAddressCounty("addressCounty");
-        // postcode is mandatory
-        editJurorRecordRequestDto.setAddressPostcode("M24 4BP");
-
-        return editJurorRecordRequestDto;
-    }
-
-    @SneakyThrows
-    private void setAuthorization(String login, String owner, UserType userType, Role... roles) {
-        httpHeaders.remove(HttpHeaders.AUTHORIZATION);
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
-            .userType(userType)
-            .roles(List.of(roles))
-            .login(login)
-            .owner(owner)
-            .build()));
-    }
-
-    private JurorOpticRefRequestDto createOpticRefRequestDto(String jurorNumber, String poolNumber,
-                                                             String opticReference) {
-
-        JurorOpticRefRequestDto requestDto = new JurorOpticRefRequestDto();
-
-        requestDto.setJurorNumber(jurorNumber);
-        requestDto.setPoolNumber(poolNumber);
-        requestDto.setOpticReference(opticReference);
-
-        return requestDto;
-    }
-
 }
