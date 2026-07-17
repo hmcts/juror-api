@@ -300,12 +300,12 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         if (dbdPreferenceChanged) {
             jurorHistoryService.createEditChangeOfPersonalDetailsHistory(myJurorPool, jurorNumber,
-                                                                         myJurorPool.getPool().getPoolNumber(), "Communication preference changed");
+                                         myJurorPool.getPool().getPoolNumber(), "Communication preference changed");
         }
         // Log address change in history if updated PDET CODE ADDRESS OTHER
         if (addressChanged) {
             jurorHistoryService.createEditChangeOfPersonalDetailsHistory(myJurorPool, jurorNumber,
-                                                                         myJurorPool.getPool().getPoolNumber(), "Address Changed");
+                                         myJurorPool.getPool().getPoolNumber(), "Address Changed");
 
             // check for and update any pending letters with new address details
             List<BulkPrintData> queuedLetters = printDataService.getLettersQueuedForJuror(jurorNumber);
@@ -440,7 +440,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         DigitalResponse jurorResponse = jurorResponseRepository.findByJurorNumber(jurorNumber);
         JurorDetailsResponseDto jurorDetailsResponseDto = new JurorDetailsResponseDto(jurorPool,
-                                                                                      jurorStatusRepository, welshCourtLocationRepository, pendingJurorRepository);
+                   jurorStatusRepository, welshCourtLocationRepository, pendingJurorRepository);
 
         // need to send reply method and status so front end can determine if edit should be from response or juror
         // record
@@ -1036,7 +1036,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
 
         return new ContactLogListDto(contactLogDataList, new JurorDetailsCommonResponseDto(jurorPool,
-                                                                                           jurorStatusRepository, pendingJurorRepository, welshCourtLocationRepository));
+                       jurorStatusRepository, pendingJurorRepository, welshCourtLocationRepository));
     }
 
     /**
@@ -1054,7 +1054,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Transactional(propagation = REQUIRED)
     public void createJurorContactLog(BureauJwtPayload payload, ContactLogRequestDto contactLogRequestDto) {
         JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository,
-                                                                       contactLogRequestDto.getJurorNumber(), payload.getOwner());
+                               contactLogRequestDto.getJurorNumber(), payload.getOwner());
         // check whether the current user has permissions to create new contact logs against the currently active
         // juror record
         if (!("400".equals(payload.getOwner()) || jurorPool.getOwner().equals(payload.getOwner()))) {
@@ -1098,7 +1098,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         Juror juror = jurorPool.getJuror();
 
         return new JurorNotesDto(juror.getNotes(), new JurorDetailsCommonResponseDto(jurorPool, jurorStatusRepository,
-                                                                                     pendingJurorRepository, welshCourtLocationRepository));
+                                                             pendingJurorRepository, welshCourtLocationRepository));
     }
 
     @Override
@@ -1137,8 +1137,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         final String owner = payload.getOwner();
 
         Juror juror = jurorRepository.findById(jurorNumber).orElseThrow(() ->
-                                                                            new MojException.NotFound(String.format("Unable to find valid juror record for Juror Number: %s",
-                                                                                                                    jurorNumber), null));
+            new MojException.NotFound(String.format("Unable to find valid juror record for Juror Number: %s",
+                                                                        jurorNumber), null));
 
         // only allow access if the owner of record is same as users owner
         JurorUtils.checkOwnershipForCurrentUser(juror, owner);
@@ -1247,7 +1247,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         if (jurorResponse != null) {
             JurorSummonsReplyResponseDto jurorSummonsReplyResponseDto = new JurorSummonsReplyResponseDto(jurorPool,
-                                                                                                         jurorStatusRepository, welshCourtLocationRepository, pendingJurorRepository);
+                                     jurorStatusRepository, welshCourtLocationRepository, pendingJurorRepository);
             jurorSummonsReplyResponseDto.setReplyMethod(REPLY_METHOD_ONLINE);
             jurorSummonsReplyResponseDto.setReplyDate(jurorResponse.getDateReceived().toLocalDate());
             jurorSummonsReplyResponseDto.setReplyStatus(jurorResponse.getProcessingStatus().getDescription());
@@ -1256,7 +1256,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         if (jurorPaperResponse != null) {
             JurorSummonsReplyResponseDto jurorSummonsReplyResponseDto = new JurorSummonsReplyResponseDto(jurorPool,
-                                                                                                         jurorStatusRepository, welshCourtLocationRepository, pendingJurorRepository);
+                                     jurorStatusRepository, welshCourtLocationRepository, pendingJurorRepository);
             jurorSummonsReplyResponseDto.setReplyMethod(REPLY_METHOD_PAPER);
             jurorSummonsReplyResponseDto.setReplyDate(jurorPaperResponse.getDateReceived().toLocalDate());
             jurorSummonsReplyResponseDto.setReplyStatus(jurorPaperResponse.getProcessingStatus().getDescription());
@@ -1272,7 +1272,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         if (!jurorHistList.isEmpty()) {
             //check if any of the history entries match the paper response processing entries
             List<JurorHistory> jurorHistFiltered = jurorHistList.stream().filter(p ->
-                                                                                     PART_HIST_LIST_TO_MATCH.contains(p.getHistoryCode().getCode())).toList();
+                     PART_HIST_LIST_TO_MATCH.contains(p.getHistoryCode().getCode())).toList();
 
             if (!jurorHistFiltered.isEmpty()) {
                 JurorSummonsReplyResponseDto jurorSummonsReplyResponseDto =
@@ -1285,7 +1285,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         //send the default response
         JurorSummonsReplyResponseDto jurorSummonsReplyResponseDto = new JurorSummonsReplyResponseDto(jurorPool,
-                                                                                                     jurorStatusRepository, welshCourtLocationRepository, pendingJurorRepository);
+                                 jurorStatusRepository, welshCourtLocationRepository, pendingJurorRepository);
 
         jurorSummonsReplyResponseDto.setReplyMethod(REPLY_METHOD_NOT_AVAILABLE);
         return jurorSummonsReplyResponseDto;
@@ -1525,7 +1525,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         List<JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData> jurorAttendanceDetails =
             getAttendanceData(locCode, jurorNumber);
         jurorAttendanceDetails.sort(Comparator
-                                        .comparing(JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData::getAttendanceDate));
+            .comparing(JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData::getAttendanceDate));
         responseDto.setData(jurorAttendanceDetails);
 
         responseDto.setAbsences((int) jurorAttendanceDetails.stream()
@@ -1562,7 +1562,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         return appearances.stream()
             .filter(appearance -> appearance.getAppearanceStage() == null || !Set.of(AppearanceStage.CHECKED_IN,
-                                                                                     AppearanceStage.CHECKED_OUT).contains(appearance.getAppearanceStage()))
+                                                 AppearanceStage.CHECKED_OUT).contains(appearance.getAppearanceStage()))
             .map(JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData::new)
             .collect(Collectors.toList());
     }
@@ -1604,7 +1604,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         ).count();
 
         PaymentSummaryData summaryData = appearances.stream()
-            .filter(appearance -> !appearance.isDraftExpense())
+              .filter(appearance -> !appearance.isDraftExpense())
             .reduce(
                 new PaymentSummaryData(),
                 (total, item) -> total.add(new PaymentSummaryData(
@@ -1705,8 +1705,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Override
     @Transactional
     public void sendPaperSummonsPack(String jurorNumber) {
-        log.info("Sending paper summons pack for juror {} requested by user {}"
-            , jurorNumber, SecurityUtil.getActiveLogin());
+        log.info("Sending paper summons pack for juror {} requested by user {}",
+             jurorNumber, SecurityUtil.getActiveLogin());
 
         final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
                                                                              SecurityUtil.getActiveOwner());
