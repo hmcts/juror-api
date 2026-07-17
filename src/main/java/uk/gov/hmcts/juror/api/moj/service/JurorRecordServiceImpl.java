@@ -287,13 +287,21 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         juror.setWelsh(requestDto.getWelshLanguageRequired());
         juror.setLivingOverseas(requestDto.getLivingOverseas());
 
+        // Track change to communication preference
+        String normalizedDbdPreference = normalizeDbdPreference(requestDto.getDbdPreference());
+        boolean dbdPreferenceChanged = !Objects.equals(juror.getDbdPreference(), normalizedDbdPreference);
+
+
         // DBD (Digital By Default) communication preference
         juror.setDbdPreference(normalizeDbdPreference(requestDto.getDbdPreference()));
-     //   juror.setDigitalByDefault(Boolean.TRUE.equals(requestDto.getDigitalByDefault()));
 
 
         jurorRepository.save(juror);
 
+        if (dbdPreferenceChanged) {
+            jurorHistoryService.createEditChangeOfPersonalDetailsHistory(myJurorPool, jurorNumber,
+                                                                         myJurorPool.getPool().getPoolNumber(), "Communication preference changed");
+        }
         // Log address change in history if updated PDET CODE ADDRESS OTHER
         if (addressChanged) {
             jurorHistoryService.createEditChangeOfPersonalDetailsHistory(myJurorPool, jurorNumber,
