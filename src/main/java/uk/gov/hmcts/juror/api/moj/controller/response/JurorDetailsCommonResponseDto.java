@@ -131,7 +131,7 @@ public class JurorDetailsCommonResponseDto {
 
     private LocalDate bureauTransferDate;
 
-    @Schema(name = "Digital by Default", description = "Flag to indicate if the juror is digital by default" )
+    @Schema(name = "Digital by Default", description = "Flag to indicate if the juror is digital by default")
     private boolean digitalByDefault;
 
     @Schema (name = "dbd_preference",description = "If the juror prefers Paper or Digital")
@@ -141,6 +141,7 @@ public class JurorDetailsCommonResponseDto {
      *
      * @param jurorPool an object representation of a JurorPool association record
      */
+
     @Autowired
     public JurorDetailsCommonResponseDto(JurorPool jurorPool,
                                          JurorStatusRepository jurorStatusRepository,

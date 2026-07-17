@@ -133,6 +133,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -291,6 +292,78 @@ class JurorRecordServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("public void sendPaperSummonsPack(String jurorNumber)")
+    class SendPaperSummonsPack {
+
+        private JurorPool buildJurorPool(int statusCode, String dbdPreference, boolean courtInPilot) {
+            JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+            jurorPool.setStatus(createJurorStatus(statusCode));
+            jurorPool.getJuror().setDbdPreference(dbdPreference);
+            jurorPool.getCourt().setDigitalByDefault(courtInPilot);
+            return jurorPool;
+        }
+
+        @Test
+        void happyPath() {
+            TestUtils.mockBureauUser();
+            JurorPool jurorPool = buildJurorPool(IJurorStatus.SUMMONED, "Paper", true);
+
+            doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+
+            jurorRecordService.sendPaperSummonsPack(VALID_JUROR_NUMBER);
+
+            verify(printDataService, times(1)).reprintSummonsLetter(jurorPool);
+            verifyNoMoreInteractions(printDataService);
+        }
+
+        @Test
+        void negativeCourtNotInPilot() {
+            TestUtils.mockBureauUser();
+            JurorPool jurorPool = buildJurorPool(IJurorStatus.SUMMONED, "Paper", false);
+
+            doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
+                .isThrownBy(() -> jurorRecordService.sendPaperSummonsPack(VALID_JUROR_NUMBER))
+                .withMessage("Juror's court is not part of the DBD pilot");
+
+            verifyNoInteractions(printDataService);
+        }
+
+        @Test
+        void negativeWrongStatus() {
+            TestUtils.mockBureauUser();
+            JurorPool jurorPool = buildJurorPool(IJurorStatus.RESPONDED, "Paper", true);
+
+            doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
+                .isThrownBy(() -> jurorRecordService.sendPaperSummonsPack(VALID_JUROR_NUMBER))
+                .withMessage("Juror must be in Summoned status to send a paper summons pack");
+
+            verifyNoInteractions(printDataService);
+        }
+
+        @Test
+        void negativeWrongPreference() {
+            TestUtils.mockBureauUser();
+            JurorPool jurorPool = buildJurorPool(IJurorStatus.SUMMONED, "Digital", true);
+
+            doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+                .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+
+            assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
+                .isThrownBy(() -> jurorRecordService.sendPaperSummonsPack(VALID_JUROR_NUMBER))
+                .withMessage("Juror's communication preference must be Paper");
+
+            verifyNoInteractions(printDataService);
+        }
+    }
+
     @Test
     void testEditJurorRecord() {
         JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
@@ -427,6 +500,60 @@ class JurorRecordServiceTest {
         assertThat(capturedJuror.getOpticRef()).isEqualTo(requestDto.getOpticReference());
         assertThat(capturedJuror.getWelsh()).isEqualTo(welshLanguageRequired);
     }
+
+    @Test
+    void testEditJurorRecordDbdPreferenceChangedTriggersHistory() {
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
+        requestDto.setDbdPreference("digital"); // lower-case input, should normalize to "Digital"
+
+        JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+        jurorPool.getJuror().setDbdPreference("Paper");
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+
+        ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        reasonableAdjustments.setDescription("Vision impairment");
+        reasonableAdjustments.setCode("V");
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+
+        jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
+
+        ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
+        verify(jurorRepository, times(1)).save(jurorArgumentCaptor.capture());
+        assertThat(jurorArgumentCaptor.getValue().getDbdPreference())
+            .as("dbd_preference should be normalized to 'Digital' regardless of input casing")
+            .isEqualTo("Digital");
+
+        verify(jurorHistoryService, times(1)).createEditChangeOfPersonalDetailsHistory(
+            eq(jurorPool), eq(VALID_JUROR_NUMBER), eq(jurorPool.getPool().getPoolNumber()),
+            eq("Communication preference changed"));
+    }
+
+    @Test
+    void testEditJurorRecordDbdPreferenceUnchangedNoHistory() {
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
+        requestDto.setDbdPreference("Paper");
+
+        JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+        jurorPool.getJuror().setDbdPreference("Paper"); // already Paper - no change expected
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+        doReturn(Optional.of(jurorPool.getJuror())).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+
+        ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        reasonableAdjustments.setDescription("Vision impairment");
+        reasonableAdjustments.setCode("V");
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+
+        jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
+
+        verify(jurorHistoryService, never()).createEditChangeOfPersonalDetailsHistory(
+            any(), any(), any(), eq("Communication preference changed"));
+    }
+
 
 
     @Test

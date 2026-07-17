@@ -596,6 +596,46 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
     }
 
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editJurorRecord.sql"})
+    void editJurorDbdPreferenceHappyPath() {
+        String jurorNumber = "123456789";
+
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto(true);
+        requestDto.setDbdPreference("digital"); // lower-case, should persist normalized
+
+        ResponseEntity<?> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
+                              URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        executeInTransaction(() -> {
+            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+            assertThat(juror.getDbdPreference()).isEqualTo("Digital");
+
+            List<JurorHistory> historyList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
+            assertThat(historyList).anyMatch(h ->
+                                     h.getHistoryCode() == HistoryCodeMod.CHANGE_PERSONAL_DETAILS
+                                     && "Communication preference changed".equals(h.getOtherInformation()));
+        });
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editJurorRecord.sql"})
+    void editJurorDbdPreferenceInvalidValueRejected() {
+        String jurorNumber = "123456789";
+
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto(true);
+        requestDto.setDbdPreference("carrier-pigeon");
+
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
+                              URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
 
 
     @Test
