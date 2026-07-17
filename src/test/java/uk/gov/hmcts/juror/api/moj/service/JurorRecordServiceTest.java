@@ -2988,7 +2988,7 @@ class JurorRecordServiceTest {
                 "Juror must not have a completion_date in order to undo the failed to attend status.");
 
             assertEquals(
-                "This juror cannot be given a Failed To Attend status because they have been given a completion date."
+                "This juror cannot be given a Failed To Attend status because they have been given a completion date. "
                     + "Only a Senior Jury Officer can be remove the completion date",
 
                 exception.getMessage(), "Exception message should match");
