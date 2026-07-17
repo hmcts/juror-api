@@ -399,7 +399,7 @@ public class JurorRecordController {
 
     @PostMapping("/send-paper-summons/{juror_number}")
     @Operation(summary = "Send a paper summons pack to a juror who has switched to Paper communication preference")
-    @IsCourtUser
+    @IsBureauUser
     public ResponseEntity<Void> sendPaperSummons(
         @Valid @JurorNumber @P("juror_number") @PathVariable("juror_number")
         @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
