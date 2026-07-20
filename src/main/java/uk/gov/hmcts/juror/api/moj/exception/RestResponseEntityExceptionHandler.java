@@ -216,16 +216,14 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
             }
         }
 
-        Object updatedBody = null;
         if (body == null && ex instanceof ErrorResponse errorResponse) {
-            updatedBody = errorResponse.updateAndGetBody(this.getMessageSource(), LocaleContextHolder.getLocale());
+            body = errorResponse.updateAndGetBody(this.getMessageSource(), LocaleContextHolder.getLocale());
         }
 
-        // TODO: review if updatedBody from body migration makes sense in if condition below
-        if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR && updatedBody == null) {
+        if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR && body == null) {
             request.setAttribute("jakarta.servlet.error.exception", ex, 0);
         }
 
-        return this.createResponseEntity(updatedBody, headers, statusCode, request);
+        return this.createResponseEntity(body, headers, statusCode, request);
     }
 }
