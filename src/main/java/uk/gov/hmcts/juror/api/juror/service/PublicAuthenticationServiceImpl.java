@@ -104,6 +104,7 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
                 .firstName(juror.getFirstName())
                 .lastName(juror.getLastName())
                 .postcode(juror.getPostcode())
+                .digitalByDefault(juror.isDigitalByDefault())
                 .roles(Collections.singletonList(JUROR_ROLE))
                 .build();
         } catch (DataAccessException dae) {
