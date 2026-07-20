@@ -52,7 +52,7 @@ public class GenerateCoronerPoolNumberServiceImpl implements GenerateCoronerPool
     @Transactional(readOnly = true)
     public String generateCoronerPoolNumber() {
         log.trace("Entered generateCoronerPoolNumber for Coroner pool");
-        String newPoolNumber;
+        String newPoolNumber = "";
 
         // get the latest coroner pool record by ID (Pool number)
         Optional<CoronerPool> coronerPoolOpt = coronerPoolRepository.findFirstByOrderByPoolNumberDesc();
@@ -91,9 +91,10 @@ public class GenerateCoronerPoolNumberServiceImpl implements GenerateCoronerPool
             // Increment the previous sequence number by one to get the new sequence number
             int newSequenceNumber = Integer.parseInt(latestSequenceNumber) + 1;
 
-            return CORONER_POOL_STARTING_DIGIT + latestYear
+            String newPoolNumber = CORONER_POOL_STARTING_DIGIT + latestYear
                 + latestMonth
                 + leftPadInteger(newSequenceNumber);
+            return newPoolNumber;
         }
 
         log.debug("Latest Coroner Pool number Year/Month is in the past, generating a new pool number");
@@ -105,11 +106,11 @@ public class GenerateCoronerPoolNumberServiceImpl implements GenerateCoronerPool
         StringBuilder poolNumber = new StringBuilder();
         LocalDate currentDate = LocalDate.now();
 
-        poolNumber.append(CORONER_POOL_STARTING_DIGIT)
-            // only want last two digits of year
-            .append(String.valueOf(currentDate.getYear()).substring(2))
-            .append(leftPadIntegerMonth(currentDate.getMonthValue()))
-            .append(SEQUENCE_START_POSITION);
+        poolNumber.append(CORONER_POOL_STARTING_DIGIT);
+        // only want last two digits of year
+        poolNumber.append(String.valueOf(currentDate.getYear()).substring(2));
+        poolNumber.append(leftPadIntegerMonth(currentDate.getMonthValue()));
+        poolNumber.append(SEQUENCE_START_POSITION);
 
         return poolNumber.toString();
     }
@@ -140,18 +141,19 @@ public class GenerateCoronerPoolNumberServiceImpl implements GenerateCoronerPool
             throw new IllegalArgumentException("Integer value to be converted must be between 1 and 9999 (inclusive)");
         }
         // Convert the value from an int to a numeric String
-        StringBuilder stringValue = new StringBuilder(intValue);
+        String stringValue = String.valueOf(intValue);
+
         if (stringValue.length() == 1) {
             // for values less than 0 - 9, pad with a preceding '000'
-            stringValue.insert(0, "000");
+            stringValue = "000" + stringValue;
         } else if (stringValue.length() == 2) {
             // for values between 10 - 99, pad with a preceding '00'
-            stringValue.insert(0, "00");
+            stringValue = "00" + stringValue;
         } else if (stringValue.length() == 3) {
             // for values between 100 - 999, pad with a preceding '0'
-            stringValue.insert(0, "0");
+            stringValue = "0" + stringValue;
         }
 
-        return stringValue.toString();
+        return stringValue;
     }
 }
