@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PaymentDetailsTest extends AbstractValidatorTest<PaymentDetails> {
 
     @Test
@@ -36,7 +35,7 @@ class PaymentDetailsTest extends AbstractValidatorTest<PaymentDetails> {
         verifyNoMoreInteractions(juror);
     }
 
-    public static PaymentDetails createPaymentDetailsDto() {
+    static PaymentDetails createPaymentDetailsDto() {
         return PaymentDetails.builder()
             .sortCode("112233")
             .bankAccountName("Bank Name")

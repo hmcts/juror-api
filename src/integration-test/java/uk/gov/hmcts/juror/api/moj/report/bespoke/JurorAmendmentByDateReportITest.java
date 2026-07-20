@@ -13,10 +13,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class JurorAmendmentByDateReportITest extends AbstractJurorAmendmentReportITest {
     @Autowired
-    public JurorAmendmentByDateReportITest(TestRestTemplate template) {
+    JurorAmendmentByDateReportITest(TestRestTemplate template) {
         super(template, JurorAmendmentByDateReport.class);
     }
 

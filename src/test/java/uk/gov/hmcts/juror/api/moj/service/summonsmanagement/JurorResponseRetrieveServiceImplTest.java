@@ -38,10 +38,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.moj.utils.converters.ConversionUtils.toProperCase;
 
-@SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType"
-})
+@SuppressWarnings("PMD.ExcessiveImports")
 @ExtendWith(SpringExtension.class)
 class JurorResponseRetrieveServiceImplTest {
     private static final String JUROR_X_8 = "11111111";

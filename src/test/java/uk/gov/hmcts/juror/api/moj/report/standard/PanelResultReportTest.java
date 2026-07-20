@@ -29,14 +29,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PanelResultReportTest extends AbstractStandardReportTestSupport<PanelResultReport> {
 
     private static final LocalDate FROM_DATE = LocalDate.of(2024, 1, 1);
     private static final LocalDate TO_DATE = LocalDate.of(2024, 1, 30);
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public PanelResultReportTest() {
+    PanelResultReportTest() {
         super(QTrial.trial,
             PanelResultReport.RequestValidator.class,
             DataType.TRIAL_NUMBER,
@@ -51,19 +50,19 @@ class PanelResultReportTest extends AbstractStandardReportTestSupport<PanelResul
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         TestUtils.afterAll();
         securityUtilMockedStatic.close();
     }
 
     @Override
-    public PanelResultReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected PanelResultReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PanelResultReport();
     }
 
@@ -77,7 +76,7 @@ class PanelResultReportTest extends AbstractStandardReportTestSupport<PanelResul
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         doNothing().when(report).addGroupBy(any(), any(IDataType[].class));
 

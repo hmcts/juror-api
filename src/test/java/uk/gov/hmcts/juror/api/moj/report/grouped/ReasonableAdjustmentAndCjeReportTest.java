@@ -37,15 +37,13 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
     "unchecked",
-    "checkstyle:AbbreviationAsWordInName",
-    "PMD.PublicMemberInNonPublicType"
-})
+    "checkstyle:AbbreviationAsWordInName"})
 class ReasonableAdjustmentAndCjeReportTest extends AbstractGroupedReportTestSupport<ReasonableAdjustmentAndCjeReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationService courtLocationService;
 
-    public ReasonableAdjustmentAndCjeReportTest() {
+    ReasonableAdjustmentAndCjeReportTest() {
         super(QJurorPool.jurorPool,
             ReasonableAdjustmentAndCjeReport.RequestValidator.class,
             ReportGroupBy.builder()
@@ -66,7 +64,7 @@ class ReasonableAdjustmentAndCjeReportTest extends AbstractGroupedReportTestSupp
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.courtLocationService = mock(CourtLocationService.class);
         super.beforeEach();
@@ -78,7 +76,7 @@ class ReasonableAdjustmentAndCjeReportTest extends AbstractGroupedReportTestSupp
     }
 
     @Override
-    public ReasonableAdjustmentAndCjeReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected ReasonableAdjustmentAndCjeReport createReport(PoolRequestRepository poolRequestRepository) {
         return new ReasonableAdjustmentAndCjeReport(this.courtLocationService);
     }
 
@@ -93,7 +91,7 @@ class ReasonableAdjustmentAndCjeReportTest extends AbstractGroupedReportTestSupp
 
     @Override
     @DisplayName("positivePreProcessQueryTypicalCourt")
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         request.setFromDate(LocalDate.of(2024, 1, 1));
         request.setToDate(LocalDate.of(2024, 1, 2));
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);

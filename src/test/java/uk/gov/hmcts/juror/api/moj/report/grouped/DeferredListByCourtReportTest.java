@@ -33,12 +33,11 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<DeferredListByCourtReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public DeferredListByCourtReportTest() {
+    DeferredListByCourtReportTest() {
         super(QJurorPool.jurorPool,
             DeferredListByCourtReport.RequestValidator.class,
             ReportGroupBy.builder()
@@ -51,7 +50,7 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         super.beforeEach();
     }
@@ -63,13 +62,13 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
 
 
     @Override
-    public DeferredListByCourtReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected DeferredListByCourtReport createReport(PoolRequestRepository poolRequestRepository) {
         return new DeferredListByCourtReport(poolRequestRepository);
     }
 
     @Override
     @DisplayName("positivePreProcessQueryTypicalCourt")
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
 

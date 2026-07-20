@@ -35,7 +35,7 @@ public class AttendanceGraphReportTest extends AbstractStandardReportTestSupport
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public AttendanceGraphReportTest() {
+    AttendanceGraphReportTest() {
         super(QAppearance.appearance,
             AttendanceGraphReport.RequestValidator.class,
             DataType.ATTENDANCE_DATE,
@@ -45,7 +45,7 @@ public class AttendanceGraphReportTest extends AbstractStandardReportTestSupport
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
     }
@@ -56,7 +56,7 @@ public class AttendanceGraphReportTest extends AbstractStandardReportTestSupport
     }
 
     @Override
-    public AttendanceGraphReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected AttendanceGraphReport createReport(PoolRequestRepository poolRequestRepository) {
         return new AttendanceGraphReport();
     }
 
@@ -70,7 +70,7 @@ public class AttendanceGraphReportTest extends AbstractStandardReportTestSupport
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
         doNothing().when(report).addGroupBy(any(), any(IDataType[].class));

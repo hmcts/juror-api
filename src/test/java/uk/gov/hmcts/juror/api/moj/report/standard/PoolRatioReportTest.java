@@ -21,13 +21,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class PoolRatioReportTest extends AbstractStandardReportTestSupport<PoolRatioReport> {
+class PoolRatioReportTest extends AbstractStandardReportTestSupport<PoolRatioReport> {
     private static final LocalDate FROM_DATE = LocalDate.of(2024, 1, 1);
     private static final LocalDate TO_DATE = LocalDate.of(2024, 1, 30);
     private static final List<String> COURTS = List.of("415", "414", "413");
 
 
-    public PoolRatioReportTest() {
+    PoolRatioReportTest() {
         super(QJurorPool.jurorPool,
             PoolRatioReport.RequestValidator.class,
             DataType.COURT_LOCATION_NAME_AND_CODE_JP,
@@ -41,7 +41,7 @@ public class PoolRatioReportTest extends AbstractStandardReportTestSupport<PoolR
 
 
     @Override
-    public PoolRatioReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected PoolRatioReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PoolRatioReport();
     }
 
@@ -56,7 +56,7 @@ public class PoolRatioReportTest extends AbstractStandardReportTestSupport<PoolR
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         report.preProcessQuery(query, request);
         verify(query, times(1))

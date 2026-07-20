@@ -44,8 +44,8 @@ import static org.springframework.http.HttpMethod.POST;
 @DisplayName("Controller: " + AdministrationHolidaysControllerITest.BASE_URL)
 @SuppressWarnings("PMD.ExcessiveImports")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class AdministrationHolidaysControllerITest extends AbstractIntegrationTest {
-    public static final String BASE_URL = "/api/v1/moj/administration";
+class AdministrationHolidaysControllerITest extends AbstractIntegrationTest {
+    static final String BASE_URL = "/api/v1/moj/administration";
 
     private HttpHeaders httpHeaders;
     @Autowired
@@ -55,7 +55,7 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -64,10 +64,10 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
     @DisplayName("GET  " + ViewBankHolidays.URL)
     @Sql(value = {"/db/administration/tearDownHolidays.sql",
         "/db/administration/createHolidays.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+
     @Sql(value = "/db/administration/tearDownHolidays.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     final class ViewBankHolidays {
-        public static final String URL = BASE_URL + "/bank-holidays";
+        static final String URL = BASE_URL + "/bank-holidays";
 
         private ViewBankHolidays() {
 
@@ -125,10 +125,10 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
     @DisplayName("GET  " + ViewNonSittingDays.URL)
     @Sql(value = {"/db/administration/tearDownHolidays.sql",
         "/db/administration/createHolidays.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+
     @Sql(value = "/db/administration/tearDownHolidays.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class ViewNonSittingDays {
-        public static final String URL = BASE_URL + "/non-sitting-days/{loc_code}";
+        static final String URL = BASE_URL + "/non-sitting-days/{loc_code}";
 
 
         private String toUrl(String locCode) {
@@ -211,12 +211,10 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
     @DisplayName("DELETE  " + DeleteNonSittingDays.URL)
     @Sql(value = {"/db/administration/tearDownHolidays.sql",
         "/db/administration/createHolidays.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @SuppressWarnings({
-        "PMD.PublicMemberInNonPublicType"
-    })
+
     @Sql(value = "/db/administration/tearDownHolidays.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class DeleteNonSittingDays {
-        public static final String URL = BASE_URL + "/non-sitting-days/{loc_code}/{date}";
+        static final String URL = BASE_URL + "/non-sitting-days/{loc_code}/{date}";
 
 
         private String toUrl(String locCode, LocalDate date) {
@@ -309,10 +307,10 @@ public class AdministrationHolidaysControllerITest extends AbstractIntegrationTe
     @DisplayName("POST  " + AddNonSittingDays.URL)
     @Sql(value = {"/db/administration/tearDownHolidays.sql",
         "/db/administration/createHolidays.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+
     @Sql(value = "/db/administration/tearDownHolidays.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class AddNonSittingDays {
-        public static final String URL = BASE_URL + "/non-sitting-days/{loc_code}";
+        static final String URL = BASE_URL + "/non-sitting-days/{loc_code}";
 
 
         private String toUrl(String locCode) {

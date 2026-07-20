@@ -39,16 +39,13 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-@SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType"
-})
+@SuppressWarnings("PMD.ExcessiveImports")
 class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<PostponedListByDateReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationService courtLocationService;
 
-    public PostponedListByDateReportTest() {
+    PostponedListByDateReportTest() {
         super(QJurorPool.jurorPool,
             PostponedListByDateReport.RequestValidator.class,
             ReportGroupBy.builder()
@@ -64,7 +61,7 @@ class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<Pos
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.courtLocationService = mock(CourtLocationService.class);
         super.beforeEach();
@@ -76,7 +73,7 @@ class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<Pos
     }
 
     @Override
-    public PostponedListByDateReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected PostponedListByDateReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PostponedListByDateReport(poolRequestRepository, this.courtLocationService);
     }
 
@@ -91,7 +88,7 @@ class PostponedListByDateReportTest extends AbstractGroupedReportTestSupport<Pos
 
     @Override
     @DisplayName("positivePreProcessQueryTypicalCourt")
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         request.setToDate(LocalDate.of(2023, 1, 1));
         request.setToDate(LocalDate.of(2023, 1, 2));
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);

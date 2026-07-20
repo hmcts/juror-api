@@ -45,8 +45,8 @@ import static org.springframework.http.HttpMethod.PUT;
 @DisplayName("Controller: " + AdministrationJudgeControllerITest.BASE_URL)
 @SuppressWarnings("PMD.ExcessiveImports")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class AdministrationJudgeControllerITest extends AbstractIntegrationTest {
-    public static final String BASE_URL = "/api/v1/moj/administration/judges";
+class AdministrationJudgeControllerITest extends AbstractIntegrationTest {
+    static final String BASE_URL = "/api/v1/moj/administration/judges";
 
     private HttpHeaders httpHeaders;
     @Autowired
@@ -57,7 +57,7 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -66,10 +66,10 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     @DisplayName("GET  " + ViewJudgeDetails.URL)
     @Sql(value = {"/db/administration/tearDownJudges.sql",
         "/db/administration/createJudges.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+
     @Sql(value = "/db/administration/tearDownJudges.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class ViewJudgeDetails {
-        public static final String URL = BASE_URL + "/{judge_id}";
+        static final String URL = BASE_URL + "/{judge_id}";
 
         private String toUrl(long judgeId) {
             return toUrl(String.valueOf(judgeId));
@@ -172,10 +172,10 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     @DisplayName("DELETE  " + DeleteJudge.URL)
     @Sql(value = {"/db/administration/tearDownJudges.sql",
         "/db/administration/createJudges.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+
     @Sql(value = "/db/administration/tearDownJudges.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class DeleteJudge {
-        public static final String URL = BASE_URL + "/{judge_id}";
+        static final String URL = BASE_URL + "/{judge_id}";
 
         private String toUrl(long judgeId) {
             return toUrl(String.valueOf(judgeId));
@@ -265,12 +265,10 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     @DisplayName("GET  " + ViewAllJudgeDetails.URL)
     @Sql(value = {"/db/administration/tearDownJudges.sql",
         "/db/administration/createJudges.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @SuppressWarnings({
-        "PMD.PublicMemberInNonPublicType"
-    })
+
     @Sql(value = "/db/administration/tearDownJudges.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     final class ViewAllJudgeDetails {
-        public static final String URL = BASE_URL;
+        static final String URL = BASE_URL;
 
         private ViewAllJudgeDetails() {
 
@@ -405,10 +403,10 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
     @DisplayName("POST  " + CreateJudgeDetails.URL)
     @Sql(value = {"/db/administration/tearDownJudges.sql",
         "/db/administration/createJudges.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+
     @Sql(value = "/db/administration/tearDownJudges.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     final class CreateJudgeDetails {
-        public static final String URL = BASE_URL;
+        static final String URL = BASE_URL;
 
         private CreateJudgeDetails() {
 
@@ -492,12 +490,12 @@ public class AdministrationJudgeControllerITest extends AbstractIntegrationTest 
 
     @Nested
     @DisplayName("PUT  " + UpdateJudgeDetails.URL)
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Sql(value = {"/db/administration/tearDownJudges.sql",
         "/db/administration/createJudges.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+
     @Sql(value = "/db/administration/tearDownJudges.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class UpdateJudgeDetails {
-        public static final String URL = BASE_URL + "/{judge_id}";
+        static final String URL = BASE_URL + "/{judge_id}";
 
         private String toUrl(long judgeId) {
             return toUrl(String.valueOf(judgeId));

@@ -87,10 +87,10 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
  */
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType",
     "PMD.TooManyMethods",
     "PMD.CouplingBetweenObjects"
 })
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class JurorManagementControllerITest extends AbstractIntegrationTest {
@@ -129,7 +129,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         initHeaders();
     }
 
@@ -2211,14 +2211,11 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
     }
 
-    @SuppressWarnings({
-        "PMD.PublicMemberInNonPublicType"
-    })
     @Nested
     @DisplayName("Jurors on Trial tests")
     class JurorsOnTrial {
 
-        public static final String CONFIRM_JURY_ATTENDANCE_URL = "/api/v1/moj/juror-management/confirm-jury-attendance";
+        static final String CONFIRM_JURY_ATTENDANCE_URL = "/api/v1/moj/juror-management/confirm-jury-attendance";
 
         @Test
         @DisplayName("Get Jurors on Trials - happy path")

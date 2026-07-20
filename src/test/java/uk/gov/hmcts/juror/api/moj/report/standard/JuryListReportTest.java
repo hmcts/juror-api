@@ -35,7 +35,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class JuryListReportTest extends AbstractStandardReportTestSupport<JuryListReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
@@ -49,14 +48,14 @@ class JuryListReportTest extends AbstractStandardReportTestSupport<JuryListRepor
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.trialRepository = mock(TrialRepository.class);
     }
 
 
-    public JuryListReportTest() {
+    JuryListReportTest() {
         super(QPanel.panel,
             JuryListReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
@@ -69,12 +68,12 @@ class JuryListReportTest extends AbstractStandardReportTestSupport<JuryListRepor
 
 
     @Override
-    public JuryListReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected JuryListReport createReport(PoolRequestRepository poolRequestRepository) {
         return new JuryListReport(trialRepository);
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         request.setTrialNumber(TestConstants.VALID_TRIAL_NUMBER);
         request.setLocCode(TestConstants.VALID_COURT_LOCATION);

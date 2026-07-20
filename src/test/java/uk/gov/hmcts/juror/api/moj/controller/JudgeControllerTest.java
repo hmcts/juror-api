@@ -51,10 +51,7 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = JudgeController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ContextConfiguration(classes = {JudgeController.class})
-@SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType"
-})
+@SuppressWarnings("PMD.ExcessiveImports")
 class JudgeControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial/judge";
 
@@ -68,7 +65,7 @@ class JudgeControllerTest {
 
     @Before
     @BeforeEach
-    public void setupMocks() {
+    void setupMocks() {
         jwtPayload = null;
         mockMvc = MockMvcBuilders
             .standaloneSetup(new JudgeController(judgeService))

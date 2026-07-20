@@ -19,10 +19,9 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/TrialAttendanceReportITest.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class JuryCostBillITest extends AbstractStandardReportControllerITest {
     @Autowired
-    public JuryCostBillITest(TestRestTemplate template) {
+    JuryCostBillITest(TestRestTemplate template) {
         super(template, JuryCostBill.class);
     }
 

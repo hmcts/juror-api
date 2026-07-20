@@ -43,16 +43,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Integration tests for the ER Administration controller.
  */
-@SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType"
-})
+
+@SuppressWarnings("PMD.ExcessiveImports")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class ErAdministrationControllerITest extends AbstractIntegrationTest {
 
-    public static final String EXPECT_THE_STATUS_TO_BE_FORBIDDEN = "Expect the status to be forbidden.";
+    static final String EXPECT_THE_STATUS_TO_BE_FORBIDDEN = "Expect the status to be forbidden.";
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -64,7 +62,7 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         initHeadersBureau();
     }
 

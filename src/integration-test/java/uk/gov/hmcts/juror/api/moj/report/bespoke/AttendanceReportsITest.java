@@ -34,15 +34,13 @@ class AttendanceReportsITest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-
-    public static final String URL_BASE = "/api/v1/moj/reports";
+    static final String URL_BASE = "/api/v1/moj/reports";
 
     private HttpHeaders httpHeaders;
 
-    @SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.SignatureDeclareThrowsException"})
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         initHeaders();
     }
 

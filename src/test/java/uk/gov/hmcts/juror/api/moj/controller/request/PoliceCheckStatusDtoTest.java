@@ -16,21 +16,19 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PoliceCheckStatusDtoTest {
 
     private static ValidatorFactory validatorFactory;
     private static Validator validator;
 
     @BeforeAll
-    public static void beforeAll() {
+    static void beforeAll() {
         validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
     }
 
     @AfterAll
-    public static void afterAll() {
+    static void afterAll() {
         validatorFactory.close();
     }
 

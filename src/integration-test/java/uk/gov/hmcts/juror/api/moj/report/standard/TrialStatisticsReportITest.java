@@ -22,11 +22,10 @@ import java.util.List;
     "/db/administration/createJudges.sql",
     "/db/mod/reports/TrialStatisticsReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class TrialStatisticsReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public TrialStatisticsReportITest(TestRestTemplate template) {
+    TrialStatisticsReportITest(TestRestTemplate template) {
         super(template, TrialStatisticsReport.class);
     }
 

@@ -102,24 +102,24 @@ import static org.springframework.http.HttpMethod.PUT;
 
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType",
     "PMD.TooManyMethods",
     "PMD.CouplingBetweenObjects"
 })
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + JurorExpenseControllerITest.BASE_URL)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
-    public static final String JUROR_NUMBER = "641500020";
-    public static final String COURT_LOCATION = "415";
-    public static final String JUROR_NUMBER_NO_APPEARANCES = "641500024";
-    public static final String POOL_NUMBER = "415230101";
+    static final String JUROR_NUMBER = "641500020";
+    static final String COURT_LOCATION = "415";
+    static final String JUROR_NUMBER_NO_APPEARANCES = "641500024";
+    static final String POOL_NUMBER = "415230101";
     private static final String COURT_USER = "COURT_USER";
     private static final String BUREAU_USER = "BUREAU_USER";
 
-    public static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
+    static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
     private static final String URL_UNPAID_SUMMARY = BASE_URL + "/unpaid-summary";
 
     @Autowired
@@ -139,7 +139,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     private Clock clock;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         transactionTemplate = new TransactionTemplate(transactionManager);
@@ -186,14 +186,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         assertThat(financialAuditDetailsAppearance.getLastApprovedFAudit()).isEqualTo(lastApprovedAuditNumber);
     }
 
-    @SuppressWarnings({
-        "PMD.PublicMemberInNonPublicType"
-    })
     @Nested
     @DisplayName("POST " + URL_UNPAID_SUMMARY)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp.sql"})
     class GetUnpaidExpenses {
-        public String toUrl(String courtLocation) {
+        String toUrl(String courtLocation) {
             return URL_UNPAID_SUMMARY.replace("{loc_code}", courtLocation);
         }
 
@@ -331,17 +328,14 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
     }
 
-    @SuppressWarnings({
-        "PMD.PublicMemberInNonPublicType"
-    })
     @Nested
     @DisplayName("GET " + GetDefaultExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql"})
     class GetDefaultExpenses {
 
-        public static final String URL = BASE_URL + "/{juror_number}/default-expenses";
+        static final String URL = BASE_URL + "/{juror_number}/default-expenses";
 
-        public String toUrl(String courtLocation, String jurorNumber) {
+        String toUrl(String courtLocation, String jurorNumber) {
             return URL.replace("{loc_code}", courtLocation)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -397,16 +391,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("POST " + SetDefaultExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class SetDefaultExpenses {
 
-        public static final String URL = BASE_URL + "/{juror_number}/default-expenses";
+        static final String URL = BASE_URL + "/{juror_number}/default-expenses";
 
         private BigDecimal createBigDecimal(double value) {
             return new BigDecimal(String.format("%.2f", value));
         }
 
-        public String toUrl(String courtLocation, String jurorNumber) {
+        String toUrl(String courtLocation, String jurorNumber) {
             return URL.replace("{loc_code}", courtLocation)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -454,10 +447,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
     abstract class AbstractDraftDailyExpense {
-        public static final String URL = BASE_URL + "/{juror_number}/DRAFT/edit";
-        public static final String METHOD_NAME = "postEditDailyExpense";
+        static final String URL = BASE_URL + "/{juror_number}/DRAFT/edit";
+        static final String METHOD_NAME = "postEditDailyExpense";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
@@ -1192,11 +1185,10 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET " + GetEnteredExpenseDetails.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_getEnteredExpenseDetails.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class GetEnteredExpenseDetails {
-        public static final String URL = BASE_URL + "/{juror_number}/entered";
+        static final String URL = BASE_URL + "/{juror_number}/entered";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
@@ -1456,12 +1448,11 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("POST /api/v1/moj/expenses/submit-for-approval")
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_submitForApprovalSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class SubmitForApproval {
 
-        public static final String URL = BASE_URL + "/{juror_number}/submit-for-approval";
+        static final String URL = BASE_URL + "/{juror_number}/submit-for-approval";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
@@ -1723,33 +1714,32 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("GET " + GetEnteredExpenseDetails.URL)
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_simplifiedExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetSimplifiedExpenseDetails {
-        public static final String URL = BASE_URL + "/{juror_number}/{type}/view/simplified";
+        static final String URL = BASE_URL + "/{juror_number}/{type}/view/simplified";
 
 
-        public String toUrl(String jurorNumber, ExpenseType expenseType) {
+        String toUrl(String jurorNumber, ExpenseType expenseType) {
             return toUrl(jurorNumber, expenseType.name());
         }
 
-        public String toUrl(String jurorNumber, String expenseType) {
+        String toUrl(String jurorNumber, String expenseType) {
             return toUrl(COURT_LOCATION, jurorNumber, expenseType);
         }
 
-        public String toUrl(String locCode, String jurorNumber, String expenseType) {
+        String toUrl(String locCode, String jurorNumber, String expenseType) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber)
                 .replace("{type}", expenseType);
         }
 
-        public URI toUri(String jurorNumber, String expenseType) {
+        URI toUri(String jurorNumber, String expenseType) {
             return URI.create(toUrl(jurorNumber, expenseType));
         }
 
-        public URI toUri(String owner, String jurorNumber, String expenseType) {
+        URI toUri(String owner, String jurorNumber, String expenseType) {
             return URI.create(toUrl(owner, jurorNumber, expenseType));
         }
 
@@ -2098,17 +2088,16 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET " + GetDraftExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class GetDraftExpenses {
-        public static final String URL = BASE_URL + "/{juror_number}/DRAFT/view";
+        static final String URL = BASE_URL + "/{juror_number}/DRAFT/view";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
-        public URI toUri(String locCode, String jurorNumber) {
+        URI toUri(String locCode, String jurorNumber) {
             return URI.create(toUrl(locCode, jurorNumber));
         }
 
@@ -2274,17 +2263,16 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET (POST) " + GetExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class GetExpenses {
-        public static final String URL = BASE_URL + "/{juror_number}/view";
+        static final String URL = BASE_URL + "/{juror_number}/view";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
-        public URI toUri(String locCode, String jurorNumber) {
+        URI toUri(String locCode, String jurorNumber) {
             return URI.create(toUrl(locCode, jurorNumber));
         }
 
@@ -2445,17 +2433,16 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         "/db/truncate.sql",
         "/db/JurorExpenseControllerITest_approveExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class ApproveExpenses {
-        public static final String URL = BASE_URL + "/{payment_method}/approve";
+        static final String URL = BASE_URL + "/{payment_method}/approve";
 
-        public String toUrl(String locCode, String paymentMethod) {
+        String toUrl(String locCode, String paymentMethod) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{payment_method}", paymentMethod);
         }
 
-        public String toUrl(String locCode, PaymentMethod paymentMethod) {
+        String toUrl(String locCode, PaymentMethod paymentMethod) {
             return toUrl(locCode, paymentMethod.name());
         }
 
@@ -2938,10 +2925,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("POST " + PostEditAttendedDayDailyExpense.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_editExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class PostEditAttendedDayDailyExpense extends AbstractDraftDailyExpense {
 
-        public static final String URL = BASE_URL + "/{juror_number}/{type}/edit";
+        static final String URL = BASE_URL + "/{juror_number}/{type}/edit";
 
 
         protected String toUrl(String jurorNumber, ExpenseType type) {
@@ -2949,7 +2935,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
 
         @Override
-        public String toUrl(String jurorNumber, String type) {
+        String toUrl(String jurorNumber, String type) {
             return URL
                 .replace("{loc_code}", COURT_LOCATION)
                 .replace("{juror_number}", jurorNumber)
@@ -3342,18 +3328,17 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("POST " + CalculateTotals.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_calculateTotalExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class CalculateTotals extends AbstractDraftDailyExpense {
-        public static final String URL = BASE_URL + "/{juror_number}/calculate/totals";
+        static final String URL = BASE_URL + "/{juror_number}/calculate/totals";
 
         private static final String JUROR_NUMBER = "641500020";
 
-        public String toUrl(String jurorNumber) {
+        String toUrl(String jurorNumber) {
             return toUrl(COURT_LOCATION, jurorNumber);
         }
 
         @Override
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
@@ -4005,10 +3990,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET /api/v1/moj/expenses/submit-for-approval")
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class GetCounts {
 
-        public static final String URL = BASE_URL + "/{juror_number}/counts";
+        static final String URL = BASE_URL + "/{juror_number}/counts";
 
         private String toUrl(String locCode, String jurorNumber) {
             return URL
@@ -4104,9 +4088,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET " + GetExpensesForApproval.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_getApproveExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class GetExpensesForApproval {
-        public static final String URL = BASE_URL + "/{payment_method}/pending-approval";
+        static final String URL = BASE_URL + "/{payment_method}/pending-approval";
 
         private String toUrl(String locCode, PaymentMethod paymentMethod, LocalDate from, LocalDate to) {
             return toUrl(locCode, paymentMethod.name(),
@@ -4575,9 +4558,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("PATCH " + ApportionSmartCard.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class ApportionSmartCard {
-        public static final String URL = BASE_URL + "/{juror_number}/smartcard";
+        static final String URL = BASE_URL + "/{juror_number}/smartcard";
 
         private static final String JUROR_NUMBER = "641500020";
 
@@ -4588,7 +4570,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             LocalDate.of(2025, 1, 7)
         );
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);

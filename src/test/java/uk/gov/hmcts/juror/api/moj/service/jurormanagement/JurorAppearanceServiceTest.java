@@ -103,7 +103,8 @@ import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.EXPENSE_ENT
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.ATTENDANCE_RECORD_ALREADY_EXISTS;
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods",
-    "PMD.NcssCount", "PMD.CouplingBetweenObjects", "PMD.PublicMemberInNonPublicType"})
+    "PMD.NcssCount", "PMD.CouplingBetweenObjects"})
+
 @ExtendWith(SpringExtension.class)
 class JurorAppearanceServiceTest {
     @Mock

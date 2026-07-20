@@ -51,10 +51,10 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType",
     "PMD.TooManyMethods",
     "PMD.CouplingBetweenObjects"
 })
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PanelControllerITest extends AbstractIntegrationTest {
@@ -81,7 +81,7 @@ class PanelControllerITest extends AbstractIntegrationTest {
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt(COURT_USER_NAME, CHESTER_LOC_CODE,

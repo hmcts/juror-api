@@ -37,15 +37,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings({
-    "PMD.PublicMemberInNonPublicType",
-    "unchecked"
-})
+@SuppressWarnings("unchecked")
 class IncompleteServiceReportTest extends AbstractStandardReportTestSupport<IncompleteServiceReport> {
 
     private CourtLocationRepository courtLocationRepository;
 
-    public IncompleteServiceReportTest() {
+    IncompleteServiceReportTest() {
         super(QJuror.juror,
             IncompleteServiceReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
@@ -58,20 +55,20 @@ class IncompleteServiceReportTest extends AbstractStandardReportTestSupport<Inco
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         super.beforeEach();
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         // Close the static mock created by TestUtils.mockSecurityUtil()
         // This prevents "static mocking is already registered" errors in other tests
         TestUtils.afterAll();
     }
 
     @Override
-    public IncompleteServiceReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected IncompleteServiceReport createReport(PoolRequestRepository poolRequestRepository) {
         return new IncompleteServiceReport(poolRequestRepository, this.courtLocationRepository);
     }
 
@@ -85,7 +82,7 @@ class IncompleteServiceReportTest extends AbstractStandardReportTestSupport<Inco
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         BureauJwtPayload payload = BureauJwtPayload.builder()
             .owner("415")

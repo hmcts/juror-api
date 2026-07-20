@@ -21,11 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
     "/db/mod/truncate.sql",
     "/db/mod/reports/ElectronicPoliceCheckReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class ElectronicPoliceCheckReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public ElectronicPoliceCheckReportITest(TestRestTemplate template) {
+    ElectronicPoliceCheckReportITest(TestRestTemplate template) {
         super(template, ElectronicPoliceCheckReport.class);
     }
 

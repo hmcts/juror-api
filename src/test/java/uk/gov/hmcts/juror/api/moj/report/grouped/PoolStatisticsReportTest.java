@@ -21,13 +21,12 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PoolStatisticsReportTest extends AbstractGroupedReportTestSupport<PoolStatisticsReport> {
 
     private static final LocalDate FROM_DATE = LocalDate.of(2024, 1, 1);
     private static final LocalDate TO_DATE = LocalDate.of(2024, 1, 30);
 
-    public PoolStatisticsReportTest() {
+    PoolStatisticsReportTest() {
         super(QJurorPool.jurorPool,
             PoolStatisticsReport.RequestValidator.class,
             ReportGroupBy.builder()

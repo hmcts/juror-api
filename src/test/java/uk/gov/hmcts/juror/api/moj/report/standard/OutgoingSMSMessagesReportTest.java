@@ -21,17 +21,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-@SuppressWarnings({
-    "PMD.PublicMemberInNonPublicType",
-    "checkstyle:all"
-})
+
+@SuppressWarnings("checkstyle:all")
 class OutgoingSMSMessagesReportTest extends AbstractStandardReportTestSupport<OutgoingSMSMessagesReport> {
 
     private static final LocalDate FROM_DATE = LocalDate.of(2024, 1, 1);
     private static final LocalDate TO_DATE = LocalDate.of(2024, 1, 31);
     private static final List<String> COURTS = List.of("415", "416", "417");
 
-    public OutgoingSMSMessagesReportTest() {
+    OutgoingSMSMessagesReportTest() {
         super(QMessage.message,
                 OutgoingSMSMessagesReport.RequestValidator.class,
                 DataType.COURT_LOCATION_NAME_AND_CODE_MP,
@@ -55,7 +53,7 @@ class OutgoingSMSMessagesReportTest extends AbstractStandardReportTestSupport<Ou
     }
 
     @Override
-    public OutgoingSMSMessagesReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected OutgoingSMSMessagesReport createReport(PoolRequestRepository poolRequestRepository) {
         return new OutgoingSMSMessagesReport();
     }
 
@@ -70,7 +68,7 @@ class OutgoingSMSMessagesReportTest extends AbstractStandardReportTestSupport<Ou
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         report.preProcessQuery(query, request);
 
         verify(query, times(1))

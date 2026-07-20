@@ -49,10 +49,11 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 /**
  * Integration tests for the Juror Record controller.
  */
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @SuppressWarnings("PMD.ExcessiveImports")
-public class SjoTasksControllerITest extends AbstractIntegrationTest {
+class SjoTasksControllerITest extends AbstractIntegrationTest {
     private static final String BASE_URL = "/api/v1/moj/sjo-tasks";
 
     @Autowired
@@ -66,7 +67,7 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         initHeaders();
     }
 
@@ -81,15 +82,12 @@ public class SjoTasksControllerITest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
-    @SuppressWarnings({
-        "PMD.PublicMemberInNonPublicType",
-        "PMD.TooManyMethods"
-    })
+    @SuppressWarnings("PMD.TooManyMethods")
     @Nested
     @DisplayName("POST " + GetCompleteJurors.URL)
     @Sql({"/db/mod/truncate.sql", "/db/CompleteServiceControllerSearch.sql"})
     class GetCompleteJurors {
-        public static final String URL = BASE_URL + "/juror/search";
+        static final String URL = BASE_URL + "/juror/search";
 
         @SuppressWarnings("PMD.SignatureDeclareThrowsException")
         ResponseEntity<PaginatedList<JurorDetailsDto>> triggerValid(JurorPoolSearch search) throws Exception {

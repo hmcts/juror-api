@@ -62,10 +62,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @SuppressWarnings({
     "PMD.MutableStaticState",
-    "PMD.PublicMemberInNonPublicType",
     "PMD.ExcessiveImports",
     "PMD.UnitTestShouldIncludeAssert"
 })
+
 @ActiveProfiles({"development", "test"})
 class SecurityConfigTest {
 
@@ -81,22 +81,22 @@ class SecurityConfigTest {
     protected static String erportalSecret;
 
     @Value("${jwt.secret.bureau}")
-    public void setBureauSecret(String secret) {
+    void setBureauSecret(String secret) {
         bureauSecret = secret;
     }
 
     @Value("${jwt.secret.public}")
-    public void setPublicSecret(String secret) {
+    void setPublicSecret(String secret) {
         publicSecret = secret;
     }
 
     @Value("${jwt.secret.hmac}")
-    public void setHmacSecret(String secret) {
+    void setHmacSecret(String secret) {
         hmacSecret = secret;
     }
 
     @Value("${jwt.secret.er-portal}")
-    public void setErportalSecret(String secret) {
+    void setErportalSecret(String secret) {
         erportalSecret = secret;
     }
 
@@ -167,7 +167,6 @@ class SecurityConfigTest {
             this.jwtType = jwtType;
         }
 
-        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
         private enum JwtType {
             HMAC(hmacSecret, JwtType::getHmacClaimMap),
             PUBLIC(publicSecret, JwtType::getPublicClaimMap),
@@ -182,15 +181,15 @@ class SecurityConfigTest {
                 this.jwtClaimMapSupplier = jwtClaimMapSupplier;
             }
 
-            public Map<String, Object> getClaimMap() {
+            Map<String, Object> getClaimMap() {
                 return jwtClaimMapSupplier.get();
             }
 
-            public String getValidToken() {
+            String getValidToken() {
                 return getJwt(secret, getClaimMap());
             }
 
-            public String getInvalidToken() {
+            String getInvalidToken() {
                 return getJwt(secret + "Invalid", jwtClaimMapSupplier.get());
             }
 
@@ -241,7 +240,7 @@ class SecurityConfigTest {
                 return claimsMap;
             }
 
-            public static String getJwt(String secret, Map<String, Object> claimsMap) {
+            static String getJwt(String secret, Map<String, Object> claimsMap) {
                 claimsMap.put(Claims.EXPIRATION, Date.from(Instant.now().plus(100L * 365L, ChronoUnit.DAYS)));
                 claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
                 return Jwts.builder()
@@ -250,15 +249,14 @@ class SecurityConfigTest {
                     .compact();
             }
 
-            public Object getJwtWithClaimMap(Map<String, Object> claimMap) {
+            Object getJwtWithClaimMap(Map<String, Object> claimMap) {
                 return getJwt(secret, claimMap);
             }
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @RestController
-    public static class SecurityConfigControllerTest {
+    static class SecurityConfigControllerTest {
         @GetMapping({
             "/api/v1/public/test",
             "/api/v1/bureau/test",
@@ -270,7 +268,7 @@ class SecurityConfigTest {
             "/api/v1/auth/juror-er/test",
             "/api/v1/auth/settings/test"
         })
-        public ResponseEntity<Map<String, Boolean>> validResponse() {
+        ResponseEntity<Map<String, Boolean>> validResponse() {
             return ResponseEntity.ok(Collections.singletonMap("isValid", true));
         }
     }

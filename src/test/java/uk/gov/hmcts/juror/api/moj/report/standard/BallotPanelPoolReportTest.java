@@ -26,12 +26,11 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<BallotPanelPoolReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public BallotPanelPoolReportTest() {
+    BallotPanelPoolReportTest() {
         super(
             QJurorPool.jurorPool,
             BallotPanelPoolReport.RequestValidator.class,
@@ -44,19 +43,19 @@ class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<Ballot
     }
 
     @Override
-    public BallotPanelPoolReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected BallotPanelPoolReport createReport(PoolRequestRepository poolRequestRepository) {
         return new BallotPanelPoolReport();
     }
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         TestUtils.afterAll();
         securityUtilMockedStatic.close();
     }
@@ -70,7 +69,7 @@ class BallotPanelPoolReportTest extends AbstractStandardReportTestSupport<Ballot
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         request.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
         securityUtilMockedStatic.when(SecurityUtil::getCourts).thenReturn(List.of(TestConstants.VALID_COURT_LOCATION));

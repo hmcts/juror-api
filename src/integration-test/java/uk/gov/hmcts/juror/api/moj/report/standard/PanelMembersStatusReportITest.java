@@ -21,11 +21,10 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PanelMembersStatusReportITest_Typical.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PanelMembersStatusReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public PanelMembersStatusReportITest(TestRestTemplate template) {
+    PanelMembersStatusReportITest(TestRestTemplate template) {
         super(template, PanelMembersStatusReport.class);
     }
 

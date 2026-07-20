@@ -3339,6 +3339,7 @@ class JurorRecordServiceTest {
     @Nested
     @DisplayName("public JurorAttendanceDetailsResponseDto getJurorAttendanceDetails(String jurorNumber,"
         + " String poolNumber, BureauJWTPayload payload) ")
+
     class JurorRecordAttendanceTab {
 
         @ParameterizedTest
@@ -3747,6 +3748,7 @@ class JurorRecordServiceTest {
         @Nested
         @DisplayName("public FilterableJurorDetailsResponseDto getJurorDetails(FilterableJurorDetailsRequestDto "
             + "request)")
+
         class GetJurorDetailsFilterable {
             private MockedStatic<PaymentDetails> paymentDetailsMockedStatic;
             private MockedStatic<NameDetails> nameDetailsMockedStatic;
@@ -3949,7 +3951,6 @@ class JurorRecordServiceTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("Juror getJurorBankDetails(String jurorNumber)")
     class GetJurorBankDetails {

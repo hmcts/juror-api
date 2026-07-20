@@ -84,12 +84,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     BulkServiceImpl.class})
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType",
     "PMD.CouplingBetweenObjects"
 })
+
 @DisplayName("Controller: " + JurorExpenseControllerTest.BASE_URL)
 class JurorExpenseControllerTest {
-    public static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
+    static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
 
     @Autowired
     private MockMvc mockMvc;
@@ -104,14 +104,13 @@ class JurorExpenseControllerTest {
     @MockBean
     private JurorRepository jurorRepository;
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + UnpaidExpensesForCourtLocation.URL)
     class UnpaidExpensesForCourtLocation {
 
-        public static final String URL = BASE_URL + "/unpaid-summary";
+        static final String URL = BASE_URL + "/unpaid-summary";
 
-        public String toUrl(String locCode) {
+        String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);
         }
 
@@ -210,14 +209,13 @@ class JurorExpenseControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + GetDefaultExpenses.URL)
     class GetDefaultExpenses {
 
-        public static final String URL = BASE_URL + "/{juror_number}/default-expenses";
+        static final String URL = BASE_URL + "/{juror_number}/default-expenses";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -261,15 +259,13 @@ class JurorExpenseControllerTest {
         }
     }
 
-
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + SetDefaultExpenses.URL)
     class SetDefaultExpenses {
 
-        public static final String URL = BASE_URL + "/{juror_number}/default-expenses";
+        static final String URL = BASE_URL + "/{juror_number}/default-expenses";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -298,13 +294,12 @@ class JurorExpenseControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + SubmitForApproval.URL)
     class SubmitForApproval {
         private static final String URL = BASE_URL + "/{juror_number}/submit-for-approval";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -361,13 +356,12 @@ class JurorExpenseControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST (get) " + GetEnteredExpenseDetails.URL)
     class GetEnteredExpenseDetails {
-        public static final String URL = BASE_URL + "/{juror_number}/entered";
+        static final String URL = BASE_URL + "/{juror_number}/entered";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -430,17 +424,16 @@ class JurorExpenseControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + ApproveExpenses.URL)
     final class ApproveExpenses {
-        public static final String URL = BASE_URL + "/{payment_method}/approve";
+        static final String URL = BASE_URL + "/{payment_method}/approve";
 
         private ApproveExpenses() {
 
         }
 
-        public String toUrl(String locCode, PaymentMethod paymentMethod) {
+        String toUrl(String locCode, PaymentMethod paymentMethod) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{payment_method}", paymentMethod.name());
         }
@@ -508,17 +501,16 @@ class JurorExpenseControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + GetSimplifiedExpenseDetails.URL)
     class GetSimplifiedExpenseDetails {
-        public static final String URL = BASE_URL + "/{juror_number}/{type}/view/simplified";
+        static final String URL = BASE_URL + "/{juror_number}/{type}/view/simplified";
 
-        public String toUrl(String locCode, String jurorNumber, ExpenseType expenseType) {
+        String toUrl(String locCode, String jurorNumber, ExpenseType expenseType) {
             return toUrl(locCode, jurorNumber, expenseType.name());
         }
 
-        public String toUrl(String locCode, String jurorNumber, String expenseType) {
+        String toUrl(String locCode, String jurorNumber, String expenseType) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber)
                 .replace("{type}", expenseType);
@@ -598,14 +590,13 @@ class JurorExpenseControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + GetDraftExpenses.URL)
     class GetDraftExpenses {
-        public static final String URL = BASE_URL + "/{juror_number}/DRAFT/view";
+        static final String URL = BASE_URL + "/{juror_number}/DRAFT/view";
 
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -674,13 +665,12 @@ class JurorExpenseControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET (POST) " + GetExpenses.URL)
     class GetExpenses {
-        public static final String URL = BASE_URL + "/{juror_number}/view";
+        static final String URL = BASE_URL + "/{juror_number}/view";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -773,12 +763,10 @@ class JurorExpenseControllerTest {
         }
     }
 
-
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + GetExpensesForApproval.URL)
     class GetExpensesForApproval {
-        public static final String URL = BASE_URL + "/{payment_method}/pending-approval";
+        static final String URL = BASE_URL + "/{payment_method}/pending-approval";
 
         private String toUrl(String locCode, PaymentMethod paymentMethod, LocalDate from, LocalDate to) {
             return toUrl(locCode, paymentMethod.name(),
@@ -887,13 +875,12 @@ class JurorExpenseControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + GetCounts.URL)
     class GetCounts {
-        public static final String URL = BASE_URL + "/{juror_number}/counts";
+        static final String URL = BASE_URL + "/{juror_number}/counts";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -951,13 +938,12 @@ class JurorExpenseControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PUT " + PostEditDailyExpense.URL)
     class PostEditDailyExpense {
-        public static final String URL = BASE_URL + "/{juror_number}/{type}/edit";
+        static final String URL = BASE_URL + "/{juror_number}/{type}/edit";
 
-        public String toUrl(String locCode, String jurorNumber, String type) {
+        String toUrl(String locCode, String jurorNumber, String type) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber)
@@ -1058,18 +1044,16 @@ class JurorExpenseControllerTest {
             .build();
     }
 
-
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + CalculateTotals.URL)
     final class CalculateTotals {
-        public static final String URL = BASE_URL + "/{juror_number}/calculate/totals";
+        static final String URL = BASE_URL + "/{juror_number}/calculate/totals";
 
         private CalculateTotals() {
 
         }
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -1136,13 +1120,12 @@ class JurorExpenseControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PATCH " + ApportionSmartCard.URL)
     class ApportionSmartCard {
-        public static final String URL = BASE_URL + "/{juror_number}/smartcard";
+        static final String URL = BASE_URL + "/{juror_number}/smartcard";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }

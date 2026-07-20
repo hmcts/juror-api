@@ -39,10 +39,8 @@ import static org.mockito.Mockito.verify;
 /**
  * Unit tests for {@link BureauBacklogAllocateServiceImpl}.
  */
-@SuppressWarnings({
-    "PMD.PublicMemberInNonPublicType",
-    "unchecked"
-})
+
+@SuppressWarnings("unchecked")
 class BureauBacklogAllocateServiceImplTest {
 
     private static final Comparator<DigitalResponse> ASCENDING_DATE_ORDER =
@@ -55,7 +53,7 @@ class BureauBacklogAllocateServiceImplTest {
     private BureauBacklogAllocateServiceImpl bureauBacklogAllocateService;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         responseRepo = Mockito.mock(JurorDigitalResponseRepositoryMod.class);
         UserRepository userRepo = Mockito.mock(UserRepository.class);

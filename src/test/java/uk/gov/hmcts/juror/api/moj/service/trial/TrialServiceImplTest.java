@@ -79,9 +79,7 @@ import static uk.gov.hmcts.juror.api.TestUtils.staffBuilder;
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods",
-    "PMD.PublicMemberInNonPublicType"
-})
+    "PMD.TooManyMethods"})
 class TrialServiceImplTest {
 
     @Mock
@@ -174,9 +172,7 @@ class TrialServiceImplTest {
     }
 
     @Test
-    @SuppressWarnings({
-        "unchecked"
-    })
+    @SuppressWarnings("unchecked")
     void testGetTrials() {
         TrialSearch trialSearch = mock(TrialSearch.class);
         PaginatedList<TrialListDto> result = mock(PaginatedList.class);

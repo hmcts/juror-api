@@ -19,10 +19,9 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/NonRespondedReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class NonRespondedReportITest extends AbstractStandardReportControllerITest {
     @Autowired
-    public NonRespondedReportITest(TestRestTemplate template) {
+    NonRespondedReportITest(TestRestTemplate template) {
         super(template, NonRespondedReport.class);
     }
 

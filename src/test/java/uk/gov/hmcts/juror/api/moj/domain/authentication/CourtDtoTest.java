@@ -10,7 +10,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class CourtDtoTest extends AbstractValidatorTest<CourtDto> {
 
     @Override
@@ -18,7 +17,7 @@ class CourtDtoTest extends AbstractValidatorTest<CourtDto> {
         return getValidObject();
     }
 
-    public static CourtDto getValidObject() {
+    static CourtDto getValidObject() {
         return CourtDto.builder()
             .name("courtName")
             .locCode("123")

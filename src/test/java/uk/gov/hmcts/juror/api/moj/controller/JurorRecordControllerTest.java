@@ -236,8 +236,7 @@ class JurorRecordControllerTest {
             .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-    public class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
+    class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
 
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
@@ -1034,15 +1033,13 @@ class JurorRecordControllerTest {
         return jwtPayload;
     }
 
-
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName(UpdatePncCheckStatus.URL)
     class UpdatePncCheckStatus extends AbstractControllerTest<PoliceCheckStatusDto, Void> {
         private static final String URL = BASE_URL + "/pnc/{jurorNumber}";
         private static final BureauJwtAuthentication MOCK_PRINCIPAL = mock(BureauJwtAuthentication.class);
 
-        public UpdatePncCheckStatus() {
+        UpdatePncCheckStatus() {
             super(HttpMethod.PATCH, URL, MOCK_PRINCIPAL);
             bureauJwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
             when(MOCK_PRINCIPAL.getPrincipal()).thenReturn(bureauJwtPayload);
@@ -1080,14 +1077,13 @@ class JurorRecordControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName(UpdatePncCheckStatus.URL)
     class UpdateJurorToFailedToAttend extends AbstractControllerTest<JurorNumberAndPoolNumberDto, Void> {
         private static final String URL = BASE_URL + "/failed-to-attend";
         private static final BureauJwtAuthentication MOCK_PRINCIPAL = mock(BureauJwtAuthentication.class);
 
-        public UpdateJurorToFailedToAttend() {
+        UpdateJurorToFailedToAttend() {
             super(HttpMethod.PATCH, URL, MOCK_PRINCIPAL);
             bureauJwtPayload = TestUtils.createJwt("415", "COURT_USER");
             when(MOCK_PRINCIPAL.getPrincipal()).thenReturn(bureauJwtPayload);
@@ -1131,14 +1127,13 @@ class JurorRecordControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName(CreateJurorRecord.URL)
     class CreateJurorRecord extends AbstractControllerTest<JurorCreateRequestDto, Void> {
         private static final String URL = BASE_URL + "/create-juror";
         private static final BureauJwtAuthentication MOCK_PRINCIPAL = mock(BureauJwtAuthentication.class);
 
-        public CreateJurorRecord() {
+        CreateJurorRecord() {
             super(HttpMethod.POST, URL, MOCK_PRINCIPAL);
         }
 
@@ -1234,11 +1229,10 @@ class JurorRecordControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST" + GetJurorBankDetails.URL)
     class GetJurorBankDetails extends JurorBankDetailsDto {
-        public static final String JUROR_NUMBER = "123456789";
+        static final String JUROR_NUMBER = "123456789";
         private static final String URL = BASE_URL + "/{juror_number}/bank-details";
 
         @Test

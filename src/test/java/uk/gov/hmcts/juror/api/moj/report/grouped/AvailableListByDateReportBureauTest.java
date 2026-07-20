@@ -25,13 +25,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class AvailableListByDateReportBureauTest
     extends AbstractGroupedReportTestSupport<AvailableListByDateReportBureau> {
 
     private static final LocalDate DATE = LocalDate.of(2024, 1, 1);
 
-    public AvailableListByDateReportBureauTest() {
+    AvailableListByDateReportBureauTest() {
         super(QJurorPool.jurorPool,
             AvailableListByDateReportBureau.RequestValidator.class,
             ReportGroupBy.builder()
@@ -52,7 +51,7 @@ class AvailableListByDateReportBureauTest
     }
 
     @Override
-    public AvailableListByDateReportBureau createReport(PoolRequestRepository poolRequestRepository) {
+    protected AvailableListByDateReportBureau createReport(PoolRequestRepository poolRequestRepository) {
         return new AvailableListByDateReportBureau(poolRequestRepository);
     }
 
@@ -68,7 +67,7 @@ class AvailableListByDateReportBureauTest
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         doNothing().when(report).addStandardFilters(any(), any());
 
         report.preProcessQuery(query, request);

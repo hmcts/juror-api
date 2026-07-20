@@ -15,13 +15,12 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class GroupByAppearanceTrialNumberOrPoolNumberTest {
 
     private static GroupByAppearanceTrialNumberOrPoolNumber groupByAppearanceTrialNumberOrPoolNumber;
 
     @BeforeAll
-    public static void beforeAll() {
+    static void beforeAll() {
         groupByAppearanceTrialNumberOrPoolNumber = new GroupByAppearanceTrialNumberOrPoolNumber();
     }
 

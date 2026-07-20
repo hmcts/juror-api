@@ -35,7 +35,6 @@ import static uk.gov.hmcts.juror.api.TestConstants.DATE_TO_DISPLAY_NAME;
 import static uk.gov.hmcts.juror.api.TestConstants.DATE_TO_KEY;
 import static uk.gov.hmcts.juror.api.TestConstants.VALID_COURT_LOCATION;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<CompletionOfServiceReport> {
 
     private static final LocalDate DATE_FROM_TEST_VALUE = LocalDate.of(2023, 3, 1);
@@ -44,7 +43,7 @@ class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<Com
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationService courtLocationService;
 
-    public CompletionOfServiceReportTest() {
+    CompletionOfServiceReportTest() {
         super(
             QJurorPool.jurorPool,
             CompletionOfServiceReport.RequestValidator.class,
@@ -61,20 +60,20 @@ class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<Com
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.courtLocationService = mock(CourtLocationService.class);
         super.beforeEach();
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         securityUtilMockedStatic.close();
     }
 
 
     @Override
-    public CompletionOfServiceReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected CompletionOfServiceReport createReport(PoolRequestRepository poolRequestRepository) {
         return new CompletionOfServiceReport(poolRequestRepository, courtLocationService);
     }
 
@@ -88,7 +87,7 @@ class CompletionOfServiceReportTest extends AbstractGroupedReportTestSupport<Com
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(VALID_COURT_LOCATION);
         report.preProcessQuery(query,request);

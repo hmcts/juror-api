@@ -30,14 +30,13 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class UnpaidAttendanceReportDetailedReportTest
     extends AbstractGroupedReportTestSupport<UnpaidAttendanceReportDetailedReport> {
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     private CourtLocationService courtLocationService;
 
-    public UnpaidAttendanceReportDetailedReportTest() {
+    UnpaidAttendanceReportDetailedReportTest() {
         super(QAppearance.appearance,
             UnpaidAttendanceReportDetailedReport.RequestValidator.class,
             new GroupByAppearanceTrialNumberOrPoolNumber(),
@@ -52,7 +51,7 @@ class UnpaidAttendanceReportDetailedReportTest
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.courtLocationService = mock(CourtLocationService.class);
         super.beforeEach();
@@ -64,7 +63,7 @@ class UnpaidAttendanceReportDetailedReportTest
     }
 
     @Override
-    public UnpaidAttendanceReportDetailedReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected UnpaidAttendanceReportDetailedReport createReport(PoolRequestRepository poolRequestRepository) {
         return new UnpaidAttendanceReportDetailedReport(this.courtLocationService);
     }
 
@@ -78,7 +77,7 @@ class UnpaidAttendanceReportDetailedReportTest
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         request.setToDate(LocalDate.of(2023, 1, 1));
         request.setToDate(LocalDate.of(2023, 1, 2));

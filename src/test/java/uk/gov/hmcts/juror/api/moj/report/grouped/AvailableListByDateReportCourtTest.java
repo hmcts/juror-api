@@ -33,7 +33,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class AvailableListByDateReportCourtTest
     extends AbstractGroupedReportTestSupport<AvailableListByDateReportCourt> {
 
@@ -41,7 +40,7 @@ class AvailableListByDateReportCourtTest
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationService courtLocationService;
 
-    public AvailableListByDateReportCourtTest() {
+    AvailableListByDateReportCourtTest() {
         super(QJurorPool.jurorPool,
             AvailableListByDateReportCourt.RequestValidator.class,
             ReportGroupBy.builder()
@@ -59,7 +58,7 @@ class AvailableListByDateReportCourtTest
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.courtLocationService = mock(CourtLocationService.class);
         super.beforeEach();
@@ -71,7 +70,7 @@ class AvailableListByDateReportCourtTest
     }
 
     @Override
-    public AvailableListByDateReportCourt createReport(PoolRequestRepository poolRequestRepository) {
+    protected AvailableListByDateReportCourt createReport(PoolRequestRepository poolRequestRepository) {
         return new AvailableListByDateReportCourt(poolRequestRepository, this.courtLocationService);
     }
 
@@ -87,7 +86,7 @@ class AvailableListByDateReportCourtTest
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
             .thenReturn(TestConstants.VALID_COURT_LOCATION);
         doNothing().when(report).addStandardFilters(any(), any());

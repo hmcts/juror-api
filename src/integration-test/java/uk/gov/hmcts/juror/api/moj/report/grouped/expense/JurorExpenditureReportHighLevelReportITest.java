@@ -16,11 +16,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class JurorExpenditureReportHighLevelReportITest extends AbstractJurorExpenditureReportReportITest {
 
     @Autowired
-    public JurorExpenditureReportHighLevelReportITest(TestRestTemplate template) {
+    JurorExpenditureReportHighLevelReportITest(TestRestTemplate template) {
         super(template, JurorExpenditureReportHighLevelReport.class);
     }
 

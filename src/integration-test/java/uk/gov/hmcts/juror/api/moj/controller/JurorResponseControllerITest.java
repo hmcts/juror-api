@@ -81,6 +81,7 @@ import static org.springframework.http.HttpStatus.OK;
     "PMD.TooManyMethods",
     "PMD.CouplingBetweenObjects"
 })
+
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class JurorResponseControllerITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
@@ -118,9 +119,9 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     private final UserRepository userRepository;
     private final JurorResponseCommonRepositoryMod jurorResponseCommonRepositoryMod;
 
-    @SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.SignatureDeclareThrowsException"})
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -634,7 +635,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("POST /api/v1/moj/juror-response/retrieve")
     @Sql({"/db/mod/truncate.sql", "/db/jurorresponse/RetrieveJurorResponses.sql"})
-    @SuppressWarnings({"java:S1192"})
+    @SuppressWarnings("java:S1192")
     class RetrieveJurorResponses {
         @Test
         @DisplayName("Retrieve juror response, team leader - basic and advanced search criteria is okay")

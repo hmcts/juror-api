@@ -44,9 +44,7 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods",
-    "PMD.PublicMemberInNonPublicType"
-})
+    "PMD.TooManyMethods"})
 class JurorHistoryServiceImplTest {
     private final JurorHistoryService jurorHistoryService;
     private final Clock clock;
@@ -54,7 +52,7 @@ class JurorHistoryServiceImplTest {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public JurorHistoryServiceImplTest() {
+    JurorHistoryServiceImplTest() {
         this.clock = mock(Clock.class);
         this.jurorHistoryRepository = mock(JurorHistoryRepository.class);
         this.jurorHistoryService = new JurorHistoryServiceImpl(jurorHistoryRepository, clock);

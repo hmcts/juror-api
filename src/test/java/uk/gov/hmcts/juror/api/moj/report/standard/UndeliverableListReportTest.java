@@ -25,7 +25,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class UndeliverableListReportTest extends AbstractStandardReportTestSupport<UndeliverableListReport> {
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
@@ -40,7 +39,7 @@ class UndeliverableListReportTest extends AbstractStandardReportTestSupport<Unde
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
     }
@@ -52,7 +51,7 @@ class UndeliverableListReportTest extends AbstractStandardReportTestSupport<Unde
 
     // common tests
     @Override
-    public UndeliverableListReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected UndeliverableListReport createReport(PoolRequestRepository poolRequestRepository) {
         return new UndeliverableListReport(poolRequestRepository);
     }
 
@@ -65,7 +64,7 @@ class UndeliverableListReportTest extends AbstractStandardReportTestSupport<Unde
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         report.preProcessQuery(query, request);
 
         verify(query, times(1))

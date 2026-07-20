@@ -47,10 +47,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
-@DisplayName("Controller: " + AdministrationHolidaysControllerTest.BASE_URL)
-public class AdministrationHolidaysControllerTest {
 
-    public static final String BASE_URL = "/api/v1/moj/administration";
+@DisplayName("Controller: " + AdministrationHolidaysControllerTest.BASE_URL)
+class AdministrationHolidaysControllerTest {
+
+    static final String BASE_URL = "/api/v1/moj/administration";
     @Autowired
     private MockMvc mockMvc;
 
@@ -60,11 +61,10 @@ public class AdministrationHolidaysControllerTest {
     @InjectMocks
     private AdministrationHolidaysController administrationHolidaysController;
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewBankHolidays.URL)
     class ViewBankHolidays {
-        public static final String URL = BASE_URL + "/bank-holidays";
+        static final String URL = BASE_URL + "/bank-holidays";
 
         @Test
         void positiveTypical() throws Exception {
@@ -84,12 +84,10 @@ public class AdministrationHolidaysControllerTest {
         }
     }
 
-
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("GET " + ViewNonSittingDays.URL)
     class ViewNonSittingDays {
-        public static final String URL = BASE_URL + "/non-sitting-days/{loc_code}";
+        static final String URL = BASE_URL + "/non-sitting-days/{loc_code}";
 
 
         private String toUrl(String locCode) {
@@ -120,11 +118,10 @@ public class AdministrationHolidaysControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("DELETE " + DeleteNonSittingDays.URL)
     class DeleteNonSittingDays {
-        public static final String URL = BASE_URL + "/non-sitting-days/{loc_code}/{date}";
+        static final String URL = BASE_URL + "/non-sitting-days/{loc_code}/{date}";
 
 
         private String toUrl(String locCode, LocalDate date) {
@@ -164,11 +161,10 @@ public class AdministrationHolidaysControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + AddNonSittingDays.URL)
     class AddNonSittingDays {
-        public static final String URL = BASE_URL + "/non-sitting-days/{loc_code}";
+        static final String URL = BASE_URL + "/non-sitting-days/{loc_code}";
 
         private String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);

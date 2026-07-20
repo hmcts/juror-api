@@ -31,13 +31,12 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<PanelMembersStatusReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private TrialRepository trialRepository;
 
-    public PanelMembersStatusReportTest() {
+    PanelMembersStatusReportTest() {
         super(
             QPanel.panel,
             PanelMembersStatusReport.RequestValidator.class,
@@ -50,7 +49,7 @@ class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<Pan
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.trialRepository = mock(TrialRepository.class);
@@ -62,7 +61,7 @@ class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<Pan
     }
 
     @Override
-    public PanelMembersStatusReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected PanelMembersStatusReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PanelMembersStatusReport(trialRepository);
     }
 
@@ -75,7 +74,7 @@ class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<Pan
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         request.setTrialNumber("111111");
 
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);

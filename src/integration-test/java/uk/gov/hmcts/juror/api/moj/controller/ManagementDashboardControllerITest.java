@@ -35,12 +35,13 @@ import static org.springframework.http.HttpMethod.GET;
 /**
  * Integration tests for the Management Dashboard controller.
  */
-@SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.CouplingBetweenObjects"})
+
+@SuppressWarnings("PMD.CouplingBetweenObjects")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ManagementDashboardControllerITest extends AbstractIntegrationTest {
 
-    public static final String EXPECT_THE_STATUS_TO_BE_OK = "Expect the status to be OK";
+    static final String EXPECT_THE_STATUS_TO_BE_OK = "Expect the status to be OK";
 
     @Autowired
     private TestRestTemplate restTemplate;

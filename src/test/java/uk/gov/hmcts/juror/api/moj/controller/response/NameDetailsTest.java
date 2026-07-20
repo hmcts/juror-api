@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class NameDetailsTest extends AbstractValidatorTest<NameDetails> {
 
 
@@ -40,7 +39,7 @@ class NameDetailsTest extends AbstractValidatorTest<NameDetails> {
         verifyNoMoreInteractions(juror);
     }
 
-    public static NameDetails createValidNameDetailsDto() {
+    static NameDetails createValidNameDetailsDto() {
         return NameDetails.builder()
             .title("Mr")
             .firstName("FNAME")

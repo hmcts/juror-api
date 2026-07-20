@@ -57,7 +57,7 @@ public abstract class AbstractReportTestSupport<
     private boolean allowBureau = true;
     private final Validator validator;
 
-    public abstract R createReport(PoolRequestRepository poolRequestRepository);
+    protected abstract R createReport(PoolRequestRepository poolRequestRepository);
 
     protected AbstractReportTestSupport(EntityPath<?> from,
                                      Class<?> validatorClass, IDataType... dataTypes) {
@@ -71,7 +71,7 @@ public abstract class AbstractReportTestSupport<
     }
 
     @BeforeEach
-    public void beforeEach() {
+    protected void beforeEach() {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.report = spy(createReport(poolRequestRepository));
         doNothing().when(report).addGroupBy(any(), any());
@@ -104,7 +104,7 @@ public abstract class AbstractReportTestSupport<
         //Other fields don't need testing as they will be tested via the dedicated AbstractReportTest
     }
 
-    public abstract void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request);
+    protected abstract void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request);
 
     @Test
     @SuppressWarnings({

@@ -47,10 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType"
-})
+@SuppressWarnings("PMD.ExcessiveImports")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: /api/v1/moj/complete-service")
@@ -68,7 +65,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -605,13 +602,12 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
             actual.getLastName(), "Last name should match");
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PATCH " + UncompleteService.URL)
     @Sql({"/db/mod/truncate.sql", "/db/UncompleteServiceController.sql"})
     class UncompleteService {
 
-        public static final String URL = BASE_URL + "/uncomplete";
+        static final String URL = BASE_URL + "/uncomplete";
 
         private void validateJurorWasUncompleted(String jurorNumber, String poolNumber) {
             executeInTransaction(() -> {

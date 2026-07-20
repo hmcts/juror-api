@@ -20,7 +20,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PostponedListByPoolReportTest extends AbstractStandardReportTestSupport<PostponedListByPoolReport> {
 
     PostponedListByPoolReportTest() {
@@ -35,12 +34,12 @@ class PostponedListByPoolReportTest extends AbstractStandardReportTestSupport<Po
 
 
     @Override
-    public PostponedListByPoolReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected PostponedListByPoolReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PostponedListByPoolReport(poolRequestRepository);
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         request.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
         report.preProcessQuery(query, request);
         verify(query, times(1))

@@ -26,10 +26,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class ElectronicPoliceCheckReportTest extends AbstractStandardReportTestSupport<ElectronicPoliceCheckReport> {
 
-    public ElectronicPoliceCheckReportTest() {
+    ElectronicPoliceCheckReportTest() {
         super(QJurorPool.jurorPool,
             ElectronicPoliceCheckReport.RequestValidator.class,
             DataType.POOL_NUMBER_JP,
@@ -42,7 +41,7 @@ class ElectronicPoliceCheckReportTest extends AbstractStandardReportTestSupport<
     }
 
     @Override
-    public ElectronicPoliceCheckReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected ElectronicPoliceCheckReport createReport(PoolRequestRepository poolRequestRepository) {
         return new ElectronicPoliceCheckReport();
     }
 
@@ -56,7 +55,7 @@ class ElectronicPoliceCheckReportTest extends AbstractStandardReportTestSupport<
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         doNothing().when(report).addGroupBy(any(), any());
         report.preProcessQuery(query, request);
         verify(query, times(1)).where(QJurorPool.jurorPool.pool.owner.eq(SecurityUtil.BUREAU_OWNER));

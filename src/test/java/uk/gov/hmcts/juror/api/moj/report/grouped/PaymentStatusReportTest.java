@@ -35,7 +35,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PaymentStatusReportTest extends AbstractGroupedReportTestSupport<PaymentStatusReport> {
 
 
@@ -44,7 +43,7 @@ class PaymentStatusReportTest extends AbstractGroupedReportTestSupport<PaymentSt
 
     private Clock clock;
 
-    public PaymentStatusReportTest() {
+    PaymentStatusReportTest() {
         super(QPaymentData.paymentData,
             PaymentStatusReport.RequestValidator.class,
             new GroupByPaymentStatus(),
@@ -58,7 +57,7 @@ class PaymentStatusReportTest extends AbstractGroupedReportTestSupport<PaymentSt
 
     @Override
     @BeforeEach
-    public void beforeEach() {
+    protected void beforeEach() {
         this.courtLocationService = mock(CourtLocationService.class);
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.clock = Clock.fixed(
@@ -69,14 +68,14 @@ class PaymentStatusReportTest extends AbstractGroupedReportTestSupport<PaymentSt
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         if (securityUtilMockedStatic != null) {
             securityUtilMockedStatic.close();
         }
     }
 
     @Override
-    public PaymentStatusReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected PaymentStatusReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PaymentStatusReport(courtLocationService, clock);
     }
 
@@ -88,7 +87,7 @@ class PaymentStatusReportTest extends AbstractGroupedReportTestSupport<PaymentSt
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
 

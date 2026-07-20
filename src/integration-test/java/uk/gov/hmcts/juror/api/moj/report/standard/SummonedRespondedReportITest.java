@@ -19,11 +19,10 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/CurrentPoolStatusReportControllerITest_typical.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class SummonedRespondedReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public SummonedRespondedReportITest(TestRestTemplate template) {
+    SummonedRespondedReportITest(TestRestTemplate template) {
         super(template, SummonedRespondedReport.class);
     }
 

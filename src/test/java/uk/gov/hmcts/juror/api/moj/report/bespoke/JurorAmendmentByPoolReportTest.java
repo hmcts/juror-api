@@ -18,20 +18,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class JurorAmendmentByPoolReportTest
     extends AbstractJurorAmendmentReportTestSupport<JurorAmendmentByPoolReport> {
 
     private JurorPoolService jurorPoolService;
 
-    public JurorAmendmentByPoolReportTest() {
+    JurorAmendmentByPoolReportTest() {
         super(JurorAmendmentByPoolReport.RequestValidator.class);
     }
 
 
     @BeforeEach
     @Override
-    void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         this.jurorPoolService = mock(JurorPoolService.class);
     }
@@ -45,7 +44,7 @@ class JurorAmendmentByPoolReportTest
     }
 
     @Override
-    public JurorAmendmentByPoolReport createReport() {
+    protected JurorAmendmentByPoolReport createReport() {
         return new JurorAmendmentByPoolReport(jurorPoolService, jurorAuditService, jurorService, userService);
     }
 

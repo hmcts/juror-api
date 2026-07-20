@@ -197,9 +197,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
 
 
-    @SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.SignatureDeclareThrowsException"})
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         initHeaders();
     }
 

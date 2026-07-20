@@ -26,18 +26,17 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @ExtendWith(SpringExtension.class)
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "notify.disabled=false")
 class NotifyAdapterModTest extends ContainerTest {
 
-    public static final String RECIPIENT_EMAIL_IS_CORRECT = "Recipient email is correct";
-    public static final String TEMPLATE_ID_IS_THE_ONE_PASSED_FROM_THE_MOCK =
+    static final String RECIPIENT_EMAIL_IS_CORRECT = "Recipient email is correct";
+    static final String TEMPLATE_ID_IS_THE_ONE_PASSED_FROM_THE_MOCK =
         "Template ID is the one passed from the mock.";
-    public static final String JUROR_NUMBER_IS_THE_NOTIFY_REFERENCE =
+    static final String JUROR_NUMBER_IS_THE_NOTIFY_REFERENCE =
         "Juror number is the Notify reference";
-    public static final String BODY_IS_NOT_EMPTY_AND_CONTAINS_PAYLOAD_INFORMATION =
+    static final String BODY_IS_NOT_EMPTY_AND_CONTAINS_PAYLOAD_INFORMATION =
         "Body is not empty and contains payload information";
 
     private final JurorCommsNotificationService jurorCommsNotificationService;

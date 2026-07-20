@@ -25,11 +25,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class JurorExpenditureReportHighLevelReportTest
     extends AbstractJurorExpenditureReportTestSupport<JurorExpenditureReportHighLevelReport> {
 
-    public JurorExpenditureReportHighLevelReportTest() {
+    JurorExpenditureReportHighLevelReportTest() {
         super(false,
             ExpenseDataTypes.TOTAL_LOSS_OF_EARNINGS_APPROVED_SUM,
             ExpenseDataTypes.TOTAL_LOSS_OF_EARNINGS_APPROVED_COUNT,
@@ -45,12 +44,12 @@ class JurorExpenditureReportHighLevelReportTest
     }
 
     @Override
-    public JurorExpenditureReportHighLevelReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected JurorExpenditureReportHighLevelReport createReport(PoolRequestRepository poolRequestRepository) {
         return new JurorExpenditureReportHighLevelReport(courtLocationService);
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         doNothing().when(report).addGroupBy(any(), any(IDataType[].class));
         report.preProcessQuery(query, request);

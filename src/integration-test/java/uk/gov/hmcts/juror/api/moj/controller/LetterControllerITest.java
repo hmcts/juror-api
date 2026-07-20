@@ -105,7 +105,6 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.NcssCount",
-    "PMD.PublicMemberInNonPublicType",
     "PMD.TooManyMethods",
     "PMD.CouplingBetweenObjects"
 })
@@ -133,7 +132,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -3336,6 +3335,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Nested
         @DisplayName("Summons Reminder Letter")
         //False positive
+
         class SummonsReminderLetter {
             @Test
             @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
@@ -4126,12 +4126,11 @@ class LetterControllerITest extends AbstractIntegrationTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
     @DisplayName("POST /api/v1/moj/letter/reissue-letter-list (summons reminder)")
     class ReissueSummonsReminderLetterList {
-        public static final String URL = "/api/v1/moj/letter/reissue-letter-list";
+        static final String URL = "/api/v1/moj/letter/reissue-letter-list";
 
         @Test
         @DisplayName("Reissue Letter List - Summons Reminder - juror name")

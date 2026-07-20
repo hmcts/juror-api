@@ -50,13 +50,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         JurorPoolService.class,
     }
 )
-@SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType"
-})
+
+@SuppressWarnings("PMD.ExcessiveImports")
 @DisplayName("Controller: " + SjoTasksControllerTest.BASE_URL)
 class SjoTasksControllerTest {
-    public static final String BASE_URL = "/api/v1/moj/sjo-tasks";
+    static final String BASE_URL = "/api/v1/moj/sjo-tasks";
 
     @Autowired
     private MockMvc mockMvc;
@@ -70,11 +68,10 @@ class SjoTasksControllerTest {
     @MockBean
     private JurorPoolService jurorPoolService;
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + GetFailedToAttendJurors.URL)
     class GetFailedToAttendJurors {
-        public static final String URL = BASE_URL + "/juror/search";
+        static final String URL = BASE_URL + "/juror/search";
 
         @Test
         void positiveTypicalPoolSearch() throws Exception {
@@ -133,11 +130,10 @@ class SjoTasksControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PATCH " + UndoFailedToAttendJurors.URL)
     class UndoFailedToAttendJurors {
-        public static final String URL = BASE_URL + "/failed-to-attend/undo";
+        static final String URL = BASE_URL + "/failed-to-attend/undo";
 
         @Test
         void positiveTypical() throws Exception {
@@ -183,11 +179,10 @@ class SjoTasksControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + GetCompleteJurors.URL)
     class GetCompleteJurors {
-        public static final String URL = "/api/v1/moj/sjo-tasks/juror/search";
+        static final String URL = "/api/v1/moj/sjo-tasks/juror/search";
 
         @Test
         void positiveTypical() throws Exception {

@@ -82,7 +82,7 @@ class AbstractReportTest {
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     @BeforeEach
-    void beforeEach() {
+    protected void beforeEach() {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
 
@@ -887,6 +887,7 @@ class AbstractReportTest {
     @Nested
     @DisplayName("HashMap<String, AbstractReportResponse.DataTypeValue> loadStandardPoolHeaders("
         + "        StandardReportRequest request, boolean ownerMustMatch, boolean allowBureau)")
+
     class LoadStandardPoolHeaders {
         @Test
         void positiveTypical() {
@@ -1014,6 +1015,7 @@ class AbstractReportTest {
     @Nested
     @DisplayName("HashMap<String, AbstractReportResponse.DataTypeValue> loadTrialHeaders("
         + "        StandardReportRequest request)")
+
     class LoadTrialHeaders {
         @Test
         void positiveTypical() {
@@ -1241,10 +1243,9 @@ class AbstractReportTest {
         return createReport(QJuror.juror, DataType.JUROR_NUMBER);
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private static class AbstractReportTestImpl extends AbstractReport<Object> {
 
-        public AbstractReportTestImpl(PoolRequestRepository poolRequestRepository,
+        AbstractReportTestImpl(PoolRequestRepository poolRequestRepository,
                                       EntityPath<?> from, DataType... dataType) {
             super(poolRequestRepository, from, dataType);
         }

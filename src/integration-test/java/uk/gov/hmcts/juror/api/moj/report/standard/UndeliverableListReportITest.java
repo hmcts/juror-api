@@ -19,11 +19,10 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/UndeliverableListReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class UndeliverableListReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public UndeliverableListReportITest(TestRestTemplate template) {
+    UndeliverableListReportITest(TestRestTemplate template) {
         super(template, UndeliverableListReport.class);
     }
 

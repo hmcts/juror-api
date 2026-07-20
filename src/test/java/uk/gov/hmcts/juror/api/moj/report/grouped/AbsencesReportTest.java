@@ -32,13 +32,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class AbsencesReportTest extends AbstractGroupedReportTestSupport<AbsencesReport> {
 
     private CourtLocationRepository courtLocationRepository;
 
-    public AbsencesReportTest() {
+    AbsencesReportTest() {
         super(QJurorPool.jurorPool,
               AbsencesReport.RequestValidator.class,
               ReportGroupBy.builder()
@@ -54,18 +52,18 @@ class AbsencesReportTest extends AbstractGroupedReportTestSupport<AbsencesReport
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         super.beforeEach();
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         TestUtils.afterAll();
     }
 
     @Override
-    public AbsencesReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected AbsencesReport createReport(PoolRequestRepository poolRequestRepository) {
         return new AbsencesReport(poolRequestRepository, this.courtLocationRepository);
     }
 
@@ -79,7 +77,7 @@ class AbsencesReportTest extends AbstractGroupedReportTestSupport<AbsencesReport
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         String locCode = "415";
         TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
 

@@ -38,8 +38,8 @@ import static org.springframework.http.HttpMethod.PUT;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationCourtRoomControllerITest.BASE_URL)
-public class AdministrationCourtRoomControllerITest extends AbstractIntegrationTest {
-    public static final String BASE_URL = "/api/v1/moj/administration/court-rooms";
+class AdministrationCourtRoomControllerITest extends AbstractIntegrationTest {
+    static final String BASE_URL = "/api/v1/moj/administration/court-rooms";
 
     private HttpHeaders httpHeaders;
     @Autowired
@@ -50,7 +50,7 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -79,10 +79,10 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
     @DisplayName("GET " + ViewCourtRoomsDetails.URL)
     @Sql(value = {"/db/administration/tearDownCourtRooms.sql",
         "/db/administration/createCourtRooms.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+
     @Sql(value = "/db/administration/tearDownCourtRooms.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class ViewCourtRoomsDetails {
-        public static final String URL = BASE_URL + "/{loc_code}";
+        static final String URL = BASE_URL + "/{loc_code}";
 
         private String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);
@@ -184,11 +184,10 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + CreateCourtRoom.URL)
     class CreateCourtRoom {
-        public static final String URL = BASE_URL + "/{loc_code}";
+        static final String URL = BASE_URL + "/{loc_code}";
 
         private String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);
@@ -289,12 +288,10 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
     @DisplayName("GET " + ViewCourtRoomDetails.URL)
     @Sql(value = {"/db/administration/tearDownCourtRooms.sql",
         "/db/administration/createCourtRooms.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @SuppressWarnings({
-        "PMD.PublicMemberInNonPublicType"
-    })
+
     @Sql(value = "/db/administration/tearDownCourtRooms.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class ViewCourtRoomDetails {
-        public static final String URL = BASE_URL + "/{loc_code}/{id}";
+        static final String URL = BASE_URL + "/{loc_code}/{id}";
 
         private String toUrl(String locCode, Long id) {
             return toUrl(locCode, id.toString());
@@ -390,10 +387,10 @@ public class AdministrationCourtRoomControllerITest extends AbstractIntegrationT
     @DisplayName("PUT " + UpdateCourtRoom.URL)
     @Sql(value = {"/db/administration/tearDownCourtRooms.sql",
         "/db/administration/createCourtRooms.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
+
     @Sql(value = "/db/administration/tearDownCourtRooms.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class UpdateCourtRoom {
-        public static final String URL = BASE_URL + "/{loc_code}/{id}";
+        static final String URL = BASE_URL + "/{loc_code}/{id}";
 
         private String toUrl(String locCode, Long id) {
             return toUrl(locCode, id.toString());

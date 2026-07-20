@@ -29,7 +29,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class TrialStatisticsReportTest extends AbstractStandardReportTestSupport<TrialStatisticsReport> {
 
     private static final LocalDate FROM_DATE = LocalDate.of(2024, 1, 1);
@@ -51,7 +50,7 @@ class TrialStatisticsReportTest extends AbstractStandardReportTestSupport<TrialS
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
     }
@@ -63,7 +62,7 @@ class TrialStatisticsReportTest extends AbstractStandardReportTestSupport<TrialS
     }
 
     @Override
-    public TrialStatisticsReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected TrialStatisticsReport createReport(PoolRequestRepository poolRequestRepository) {
         return new TrialStatisticsReport();
     }
 
@@ -77,7 +76,7 @@ class TrialStatisticsReportTest extends AbstractStandardReportTestSupport<TrialS
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         doNothing().when(report).addGroupBy(any(), any(IDataType[].class));
 

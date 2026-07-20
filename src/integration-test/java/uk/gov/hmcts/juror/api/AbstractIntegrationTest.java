@@ -321,35 +321,31 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
         private String message;
         private String path;
 
-        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-
-        public void setException(Class<? extends Exception> exceptionClass) {
+        void setException(Class<? extends Exception> exceptionClass) {
             this.exception = exceptionClass == null ? null : exceptionClass.getName();
         }
 
-        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-
-        public void setStatusCode(HttpStatus status) {
+        void setStatusCode(HttpStatus status) {
             this.status = status.value();
             this.error = status.getReasonPhrase();
         }
     }
 
-    public String getBureauJwt() {
+    protected String getBureauJwt() {
         return createJwt("test_bureau_standard", "400",
             UserType.BUREAU, Set.of(), "400");
     }
 
-    public String getCourtJwt(String number) {
+    protected String getCourtJwt(String number) {
         return getCourtJwt(number, Set.of());
     }
 
-    public String getCourtJwt(String number, Set<Role> roles) {
+    protected String getCourtJwt(String number, Set<Role> roles) {
         return createJwt("test_court_standard", number,
             UserType.COURT, roles, number);
     }
 
-    public String getSatelliteCourtJwt(String owner, String... courts) {
+    protected String getSatelliteCourtJwt(String owner, String... courts) {
         return createJwt("test_court_standard", owner, UserType.COURT, Set.of(), courts);
     }
 }

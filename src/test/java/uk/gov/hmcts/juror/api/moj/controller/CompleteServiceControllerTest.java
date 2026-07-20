@@ -61,12 +61,13 @@ import static uk.gov.hmcts.juror.api.moj.controller.CompleteServiceControllerTes
         BulkServiceImpl.class
     }
 )
-@SuppressWarnings({"PMD.PublicMemberInNonPublicType",
+@SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.SignatureDeclareThrowsException"})
+
 @DisplayName("Controller: " + CompleteServiceControllerTest.BASE_URL)
 class CompleteServiceControllerTest {
-    public static final String BASE_URL = "/api/v1/moj/complete-service";
+    static final String BASE_URL = "/api/v1/moj/complete-service";
 
 
     @Autowired
@@ -78,14 +79,13 @@ class CompleteServiceControllerTest {
     @MockBean
     private CompleteServiceService completeServiceService;
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PATCH " + COMPLETE_SERVICE_URL)
     class CompleteService {
-        public static final String COMPLETE_SERVICE_URL = BASE_URL
+        static final String COMPLETE_SERVICE_URL = BASE_URL
             + "/{poolNumber}/complete";
 
-        public static Stream<Arguments> invalidPayloadArgumentSource() {
+        static Stream<Arguments> invalidPayloadArgumentSource() {
             return Stream.of(
                 arguments("Empty payload", ""),
                 arguments("Missing completion date",
@@ -144,11 +144,10 @@ class CompleteServiceControllerTest {
         }
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST " + VALIDATE_COMPLETE_SERVICE_URL)
     class ValidateCompleteService {
-        public static final String VALIDATE_COMPLETE_SERVICE_URL = BASE_URL
+        static final String VALIDATE_COMPLETE_SERVICE_URL = BASE_URL
             + "/{poolNumber}/validate";
 
         @Test
@@ -310,7 +309,7 @@ class CompleteServiceControllerTest {
                 jurorStatusValidationResponseDto3);
         }
 
-        public static Stream<Arguments> invalidPayloadArgumentSource() {
+        static Stream<Arguments> invalidPayloadArgumentSource() {
             return Stream.of(
                 arguments("Empty payload", ""),
                 arguments("Missing juror_numbers",
@@ -342,12 +341,10 @@ class CompleteServiceControllerTest {
         }
     }
 
-
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("PATCH " + UncompleteService.URL)
     class UncompleteService {
-        public static final String URL = BASE_URL + "/uncomplete";
+        static final String URL = BASE_URL + "/uncomplete";
 
         @Test
         void positiveTypical() throws Exception {
@@ -423,7 +420,7 @@ class CompleteServiceControllerTest {
 
 
     @Test
-    @SuppressWarnings({"PMD.UnitTestShouldIncludeAssert"})
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void negativeNotFound() throws Exception {
         JurorNumberListDto payload = new JurorNumberListDto();
         payload.setJurorNumbers(List.of("123456789", "123456788"));

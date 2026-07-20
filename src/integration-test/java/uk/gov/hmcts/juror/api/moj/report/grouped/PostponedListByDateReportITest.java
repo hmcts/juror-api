@@ -24,11 +24,10 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PostponedListByDateReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PostponedListByDateReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
-    public PostponedListByDateReportITest(TestRestTemplate template) {
+    PostponedListByDateReportITest(TestRestTemplate template) {
         super(template, PostponedListByDateReport.class);
     }
 
@@ -314,8 +313,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
             .build();
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-    public GroupByResponse getTypicalGroupByResponse() {
+    GroupByResponse getTypicalGroupByResponse() {
         return GroupByResponse.builder()
             .name(DataType.POOL_NUMBER.name())
             .nested(null)

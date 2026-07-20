@@ -19,10 +19,9 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/NextAttendanceDayReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class NextAttendanceDayReportITest extends AbstractStandardReportControllerITest {
     @Autowired
-    public NextAttendanceDayReportITest(TestRestTemplate template) {
+    NextAttendanceDayReportITest(TestRestTemplate template) {
         super(template, NextAttendanceDayReport.class);
     }
 

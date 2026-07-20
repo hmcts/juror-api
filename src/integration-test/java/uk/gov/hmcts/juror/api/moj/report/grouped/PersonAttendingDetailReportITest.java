@@ -21,10 +21,9 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/PersonAttendingSummaryReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PersonAttendingDetailReportITest extends AbstractGroupedReportControllerITest {
     @Autowired
-    public PersonAttendingDetailReportITest(TestRestTemplate template) {
+    PersonAttendingDetailReportITest(TestRestTemplate template) {
         super(template, PersonAttendingDetailReport.class);
     }
 

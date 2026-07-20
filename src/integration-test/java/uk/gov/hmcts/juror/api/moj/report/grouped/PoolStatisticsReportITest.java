@@ -22,11 +22,10 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/PoolStatisticsReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class PoolStatisticsReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
-    public PoolStatisticsReportITest(TestRestTemplate template) {
+    PoolStatisticsReportITest(TestRestTemplate template) {
         super(template, PoolStatisticsReport.class);
     }
 

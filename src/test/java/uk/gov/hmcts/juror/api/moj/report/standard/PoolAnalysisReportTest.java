@@ -32,10 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings({
-    "PMD.PublicMemberInNonPublicType",
-    "PMD.TooManyMethods"
-})
+@SuppressWarnings("PMD.TooManyMethods")
 class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<PoolAnalysisReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
@@ -44,7 +41,7 @@ class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<PoolAnaly
     private final LocalDate jan15th = LocalDate.of(2024, 1, 15);
     private final LocalDate jan16th = LocalDate.of(2024, 1, 16);
 
-    public PoolAnalysisReportTest() {
+    PoolAnalysisReportTest() {
         super(
             QJurorPool.jurorPool,
             PoolAnalysisReport.RequestValidator.class,
@@ -69,7 +66,7 @@ class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<PoolAnaly
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         super.beforeEach();
@@ -81,7 +78,7 @@ class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<PoolAnaly
     }
 
     @Override
-    public PoolAnalysisReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected PoolAnalysisReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PoolAnalysisReport(this.courtLocationRepository);
     }
 
@@ -96,7 +93,7 @@ class PoolAnalysisReportTest extends AbstractStandardReportTestSupport<PoolAnaly
 
     @Override
     @DisplayName("positivePreProcessQueryTypicalCourtOwner")
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
         report.preProcessQuery(query, request);
 

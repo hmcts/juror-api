@@ -21,8 +21,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class SummonedRespondedReportTest extends AbstractStandardReportTestSupport<SummonedRespondedReport> {
     SummonedRespondedReportTest() {
         super(QJurorPool.jurorPool,
@@ -36,7 +34,7 @@ class SummonedRespondedReportTest extends AbstractStandardReportTestSupport<Summ
     }
 
     @Override
-    public SummonedRespondedReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected SummonedRespondedReport createReport(PoolRequestRepository poolRequestRepository) {
         return new SummonedRespondedReport(poolRequestRepository);
     }
 
@@ -49,7 +47,7 @@ class SummonedRespondedReportTest extends AbstractStandardReportTestSupport<Summ
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         report.preProcessQuery(query, request);
         verify(query, times(1))
             .where(QJurorPool.jurorPool.pool.poolNumber.eq(TestConstants.VALID_POOL_NUMBER));

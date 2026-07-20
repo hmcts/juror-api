@@ -104,9 +104,9 @@ import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDefer
 
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType",
     "PMD.TooManyMethods"
 })
+
 @ExtendWith(SpringExtension.class)
 class ManageDeferralsServiceTest {
 

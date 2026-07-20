@@ -87,23 +87,19 @@ class MessagingControllerITest extends AbstractIntegrationTest {
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
 
-    @SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.SignatureDeclareThrowsException"})
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
-    @SuppressWarnings({
-        "PMD.PublicMemberInNonPublicType"
-    })
     protected static class TestData {
-        public static final String ENGLISH_SUBJECT = "Your Jury Service";
-        public static final String WELSH_SUBJECT = "Eich Gwasanaeth Rheithgor";
+        static final String ENGLISH_SUBJECT = "Your Jury Service";
+        static final String WELSH_SUBJECT = "Eich Gwasanaeth Rheithgor";
         protected static final String ENGLISH_LOC_CODE = "462";
         protected static final String WELSH_LOC_CODE = "756";
 
-        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
         protected enum Placeholder {
             ENGLISH_COURT_NAME("N/A", "<court_name>", DataType.STRING, false, "WARRINGTON"),
             ENGLISH_COURT_PHONE("N/A", "<court_phone>", DataType.STRING, false, "01244 356726"),
@@ -133,7 +129,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     .build();
             }
 
-            public ViewMessageTemplateDto.Placeholder toPlaceholder() {
+            ViewMessageTemplateDto.Placeholder toPlaceholder() {
                 return this.placeholder;
             }
         }
@@ -715,14 +711,11 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         }
     }
 
-    @SuppressWarnings({
-        "PMD.PublicMemberInNonPublicType"
-    })
     @Nested
     @DisplayName("GET " + GetMessageDetails.URL)
     class GetMessageDetails {
 
-        public static final String URL = BASE_URL + "/view/{message_type}/{loc_code}";
+        static final String URL = BASE_URL + "/view/{message_type}/{loc_code}";
 
 
         protected URI toUri(MessageType messageType, String locCode) {
@@ -3552,7 +3545,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
         @BeforeEach
         @Override
-        public void setUp() throws Exception {
+        protected void setUp() throws Exception {
             httpHeaders = new HttpHeaders();
             httpHeaders.set("Accept", "text/csv," + MediaType.APPLICATION_JSON_VALUE);
         }

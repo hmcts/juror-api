@@ -52,9 +52,10 @@ import static org.springframework.http.HttpMethod.POST;
     "PMD.ExcessiveImports",
 //False positive
 })
+
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class AuthenticationControllerITest extends AbstractIntegrationTest {
-    public static final String BASE_URL = "/api/v1/auth/moj";
+class AuthenticationControllerITest extends AbstractIntegrationTest {
+    static final String BASE_URL = "/api/v1/auth/moj";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
 
     @Autowired
@@ -68,7 +69,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -191,8 +192,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
             return new EmailDto("test_court_standard" + EMAIL_SUFFIX);
         }
 
-        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-        public String toUrl(String locCode) {
+        String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);
         }
 

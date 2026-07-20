@@ -35,15 +35,12 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
-@SuppressWarnings({
-    "PMD.PublicMemberInNonPublicType",
-    "unchecked"
-})
+@SuppressWarnings("unchecked")
 class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<PersonAttendingDetailReport> {
 
     private CourtLocationRepository courtLocationRepository;
 
-    public PersonAttendingDetailReportTest() {
+    PersonAttendingDetailReportTest() {
         super(QJurorPool.jurorPool,
             PersonAttendingDetailReport.RequestValidator.class,
             ReportGroupBy.builder()
@@ -59,18 +56,18 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         super.beforeEach();
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         TestUtils.afterAll();
     }
 
     @Override
-    public PersonAttendingDetailReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected PersonAttendingDetailReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PersonAttendingDetailReport(poolRequestRepository, this.courtLocationRepository);
     }
 
@@ -85,7 +82,7 @@ class PersonAttendingDetailReportTest extends AbstractGroupedReportTestSupport<P
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         String locCode = "415";
         TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
 

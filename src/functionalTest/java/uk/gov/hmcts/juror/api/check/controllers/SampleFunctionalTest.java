@@ -12,7 +12,6 @@ import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import static io.restassured.RestAssured.given;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class SampleFunctionalTest extends ContainerTest {
     protected static final String CONTENT_TYPE_VALUE = "application/json";
@@ -21,7 +20,7 @@ class SampleFunctionalTest extends ContainerTest {
     private String testUrl;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RestAssured.baseURI = testUrl;
         RestAssured.useRelaxedHTTPSValidation();
     }

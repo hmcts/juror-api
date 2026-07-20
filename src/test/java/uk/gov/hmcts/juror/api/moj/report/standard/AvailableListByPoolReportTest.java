@@ -22,10 +22,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class AvailableListByPoolReportTest extends AbstractStandardReportTestSupport<AvailableListByPoolReport> {
 
-    public AvailableListByPoolReportTest() {
+    AvailableListByPoolReportTest() {
         super(QJurorPool.jurorPool,
             AvailableListByPoolReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
@@ -37,7 +36,7 @@ class AvailableListByPoolReportTest extends AbstractStandardReportTestSupport<Av
     }
 
     @Override
-    public AvailableListByPoolReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected AvailableListByPoolReport createReport(PoolRequestRepository poolRequestRepository) {
         return new AvailableListByPoolReport(poolRequestRepository);
     }
 
@@ -53,7 +52,7 @@ class AvailableListByPoolReportTest extends AbstractStandardReportTestSupport<Av
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         doNothing().when(report).addStandardFilters(any(), any());
         report.preProcessQuery(query, request);
         verify(query, times(1))

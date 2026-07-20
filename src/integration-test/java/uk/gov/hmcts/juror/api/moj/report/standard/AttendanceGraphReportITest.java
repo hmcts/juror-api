@@ -19,11 +19,10 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/AttendanceGraphReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class AttendanceGraphReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public AttendanceGraphReportITest(TestRestTemplate template) {
+    AttendanceGraphReportITest(TestRestTemplate template) {
         super(template, AttendanceGraphReport.class);
     }
 

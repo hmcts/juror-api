@@ -47,10 +47,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
+
 @DisplayName("Controller: " + ReportControllerTest.BASE_URL)
 class ReportControllerTest {
-    public static final String BASE_URL = "/api/v1/moj/reports";
+    static final String BASE_URL = "/api/v1/moj/reports";
     @Autowired
     private MockMvc mockMvc;
 
@@ -78,11 +78,10 @@ class ReportControllerTest {
     @MockBean
     private SittingDaysReportService sittingDaysReportService;
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @Nested
     @DisplayName("POST (GET) " + ViewReportStandard.URL)
     class ViewReportStandard {
-        public static final String URL = BASE_URL + "/standard";
+        static final String URL = BASE_URL + "/standard";
 
         private StandardReportRequest getValidPayload() {
             return StandardReportRequest.builder()

@@ -35,14 +35,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAttendanceReport> {
 
     private CourtLocationRepository courtLocationRepository;
     private TrialRepository trialRepository;
 
-    public TrialAttendanceReportTest() {
+    TrialAttendanceReportTest() {
         super(
             QReportsJurorPayments.reportsJurorPayments,
             TrialAttendanceReport.RequestValidator.class,
@@ -66,19 +64,19 @@ class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAt
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         this.trialRepository = mock(TrialRepository.class);
         super.beforeEach();
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         TestUtils.afterAll();
     }
 
     @Override
-    public TrialAttendanceReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected TrialAttendanceReport createReport(PoolRequestRepository poolRequestRepository) {
         return new TrialAttendanceReport(this.trialRepository);
     }
 
@@ -91,7 +89,7 @@ class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAt
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         String locCode = "415";
         TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
 

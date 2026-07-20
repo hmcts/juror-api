@@ -39,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Integration tests for the API endpoints defined in {@link PoolSearchController}.
  */
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PoolSearchControllerITest extends AbstractIntegrationTest {
@@ -48,9 +49,9 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
-    @SuppressWarnings({"PMD.SignatureDeclareThrowsException", "PMD.PublicMemberInNonPublicType"})
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         initHeaders();
     }
 

@@ -60,13 +60,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ContextConfiguration(classes = {DeferralMaintenanceController.class, RestResponseEntityExceptionHandler.class,
     BulkServiceImpl.class})
-@SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.PublicMemberInNonPublicType"
-})
+
+@SuppressWarnings("PMD.ExcessiveImports")
 @DisplayName("Controller: " + DeferralMaintenanceControllerTest.BASE_URL)
 class DeferralMaintenanceControllerTest {
-    public static final String BASE_URL = "/api/v1/moj/deferral-maintenance";
+    static final String BASE_URL = "/api/v1/moj/deferral-maintenance";
 
     @Autowired
     private MockMvc mockMvc;

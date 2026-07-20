@@ -30,10 +30,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class CurrentPoolStatusReportTest extends AbstractStandardReportTestSupport<CurrentPoolStatusReport> {
 
-    public CurrentPoolStatusReportTest() {
+    CurrentPoolStatusReportTest() {
         super(QJurorPool.jurorPool,
               CurrentPoolStatusReport.RequestValidator.class,
               DataType.JUROR_NUMBER,
@@ -47,14 +46,14 @@ class CurrentPoolStatusReportTest extends AbstractStandardReportTestSupport<Curr
     }
 
     @Override
-    public CurrentPoolStatusReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected CurrentPoolStatusReport createReport(PoolRequestRepository poolRequestRepository) {
         EntityManager entityManager = mock(EntityManager.class);
         return new CurrentPoolStatusReport(poolRequestRepository, entityManager);
     }
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
 
         // Mock the database query methods to return test values
@@ -71,7 +70,7 @@ class CurrentPoolStatusReportTest extends AbstractStandardReportTestSupport<Curr
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         doNothing().when(report).addGroupBy(any(), any(IDataType[].class));
         report.preProcessQuery(query, request);
 

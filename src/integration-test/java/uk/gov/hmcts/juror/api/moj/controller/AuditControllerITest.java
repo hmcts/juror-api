@@ -22,8 +22,8 @@ import java.util.Set;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AuditControllerITest.BASE_URL)
-public class AuditControllerITest {
-    public static final String BASE_URL = "/api/v1/moj/audit";
+class AuditControllerITest {
+    static final String BASE_URL = "/api/v1/moj/audit";
     @Autowired
     private TestRestTemplate template;
 
@@ -36,9 +36,8 @@ public class AuditControllerITest {
         "/db/administration/createCourtRooms.sql",
         "/db/mod/reports/PoolAttendanceAuditReportITest_typical.sql"
     })
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     class GetAllPoolAuditsForDay extends AbstractControllerIntegrationTest<Void, List<String>> {
-        public static final String URL = BASE_URL + "/{date}/pool";
+        static final String URL = BASE_URL + "/{date}/pool";
 
         protected GetAllPoolAuditsForDay() {
             super(HttpMethod.GET, template, HttpStatus.OK);

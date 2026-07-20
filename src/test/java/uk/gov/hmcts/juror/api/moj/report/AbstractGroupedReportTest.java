@@ -30,7 +30,7 @@ class AbstractGroupedReportTest {
     private PoolRequestRepository poolRequestRepository;
 
     @BeforeEach
-    void beforeEach() {
+    protected void beforeEach() {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
     }
 
@@ -151,11 +151,9 @@ class AbstractGroupedReportTest {
             .build();
     }
 
-
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private static class AbstractStandardReportTestImpl extends AbstractGroupedReport {
 
-        public AbstractStandardReportTestImpl(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
+        AbstractStandardReportTestImpl(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
                                               IReportGroupBy groupBy, DataType... dataType) {
             super(poolRequestRepository, from, groupBy, dataType);
         }

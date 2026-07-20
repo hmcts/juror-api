@@ -36,13 +36,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport<UnpaidAttendanceSummaryReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationService courtLocationService;
 
-    public UnpaidAttendanceSummaryReportTest() {
+    UnpaidAttendanceSummaryReportTest() {
         super(QAppearance.appearance,
             UnpaidAttendanceSummaryReport.RequestValidator.class,
             ReportGroupBy.builder()
@@ -56,7 +55,7 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.courtLocationService = mock(CourtLocationService.class);
         super.beforeEach();
@@ -68,7 +67,7 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
     }
 
     @Override
-    public UnpaidAttendanceSummaryReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected UnpaidAttendanceSummaryReport createReport(PoolRequestRepository poolRequestRepository) {
         return new UnpaidAttendanceSummaryReport(poolRequestRepository, this.courtLocationService);
     }
 
@@ -83,7 +82,7 @@ class UnpaidAttendanceSummaryReportTest extends AbstractGroupedReportTestSupport
 
     @Override
     @DisplayName("positivePreProcessQueryTypicalCourt")
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);

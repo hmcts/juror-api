@@ -60,7 +60,6 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods",
-    "PMD.PublicMemberInNonPublicType",
     "PMD.SingularField"
 })
 class TrialControllerTest {
@@ -82,7 +81,7 @@ class TrialControllerTest {
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;
 
     @BeforeEach
-    public void setupMocks() {
+    void setupMocks() {
         jwtPayload = null;
         mockMvc = MockMvcBuilders
             .standaloneSetup(new TrialController(trialService,jurorAppearanceService))

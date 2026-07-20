@@ -53,9 +53,9 @@ class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
     @Value("${jwt.secret.bureau}")
     protected String bureauSecret;
 
-    @SuppressWarnings({"PMD.PublicMemberInNonPublicType", "PMD.SignatureDeclareThrowsException"})
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         initHeaders();
     }
 

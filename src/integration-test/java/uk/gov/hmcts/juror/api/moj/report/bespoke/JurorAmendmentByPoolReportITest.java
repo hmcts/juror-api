@@ -12,11 +12,9 @@ import uk.gov.hmcts.juror.api.moj.report.ReportHashMap;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class JurorAmendmentByPoolReportITest extends AbstractJurorAmendmentReportITest {
     @Autowired
-    public JurorAmendmentByPoolReportITest(TestRestTemplate template) {
+    JurorAmendmentByPoolReportITest(TestRestTemplate template) {
         super(template, JurorAmendmentByPoolReport.class);
     }
 

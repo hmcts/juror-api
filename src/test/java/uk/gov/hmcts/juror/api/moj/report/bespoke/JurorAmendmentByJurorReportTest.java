@@ -10,11 +10,10 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class JurorAmendmentByJurorReportTest extends AbstractJurorAmendmentReportTestSupport<JurorAmendmentByJurorReport> {
 
 
-    public JurorAmendmentByJurorReportTest() {
+    JurorAmendmentByJurorReportTest() {
         super(JurorAmendmentByJurorReport.RequestValidator.class);
     }
 
@@ -28,7 +27,7 @@ class JurorAmendmentByJurorReportTest extends AbstractJurorAmendmentReportTestSu
     }
 
     @Override
-    public JurorAmendmentByJurorReport createReport() {
+    protected JurorAmendmentByJurorReport createReport() {
         return new JurorAmendmentByJurorReport(jurorAuditService, jurorService, userService);
     }
 

@@ -28,7 +28,7 @@ class AbstractStandardReportTest {
     private PoolRequestRepository poolRequestRepository;
 
     @BeforeEach
-    void beforeEach() {
+    protected void beforeEach() {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
     }
 
@@ -81,11 +81,10 @@ class AbstractStandardReportTest {
             DataType.LAST_NAME));
     }
 
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private static class AbstractStandardReportTestImpl extends AbstractStandardReport {
 
 
-        public AbstractStandardReportTestImpl(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
+        AbstractStandardReportTestImpl(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
                                               DataType... dataType) {
             super(poolRequestRepository, from, dataType);
         }
