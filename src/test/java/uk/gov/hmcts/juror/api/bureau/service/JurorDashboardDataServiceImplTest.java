@@ -192,7 +192,7 @@ public class JurorDashboardDataServiceImplTest {
     }
 
     @Test
-    public void auroResponsesHappyPath() {
+    public void autoResponsesHappyPath() {
         given(statsAutoProcessedRepository.findByProcessedDateBetween(startDate, endDate)).willReturn(
             autoOnlineResponseList);
         List<StatsAutoProcessed> autoOnlineResponses = jurorDashboardDataService.getAutoOnlineResponses(startDate,
