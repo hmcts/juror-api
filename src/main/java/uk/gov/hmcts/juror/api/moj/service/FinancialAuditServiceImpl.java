@@ -210,18 +210,20 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
         String jurorNumber,
         FinancialAuditDetailsAppearances financialAuditDetailsAppearances) {
 
-        return appearanceRepository.findByJurorNumberAndLocCodeAndAttendanceDateAndVersion(
+        return appearanceRepository.findByJurorNumberAndLocCodeAndAttendanceDateAndVersionAndFinancialAudit(
             jurorNumber,
             locCode,
             financialAuditDetailsAppearances.getAttendanceDate(),
-            financialAuditDetailsAppearances.getAppearanceVersion()
+            financialAuditDetailsAppearances.getAppearanceVersion(),
+            financialAuditDetailsAppearances.getFinancialAuditId()
         ).orElseThrow(
             () -> new MojException.NotFound(
                 "Appearance not found for financial audit details appearances "
                     + " juror number: " + jurorNumber
                     + " loc code: " + locCode
                     + " attendance date: " + financialAuditDetailsAppearances.getAttendanceDate()
-                    + " appearance version: " + financialAuditDetailsAppearances.getAppearanceVersion(),
+                    + " appearance version: " + financialAuditDetailsAppearances.getAppearanceVersion()
+                    + " financial audit id: " + financialAuditDetailsAppearances.getFinancialAuditId(),
                 null));
     }
 }

@@ -61,7 +61,7 @@ jacoco {
   toolVersion = "0.8.15"
 }
 
-version = '5.27.0'
+version = '5.29.0'
 
 repositories {
   mavenLocal()
@@ -82,10 +82,12 @@ configurations {
   smokeTestImplementation.extendsFrom testImplementation
   smokeTestRuntimeOnly.extendsFrom runtimeOnly
 
-  compileOnly {
-    extendsFrom annotationProcessor
-  }
-  querydsl.extendsFrom compileClasspath
+    mockitoAgent
+
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    querydsl.extendsFrom compileClasspath
 }
 
 dependencies {
@@ -117,7 +119,7 @@ dependencies {
   runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}"
   implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.4'
 
-  implementation('com.google.guava:guava:33.4.0-jre')
+    implementation('com.google.guava:guava:33.6.0-jre')
 
   // QueryDSL
   implementation("com.querydsl:querydsl-core:${queryDslVersion}")
@@ -147,10 +149,13 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
   testImplementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
 
-  testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
-  testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:4.1.1'
-  testImplementation('org.assertj:assertj-core:3.27.7')
-  testImplementation 'org.mockito:mockito-core:5.15.2'
+    testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
+    testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:4.1.1'
+    testImplementation('org.assertj:assertj-core:3.27.7')
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    mockitoAgent("org.mockito:mockito-core:${mockitoVersion}") {
+        transitive = false
+    }
 
   testImplementation('org.projectlombok:lombok')
   testAnnotationProcessor('org.projectlombok:lombok')
@@ -206,7 +211,9 @@ tasks.withType(Test).configureEach() {
     destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
   }
 
-  finalizedBy(jacocoTestReport)
+    jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
+
+    finalizedBy(jacocoTestReport)
 }
 
 // Flyway must align with application.yml
@@ -371,6 +378,10 @@ dependencyCheck {
   failBuildOnCVSS = 0
   suppressionFile = 'config/owasp/suppressions.xml'
   scanConfigurations = ['runtimeClasspath', 'compileClasspath']
+  nvd {
+    apiKey = System.getenv("NVD_API_KEY") ?: ""
+    delay = 6000
+  }
 }
 
 project.tasks['check'].dependsOn integration

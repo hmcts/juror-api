@@ -162,4 +162,10 @@ public class EditJurorRecordRequestDto {
     @JsonProperty("third_party")
     private JurorThirdPartyDto thirdParty;
 
+    @JsonProperty("dbd_preference")
+    @Length(max = 7)
+    @Pattern(regexp = "(?i)^(paper|digital)$", message = "dbd_preference must be either 'Paper' or 'Digital'")
+    @Schema(description = "If the juror prefers Paper or Digital communication")
+    private String dbdPreference;
+
 }
