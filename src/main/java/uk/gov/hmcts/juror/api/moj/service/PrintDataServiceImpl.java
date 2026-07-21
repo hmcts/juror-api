@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.PostponeLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.RequestInfoLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsLetterLight;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.SummonsReminderLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.WithdrawalLetter;
 
@@ -67,8 +68,33 @@ public class PrintDataServiceImpl implements PrintDataService {
     }
 
     @Override
+    public void bulkPrintSummonsLetterLight(List<JurorPool> jurorPools) {
+        if (jurorPools == null || jurorPools.isEmpty()) {
+            throw new MojException.InternalServerError(
+                "Attempted to print light summons letters for empty jurorPool list", null);
+        }
+
+        jurorPools.forEach(jurorPool -> {
+            //queue a letter if juror is not disqualified
+            if (!Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
+                commitData(new SummonsLetterLight(jurorPool,
+                    jurorPool.getCourt(),
+                    courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+                    welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+                ));
+            }
+        });
+    }
+
+    @Override
     public void reprintSummonsLetter(JurorPool jurorPool) {
         bulkPrintSummonsLetter(List.of(jurorPool));
+        jurorHistoryService.createSummonLetterReprintedHistory(jurorPool);
+    }
+
+    @Override
+    public void reprintSummonsLetterLight(JurorPool jurorPool) {
+        bulkPrintSummonsLetterLight(List.of(jurorPool));
         jurorHistoryService.createSummonLetterReprintedHistory(jurorPool);
     }
 

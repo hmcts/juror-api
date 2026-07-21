@@ -32,7 +32,9 @@ public enum FormCode {
     ENG_REQUESTINFO("5227", PrintDataService::reprintRequestInfoLetter, List.of(IJurorStatus.SUMMONED)),
     BI_REQUESTINFO("5227C", PrintDataService::reprintRequestInfoLetter, List.of(IJurorStatus.SUMMONED)),
     ENG_WITHDRAWAL("5224", PrintDataService::printWithdrawalLetter, List.of(IJurorStatus.DISQUALIFIED)),
-    BI_WITHDRAWAL("5224C", PrintDataService::printWithdrawalLetter, List.of(IJurorStatus.DISQUALIFIED));
+    BI_WITHDRAWAL("5224C", PrintDataService::printWithdrawalLetter, List.of(IJurorStatus.DISQUALIFIED)),
+    ENG_SUMMONSLIGHT("5222", PrintDataService::reprintSummonsLetterLight, List.of(IJurorStatus.SUMMONED)),
+    BI_SUMMONSLIGHT("5222C", PrintDataService::reprintSummonsLetterLight, List.of(IJurorStatus.SUMMONED));
     private final String code;
 
     private final List<Integer> jurorStatus;
