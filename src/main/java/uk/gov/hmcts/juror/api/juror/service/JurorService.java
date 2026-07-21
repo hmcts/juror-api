@@ -21,6 +21,12 @@ public interface JurorService {
      */
     JurorDetailDto getJurorByJurorNumber(String jurorNumber);
 
+    /**
+     * Return DBD information for a single juror by id.
+     *
+     * @param jurorNumber Juror number to find
+     * @return DBD information
+     */
     DBDInformationDto getDBDInformation(String jurorNumber);
 
     List<DeceasedJuror> getDeceasedJurors(List<String> postcodes);

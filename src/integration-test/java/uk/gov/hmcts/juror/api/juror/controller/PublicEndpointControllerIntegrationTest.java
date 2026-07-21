@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
+import uk.gov.hmcts.juror.api.juror.controller.response.DBDInformationDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -245,6 +246,74 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             HttpMethod.GET, URI.create("/api/v1/public/juror/209092530")), JurorDetailDto.class);
         assertThat(exchange.getBody()).extracting("jurorNumber", "title", "firstName", "lastName", "postcode")
             .contains("209092530", "Dr", "Jane", "CASTILLO", "AB39RY");
+    }
+
+    @Test
+    @Sql("/db/mod/truncate.sql")
+    @Sql("/db/PublicEndpointControllerTest_retrieveJurorById.sql")
+    public void retrieveDBDInformation_RequestWithValidNumber_ReturnsDBDInformation() throws Exception {
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
+            .jurorNumber("209092530")
+            .postcode("AB3 9RY")
+            .surname("CASTILLO")
+            .roles(new String[]{"juror"})
+            .id("")
+            .build())
+        );
+
+        ResponseEntity<DBDInformationDto> exchange = template.exchange(new RequestEntity<Void>(httpHeaders,
+            HttpMethod.GET, URI.create("/api/v1/public/juror/209092530/dbd-information")),
+            DBDInformationDto.class);
+
+        assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(exchange.getBody()).isNotNull();
+        assertThat(exchange.getBody().getServiceStartDate()).isEqualTo(LocalDate.of(2022, 5, 3));
+
+        executeInTransaction(() -> {
+            Optional<CourtLocation> courtLocation = courtLocationRepository.findByLocCode("448");
+            assertThat(courtLocation).isPresent();
+            assertThat(exchange.getBody().getCourtName()).isEqualTo(courtLocation.get().getLocCourtName());
+        });
+    }
+
+    @Test
+    public void retrieveDBDInformation_InvalidNumberRequest_ReturnsUnauthorizedErrorMessage() throws Exception {
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
+            .jurorNumber("209092530")
+            .postcode("AB3 9RY")
+            .surname("CASTILLO")
+            .roles(new String[]{"juror"})
+            .id("")
+            .build())
+        );
+
+        ResponseEntity<String> exchange = template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            URI.create("/api/v1/public/juror/12345/dbd-information")), String.class);
+
+        assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(exchange.getBody()).contains("Unauthorized");
+        assertThat(exchange.getBody()).contains("InvalidJwtAuthenticationException");
+    }
+
+    @Test
+    @Sql("/db/mod/truncate.sql")
+    public void retrieveDBDInformation_NoPoolEntry_ReturnsNotFound() throws Exception {
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
+            .jurorNumber("209092530")
+            .postcode("AB3 9RY")
+            .surname("CASTILLO")
+            .roles(new String[]{"juror"})
+            .id("")
+            .build())
+        );
+
+        ResponseEntity<String> exchange = template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            URI.create("/api/v1/public/juror/209092530/dbd-information")), String.class);
+
+        assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     /**

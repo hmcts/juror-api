@@ -103,6 +103,13 @@ public class PublicEndpointController {
         return ResponseEntity.ok(jurorDetailDto);
     }
 
+    /**
+     * Return the DBD court and service start date information for the juror.
+     *
+     * @param principal   The authenticated juror
+     * @param jurorNumber The juror number to show the details of
+     * @return DBD information
+     */
     @GetMapping(path = "/juror/{jurorNumber}/dbd-information")
     @Operation(summary = "Find DBD information by Juror Number",
         description = "The court and service start date for the authenticated juror")
