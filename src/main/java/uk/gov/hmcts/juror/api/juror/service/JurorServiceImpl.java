@@ -15,7 +15,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
-import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationDto;
+import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.DeceasedJuror;
@@ -107,7 +107,7 @@ public class JurorServiceImpl implements JurorService {
     }
 
     @Override
-    public DbdInformationDto getDbdInformation(final String jurorNumber) {
+    public DbdInformationResponseDto getDbdInformation(final String jurorNumber) {
         log.debug("Getting DBD information for juror {}", jurorNumber);
         JurorPool jurorDetails = jurorPoolService.getJurorPoolFromUser(jurorNumber);
 
@@ -116,7 +116,7 @@ public class JurorServiceImpl implements JurorService {
             return null;
         }
 
-        return DbdInformationDto.builder()
+        return DbdInformationResponseDto.builder()
             .courtName(jurorDetails.getCourt().getLocCourtName())
             .serviceStartDate(jurorDetails.getReturnDate())
             .build();

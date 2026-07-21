@@ -29,7 +29,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
-import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationDto;
+import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -262,9 +262,9 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        ResponseEntity<DbdInformationDto> exchange = template.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<DbdInformationResponseDto> exchange = template.exchange(new RequestEntity<Void>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/public/juror/209092530/dbd-information")),
-            DbdInformationDto.class);
+            DbdInformationResponseDto.class);
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(exchange.getBody()).isNotNull();

@@ -12,7 +12,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
-import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationDto;
+import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -470,7 +470,7 @@ public class JurorServiceImplTest {
 
         when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPoolDetails);
 
-        final DbdInformationDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
+        final DbdInformationResponseDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
 
         assertThat(dbdInformationDto).isNotNull();
         assertThat(dbdInformationDto.getCourtName()).isEqualTo("Test Court");
@@ -481,7 +481,7 @@ public class JurorServiceImplTest {
     public void getDbdInformation_WithNoPoolEntry_ReturnsNull() {
         when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(null);
 
-        final DbdInformationDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
+        final DbdInformationResponseDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
 
         assertThat(dbdInformationDto).isNull();
     }
