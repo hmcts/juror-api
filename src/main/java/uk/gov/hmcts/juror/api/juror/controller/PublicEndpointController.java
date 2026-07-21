@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorHolidaysRequestDto;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
+import uk.gov.hmcts.juror.api.juror.controller.response.DBDInformationDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorHolidaysResponseDto;
 import uk.gov.hmcts.juror.api.juror.service.HolidaysService;
@@ -100,6 +101,24 @@ public class PublicEndpointController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok(jurorDetailDto);
+    }
+
+    @GetMapping(path = "/juror/{jurorNumber}/dbd-information")
+    @Operation(summary = "Find DBD information by Juror Number",
+        description = "The court and service start date for the authenticated juror")
+    public ResponseEntity<DBDInformationDto> retrieveDBDInformation(
+        @Parameter(hidden = true) @AuthenticationPrincipal PublicJwtPayload principal,
+        @Parameter(description = "Juror number", required = true) @PathVariable String jurorNumber) {
+        if (ObjectUtils.isEmpty(jurorNumber) || !principal.getJurorNumber().equals(jurorNumber)) {
+            throw new InvalidJwtAuthenticationException("Invalid JWT");
+        }
+
+        final DBDInformationDto dbdInformationDto = jurorService.getDBDInformation(jurorNumber);
+        if (dbdInformationDto == null) {
+            log.warn("No DBD information for juror number {}", jurorNumber);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(dbdInformationDto);
     }
 
     /**

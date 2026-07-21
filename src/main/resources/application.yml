@@ -47,7 +47,7 @@ smartsurvey:
     type: HTTP     # type is one of DIRECT, HTTP, SOCKS
 feature-flags:
   flags:
-    digital-by-default: ${DIGITAL_BY_DEFAULT:false}
+    digital-by-default: ${DIGITAL_BY_DEFAULT:true}
 server:
   error:
     include-message: always
