@@ -373,7 +373,7 @@ public class JurorRecordController {
 
         if (isBureauUser) {
             throw new MojException.Forbidden("User has insufficient permission to perform "
-                + "the process pending name change action", null);
+                                                 + "the process pending name change action", null);
         }
 
         jurorRecordService.processPendingNameChange(payload, jurorNumber, requestDto);
@@ -395,6 +395,16 @@ public class JurorRecordController {
                                  @PathVariable("jurorNumber") String jurorNumber) {
         JurorNumberValidator.isValidJurorNumber(jurorNumber);
         jurorRecordService.editJurorDetails(payload, requestDto, jurorNumber);
+    }
+
+    @PostMapping("/send-paper-summons/{juror_number}")
+    @Operation(summary = "Send a paper summons pack to a juror who has switched to Paper communication preference")
+    @IsBureauUser
+    public ResponseEntity<Void> sendPaperSummons(
+        @Valid @JurorNumber @P("juror_number") @PathVariable("juror_number")
+        @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
+        jurorRecordService.sendPaperSummonsPack(jurorNumber);
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
     @PatchMapping("/pnc/{jurorNumber}")
@@ -518,7 +528,7 @@ public class JurorRecordController {
     @Operation(summary = "Mark a juror as responded")
     @ResponseStatus(HttpStatus.OK)
     public void markResponded(@Valid @JurorNumber @P("juror_number") @PathVariable("juror_number")
-                                  @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
+                              @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
         jurorRecordService.markResponded(jurorNumber);
     }
 
