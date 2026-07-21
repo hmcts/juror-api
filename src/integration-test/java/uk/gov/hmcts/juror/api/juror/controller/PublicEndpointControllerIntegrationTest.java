@@ -29,7 +29,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
-import uk.gov.hmcts.juror.api.juror.controller.response.DBDInformationDto;
+import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -251,7 +251,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Test
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/PublicEndpointControllerTest_retrieveJurorById.sql")
-    public void retrieveDBDInformation_RequestWithValidNumber_ReturnsDBDInformation() throws Exception {
+    public void retrieveDbdInformation_RequestWithValidNumber_ReturnsDbdInformation() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("209092530")
@@ -262,9 +262,9 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        ResponseEntity<DBDInformationDto> exchange = template.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<DbdInformationDto> exchange = template.exchange(new RequestEntity<Void>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/public/juror/209092530/dbd-information")),
-            DBDInformationDto.class);
+            DbdInformationDto.class);
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(exchange.getBody()).isNotNull();
@@ -278,7 +278,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     }
 
     @Test
-    public void retrieveDBDInformation_InvalidNumberRequest_ReturnsUnauthorizedErrorMessage() throws Exception {
+    public void retrieveDbdInformation_InvalidNumberRequest_ReturnsUnauthorizedErrorMessage() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("209092530")
@@ -299,7 +299,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     @Test
     @Sql("/db/mod/truncate.sql")
-    public void retrieveDBDInformation_NoPoolEntry_ReturnsNotFound() throws Exception {
+    public void retrieveDbdInformation_NoPoolEntry_ReturnsNotFound() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
             .jurorNumber("209092530")

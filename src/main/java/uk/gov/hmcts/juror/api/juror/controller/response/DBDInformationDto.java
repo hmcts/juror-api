@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Builder
 @Data
 @Schema(description = "DBD information")
-public class DBDInformationDto {
+public class DbdInformationDto {
 
     @Schema(description = "Name of the court the juror has been summoned to attend")
     @JsonProperty("courtName")

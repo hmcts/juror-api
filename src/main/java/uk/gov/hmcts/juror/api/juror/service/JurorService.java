@@ -2,7 +2,7 @@ package uk.gov.hmcts.juror.api.juror.service;
 
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
-import uk.gov.hmcts.juror.api.juror.controller.response.DBDInformationDto;
+import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.moj.domain.DeceasedJuror;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
@@ -27,7 +27,7 @@ public interface JurorService {
      * @param jurorNumber Juror number to find
      * @return DBD information
      */
-    DBDInformationDto getDBDInformation(String jurorNumber);
+    DbdInformationDto getDbdInformation(String jurorNumber);
 
     List<DeceasedJuror> getDeceasedJurors(List<String> postcodes);
 

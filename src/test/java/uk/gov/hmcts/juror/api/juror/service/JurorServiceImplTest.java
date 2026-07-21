@@ -12,7 +12,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
-import uk.gov.hmcts.juror.api.juror.controller.response.DBDInformationDto;
+import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -463,14 +463,14 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void getDBDInformation_WithJurorNumber_ReturnsDBDInformation() {
+    public void getDbdInformation_WithJurorNumber_ReturnsDbdInformation() {
         final LocalDate serviceStartDate = LocalDate.of(2026, 8, 10);
         jurorPoolDetails.getCourt().setLocCourtName("Test Court");
         jurorPoolDetails.getPool().setReturnDate(serviceStartDate);
 
         when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPoolDetails);
 
-        final DBDInformationDto dbdInformationDto = defaultService.getDBDInformation(TEST_JUROR_NUMBER);
+        final DbdInformationDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
 
         assertThat(dbdInformationDto).isNotNull();
         assertThat(dbdInformationDto.getCourtName()).isEqualTo("Test Court");
@@ -478,10 +478,10 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void getDBDInformation_WithNoPoolEntry_ReturnsNull() {
+    public void getDbdInformation_WithNoPoolEntry_ReturnsNull() {
         when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(null);
 
-        final DBDInformationDto dbdInformationDto = defaultService.getDBDInformation(TEST_JUROR_NUMBER);
+        final DbdInformationDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
 
         assertThat(dbdInformationDto).isNull();
     }
