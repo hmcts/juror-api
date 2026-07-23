@@ -5,7 +5,7 @@ buildscript {
         springDocVersion = '2.8.9'
         queryDslVersion = '5.1.0'
         flywayVersion = '11.20.3'
-        postgresVersion = '42.7.12'  // upgraded from 42.7.11 - CVE-2026-54291 fix
+        postgresVersion = '42.7.13'  // upgraded from 42.7.11 - CVE-2026-54291 fix
         envers = '3.5.12'
         jwtVersion = '0.13.0'
         mockitoVersion = '5.15.2'
