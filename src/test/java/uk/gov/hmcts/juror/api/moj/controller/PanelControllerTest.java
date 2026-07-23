@@ -57,7 +57,8 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 @ContextConfiguration(classes = {PanelController.class})
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.CouplingBetweenObjects"
 })
 class PanelControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial/panel";
@@ -73,7 +74,7 @@ class PanelControllerTest {
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;
 
     @BeforeEach
-    public void setupMocks() {
+    void setupMocks() {
         jwtPayload = null;
         mockMvc = MockMvcBuilders
             .standaloneSetup(new PanelController(panelService))
@@ -315,6 +316,7 @@ class PanelControllerTest {
     @Nested
     @DisplayName("Add panel members")
     class AddPanelMembers {
+
         @Nested
         class Positive {
             @DisplayName("Add panel members - no pool number provided")
@@ -389,6 +391,7 @@ class PanelControllerTest {
     @Nested
     @DisplayName("Panel status")
     class PanelStatus {
+
         @Nested
         class Positive {
             @DisplayName("Get generated panel status")
@@ -438,7 +441,7 @@ class PanelControllerTest {
         return panelListDtos;
     }
 
-    public class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
+    class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
 
         @Override
         public boolean supportsParameter(MethodParameter parameter) {

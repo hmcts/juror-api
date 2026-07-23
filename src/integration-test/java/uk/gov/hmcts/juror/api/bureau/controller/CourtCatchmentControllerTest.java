@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.bureau.controller;
 
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +33,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CourtCatchmentControllerTest extends AbstractIntegrationTest {
 
-
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -43,6 +41,7 @@ class CourtCatchmentControllerTest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
@@ -151,6 +150,4 @@ class CourtCatchmentControllerTest extends AbstractIntegrationTest {
 
 
     }
-
-
 }

@@ -62,7 +62,7 @@ jacoco {
     toolVersion = "0.8.15"
 }
 
-version = '5.28.0'
+version = '5.28.1'
 
 repositories {
     mavenLocal()
@@ -75,12 +75,18 @@ repositories {
 configurations {
     dev
     integrationTestImplementation.extendsFrom testImplementation
+    integrationTestCompileOnly.extendsFrom testCompileOnly
+    integrationTestAnnotationProcessor.extendsFrom testAnnotationProcessor
     integrationTestRuntimeOnly.extendsFrom runtimeOnly
 
     functionalTestImplementation.extendsFrom testImplementation
+    functionalTestCompileOnly.extendsFrom testCompileOnly
+    functionalTestAnnotationProcessor.extendsFrom testAnnotationProcessor
     functionalTestRuntimeOnly.extendsFrom runtimeOnly
 
     smokeTestImplementation.extendsFrom testImplementation
+    smokeTestCompileOnly.extendsFrom testCompileOnly
+    smokeTestAnnotationProcessor.extendsFrom testAnnotationProcessor
     smokeTestRuntimeOnly.extendsFrom runtimeOnly
 
     mockitoAgent
@@ -301,14 +307,14 @@ checkstyle {
 }
 
 pmdTest {
-    maxFailures = 292
+    maxFailures = 140
 }
 pmdMain {
-    maxFailures = 752
+    maxFailures = 30
 }
 pmd {
     maxFailures = 0
-    toolVersion = "6.55.0"
+    toolVersion = "7.24.0"
     sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integrationTest,
                   sourceSets.functionalTest, sourceSets.smokeTest]
     reportsDir = file("$project.buildDir/reports/pmd")

@@ -22,7 +22,7 @@ import java.util.List;
 class UndeliverableListReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public UndeliverableListReportITest(TestRestTemplate template) {
+    UndeliverableListReportITest(TestRestTemplate template) {
         super(template, UndeliverableListReport.class);
     }
 
@@ -39,7 +39,6 @@ class UndeliverableListReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalBureau() {
         testBuilder()
             .triggerValid()
@@ -48,7 +47,6 @@ class UndeliverableListReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void negativeCourtUser() {
         testBuilder()
             .jwt(getCourtJwt("414"))
@@ -57,7 +55,6 @@ class UndeliverableListReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);

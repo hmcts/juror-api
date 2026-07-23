@@ -33,6 +33,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.CouplingBetweenObjects"})
 public class ManagementDashboardServiceImpl implements ManagementDashboardService {
 
     private final UtilisationStatsRepository utilisationStatsRepository;
@@ -160,13 +161,14 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
                     courtName = String.join(",", stats.subList(5, stats.size() - 1));
                 }
 
-                CourtLocationAuditRecord courtLocationAuditRecord = new CourtLocationAuditRecord();
-                courtLocationAuditRecord.setLocCode(locCode);
-                courtLocationAuditRecord.setCourtName(courtName);
-                courtLocationAuditRecord.setPublicTransportSoftLimit(publicTransportSoftLimit);
-                courtLocationAuditRecord.setTaxiSoftLimit(taxiSoftLimit);
-                courtLocationAuditRecord.setChangedBy(changedBy);
-                courtLocationAuditRecord.setRevisionNumber(revisionNumber);
+                CourtLocationAuditRecord courtLocationAuditRecord = getCourtLocationAuditRecord(
+                    locCode,
+                    courtName,
+                    publicTransportSoftLimit,
+                    taxiSoftLimit,
+                    changedBy,
+                    revisionNumber
+                );
                 auditRecords.add(courtLocationAuditRecord);
             } catch (Exception e) {
                 log.warn("Error parsing court location audit record line: {}", line, e);
@@ -220,6 +222,20 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
             .toList();
 
         return new ExpenseLimitsReportResponseDto(expenseLimitsRecords);
+    }
+
+    private static CourtLocationAuditRecord getCourtLocationAuditRecord(String locCode, String courtName,
+                                                                        Double publicTransportSoftLimit,
+                                                                        Double taxiSoftLimit, String changedBy,
+                                                                        long revisionNumber) {
+        CourtLocationAuditRecord courtLocationAuditRecord = new CourtLocationAuditRecord();
+        courtLocationAuditRecord.setLocCode(locCode);
+        courtLocationAuditRecord.setCourtName(courtName);
+        courtLocationAuditRecord.setPublicTransportSoftLimit(publicTransportSoftLimit);
+        courtLocationAuditRecord.setTaxiSoftLimit(taxiSoftLimit);
+        courtLocationAuditRecord.setChangedBy(changedBy);
+        courtLocationAuditRecord.setRevisionNumber(revisionNumber);
+        return courtLocationAuditRecord;
     }
 
     private void createExpenseRecord(CourtLocationAuditRecord latestRecord,
@@ -323,11 +339,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         }
         OverdueUtilisationReportResponseDto responseDto = new OverdueUtilisationReportResponseDto();
 
-        if (!top10) {
-            // sort the records by daysElapsed descending
-            records.sort((r1, r2) -> r2.getDaysElapsed().compareTo(r1.getDaysElapsed()));
-            responseDto.setRecords(records);
-        } else {
+        if (top10) {
             // Sort records by daysElapsed descending and get only 10 records
             List<OverdueUtilisationReportResponseDto.OverdueUtilisationRecord> top10Records = records.stream()
                 .sorted((r1, r2) -> r2.getDaysElapsed().compareTo(r1.getDaysElapsed()))
@@ -335,6 +347,10 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
                 .toList();
 
             responseDto.setRecords(top10Records);
+        } else {
+            // sort the records by daysElapsed descending
+            records.sort((r1, r2) -> r2.getDaysElapsed().compareTo(r1.getDaysElapsed()));
+            responseDto.setRecords(records);
         }
 
         return responseDto;

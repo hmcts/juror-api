@@ -39,7 +39,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public interface JurorRecordService {
 
     JurorDetailsResponseDto getJurorDetails(BureauJwtPayload payload, String jurorNumber, String locCode);

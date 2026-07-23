@@ -24,7 +24,7 @@ import java.util.List;
 })
 class AbaccusReportITest extends AbstractStandardReportControllerITest {
     @Autowired
-    public AbaccusReportITest(TestRestTemplate template) {
+    AbaccusReportITest(TestRestTemplate template) {
         super(template, AbaccusReport.class);
     }
 
@@ -43,7 +43,6 @@ class AbaccusReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalBureau() {
         testBuilder()
             .triggerValid()
@@ -111,7 +110,6 @@ class AbaccusReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setToDate(null);
@@ -122,7 +120,6 @@ class AbaccusReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getCourtJwt("414"))

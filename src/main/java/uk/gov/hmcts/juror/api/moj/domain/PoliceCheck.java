@@ -30,6 +30,7 @@ public enum PoliceCheck {
         this.description = description;
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // should be boolean but under the hood it is.
     public static Character isChecked(PoliceCheck policeCheck) {
         if (policeCheck == null || policeCheck == NOT_CHECKED) {
             return null;
@@ -38,7 +39,7 @@ public enum PoliceCheck {
     }
 
     public static String getDescription(PoliceCheck policeCheck) {
-        return Objects.requireNonNullElse(policeCheck, PoliceCheck.NOT_CHECKED).getDescription();
+        return Objects.requireNonNullElse(policeCheck, NOT_CHECKED).getDescription();
     }
 
     public static PoliceCheck getEffectiveValue(PoliceCheck oldValue, PoliceCheck newValue) {
@@ -46,7 +47,7 @@ public enum PoliceCheck {
             && newValue.isError()
             && oldValue != null
             && oldValue.isError()) {
-            return PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED;
+            return UNCHECKED_MAX_RETRIES_EXCEEDED;
         } else {
             return newValue;
         }

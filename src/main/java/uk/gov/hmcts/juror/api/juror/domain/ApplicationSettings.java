@@ -55,6 +55,6 @@ public class ApplicationSettings implements Serializable {
         SMART_SURVEY_SUMMONS_RESPONSE_DAYS,
         SMART_SURVEY_SUMMONS_RESPONSE_EXPORT_NAME,
         PAYMENT_AUTH_CODE,
-        SUMMONING_PROGRESS_WEEK_OFFSET;
+        SUMMONING_PROGRESS_WEEK_OFFSET
     }
 }

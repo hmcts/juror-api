@@ -53,11 +53,13 @@ class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
     @Value("${jwt.secret.bureau}")
     protected String bureauSecret;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         initHeaders();
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void initHeaders(String... userLevel) throws Exception {
         String level = "99";
         if (userLevel.length == 1) {

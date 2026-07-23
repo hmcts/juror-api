@@ -16,6 +16,7 @@ import java.util.List;
  * Allowing for additional query functions to be explicitly declared
  */
 public interface IJurorRepository {
+    StringPath JUROR_FULL_NAME = Expressions.stringPath("jurorName");
 
     Juror findByJurorNumberAndIsActiveAndCourt(String jurorNumber, boolean isActive, CourtLocation locCode);
 
@@ -27,6 +28,4 @@ public interface IJurorRepository {
     JPAQuery<Tuple> fetchFilteredJurorRecords(JurorRecordFilterRequestQuery query);
 
     List<DeceasedJuror> findDeceasedJurors(List<String> postcodes);
-
-    StringPath JUROR_FULL_NAME = Expressions.stringPath("jurorName");
 }

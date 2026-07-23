@@ -35,7 +35,7 @@ import static org.springframework.http.HttpMethod.POST;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("BureauMessagingControllerITest: /api/v1/moj/messages/bureau/send")
 @Sql({"/db/mod/truncate.sql", "/db/mod/BureauMessagingControllerITest_typical.sql"})
-@SuppressWarnings("PMD.ExcessiveImports")
+
 class BureauMessagingControllerITest extends AbstractIntegrationTest {
 
     private static final String URL = "/api/v1/moj/messages/bureau/send";
@@ -234,13 +234,6 @@ class BureauMessagingControllerITest extends AbstractIntegrationTest {
                                      "jurorEmails", "At least one juror email detail must be provided"));
         }
 
-        @Test
-        void missingTemplateConfiguration() {
-            // TODO: needs its own @Sql fixture (e.g. without app_setting rows) or a delete-then-call
-            // pattern, since the class-level @Sql seeds both template IDs. Consider a nested @Sql
-            // override or moving this to its own @Sql-decorated nested class.
-        }
     }
-
 
 }

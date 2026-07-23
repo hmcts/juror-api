@@ -52,7 +52,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.tuple;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 public class BureauStaffControllerTest extends AbstractIntegrationTest {
 
     private static final List<StaffDto> ACTIVE_STAFF = Arrays.asList(
@@ -739,7 +739,6 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/standing_data.sql")
     @Sql("/db/StaffRepositoryTest.staffRepository_happy_findActiveStaffMembers.sql")
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
     public void activeStaffRoster_happy() throws Exception {
         final String description = "Active staff roster happy path";
 
@@ -758,7 +757,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         // expecting happy response with inactive staff filtered out
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
         final ResponseEntity<StaffRosterResponseDto> exchange =
-            template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET, uri), StaffRosterResponseDto.class);
+            template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET, uri), StaffRosterResponseDto.class);
 
         assertThat(exchange).describedAs(description).isNotNull();
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);

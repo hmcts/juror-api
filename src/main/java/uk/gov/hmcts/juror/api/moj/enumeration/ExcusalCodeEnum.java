@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
+@SuppressWarnings("PMD.ShortVariable")
 public enum ExcusalCodeEnum {
     A("A", "Moved from area"),
     B("B", "Student"),
@@ -43,8 +44,14 @@ public enum ExcusalCodeEnum {
     private final String code;
     private final String description;
 
-    public static ExcusalCodeEnum fromCode(String code) throws MojException {
-        for (ExcusalCodeEnum excusalCodeEnum : ExcusalCodeEnum.values()) {
+    /**
+     * Gets ExcusalCodeEnum for string code.
+     * @param code excusal code.
+     * @return matching excusal code enum.
+     * @throws MojException if the code is invalid.
+     */
+    public static ExcusalCodeEnum fromCode(String code) {
+        for (ExcusalCodeEnum excusalCodeEnum : values()) {
             if (excusalCodeEnum.getCode().equals(code)) {
                 return excusalCodeEnum;
             }

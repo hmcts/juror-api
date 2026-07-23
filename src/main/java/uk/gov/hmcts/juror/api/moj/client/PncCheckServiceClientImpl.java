@@ -40,6 +40,7 @@ public class PncCheckServiceClientImpl extends AbstractRemoteRestClient implemen
     }
 
     @Override
+    @SuppressWarnings({"PMD.ExceptionAsFlowControl"})
     public void checkJuror(String jurorNumber) {
         log.info("Manual police check requested for juror number: " + jurorNumber);
         JurorCheckRequest jurorCheckRequest = createJurorCheckRequest(jurorNumber);
@@ -52,7 +53,7 @@ public class PncCheckServiceClientImpl extends AbstractRemoteRestClient implemen
                 restTemplate.exchange(singleUpdateUrl, HttpMethod.POST, requestUpdate, Void.class);
 
             final HttpStatusCode statusCode = response.getStatusCode();
-            if (!statusCode.equals(HttpStatus.OK)) {
+            if (statusCode != HttpStatus.OK) {
                 throw new MojException.RemoteGatewayException(
                     "Call to PncCheckServiceClientImpl check juror failed ",
                     null);

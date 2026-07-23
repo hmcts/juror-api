@@ -19,7 +19,6 @@ import uk.gov.hmcts.juror.api.moj.domain.trial.QTrial;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType;
-import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -46,7 +45,6 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
     private static final QAppearance APPEARANCE = QAppearance.appearance;
 
     @Override
-    @SuppressWarnings("PMD.CyclomaticComplexity")
     public Tuple retrievePrintInformation(String jurorNumber, CourtLetterType courtLetterType, boolean welsh,
                                           String owner) {
         return retrievePrintInformation(jurorNumber, courtLetterType, welsh, owner, null);
@@ -90,8 +88,8 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         filterDataBasedOnLetterType(letterType, query, null);
 
         // filter based on date
-        if (SHOW_CAUSE.equals(letterType)
-            || FAILED_TO_ATTEND.equals(letterType)) {
+        if (letterType == SHOW_CAUSE
+            || letterType == FAILED_TO_ATTEND) {
             query.where(APPEARANCE.attendanceDate.eq(letterDate));
         }
 
@@ -104,6 +102,7 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         return query.fetchOne();
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExhaustiveSwitchHasDefault"})
     private void orderResultsBasedOnLetterType(JPAQuery<Tuple> query, CourtLetterType courtLetterType) {
         switch (courtLetterType) {
             case DEFERRAL_GRANTED, POSTPONED -> query.orderBy(JUROR_POOL.deferralDate.desc());
@@ -114,7 +113,9 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
             case DEFERRAL_REFUSED, EXCUSAL_REFUSED, CERTIFICATE_OF_ATTENDANCE -> {
                 // currently not ordered;
             }
-            default -> throw new MojException.NotImplemented("letter type not implemented", null);
+            default -> {
+                // no ordering required
+            }
         }
     }
 
@@ -123,11 +124,12 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         query.where(JUROR_POOL.owner.eq(owner));
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExhaustiveSwitchHasDefault"})
     private void filterDataBasedOnLetterType(CourtLetterType courtLetterType,
                                              JPAQuery<Tuple> query, String trialNumber) {
         switch (courtLetterType) {
             case DEFERRAL_GRANTED, POSTPONED -> {
-                if (POSTPONED.equals(courtLetterType)) {
+                if (courtLetterType == POSTPONED) {
                     query.join(POOL_REQUEST).on(POOL_REQUEST.eq(JUROR_POOL.pool))
                         .where(JUROR_POOL.deferralCode.eq(ExcusalCodeEnum.P.getCode()));
                 }
@@ -159,8 +161,9 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
                     .where(APPEARANCE.noShow.isFalse().or(APPEARANCE.noShow.isNull()))
                     .where(APPEARANCE.attendanceType.ne(AttendanceType.ABSENT))
                     .orderBy(APPEARANCE.attendanceDate.desc());
-
-            default -> throw new MojException.NotImplemented("letter type not implemented", null);
+            default -> {
+                // no filtering required
+            }
         }
     }
 
@@ -181,7 +184,7 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
         return query;
     }
 
-    @SuppressWarnings("PMD.CyclomaticComplexity")
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExhaustiveSwitchHasDefault"})
     private static void buildExpressionsBasedOnLetterType(CourtLetterType courtLetterType,
                                                           List<Expression<?>> expressions) {
         switch (courtLetterType) {
@@ -215,7 +218,9 @@ public class CourtPrintLetterRepositoryImpl implements CourtPrintLetterRepositor
             }
             case CERTIFICATE_OF_ATTENDANCE -> {
             } // does nothing here
-            default -> throw new MojException.NotImplemented("letter type not implemented", null);
+            default -> {
+                // no expressions required
+            }
         }
     }
 

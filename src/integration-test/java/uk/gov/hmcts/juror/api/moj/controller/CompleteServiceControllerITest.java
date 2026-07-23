@@ -47,14 +47,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+@SuppressWarnings("PMD.ExcessiveImports")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: /api/v1/moj/complete-service")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.ExcessiveImports")
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private final JurorPoolRepository jurorPoolRepository;
     private final JurorHistoryRepository jurorHistoryRepository;
 
@@ -62,8 +63,9 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
 
     private static final String BASE_URL = "/api/v1/moj/complete-service";
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -605,7 +607,7 @@ class CompleteServiceControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/UncompleteServiceController.sql"})
     class UncompleteService {
 
-        public static final String URL = BASE_URL + "/uncomplete";
+        static final String URL = BASE_URL + "/uncomplete";
 
         private void validateJurorWasUncompleted(String jurorNumber, String poolNumber) {
             executeInTransaction(() -> {

@@ -36,7 +36,7 @@ class WeekendAttendanceReportTest extends AbstractStandardReportTestSupport<Week
     private CourtLocationService courtLocationService;
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public WeekendAttendanceReportTest() {
+    WeekendAttendanceReportTest() {
         super(QAppearance.appearance,
             WeekendAttendanceReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
@@ -58,7 +58,7 @@ class WeekendAttendanceReportTest extends AbstractStandardReportTestSupport<Week
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.holidaysService = mock(AdministrationHolidaysService.class);
         this.courtLocationService = mock(CourtLocationService.class);
@@ -66,7 +66,7 @@ class WeekendAttendanceReportTest extends AbstractStandardReportTestSupport<Week
     }
 
     @Override
-    public WeekendAttendanceReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected WeekendAttendanceReport createReport(PoolRequestRepository poolRequestRepository) {
         return new WeekendAttendanceReport(this.holidaysService, this.courtLocationService);
     }
 
@@ -79,7 +79,7 @@ class WeekendAttendanceReportTest extends AbstractStandardReportTestSupport<Week
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         report.preProcessQuery(query, request);
 
         verify(query, times(1))

@@ -22,6 +22,7 @@ import java.time.LocalDate;
 @Builder
 @Data
 @Schema(description = "Juror details")
+@SuppressWarnings({"PMD.TooManyFields"}) // More tolerable for DTO.
 public class JurorDetailDto {
 
     @Schema(description = "The juror's reference number in the juror pool")

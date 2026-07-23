@@ -7,7 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
@@ -40,8 +39,8 @@ import static uk.gov.hmcts.juror.api.moj.domain.CourtLocationQueries.filterByLoc
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.ExcessiveImports"
 })
 class CourtLocationServiceTest {
 
@@ -61,7 +60,7 @@ class CourtLocationServiceTest {
     List<CourtLocation> courtLocationList;
 
     @BeforeEach
-    public void setUpCourts() {
+    void setUpCourts() {
         CourtLocation chester = buidCourtLocation("415", "415", "CHESTER");
         CourtLocation manchester = buidCourtLocation("435", "435", "MANCHESTER");
         CourtLocation satellite = buidCourtLocation("415", "462", "WARRINGTON");
@@ -94,7 +93,7 @@ class CourtLocationServiceTest {
 
         CourtLocationListDto dto = courtLocationService.buildCourtLocationDataResponse(payload);
 
-        verify(courtLocationRepository, times(1)).findAll(Mockito.any(Predicate.class));
+        verify(courtLocationRepository, times(1)).findAll(any(Predicate.class));
 
         List<CourtLocationDataDto> courtLocationDataList = dto.getData();
         assertThat(courtLocationDataList.size()).isEqualTo(1);
@@ -121,7 +120,7 @@ class CourtLocationServiceTest {
 
         CourtLocationListDto dto = courtLocationService.buildCourtLocationDataResponse(payload);
 
-        verify(courtLocationRepository, times(1)).findAll(Mockito.any(Predicate.class));
+        verify(courtLocationRepository, times(1)).findAll(any(Predicate.class));
 
         List<CourtLocationDataDto> courtLocationDataList = dto.getData();
         assertThat(courtLocationDataList.size()).isEqualTo(2);

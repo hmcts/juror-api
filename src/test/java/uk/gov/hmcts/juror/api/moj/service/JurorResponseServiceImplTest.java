@@ -35,7 +35,7 @@ import java.util.Set;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings("PMD.TooManyMethods")
 class JurorResponseServiceImplTest {
     private JurorPoolRepository jurorPoolRepository;
     private JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
@@ -50,7 +50,6 @@ class JurorResponseServiceImplTest {
     @BeforeEach
     void setUpMocks() {
 
-        jurorPaperResponseRepository = Mockito.mock(JurorPaperResponseRepositoryMod.class);
         jurorPoolRepository = Mockito.mock(JurorPoolRepository.class);
         jurorPaperResponseRepository = Mockito.mock(JurorPaperResponseRepositoryMod.class);
         jurorDigitalResponseRepository = Mockito.mock(JurorDigitalResponseRepositoryMod.class);
@@ -70,8 +69,8 @@ class JurorResponseServiceImplTest {
         ));
 
         Mockito.doReturn(new PaperResponse()).when(jurorPaperResponseRepository)
-            .findByJurorNumber(Mockito.any());
-        Mockito.doReturn(new DigitalResponse()).when(jurorDigitalResponseRepository).findByJurorNumber(Mockito.any());
+            .findByJurorNumber(any());
+        Mockito.doReturn(new DigitalResponse()).when(jurorDigitalResponseRepository).findByJurorNumber(any());
 
         Mockito.doReturn(Collections.singletonList(createTestJurorPool("400")))
             .when(jurorPoolRepository)
@@ -87,18 +86,18 @@ class JurorResponseServiceImplTest {
             .when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc("987654321", true);
 
-        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(Mockito.any(PaperResponse.class));
-        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(Mockito.any(DigitalResponse.class));
+        Mockito.doReturn(null).when(jurorPaperResponseRepository).save(any(PaperResponse.class));
+        Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any(DigitalResponse.class));
 
         Mockito.doReturn(false).when(straightThroughProcessorService)
-            .isValidForStraightThroughAgeDisqualification(Mockito.any(PaperResponse.class),
-                Mockito.any(LocalDate.class), Mockito.any(JurorPool.class));
+            .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class),
+                any(LocalDate.class), any(JurorPool.class));
         Mockito.doReturn(false).when(straightThroughProcessorService)
-            .isValidForStraightThroughAgeDisqualification(Mockito.any(DigitalResponse.class),
-                Mockito.any(LocalDate.class), Mockito.any(JurorPool.class));
+            .isValidForStraightThroughAgeDisqualification(any(DigitalResponse.class),
+                any(LocalDate.class), any(JurorPool.class));
         Mockito.doNothing().when(straightThroughProcessorService)
-            .processAgeDisqualification(Mockito.any(PaperResponse.class), Mockito.any(LocalDate.class),
-                Mockito.any(JurorPool.class), Mockito.any());
+            .processAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
+                any(JurorPool.class), any());
         PoolRequestRepository poolRequestRepository = Mockito.mock(PoolRequestRepository.class);
         Mockito.when(poolRequestRepository.findByPoolNumber(any()))
             .thenReturn(Optional.of(mockPoolRequest("12345678", "415")));
@@ -157,7 +156,7 @@ class JurorResponseServiceImplTest {
 
     //Tests related to method updateJurorPersonalDetails()
     @Test
-    void testUpdatePaperResponse_personalDetails_bureauUser_bureauOwner_happy() {
+    void testUpdatePaperResponsePersonalDetailsBureauUserBureauOwnerHappy() {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
 
         BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
@@ -171,7 +170,7 @@ class JurorResponseServiceImplTest {
 
 
     @Test
-    void testUpdateDigitalResponsePersonalDetails_bureauUser_bureauOwner_happy() {
+    void testUpdateDigitalResponsePersonalDetailsBureauUserBureauOwnerHappy() {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
 
         BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
@@ -184,7 +183,7 @@ class JurorResponseServiceImplTest {
     }
 
     @Test
-    void testUpdatePaperResponsePersonalDetails_courtUser_courtOwner_happy() {
+    void testUpdatePaperResponsePersonalDetailsCourtUserCourtOwnerHappy() {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
 
         BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER", "99");
@@ -197,7 +196,7 @@ class JurorResponseServiceImplTest {
     }
 
     @Test
-    void testUpdateDigitalResponsePersonalDetails_courtUser_courtOwner_happy() {
+    void testUpdateDigitalResponsePersonalDetailsCourtUserCourtOwnerHappy() {
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
 
         BureauJwtPayload payload = TestUtils.createJwt("415", "SOME_USER", "99");
@@ -209,7 +208,7 @@ class JurorResponseServiceImplTest {
     }
 
     @Test
-    void testUpdatePaperResponsePersonalDetails_bureauUser_courtOwnerUserNotAuthorised() {
+    void testUpdatePaperResponsePersonalDetailsBureauUserCourtOwnerUserNotAuthorised() {
         BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
 
@@ -223,7 +222,7 @@ class JurorResponseServiceImplTest {
     }
 
     @Test
-    void testUpdateDigitalResponsePersonalDetails_bureauUser_courtOwnerUserNotAuthorised() {
+    void testUpdateDigitalResponsePersonalDetailsBureauUserCourtOwnerUserNotAuthorised() {
         BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
 
@@ -237,7 +236,7 @@ class JurorResponseServiceImplTest {
     }
 
     @Test
-    void testUpdatePaperResponsePersonalDetails_courtUser_courtOwner_noAccess() {
+    void testUpdatePaperResponsePersonalDetailsCourtUserCourtOwnerNoAccess() {
         BureauJwtPayload payload = TestUtils.createJwt("416", "SOME_USER", "99");
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
 
@@ -251,7 +250,7 @@ class JurorResponseServiceImplTest {
     }
 
     @Test
-    void testUpdateDigitalResponsePersonalDetails_courtUser_courtOwner_noAccess() {
+    void testUpdateDigitalResponsePersonalDetailsCourtUserCourtOwnerNoAccess() {
         BureauJwtPayload payload = TestUtils.createJwt("416", "SOME_USER", "99");
 
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
@@ -296,8 +295,8 @@ class JurorResponseServiceImplTest {
     @Test
     void testUpdatePaperResponsePersonalDetailsDateOfBirthTooYoung() {
         Mockito.doReturn(true).when(straightThroughProcessorService)
-            .isValidForStraightThroughAgeDisqualification(Mockito.any(PaperResponse.class),
-                Mockito.any(LocalDate.class), Mockito.any(JurorPool.class));
+            .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class),
+                any(LocalDate.class), any(JurorPool.class));
 
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
         personalDetailsDto.setDateOfBirth(LocalDate.now().minusYears(17));
@@ -314,8 +313,8 @@ class JurorResponseServiceImplTest {
     @Test
     void testUpdateDigitalResponsePersonalDetailsDateOfBirthTooYoung() {
         Mockito.doReturn(true).when(straightThroughProcessorService)
-            .isValidForStraightThroughAgeDisqualification(Mockito.any(DigitalResponse.class),
-                Mockito.any(LocalDate.class), Mockito.any(JurorPool.class));
+            .isValidForStraightThroughAgeDisqualification(any(DigitalResponse.class),
+                any(LocalDate.class), any(JurorPool.class));
 
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
         personalDetailsDto.setDateOfBirth(LocalDate.now().minusYears(17));
@@ -332,8 +331,8 @@ class JurorResponseServiceImplTest {
     @Test
     void testUpdatePaperResponsePersonalDetailsDateOfBirthTooOld() {
         Mockito.doReturn(true).when(straightThroughProcessorService)
-            .isValidForStraightThroughAgeDisqualification(Mockito.any(PaperResponse.class),
-                Mockito.any(LocalDate.class), Mockito.any(JurorPool.class));
+            .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class),
+                any(LocalDate.class), any(JurorPool.class));
 
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
         personalDetailsDto.setDateOfBirth(LocalDate.now().minusYears(80));
@@ -351,8 +350,8 @@ class JurorResponseServiceImplTest {
     void testUpdateDigitalResponsePersonalDetailsDateOfBirthTooOld() {
 
         Mockito.doReturn(true).when(straightThroughProcessorService)
-            .isValidForStraightThroughAgeDisqualification(Mockito.any(DigitalResponse.class),
-                Mockito.any(LocalDate.class), Mockito.any(JurorPool.class));
+            .isValidForStraightThroughAgeDisqualification(any(DigitalResponse.class),
+                any(LocalDate.class), any(JurorPool.class));
 
         JurorPersonalDetailsDto personalDetailsDto = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
         personalDetailsDto.setDateOfBirth(LocalDate.now().minusYears(80));
@@ -436,33 +435,33 @@ class JurorResponseServiceImplTest {
         int jurorDigitalResponseRepositoryFind,
         int jurorDigitalResponseRepositorySave) {
         Mockito.verify(jurorPoolRepository, Mockito.times(jurorPoolRepoFind))
-            .findByJurorJurorNumberAndIsActive(Mockito.any(), Mockito.anyBoolean());
+            .findByJurorJurorNumberAndIsActive(any(), Mockito.anyBoolean());
         Mockito.verify(jurorPoolRepository, Mockito.times(jurorPoolRepoFindOrdered))
-            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(Mockito.any(), Mockito.anyBoolean());
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(any(), Mockito.anyBoolean());
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(jurorPaperResponseRepoFind))
-            .findByJurorNumber(Mockito.any(String.class));
+            .findByJurorNumber(any(String.class));
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(jurorPaperResponseRepoSave))
-            .save(Mockito.any(PaperResponse.class));
+            .save(any(PaperResponse.class));
 
         Mockito.verify(straightThroughProcessorService, Mockito.times(straightThroughProcessorServiceIsValidPaper))
-            .isValidForStraightThroughAgeDisqualification(Mockito.any(PaperResponse.class),
-                Mockito.any(LocalDate.class),
-                Mockito.any(JurorPool.class));
+            .isValidForStraightThroughAgeDisqualification(any(PaperResponse.class),
+                any(LocalDate.class),
+                any(JurorPool.class));
         Mockito.verify(straightThroughProcessorService, Mockito.times(straightThroughProcessorServiceIsValidDigital))
-            .isValidForStraightThroughAgeDisqualification(Mockito.any(DigitalResponse.class),
-                Mockito.any(LocalDate.class),
-                Mockito.any(JurorPool.class));
+            .isValidForStraightThroughAgeDisqualification(any(DigitalResponse.class),
+                any(LocalDate.class),
+                any(JurorPool.class));
 
         Mockito.verify(straightThroughProcessorService, Mockito.times(straightThroughProcessorProcessAgeDisqPaper))
-            .processAgeDisqualification(Mockito.any(PaperResponse.class), Mockito.any(LocalDate.class),
-                Mockito.any(JurorPool.class), Mockito.any());
+            .processAgeDisqualification(any(PaperResponse.class), any(LocalDate.class),
+                any(JurorPool.class), any());
         Mockito.verify(straightThroughProcessorService, Mockito.times(straightThroughProcessorProcessAgeDisqDigital))
-            .processAgeDisqualification(Mockito.any(DigitalResponse.class),
-                Mockito.any(JurorPool.class), Mockito.any());
+            .processAgeDisqualification(any(DigitalResponse.class),
+                any(JurorPool.class), any());
 
         Mockito.verify(jurorDigitalResponseRepository, Mockito.times(jurorDigitalResponseRepositoryFind))
-            .findByJurorNumber(Mockito.any(String.class));
+            .findByJurorNumber(any(String.class));
         Mockito.verify(jurorDigitalResponseRepository, Mockito.times(jurorDigitalResponseRepositorySave))
-            .save(Mockito.any(DigitalResponse.class));
+            .save(any(DigitalResponse.class));
     }
 }

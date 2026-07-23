@@ -40,7 +40,7 @@ public class UrgentStatusScheduler implements ScheduledService {
     private final JurorPoolRepository jurorRepository;
 
 
-    @SuppressWarnings("checkstyle:LineLength") // false positive
+    @SuppressWarnings({"checkstyle:LineLength", "PMD.CognitiveComplexity"}) // false positive
     @Override
     public SchedulerServiceClient.Result process() {
 
@@ -68,8 +68,9 @@ public class UrgentStatusScheduler implements ScheduledService {
         int failedToFindJurorCount = 0;
         int totalResponsesProcessed = 0;
         int totalUrgentResponses = 0;
-        if (!jurorResponsesNotClosed.isEmpty()) {
-
+        if (jurorResponsesNotClosed.isEmpty()) {
+            log.trace("Scheduler: No pending Juror responses found.");
+        } else {
             for (AbstractJurorResponse backlogItem : jurorResponsesNotClosed) {
                 JurorPool jurorDetails = jurorRepository.findByJurorJurorNumberAndIsActiveAndOwner(
                     backlogItem.getJurorNumber(),
@@ -78,7 +79,7 @@ public class UrgentStatusScheduler implements ScheduledService {
 
                 if (jurorDetails == null) {
                     log.error("Can not find active bureau owned juror pool for juror: {}",
-                        backlogItem.getJurorNumber());
+                              backlogItem.getJurorNumber());
                     failedToFindJurorCount++;
                     continue;
                 }
@@ -86,7 +87,7 @@ public class UrgentStatusScheduler implements ScheduledService {
 
                 log.trace("processing  pool number {} ", jurorDetails.getJurorNumber());
 
-                if ((!backlogItem.isUrgent() && urgencyService.isUrgent(backlogItem, jurorDetails))) {
+                if (!backlogItem.isUrgent() && urgencyService.isUrgent(backlogItem, jurorDetails)) {
 
                     totalUrgentResponses++;
                     urgencyService.setUrgencyFlags(backlogItem, jurorDetails);
@@ -100,8 +101,6 @@ public class UrgentStatusScheduler implements ScheduledService {
                 }
             }
             log.debug("Scheduler : Processing complete.");
-        } else {
-            log.trace("Scheduler: No pending Juror responses found.");
         }
 
         SchedulerServiceClient.Result.Status status = failedToFindJurorCount == 0

@@ -36,6 +36,7 @@ public class PageDto<T> {
     }
 
     @Data
+    @SuppressWarnings({"PMD.ShortClassName"})
     public class Sort {
         private boolean empty;
         private boolean sorted;

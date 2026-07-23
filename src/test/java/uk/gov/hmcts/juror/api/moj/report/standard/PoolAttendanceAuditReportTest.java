@@ -40,7 +40,7 @@ class PoolAttendanceAuditReportTest extends AbstractStandardReportTestSupport<Po
     private JurorAppearanceService appearanceService;
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public PoolAttendanceAuditReportTest() {
+    PoolAttendanceAuditReportTest() {
         super(QAppearance.appearance,
             PoolAttendanceAuditReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
@@ -61,14 +61,14 @@ class PoolAttendanceAuditReportTest extends AbstractStandardReportTestSupport<Po
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.appearanceService = mock(JurorAppearanceService.class);
         super.beforeEach();
     }
 
     @Override
-    public PoolAttendanceAuditReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected PoolAttendanceAuditReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PoolAttendanceAuditReport(this.appearanceService);
     }
 
@@ -81,7 +81,7 @@ class PoolAttendanceAuditReportTest extends AbstractStandardReportTestSupport<Po
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         List<String> courts = List.of("123", "456");
         securityUtilMockedStatic.when(SecurityUtil::getCourts).thenReturn(courts);
 

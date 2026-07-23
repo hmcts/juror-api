@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 
 class AbaccusReportTest extends AbstractStandardReportTestSupport<AbaccusReport> {
 
-    public AbaccusReportTest() {
+    AbaccusReportTest() {
         super(
             QBulkPrintData.bulkPrintData,
             AbaccusReport.RequestValidator.class,
@@ -37,7 +37,7 @@ class AbaccusReportTest extends AbstractStandardReportTestSupport<AbaccusReport>
     }
 
     @Override
-    public AbaccusReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected AbaccusReport createReport(PoolRequestRepository poolRequestRepository) {
         return new AbaccusReport();
     }
 
@@ -51,7 +51,7 @@ class AbaccusReportTest extends AbstractStandardReportTestSupport<AbaccusReport>
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         LocalDate fromDate = LocalDate.now().minus(7, ChronoUnit.DAYS);
         LocalDate toDate = LocalDate.now();
 

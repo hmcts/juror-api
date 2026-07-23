@@ -176,19 +176,6 @@ public class FinancialAuditServiceImpl implements FinancialAuditService {
                     null));
     }
 
-    private FinancialAuditDetailsAppearances getFinancialAuditDetailsAppearancesWithGenericTypeExcludingAuditNumber(
-        FinancialAuditDetails.Type.GenericType genericType,
-        FinancialAuditDetails financialAuditDetails,
-        Appearance appearance) {
-        return financialAuditDetailsAppearancesRepository
-            .findPreviousFinancialAuditDetailsAppearancesWithGenericTypeExcludingProvidedAuditDetails(
-                genericType,
-                financialAuditDetails,
-                appearance)
-            .orElseThrow(
-                () -> new MojException.NotFound("No previous appearance found for appearance", null));
-    }
-
 
     @SuppressWarnings("LineLength")
     private FinancialAuditDetailsAppearances getPreviousFinancialAuditDetailsAppearancesWithGenericTypeExcludingAuditNumber(

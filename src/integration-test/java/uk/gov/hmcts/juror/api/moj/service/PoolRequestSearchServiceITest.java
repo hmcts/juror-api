@@ -609,7 +609,6 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initAdvancedSearchRequests.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False Positive
     public void test_searchForPoolRequest_advancedSearch_poolStatus_active() {
         String locCode = "416";
         PoolSearchRequestDto poolSearchRequestDto = new PoolSearchRequestDto();
@@ -678,7 +677,6 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initAdvancedSearchRequests.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False Positive
     public void test_searchForPoolRequest_advancedSearch_poolStatus_completed() {
         String locCode = "416";
         PoolSearchRequestDto poolSearchRequestDto = new PoolSearchRequestDto();
@@ -772,7 +770,6 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
      */
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initAdvancedSearchRequests.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False Positive
     public void test_searchForPoolRequest_advancedSearch_poolStatus_requestedAndActive2() {
         String locCode = "417";
         PoolSearchRequestDto poolSearchRequestDto = new PoolSearchRequestDto();
@@ -983,7 +980,6 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initAdvancedSearchRequests.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False Positive
     public void test_searchForPoolRequest_advancedSearch_poolType_crownAndCivil() {
         LocalDate startDate = LocalDate.of(2023, 1, 16);
         PoolSearchRequestDto poolSearchRequestDto = new PoolSearchRequestDto();
@@ -1003,7 +999,6 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initAdvancedSearchRequests.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False Positive
     public void test_searchForPoolRequest_advancedSearch_poolType_crownAndHigh() {
         LocalDate startDate = LocalDate.of(2023, 1, 16);
         PoolSearchRequestDto poolSearchRequestDto = new PoolSearchRequestDto();
@@ -1023,7 +1018,6 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/PoolRequestSearchService_initAdvancedSearchRequests.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //False Positive
     public void test_searchForPoolRequest_advancedSearch_poolType_civilAndHigh() {
         LocalDate startDate = LocalDate.of(2023, 1, 16);
         PoolSearchRequestDto poolSearchRequestDto = new PoolSearchRequestDto();

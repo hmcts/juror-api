@@ -11,21 +11,21 @@ import java.util.function.Function;
 
 @Getter
 public enum NotifyTemplateMapperMod {
-    JUROR_EMAIL(Type.JUROR, (context -> context.getJuror().getEmail())),
-    JUROR_FIRST_NAME(Type.JUROR, (context -> context.getJuror().getFirstName())),
-    JUROR_NUMBER(Type.JUROR, (context -> context.getJuror().getJurorNumber())),
-    JUROR_ALT_PHONE_NUMBER(Type.JUROR, (context -> context.getJuror().getAltPhoneNumber())),
-    JUROR_PHONE_NUMBER_COMBINED(Type.JUROR, (context -> context.getJuror().getPhoneNumberCombined())),
-    JUROR_LAST_NAME(Type.JUROR, (context -> context.getJuror().getLastName())),
+    JUROR_EMAIL(Type.JUROR, context -> context.getJuror().getEmail()),
+    JUROR_FIRST_NAME(Type.JUROR, context -> context.getJuror().getFirstName()),
+    JUROR_NUMBER(Type.JUROR, context -> context.getJuror().getJurorNumber()),
+    JUROR_ALT_PHONE_NUMBER(Type.JUROR, context -> context.getJuror().getAltPhoneNumber()),
+    JUROR_PHONE_NUMBER_COMBINED(Type.JUROR, context -> context.getJuror().getPhoneNumberCombined()),
+    JUROR_LAST_NAME(Type.JUROR, context -> context.getJuror().getLastName()),
 
-    RESPONSE_FIRST_NAME(Type.RESPONSE, (context -> context.getAbstractResponse().getFirstName())),
-    RESPONSE_LAST_NAME(Type.RESPONSE, (context -> context.getAbstractResponse().getLastName())),
-    RESPONSE_JUROR_NUMBER(Type.RESPONSE, (context -> context.getAbstractResponse().getJurorNumber())),
-    RESPONSE_EMAIL(Type.RESPONSE, (context -> context.getAbstractResponse().getEmail())),
-    RESPONSE_PHONE_NUMBER(Type.RESPONSE, (context -> context.getAbstractResponse().getPhoneNumber())),
+    RESPONSE_FIRST_NAME(Type.RESPONSE, context -> context.getAbstractResponse().getFirstName()),
+    RESPONSE_LAST_NAME(Type.RESPONSE, context -> context.getAbstractResponse().getLastName()),
+    RESPONSE_JUROR_NUMBER(Type.RESPONSE, context -> context.getAbstractResponse().getJurorNumber()),
+    RESPONSE_EMAIL(Type.RESPONSE, context -> context.getAbstractResponse().getEmail()),
+    RESPONSE_PHONE_NUMBER(Type.RESPONSE, context -> context.getAbstractResponse().getPhoneNumber()),
 
-    JUROR_POOL_NEXT_DATE(Type.JUROR, (context -> context.getJurorPool().getNextDate())),
-    JUROR_POOL_LOC_CODE(Type.JUROR, (context -> context.getJurorPool().getCourt().getLocCode())),
+    JUROR_POOL_NEXT_DATE(Type.JUROR, context -> context.getJurorPool().getNextDate()),
+    JUROR_POOL_LOC_CODE(Type.JUROR, context -> context.getJurorPool().getCourt().getLocCode()),
 
     POOL_ATTEND_TIME(Type.JUROR, context -> context.getPoolRequest().getAttendTime()),
     POOL_RETURN_DATE(Type.JUROR, context -> context.getPoolRequest().getReturnDate()),
@@ -49,7 +49,7 @@ public enum NotifyTemplateMapperMod {
 
 
     private final Function<Context, Object> mapper;
-    private Type type;
+    private final Type type;
 
     NotifyTemplateMapperMod(Type type, Function<Context, Object> mapper) {
         this.type = type;

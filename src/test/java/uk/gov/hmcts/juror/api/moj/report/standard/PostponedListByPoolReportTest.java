@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 
 class PostponedListByPoolReportTest extends AbstractStandardReportTestSupport<PostponedListByPoolReport> {
 
-    public PostponedListByPoolReportTest() {
+    PostponedListByPoolReportTest() {
         super(QJurorPool.jurorPool,
             PostponedListByPoolReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
@@ -34,12 +34,12 @@ class PostponedListByPoolReportTest extends AbstractStandardReportTestSupport<Po
 
 
     @Override
-    public PostponedListByPoolReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected PostponedListByPoolReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PostponedListByPoolReport(poolRequestRepository);
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         request.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
         report.preProcessQuery(query, request);
         verify(query, times(1))

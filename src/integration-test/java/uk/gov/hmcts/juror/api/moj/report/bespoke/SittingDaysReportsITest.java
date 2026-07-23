@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.report.bespoke;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAndDatesReportRequest,
     SittingDaysStatsReportResponse> {
 
-    public static final String URL = "/api/v1/moj/reports/sitting-days-stats";
+    static final String URL = "/api/v1/moj/reports/sitting-days-stats";
 
 
     @Autowired
@@ -62,7 +61,7 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
     }
 
     private String createJwtWithPermissions(UserType userType, Set<Permission> permissions) {
-        var payload = createBureauJwtPayload(
+        BureauJwtPayload payload = createBureauJwtPayload(
             "test_administrator",
             userType,
             Set.of(),
@@ -84,6 +83,7 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewSittingDaysStatsHappy() {
         testBuilder()
             .triggerValid()
@@ -91,6 +91,7 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewSittingDaysStatsForMultipleCourts() {
         testBuilder()
             .payload(CourtsAndDatesReportRequest.builder()
@@ -98,19 +99,20 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
                 .courtLocCodes(List.of("415", "416"))
                 .fromDate(LocalDate.of(2024, 5, 1))
                 .toDate(LocalDate.of(2024, 5, 31))
-                .build())
+            .build())
             .triggerValid()
             .responseConsumer(this::assertValidMultipleCourtResponse);
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewSittingDaysStatsForAllCourts() {
         testBuilder()
             .payload(CourtsAndDatesReportRequest.builder()
                 .allCourts(true)
                 .fromDate(LocalDate.of(2024, 5, 1))
                 .toDate(LocalDate.of(2024, 5, 31))
-                .build())
+            .build())
             .triggerValid()
             .responseConsumer(this::assertValidAllCourtsResponse);
     }
@@ -126,15 +128,15 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
     private void assertValidResponse(SittingDaysStatsReportResponse response) {
         assertThat(response).isNotNull();
         assertThat(response.getHeadings()).isNotNull();
-        Assertions.assertThat(response.getHeadings()).containsKeys("date_from", "date_to",
+        assertThat(response.getHeadings()).containsKeys("date_from", "date_to",
             "total_number_of_jurors", "total_sitting_days", "report_created");
-        Assertions.assertThat(response.getHeadings().get("date_from").getValue()).isEqualTo("2024-05-01");
-        Assertions.assertThat(response.getHeadings().get("date_to").getValue()).isEqualTo("2024-05-31");
-        Assertions.assertThat(response.getHeadings().get("total_number_of_jurors").getValue()).isEqualTo(183);
-        Assertions.assertThat(response.getHeadings().get("total_sitting_days").getValue()).isEqualTo(759);
-        Assertions.assertThat(response.getTableData()).isNotNull();
-        Assertions.assertThat(response.getTableData().getHeadings()).hasSize(15);
-        Assertions.assertThat(response.getTableData().getData()).hasSize(1);
+        assertThat(response.getHeadings().get("date_from").getValue()).isEqualTo("2024-05-01");
+        assertThat(response.getHeadings().get("date_to").getValue()).isEqualTo("2024-05-31");
+        assertThat(response.getHeadings().get("total_number_of_jurors").getValue()).isEqualTo(183);
+        assertThat(response.getHeadings().get("total_sitting_days").getValue()).isEqualTo(759);
+        assertThat(response.getTableData()).isNotNull();
+        assertThat(response.getTableData().getHeadings()).hasSize(15);
+        assertThat(response.getTableData().getData()).hasSize(1);
 
         SittingDaysStatsReportResponse.TableData.DataRow dataRow = response.getTableData().getData().get(0);
         assertThat(dataRow.getCourtLocationNameAndCode()).isEqualTo("CHESTER (415)");

@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.StatsWelshOnlineResponse;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings({"PMD.TooManyMethods"})
 public interface JurorDashboardCalculateService {
 
     /**
@@ -75,7 +76,7 @@ public interface JurorDashboardCalculateService {
      * Calculates the percentage of the proportion value in relation to the whole value
      * Returns a float rounded to 1 decimal place.
      *
-     
+
      * @return Float
      */
     Float percentage(Float proportion, Float whole);
@@ -84,7 +85,7 @@ public interface JurorDashboardCalculateService {
      * Calculates the percentage of the proportion value in relation to the whole value.
      * Returns a float rounded to the given precison number of places.
      *
-     
+
      * @return Float
      */
     Float percentage(Float proportion, Float whole, int precision);
