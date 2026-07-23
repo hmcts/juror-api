@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
-
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,6 +11,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.DashboardMandatoryKpiDa
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Response DTO for the Digital by Default pilot dashboard.
@@ -76,10 +76,8 @@ public class DbdDashboardResponseDto implements Serializable {
         @Schema(description = "Not-responded total for the period.")
         private Integer notRespondedTotal;
 
-        @Schema(description = "Auto-processed digital response total for the period.")
-        private Integer autoProcessedTotal;
-
-        @Schema(description = "Third-party digital response total for the period.")
+        @Schema(description = "Third-party digital response total for the period. Currently always null - "
+            + "not sourced from dbd_response_stats; wire in once the pilot-scoped third-party table/proc exists.")
         private Integer thirdPartyTotal;
 
         @Schema(description = "Total online (digital) responses for the period.")
@@ -93,7 +91,9 @@ public class DbdDashboardResponseDto implements Serializable {
 
         @Schema(description = "Paper response counts broken down by response-time bucket.")
         private DashboardMandatoryKpiData.ResponseMethod paperResponseTimes;
+
+        @Schema(description = "Juror counts broken down by age_group, summed across responded and "
+            + "not-responded rows alike.")
+        private Map<String, Integer> ageGroupBreakdown;
     }
 }
-
-
