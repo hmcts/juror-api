@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 @Setter(AccessLevel.NONE)
 //Read only view
 @Immutable
+@SuppressWarnings({"PMD.TooManyFields"})
 public class LowLevelFinancialAuditDetailsIncludingApprovedAmounts {
     @Column(name = "id")
     @Id
@@ -148,6 +149,7 @@ public class LowLevelFinancialAuditDetailsIncludingApprovedAmounts {
     @Column(name = "total_outstanding")
     private BigDecimal totalOutstanding;
 
+    @SuppressWarnings({"PMD.UnusedPrivateField"}) // this class used by @IdClass
     public static class IdClass {
         private Long id;
         private String jurorNumber;

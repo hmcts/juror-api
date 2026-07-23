@@ -6,7 +6,6 @@ import jakarta.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
@@ -18,7 +17,7 @@ import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RUNTIME)
 @Constraint(validatedBy = EnumValidatorImpl.class)
 @Repeatable(EnumValidator.List.class)
 public @interface EnumValidator {
@@ -35,7 +34,7 @@ public @interface EnumValidator {
     Class<? extends Payload>[] payload() default {};
 
     enum Mode {
-        INCLUDE, EXCLUDE;
+        INCLUDE, EXCLUDE
     }
 
     @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})

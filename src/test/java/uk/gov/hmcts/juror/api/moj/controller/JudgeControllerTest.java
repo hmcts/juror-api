@@ -51,9 +51,7 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = JudgeController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ContextConfiguration(classes = {JudgeController.class})
-@SuppressWarnings({
-    "PMD.ExcessiveImports"
-})
+@SuppressWarnings("PMD.ExcessiveImports")
 class JudgeControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial/judge";
 
@@ -67,7 +65,7 @@ class JudgeControllerTest {
 
     @Before
     @BeforeEach
-    public void setupMocks() {
+    void setupMocks() {
         jwtPayload = null;
         mockMvc = MockMvcBuilders
             .standaloneSetup(new JudgeController(judgeService))
@@ -145,8 +143,8 @@ class JudgeControllerTest {
 
         verify(judgeService, never()).getJudgeForCourtLocation(any());
     }
-    
-    private class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
+
+    private final class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
             return parameter.getParameterType().isAssignableFrom(BureauJwtPayload.class);

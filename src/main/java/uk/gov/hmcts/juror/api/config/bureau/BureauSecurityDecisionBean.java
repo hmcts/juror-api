@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
  * {@link java.security.Principal} object, namely {@link BureauJwtAuthentication}.
  */
 @Component
-public class BureauSecurityDecisionBean {
+public final class BureauSecurityDecisionBean {
 
     /**
      * Constant for team leader rank.

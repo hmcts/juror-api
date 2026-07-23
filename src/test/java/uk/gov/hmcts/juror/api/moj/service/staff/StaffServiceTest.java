@@ -50,7 +50,7 @@ import static org.mockito.Mockito.withSettings;
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
-public class StaffServiceTest {
+class StaffServiceTest {
     @Mock
     private UserRepository mockuserRepository;
 

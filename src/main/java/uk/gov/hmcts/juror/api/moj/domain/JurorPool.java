@@ -37,6 +37,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Slf4j
+@SuppressWarnings({"PMD.TooManyFields"})
 public class JurorPool implements Serializable {
 
     @Id
@@ -185,6 +186,7 @@ public class JurorPool implements Serializable {
     }
 
     @PrePersist
+    @SuppressWarnings({"PMD.UnusedPrivateMethod"}) // false positive: will be used via @PrePersist annotation.
     private void prePersist() {
         dateCreated = LocalDateTime.now();
         preUpdate();

@@ -25,14 +25,10 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/UnconfirmedAttendanceReportITest_typical.sql"
 })
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.JUnitTestsShouldIncludeAssert"
-})
 class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
-    public UnconfirmedAttendanceReportITest(TestRestTemplate template) {
+    UnconfirmedAttendanceReportITest(TestRestTemplate template) {
         super(template, UnconfirmedAttendanceReport.class);
     }
 
@@ -117,7 +113,7 @@ class UnconfirmedAttendanceReportITest extends AbstractGroupedReportControllerIT
             .assertInvalidPathParam("toDate: must not be null");
     }
 
-    public GroupByResponse getTypicalGroupBy() {
+    GroupByResponse getTypicalGroupBy() {
         return GroupByResponse.builder()
             .name(DataType.APPEARANCE_DATE_AND_POOL_TYPE.name())
             .nested(null)

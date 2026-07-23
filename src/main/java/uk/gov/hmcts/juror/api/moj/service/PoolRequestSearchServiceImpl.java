@@ -137,7 +137,12 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
                                                 List<String> courts) {
         log.trace("Enter evaluateCourtLocationParameter");
 
-        if (!isStringEmpty(locCode)) {
+        if (isStringEmpty(locCode)) {
+            if (!courts.isEmpty()) {
+                log.debug(String.format("User has search results filtered based on court access: %s", courts));
+                poolRequestRepository.addCourtUserPredicate(query, courts);
+            }
+        } else {
             log.debug(String.format("Court Location Code supplied as Pool Request Search parameter: %s", locCode));
             poolRequestRepository.addCourtLocationPredicate(query, locCode);
 
@@ -147,9 +152,6 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
                 poolRequestRepository.addPartialPoolNumberPredicate(query, locCode);
             }
 
-        } else if (!courts.isEmpty()) {
-            log.debug(String.format("User has search results filtered based on court access: %s", courts));
-            poolRequestRepository.addCourtUserPredicate(query, courts);
         }
 
         log.trace("Exit evaluateCourtLocationParameter");
@@ -201,6 +203,7 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
     }
 
 
+    @SuppressWarnings("PMD.ExhaustiveSwitchHasDefault")
     private void applySorting(JPAQuery<Tuple> query, PoolSearchRequestDto poolSearchRequestDto) {
         switch (poolSearchRequestDto.getSortColumn()) {
             case POOL_NO -> poolRequestRepository.orderByStringColumn(query, QPoolRequest.poolRequest.poolNumber,
@@ -213,8 +216,9 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
                 poolSearchRequestDto.getSortDirection());
             case START_DATE -> poolRequestRepository.orderByDateColumn(query, QPoolRequest.poolRequest.returnDate,
                 poolSearchRequestDto.getSortDirection());
-            default -> poolRequestRepository.orderByDateColumn(query, QPoolRequest.poolRequest.returnDate,
-                SortDirection.DESC);
+            default -> {
+                // no sorting required
+            }
         }
     }
 

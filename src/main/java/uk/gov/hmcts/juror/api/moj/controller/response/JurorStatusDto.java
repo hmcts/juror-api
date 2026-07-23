@@ -16,11 +16,12 @@ public class JurorStatusDto {
     private String statusDesc;
     private boolean active;
 
+    @SuppressWarnings({"PMD.ShortMethodName"})
     public static JurorStatusDto of(JurorStatus status) {
         return JurorStatusDto.builder()
             .status(status.getStatus())
             .statusDesc(status.getStatusDesc())
-            .active(status.getActive())
+            .active(status.isActive())
             .build();
     }
 
@@ -32,7 +33,7 @@ public class JurorStatusDto {
         return this.statusDesc;
     }
 
-    public Boolean getActive() {
+    public Boolean isActive() {
         return this.active;
     }
 }

@@ -14,7 +14,7 @@ public final class DateRelatedUtils {
     }
 
     public static Date convertToDateViaInstant(LocalDate dateToConvert) {
-        return java.util.Date.from(dateToConvert.atStartOfDay()
+        return Date.from(dateToConvert.atStartOfDay()
             .atZone(ZoneId.systemDefault())
             .toInstant());
     }

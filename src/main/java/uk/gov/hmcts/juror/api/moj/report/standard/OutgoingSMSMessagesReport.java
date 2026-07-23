@@ -13,7 +13,6 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -71,7 +70,6 @@ public class OutgoingSMSMessagesReport extends AbstractStandardReport {
             AbstractReportResponse.TableData<StandardTableData> tableData) {
 
 
-        LocalDateTime now = LocalDateTime.now();
         Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
 
         map.put("outgoing_sms_title",StandardReportResponse.DataTypeValue.builder()
@@ -94,7 +92,7 @@ public class OutgoingSMSMessagesReport extends AbstractStandardReport {
 
         long totalSmsSent = 0;
         if (tableData != null && tableData.getData() != null) {
-            StandardTableData data = (StandardTableData) tableData.getData();
+            StandardTableData data = tableData.getData();
             for (java.util.LinkedHashMap<String, Object> row : data) {
                 Object totalValue = row.get("total_sms_sent");
                 if (totalValue instanceof Number) {

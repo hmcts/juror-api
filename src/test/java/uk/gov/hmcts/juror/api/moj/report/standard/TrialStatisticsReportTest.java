@@ -35,7 +35,7 @@ class TrialStatisticsReportTest extends AbstractStandardReportTestSupport<TrialS
     private static final LocalDate TO_DATE = LocalDate.of(2024, 1, 30);
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public TrialStatisticsReportTest() {
+    TrialStatisticsReportTest() {
         super(QTrial.trial,
             TrialStatisticsReport.RequestValidator.class,
             DataType.TRIAL_JUDGE_NAME,
@@ -50,19 +50,19 @@ class TrialStatisticsReportTest extends AbstractStandardReportTestSupport<TrialS
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         TestUtils.afterAll();
         securityUtilMockedStatic.close();
     }
 
     @Override
-    public TrialStatisticsReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected TrialStatisticsReport createReport(PoolRequestRepository poolRequestRepository) {
         return new TrialStatisticsReport();
     }
 
@@ -76,7 +76,7 @@ class TrialStatisticsReportTest extends AbstractStandardReportTestSupport<TrialS
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         doNothing().when(report).addGroupBy(any(), any(IDataType[].class));
 

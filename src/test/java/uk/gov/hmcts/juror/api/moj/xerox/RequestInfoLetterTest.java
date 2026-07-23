@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 class RequestInfoLetterTest extends AbstractLetterTest {
-    private final String additionalInformation =
+    private static final String ADDITIONAL_INFORMATION  =
         "This is additional information required for the additional information letter";
 
     @Override
@@ -30,7 +30,7 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         addEnglishField("SE1 0YG", 10);
         addEnglishField("0845 3555567", 12);
         addEnglishField("", 12);
-        addEnglishField(additionalInformation.toUpperCase(), 210);
+        addEnglishField(ADDITIONAL_INFORMATION.toUpperCase(), 210);
         addEnglishField("MR", 10);
         addEnglishField("FNAMEEIGHTTHREEONE", 20);
         addEnglishField("LNAMEEIGHTTHREEONEFI", 20);
@@ -60,7 +60,7 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         addWelshField("SE1 0YG", 10);
         addWelshField("0845 3555567", 12);
         addWelshField("", 12);
-        addWelshField(additionalInformation.toUpperCase(), 210);
+        addWelshField(ADDITIONAL_INFORMATION.toUpperCase(), 210);
         addWelshField("MR", 10);
         addWelshField("FNAMEEIGHTTHREEONE", 20);
         addWelshField("LNAMEEIGHTTHREEONEFI", 20);
@@ -83,7 +83,7 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
         RequestInfoLetter requestInfoLetter = new RequestInfoLetter(LetterTestUtils.testJurorPool(date),
-            additionalInformation,
+                                                                    ADDITIONAL_INFORMATION,
             LetterTestUtils.testCourtLocation(),
             LetterTestUtils.testBureauLocation());
 
@@ -103,7 +103,7 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupWelshExpectedResult();
         RequestInfoLetter requestInfoLetter = new RequestInfoLetter(LetterTestUtils.testWelshJurorPool(date),
-            additionalInformation,
+                                                                    ADDITIONAL_INFORMATION,
             LetterTestUtils.testCourtLocation(),
             LetterTestUtils.testBureauLocation(),
             LetterTestUtils.testWelshCourtLocation());
@@ -122,7 +122,7 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
         RequestInfoLetter requestInfoLetter = new RequestInfoLetter(LetterTestUtils.testWelshJurorPool(date),
-            additionalInformation,
+                                                                    ADDITIONAL_INFORMATION,
             LetterTestUtils.testCourtLocation(),
             LetterTestUtils.testBureauLocation());
         assertThat(requestInfoLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());

@@ -150,7 +150,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkReadAccessForCurr
 @Slf4j
 @Service
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports",
-    "PMD.TooManyFields"})
+    "PMD.CyclomaticComplexity", "PMD.CouplingBetweenObjects"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorRecordServiceImpl implements JurorRecordService {
     private final ContactCodeRepository contactCodeRepository;
@@ -203,6 +203,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.NcssCount", "PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void editJurorDetails(BureauJwtPayload payload, EditJurorRecordRequestDto requestDto, String jurorNumber) {
         log.info(String.format("Juror: %s. Start updating details by user %s", jurorNumber, payload.getLogin()));
 
@@ -251,7 +252,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         juror.setEmail(requestDto.getEmailAddress());
 
 
-        /**
+        /*
          * Ensures that the mobile phone number is saved as the primary phone number if it is valid,
          * and the primary phone number is not a valid mobile phone number.
          *
@@ -341,8 +342,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     private void removeRsupHistory(String jurorNumber, FormCode formCode) {
         // Need to remove any unnecessary RSUP history entries
-        if (formCode.equals(FormCode.ENG_SUMMONS)
-            || formCode.equals(FormCode.BI_SUMMONS)) {
+        if (formCode == FormCode.ENG_SUMMONS
+            || formCode == FormCode.BI_SUMMONS) {
             List<JurorHistory> jurorHistories = jurorHistoryRepository
                 .findByJurorNumberAndDateCreatedGreaterThanEqual(
                     jurorNumber,
@@ -350,7 +351,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
             if (!jurorHistories.isEmpty()) {
                 jurorHistories.stream()
-                    .filter(jh -> jh.getHistoryCode().equals(HistoryCodeMod.SUMMONS_REPRINTED))
+                    .filter(jh -> jh.getHistoryCode() == HistoryCodeMod.SUMMONS_REPRINTED)
                     .findFirst().ifPresent(jurorHistoryRepository::delete);
             }
         }
@@ -518,7 +519,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         if (Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.SUMMONED)
             || Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)
             && juror.getSummonsFile() != null
-            && juror.getSummonsFile().equals(DISQUALIFIED_ON_SELECTION)) {
+            && DISQUALIFIED_ON_SELECTION.equals(juror.getSummonsFile())) {
             //return just the common details
             return getJurorOverviewResponseDto(jurorPool);
         }
@@ -774,7 +775,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
 
         PendingJurorStatus pendingJurorStatus;
-        if (processPendingJurorRequestDto.getDecision().equals(ApprovalDecision.APPROVE)) {
+        if (processPendingJurorRequestDto.getDecision() == ApprovalDecision.APPROVE) {
             pendingJurorStatus = pendingJurorStatusRepository.findById(PendingJurorStatusEnum.AUTHORISED.getCode())
                 .orElseThrow(() -> new MojException.NotFound(PENDING_JUROR_STATUS_NOT_FOUND, null));
             updatePendingJuror(pendingJuror, pendingJurorStatus);
@@ -1127,8 +1128,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                                                 + opticsRefRequestDto.getJurorNumber(), null);
         }
 
-        if (response.getProcessingComplete().equals(true) || response.getProcessingStatus()
-            .equals(ProcessingStatus.CLOSED)) {
+        if (response.isProcessingComplete().equals(true) || response.getProcessingStatus() == ProcessingStatus.CLOSED) {
             throw new MojException.BusinessRuleViolation("Cannot check court accommodation - Response has been "
                                                              + "completed/closed", null);
         }
@@ -1212,6 +1212,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public JurorSummonsReplyResponseDto getJurorSummonsReply(BureauJwtPayload payload, String jurorNumber,
                                                              String locCode) {
         log.info("Retrieving juror summons reply info for juror {} by user {}", jurorNumber, payload.getLogin());
@@ -1226,8 +1227,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         //check if juror was disqualified exit quick
         if (Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)
-            && juror.getSummonsFile() != null
-            && juror.getSummonsFile().equals("Disq. on selection")) {
+            && "Disq. on selection".equals(juror.getSummonsFile())) {
             //return just the common details
             return new JurorSummonsReplyResponseDto(jurorPool, jurorStatusRepository, welshCourtLocationRepository,
                                                     pendingJurorRepository);
@@ -1351,7 +1351,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         jurorAuditChangeService.recordApprovalHistoryEvent(jurorNumber, requestDto.getDecision(), username,
                                                            jurorPool.getPoolNumber());
 
-        if (requestDto.getDecision().equals(ApprovalDecision.APPROVE)) {
+        if (requestDto.getDecision() == ApprovalDecision.APPROVE) {
             JurorNameDetailsDto dto = new JurorNameDetailsDto(juror.getPendingTitle(),
                                                               juror.getPendingFirstName(), juror.getPendingLastName());
             updateJurorNameDetails(username, jurorPool, dto);
@@ -1392,6 +1392,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public PoliceCheckStatusDto updatePncStatus(final String jurorNumber, final PoliceCheck policeCheck) {
         log.info("Attempting to update PNC check status for juror {} to be {}", jurorNumber, policeCheck);
         final JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
@@ -1458,7 +1459,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         boolean respondedToday = false;
         for (JurorHistory jurorHistory : jurorHistoryList) {
-            if (jurorHistory.getHistoryCode().equals(HistoryCodeMod.RESPONDED_POSITIVELY)) {
+            if (jurorHistory.getHistoryCode() == HistoryCodeMod.RESPONDED_POSITIVELY) {
                 respondedToday = true;
                 break;
             }
@@ -1529,21 +1530,21 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         responseDto.setData(jurorAttendanceDetails);
 
         responseDto.setAbsences((int) jurorAttendanceDetails.stream()
-            .filter(p -> AttendanceType.ABSENT.equals(p.getAttendanceType())).count());
+            .filter(p -> p.getAttendanceType() == AttendanceType.ABSENT).count());
 
         responseDto.setAttendances((int) jurorAttendanceDetails.stream()
-            .filter(p -> AttendanceType.FULL_DAY.equals(p.getAttendanceType())
-                || AttendanceType.HALF_DAY.equals(p.getAttendanceType())
-                || AttendanceType.FULL_DAY_LONG_TRIAL.equals(p.getAttendanceType())
-                || AttendanceType.HALF_DAY_LONG_TRIAL.equals(p.getAttendanceType())
-                || AttendanceType.FULL_DAY_EXTRA_LONG_TRIAL.equals(p.getAttendanceType())
-                || AttendanceType.HALF_DAY_EXTRA_LONG_TRIAL.equals(p.getAttendanceType()))
+            .filter(p -> p.getAttendanceType() == AttendanceType.FULL_DAY
+                || p.getAttendanceType() == AttendanceType.HALF_DAY
+                || p.getAttendanceType() == AttendanceType.FULL_DAY_LONG_TRIAL
+                || p.getAttendanceType() == AttendanceType.HALF_DAY_LONG_TRIAL
+                || p.getAttendanceType() == AttendanceType.FULL_DAY_EXTRA_LONG_TRIAL
+                || p.getAttendanceType() == AttendanceType.HALF_DAY_EXTRA_LONG_TRIAL)
             .count());
 
         responseDto.setNonAttendances((int) jurorAttendanceDetails.stream()
-            .filter(p -> AttendanceType.NON_ATTENDANCE.equals(p.getAttendanceType())
-                || AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(p.getAttendanceType())
-                || AttendanceType.NON_ATT_EXTRA_LONG_TRIAL.equals(p.getAttendanceType())).count());
+            .filter(p -> p.getAttendanceType() == AttendanceType.NON_ATTENDANCE
+                || p.getAttendanceType() == AttendanceType.NON_ATTENDANCE_LONG_TRIAL
+                || p.getAttendanceType() == AttendanceType.NON_ATT_EXTRA_LONG_TRIAL).count());
 
         // the hasAttendances method does not care if appearance is confirmed or not
         responseDto.setHasAppearances(jurorAppearanceService.hasAttendances(jurorNumber));
@@ -1587,6 +1588,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     }
 
     @Override
+    @SuppressWarnings({"PMD.AvoidDeeplyNestedIfStmts"})
     public JurorPaymentsResponseDto getJurorPayments(String jurorNumber) {
 
         List<Appearance> appearances =
@@ -1639,13 +1641,13 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
                     if (appearance.getFinancialAudit() != null) {
                         final Optional<FinancialAuditDetails> financialAuditDetailsOptional;
-                        if (!auditDetailsMap.containsKey(appearance.getFinancialAudit())) {
+                        if (auditDetailsMap.containsKey(appearance.getFinancialAudit())) {
+                            financialAuditDetailsOptional = auditDetailsMap.get(appearance.getFinancialAudit());
+                        } else {
                             financialAuditDetailsOptional =
                                 financialAuditService.getLastFinancialAuditDetailsFromAppearanceAndGenericType(
                                     appearance, FinancialAuditDetails.Type.GenericType.APPROVED);
                             auditDetailsMap.put(appearance.getFinancialAudit(), financialAuditDetailsOptional);
-                        } else {
-                            financialAuditDetailsOptional = auditDetailsMap.get(appearance.getFinancialAudit());
                         }
                         if (financialAuditDetailsOptional.isPresent()) {
                             FinancialAuditDetails financialAuditDetails = financialAuditDetailsOptional.get();

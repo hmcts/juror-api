@@ -12,6 +12,10 @@ public class BureauBacklogAllocateException extends RuntimeException {
         super(message);
     }
 
+    private BureauBacklogAllocateException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
     /**
      * Exception type thrown when requesting username is missing.
      */
@@ -19,6 +23,10 @@ public class BureauBacklogAllocateException extends RuntimeException {
     public static class RequestingUserIsRequired extends BureauBacklogAllocateException {
         public RequestingUserIsRequired() {
             super("Backend could not retrieve username from its own login token");
+        }
+
+        public RequestingUserIsRequired(Throwable cause) {
+            super("Backend could not retrieve username from its own login token", cause);
         }
     }
 
@@ -29,6 +37,10 @@ public class BureauBacklogAllocateException extends RuntimeException {
     public static class FailedToSaveAllocations extends BureauBacklogAllocateException {
         public FailedToSaveAllocations(String login) {
             super("There was a problem attempting to save the allocations for officer : " + login);
+        }
+
+        public FailedToSaveAllocations(String login, Throwable cause) {
+            super("There was a problem attempting to save the allocations for officer : " + login, cause);
         }
     }
 

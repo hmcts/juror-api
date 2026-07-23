@@ -50,10 +50,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         JurorPoolService.class,
     }
 )
+
+@SuppressWarnings("PMD.ExcessiveImports")
 @DisplayName("Controller: " + SjoTasksControllerTest.BASE_URL)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.JUnitTestsShouldIncludeAssert"})
 class SjoTasksControllerTest {
-    public static final String BASE_URL = "/api/v1/moj/sjo-tasks";
+    static final String BASE_URL = "/api/v1/moj/sjo-tasks";
 
     @Autowired
     private MockMvc mockMvc;
@@ -70,7 +71,7 @@ class SjoTasksControllerTest {
     @Nested
     @DisplayName("POST " + GetFailedToAttendJurors.URL)
     class GetFailedToAttendJurors {
-        public static final String URL = BASE_URL + "/juror/search";
+        static final String URL = BASE_URL + "/juror/search";
 
         @Test
         void positiveTypicalPoolSearch() throws Exception {
@@ -132,7 +133,7 @@ class SjoTasksControllerTest {
     @Nested
     @DisplayName("PATCH " + UndoFailedToAttendJurors.URL)
     class UndoFailedToAttendJurors {
-        public static final String URL = BASE_URL + "/failed-to-attend/undo";
+        static final String URL = BASE_URL + "/failed-to-attend/undo";
 
         @Test
         void positiveTypical() throws Exception {
@@ -168,6 +169,7 @@ class SjoTasksControllerTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void negativeBadRequest() throws Exception {
             mockMvc.perform(patch(URL)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -180,7 +182,7 @@ class SjoTasksControllerTest {
     @Nested
     @DisplayName("POST " + GetCompleteJurors.URL)
     class GetCompleteJurors {
-        public static final String URL = "/api/v1/moj/sjo-tasks/juror/search";
+        static final String URL = "/api/v1/moj/sjo-tasks/juror/search";
 
         @Test
         void positiveTypical() throws Exception {

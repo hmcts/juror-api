@@ -40,31 +40,31 @@ public class PoolCreatedMembersListDto {
 
         @JsonProperty("jurorNumber")
         @Schema(name = "Juror number", description = "Jurors Number")
-        private String jurorNumber;
+        private final String jurorNumber;
 
         @JsonProperty("firstName")
         @Schema(name = "First name", description = "Jurors first name")
-        private String firstName;
+        private final String firstName;
 
         @JsonProperty("lastname")
         @Schema(name = "Last name", description = "Jurors last name")
-        private String lastName;
+        private final String lastName;
 
         @JsonProperty("postCode")
         @Schema(name = "Jurors postcode", description = "Jurors postcode")
-        private String postcode;
+        private final String postcode;
 
         @JsonProperty("owner")
         @Schema(name = "Owner", description = "Owner")
-        private String owner;
+        private final String owner;
 
         @JsonProperty("status")
         @Schema(name = "Status", description = "Status of Juror")
-        private String status;
+        private final String status;
 
         @JsonProperty("startDate")
         @Schema(name = "start Date", description = "Start date of Juror service")
-        private LocalDate startDate;
+        private final LocalDate startDate;
 
         /**
          * Initialise an instance of this DTO class using a PoolMember object to populate its properties.
@@ -77,7 +77,7 @@ public class PoolCreatedMembersListDto {
             this.firstName = juror.getFirstName();
             this.lastName = juror.getLastName();
             this.postcode = juror.getPostcode();
-            this.owner = jurorPool.getOwner().equals("400") ? "Bureau" : "Court";
+            this.owner = "400".equals(jurorPool.getOwner()) ? "Bureau" : "Court";
             this.startDate = jurorPool.getReturnDate();
             this.status = jurorPool.getStatus().getStatusDesc();
         }

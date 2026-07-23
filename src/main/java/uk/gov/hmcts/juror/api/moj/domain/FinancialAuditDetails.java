@@ -117,7 +117,7 @@ public class FinancialAuditDetails implements Serializable {
 
             public Set<Type> getTypes() {
                 return Arrays.stream(Type.values())
-                    .filter(type -> type.getGenericType().equals(this))
+                    .filter(type -> type.getGenericType() == this)
                     .collect(Collectors.toSet());
             }
         }

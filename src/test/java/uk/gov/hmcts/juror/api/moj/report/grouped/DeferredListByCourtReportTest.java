@@ -37,7 +37,7 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public DeferredListByCourtReportTest() {
+    DeferredListByCourtReportTest() {
         super(QJurorPool.jurorPool,
             DeferredListByCourtReport.RequestValidator.class,
             ReportGroupBy.builder()
@@ -50,7 +50,7 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         super.beforeEach();
     }
@@ -62,13 +62,13 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
 
 
     @Override
-    public DeferredListByCourtReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected DeferredListByCourtReport createReport(PoolRequestRepository poolRequestRepository) {
         return new DeferredListByCourtReport(poolRequestRepository);
     }
 
     @Override
     @DisplayName("positivePreProcessQueryTypicalCourt")
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
@@ -115,6 +115,7 @@ class DeferredListByCourtReportTest extends AbstractGroupedReportTestSupport<Def
         verifyNoMoreInteractions(query);
     }
 
+    @Override
     public Map<String, StandardReportResponse.DataTypeValue> positiveGetHeadingsTypical(
         StandardReportRequest request,
         AbstractReportResponse.TableData<GroupedTableData> tableData,

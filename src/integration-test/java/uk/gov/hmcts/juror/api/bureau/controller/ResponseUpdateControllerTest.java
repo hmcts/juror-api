@@ -42,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     @Value("${jwt.secret.bureau}")
     private String bureauSecret;
@@ -68,7 +68,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
                 .owner("400").build()));
 
         ResponseEntity<ResponseUpdateController.JurorNoteDto> responseEntity = template.exchange(
-            new RequestEntity<Void>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/bureau/juror/209092530/notes")),
+            new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/bureau/juror/209092530/notes")),
             ResponseUpdateController.JurorNoteDto.class);
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.OK.value());
@@ -89,7 +89,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
                 .owner("400").build()));
 
         ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(
-            new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/bureau/juror/111222333/notes")), SpringBootErrorResponse.class);
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -288,7 +288,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     public void assertJurorNumberPathVariable_happy_validationPass() throws Exception {
         final String validJurorNumber = "123456789";
         ResponseUpdateController.assertJurorNumberPathVariable(validJurorNumber);
@@ -1385,7 +1384,6 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/ResponseUpdateControllerTest_jurorResponse_eligibility.sql")
-    @SuppressWarnings("PMD.NcssCount")
     public void updateJurorEligibility_happy() throws Exception {
         final String loginName = "BUREAULADY9";
         final String staffBureauLady = "Bureau Lady";

@@ -25,11 +25,10 @@ import static org.assertj.core.api.BDDAssertions.within;
     "/db/mod/truncate.sql",
     "/db/mod/reports/WeekendAttendanceReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public WeekendAttendanceReportITest(TestRestTemplate template) {
+    WeekendAttendanceReportITest(TestRestTemplate template) {
         super(template, WeekendAttendanceReport.class);
     }
 
@@ -49,6 +48,7 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -56,6 +56,7 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getValidBureauJwt())
@@ -63,6 +64,7 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
             .responseConsumer(this::verifyReportResponse);
     }
 
+    @SuppressWarnings("PMD.StringToString")
     @Test
     void negativeInvalidCourtLocCode() {
         StandardReportRequest request = getValidPayload();
@@ -136,7 +138,6 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
         assertThat(tableHeading.getDataType()).isEqualTo("String");
     }
 
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     private void verifyHeadings(StandardReportResponse response) {
         assertThat(response.getHeadings().containsKey("date_from")).isTrue();
         AbstractReportResponse.DataTypeValue reportHeading = response.getHeadings().get("date_from");

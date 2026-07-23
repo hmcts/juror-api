@@ -64,7 +64,7 @@ public final class JurorResponseUtils {
         jurorPaperResponse.setDateOfBirth(juror.getDateOfBirth());
 
         //set address
-        JurorResponseUtils.setUpAddress(jurorPaperResponse, juror);
+        setUpAddress(jurorPaperResponse, juror);
         jurorPaperResponse.setThirdPartyReason(disqualifiedComment);
         jurorPaperResponse.setProcessingComplete(true);
         jurorPaperResponse.setCompletedAt(LocalDateTime.now());

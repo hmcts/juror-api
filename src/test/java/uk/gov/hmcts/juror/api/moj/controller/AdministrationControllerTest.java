@@ -62,11 +62,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
+
 @DisplayName("Controller: " + AdministrationControllerTest.BASE_URL)
 @SuppressWarnings("PMD.ExcessiveImports")
-public class AdministrationControllerTest {
+class AdministrationControllerTest {
 
-    public static final String BASE_URL = "/api/v1/moj/administration";
+    static final String BASE_URL = "/api/v1/moj/administration";
     @Autowired
     private MockMvc mockMvc;
 
@@ -82,7 +83,7 @@ public class AdministrationControllerTest {
     @Nested
     @DisplayName("GET " + ViewCodeAndDescriptions.URL)
     class ViewCodeAndDescriptions {
-        public static final String URL = BASE_URL + "/codes/{code_type}";
+        static final String URL = BASE_URL + "/codes/{code_type}";
 
         private String toUrl(CodeType codeType) {
             return toUrl(codeType.name());
@@ -130,7 +131,7 @@ public class AdministrationControllerTest {
     @Nested
     @DisplayName("GET " + ViewCourtDetails.URL)
     class ViewCourtDetails {
-        public static final String URL = BASE_URL + "/courts/{loc_code}";
+        static final String URL = BASE_URL + "/courts/{loc_code}";
 
 
         private String toUrl(String codeType) {
@@ -165,7 +166,7 @@ public class AdministrationControllerTest {
     @Nested
     @DisplayName("PUT " + UpdateCourtRates.URL)
     class UpdateCourtRates {
-        public static final String URL = BASE_URL + "/courts/{loc_code}/rates";
+        static final String URL = BASE_URL + "/courts/{loc_code}/rates";
 
 
         private String toUrl(String codeType) {
@@ -220,7 +221,7 @@ public class AdministrationControllerTest {
     @Nested
     @DisplayName("PUT " + UpdateCourtDetails.URL)
     class UpdateCourtDetails {
-        public static final String URL = BASE_URL + "/courts/{loc_code}";
+        static final String URL = BASE_URL + "/courts/{loc_code}";
 
         private String toUrl(String codeType) {
             return URL.replace("{loc_code}", codeType);
@@ -277,7 +278,7 @@ public class AdministrationControllerTest {
     @Nested
     @DisplayName("GET " + ViewAllCourtsDetails.URL)
     class ViewAllCourtsDetails {
-        public static final String URL = BASE_URL + "/courts";
+        static final String URL = BASE_URL + "/courts";
 
 
         @Test
@@ -296,11 +297,10 @@ public class AdministrationControllerTest {
         }
     }
 
-
     @Nested
     @DisplayName("GET " + ViewExpenseDetails.URL)
     class ViewExpenseDetails {
-        public static final String URL = BASE_URL + "/expenses/rates";
+        static final String URL = BASE_URL + "/expenses/rates";
         private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
         @BeforeEach
@@ -396,7 +396,7 @@ public class AdministrationControllerTest {
     @Nested
     @DisplayName("PUT " + UpdateExpenseDetails.URL)
     class UpdateExpenseDetails {
-        public static final String URL = BASE_URL + "/expenses/rates";
+        static final String URL = BASE_URL + "/expenses/rates";
 
 
         private ExpenseRatesDto getValidPayload() {

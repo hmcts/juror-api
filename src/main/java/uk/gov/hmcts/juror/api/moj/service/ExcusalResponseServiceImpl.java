@@ -72,7 +72,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
             jurorRecordService.updateJurorAddressFromResponse(jurorPool);
         }
 
-        if (excusalDecisionDto.getExcusalDecision().equals(ExcusalDecision.GRANT)) {
+        if (excusalDecisionDto.getExcusalDecision() == ExcusalDecision.GRANT) {
             jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
             grantExcusalForJuror(payload, excusalDecisionDto, jurorPool);
             if (!ExcusalCodeEnum.D.getCode().equals(excusalDecisionDto.getExcusalReasonCode())

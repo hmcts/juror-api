@@ -33,6 +33,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @SuperBuilder
 @ToString
+@SuppressWarnings({"PMD.TooManyFields"})
 public class JurorAudit extends Address {
 
     @OneToOne(fetch = FetchType.LAZY)

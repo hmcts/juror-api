@@ -8,7 +8,9 @@
 
   <rule ref="category/java/bestpractices.xml">
     <exclude name="GuardLogStatement"/>
-    <exclude name="JUnitTestContainsTooManyAsserts"/>
+    <exclude name="UnitTestContainsTooManyAsserts"/>
+    <exclude name="UnitTestAssertionsShouldIncludeMessage"/>  <!-- renamed from JUnit* -->
+    <exclude name="LooseCoupling"/>
   </rule>
   <rule ref="category/java/codestyle.xml">
     <exclude name="AtLeastOneConstructor"/>
@@ -17,7 +19,6 @@
     <exclude name="MethodArgumentCouldBeFinal"/>
     <exclude name="OnlyOneReturn"/>
     <exclude name="TooManyStaticImports"/>
-    <exclude name="DefaultPackage"/>
     <exclude name="CommentDefaultAccessModifier"/>
   </rule>
   <rule ref="category/java/codestyle.xml/ClassNamingConventions">
@@ -29,6 +30,7 @@
   <rule ref="category/java/codestyle.xml/MethodNamingConventions">
     <properties>
       <property name="junit4TestPattern" value="[a-z][a-zA-Z0-9_]+"/>
+      <property name="junit5TestPattern" value="[a-z][a-zA-Z0-9_]+"/>
     </properties>
   </rule>
   <rule ref="category/java/codestyle.xml/ShortVariable">

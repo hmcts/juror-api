@@ -22,13 +22,14 @@ import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__({@Autowired}))
+@SuppressWarnings("PMD.TooManyMethods")
 public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
     private final ContactCodeRepository contactCodeRepository;
 
@@ -64,7 +65,7 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
     public Map<String, Boolean> initChangedPropertyMap(Juror juror,
                                                        JurorNameDetailsDto jurorNameDetailsDto) {
         // check for changes between the new/updated values and the juror record values
-        Map<String, Boolean> changedPropertiesMap = new HashMap<>();
+        Map<String, Boolean> changedPropertiesMap = new ConcurrentHashMap<>();
 
         // new title value CAN be null
         changedPropertiesMap.put(TITLE, hasTitleChanged(juror.getTitle(), jurorNameDetailsDto.getTitle()));
@@ -97,14 +98,14 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
     public Map<String, Boolean> initChangedPropertyMap(Juror juror,
                                                        AbstractJurorResponse jurorResponse) {
         // check for changes between the new/updated values and the juror record values
-        Map<String, Boolean> changedPropertiesMap = new HashMap<>();
+        Map<String, Boolean> changedPropertiesMap = new ConcurrentHashMap<>();
 
         // new title value CAN be null
         changedPropertiesMap.put(TITLE, hasTitleChanged(juror.getTitle(), jurorResponse.getTitle())
             && !hasNameChanged(jurorResponse.getFirstName(), juror.getFirstName(),
             jurorResponse.getLastName(), juror.getLastName()));
 
-        LocalDate originalDate = setOriginalDateOfBirth(juror.getDateOfBirth());
+        LocalDate originalDate = assignDefaultJurorDob(juror.getDateOfBirth());
         changedPropertiesMap.put(DATE_OF_BIRTH, hasPropertyChanged(jurorResponse.getDateOfBirth(),
             originalDate));
 
@@ -140,6 +141,7 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      * @return true if either part of the juror's name has changed, false if it is the same
      */
     @Override
+    @SuppressWarnings("PMD.UseObjectForClearerAPI")
     public boolean hasNameChanged(String updatedFirstName, String originalFirstname,
                                   String updatedLastName, String originalLastname) {
         return hasPropertyChanged(updatedFirstName, originalFirstname)
@@ -241,31 +243,19 @@ public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
      * @return LocalDate    object with either the Juror's date of birth or a default date value to use for change
      *                      comparison
      */
-    private LocalDate setOriginalDateOfBirth(LocalDate jurorDob) {
+    private LocalDate assignDefaultJurorDob(LocalDate jurorDob) {
         final LocalDate defaultNullReplacementDob = LocalDate.of(1901, 1, 1);
         return jurorDob != null ? jurorDob : defaultNullReplacementDob;
     }
 
     private boolean hasPropertyChanged(String updatedValue, String originalValue) {
-        if (updatedValue != null) {
-            if (originalValue != null) {
-                return updatedValue.compareTo(originalValue) != 0;
-            } else {
-                return true;
-            }
-        }
-        return false;
+        return updatedValue != null
+            && !Objects.equals(updatedValue, originalValue);
     }
 
     private boolean hasPropertyChanged(LocalDate updatedValue, LocalDate originalValue) {
-        if (updatedValue != null) {
-            if (originalValue != null) {
-                return !updatedValue.isEqual(originalValue);
-            } else {
-                return true;
-            }
-        }
-        return false;
+        return updatedValue != null
+            && (originalValue == null || !updatedValue.isEqual(originalValue));
     }
 
     private String formatForConcat(String property) {
