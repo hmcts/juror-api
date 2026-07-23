@@ -4010,7 +4010,7 @@ class JurorRecordServiceTest {
                     .thenReturn(null);
 
                 MojException.NotFound exception = assertThrows(MojException.NotFound.class,
-                   () -> jurorRecordService.getJuror(TestConstants.VALID_JUROR_NUMBER, null),
+                    () -> jurorRecordService.getJuror(TestConstants.VALID_JUROR_NUMBER, null),
                                    "When juror cannot be found an exception should be thrown");
 
                 assertThat(exception.getMessage()).isNotNull().isEqualTo(
