@@ -8,6 +8,7 @@ buildscript {
     postgresVersion = '42.7.12'         // upgraded from 42.7.11 - CVE-2026-54291 fix
     envers = '3.5.12'
     jwtVersion = '0.13.0'
+    mockitoVersion = '5.14.2'
   }
   dependencies {
     classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
