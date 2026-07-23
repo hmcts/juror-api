@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.bureau.controller.request.DbdDashboardRequestDto;
-import uk.gov.hmcts.juror.api.bureau.controller.response.DbdDashboardResponseDto;
-import uk.gov.hmcts.juror.api.bureau.service.DbdDashboardService;
+import uk.gov.hmcts.juror.api.moj.controller.request.DbdDashboardRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto;
+import uk.gov.hmcts.juror.api.moj.service.DbdDashboardService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 
 @Slf4j
