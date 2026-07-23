@@ -314,7 +314,7 @@ pmdMain {
 }
 pmd {
     maxFailures = 0
-    toolVersion = "7.24.0"
+    toolVersion = "7.26.0"
     sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integrationTest,
                   sourceSets.functionalTest, sourceSets.smokeTest]
     reportsDir = file("$project.buildDir/reports/pmd")
