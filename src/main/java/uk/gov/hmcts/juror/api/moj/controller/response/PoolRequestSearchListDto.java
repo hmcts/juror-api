@@ -25,6 +25,7 @@ import java.util.Objects;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Getter
 @Schema(description = "Pool request search list response")
+@SuppressWarnings({"PMD.CyclomaticComplexity"})
 public class PoolRequestSearchListDto {
 
     private static final String BUREAU_STAGE_TEXT = "With the Bureau";
@@ -83,8 +84,8 @@ public class PoolRequestSearchListDto {
          * @param queryResult a Tuple object representation of a result row from the Pool Request Search query
          */
         public PoolRequestSearchDataDto(Tuple queryResult) {
-            final boolean ownedByBureau = Objects.requireNonNull(queryResult.get(1, String.class))
-                .equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER);
+            final boolean ownedByBureau = JurorDigitalApplication.JUROR_OWNER
+                .equalsIgnoreCase(Objects.requireNonNull(queryResult.get(1, String.class)));
             final boolean hasActivePoolMembers = Objects.requireNonNull(queryResult.get(6, Integer.class)) > 0;
             final Integer numberRequested = queryResult.get(7, Integer.class);
             final boolean isNilPool = Objects.requireNonNull(queryResult.get(8, Boolean.class));
@@ -97,15 +98,17 @@ public class PoolRequestSearchListDto {
                 .toLowerCase(Locale.ROOT), '.');
             this.serviceStartDate = queryResult.get(4, LocalDate.class);
 
-            if (Objects.requireNonNull(queryResult.get(5, Character.class)) != 'N') {
-                this.poolStatus = "Requested";
-            } else if (isNilPool && numberRequested != null && numberRequested == 0) {
-                this.poolStatus = "Nil";
-            } else if (ownedByBureau || hasActivePoolMembers
-                || (!isNilPool && serviceStartDate.isAfter(LocalDate.now()))) {
-                this.poolStatus = "Active";
+            if (Objects.requireNonNull(queryResult.get(5, Character.class)) == 'N') {
+                if (isNilPool && numberRequested != null && numberRequested == 0) {
+                    this.poolStatus = "Nil";
+                } else if (ownedByBureau || hasActivePoolMembers
+                    || (!isNilPool && serviceStartDate.isAfter(LocalDate.now()))) {
+                    this.poolStatus = "Active";
+                } else {
+                    this.poolStatus = "Completed";
+                }
             } else {
-                this.poolStatus = "Completed";
+                this.poolStatus = "Requested";
             }
         }
 

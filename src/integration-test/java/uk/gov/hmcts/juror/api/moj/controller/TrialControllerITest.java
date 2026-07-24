@@ -85,7 +85,8 @@ import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetail
 @Sql({"/db/mod/truncate.sql", "/db/trial/Trial.sql"})
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.CouplingBetweenObjects"
 })
 class TrialControllerITest extends AbstractIntegrationTest {
     private static final String REASSIGN_PANEL_MEMBERS = "/api/v1/moj/trial/reassign-panel-members";
@@ -314,7 +315,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     class TrialList {
         static final String URL = "/api/v1/moj/trial/list";
 
@@ -453,7 +453,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     class TrialSummary {
         static final String URL = "/api/v1/moj/trial/summary?";
         static final String URL_TRIAL_SUMMARY = URL + "trial_number=%s&location_code=%s";
@@ -833,7 +832,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/trial/ReturnJuryPanel.sql", "/db/JurorExpenseControllerITest_expenseRates.sql"})
     @SuppressWarnings({
         "PMD.AvoidInstantiatingObjectsInLoops",
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
     })
     void testReturnJuryConfirmAttendanceAndCompleteService() {
         final String url = "/api/v1/moj/trial/return-jury?"
@@ -1029,7 +1027,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
 
     @Nested
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     class ReassignJurors {
 
 
@@ -1146,7 +1143,6 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
 
     @Nested
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     class ReturnedJurors {
 
         @Test

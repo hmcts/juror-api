@@ -48,9 +48,6 @@ public class StaffServiceImpl implements StaffService {
 
     @Override
     @Transactional
-    @SuppressWarnings({"PMD.NcssCount",
-        "PMD.CognitiveComplexity",
-        "PMD.NPathComplexity"})
     public StaffAssignmentResponseDto changeAssignment(final StaffAssignmentRequestDto staffAssignmentRequestDto,
                                                        final String currentUser) {
         log.trace("enter changeAssignment");
@@ -144,12 +141,12 @@ public class StaffServiceImpl implements StaffService {
             log.warn("Response '{}' record does not exist!", jurorNumber);
             throw new MojException.NotFound("Juror response record does not exist!", null);
 
-        } else if (Boolean.TRUE.equals(jurorResponse.getProcessingComplete())
+        } else if (Boolean.TRUE.equals(jurorResponse.isProcessingComplete())
             || ProcessingStatus.CLOSED == jurorResponse.getProcessingStatus()) {
 
             log.trace("Juror Response {}: processingComplete={} processingStatus={}",
                 jurorResponse.getJurorNumber(),
-                jurorResponse.getProcessingComplete(),
+                jurorResponse.isProcessingComplete(),
                 jurorResponse.getProcessingStatus());
 
             throw new MojException.BusinessRuleViolation(
@@ -170,7 +167,7 @@ public class StaffServiceImpl implements StaffService {
                 "Cannot change assignment to user " + JurorDigitalApplication.AUTO_USER, null);
         }
 
-        User assignToUser = null;
+        User assignToUser;
 
         log.trace("Retrieve user record from the database for username {}", username);
         assignToUser = userRepository.findByUsername(username);

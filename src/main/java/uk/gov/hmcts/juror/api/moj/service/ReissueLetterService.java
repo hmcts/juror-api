@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -102,12 +103,8 @@ public interface ReissueLetterService {
         EXTRACTED_FLAG(Boolean.class, "hidden_extracted_flag", QBulkPrintData.bulkPrintData.extractedFlag
             .as("extracted_flag"),
             List.of(QBulkPrintData.class),
-            flag -> {
-                if (flag == null) {
-                    return false;
-                }
-                return flag;
-            });
+            flag -> Objects.requireNonNullElse(flag, false)
+        );
 
         private final Class<?> classType;
         private final String displayText;

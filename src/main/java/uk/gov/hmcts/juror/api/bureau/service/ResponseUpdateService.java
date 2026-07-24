@@ -54,8 +54,8 @@ public interface ResponseUpdateService extends ResponseNotesService, ResponsePho
      * @param jurorId             Response id
      * @param login               Editing user
      */
-    void updateJurorEligibility(final ResponseUpdateController.JurorEligibilityDto dto,
-                                final String jurorId, final String login);
+    void updateJurorEligibility(ResponseUpdateController.JurorEligibilityDto dto,
+                                String jurorId, String login);
 
     /**
      * Update the CJS Employment section of a juror response.

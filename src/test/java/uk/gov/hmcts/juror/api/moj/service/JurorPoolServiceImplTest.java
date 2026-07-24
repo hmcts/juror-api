@@ -1,7 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.service;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -218,7 +217,7 @@ class JurorPoolServiceImplTest {
                 .findJurorPoolsBySearch(eq(poolSearch), eq("415"), any(), any(), eq(500L));
 
 
-            MojException.NotFound exception = Assertions.assertThrows(MojException.NotFound.class,
+            MojException.NotFound exception = assertThrows(MojException.NotFound.class,
                 () -> jurorPoolService.search(poolSearch),
                 "Exception should be thrown");
 

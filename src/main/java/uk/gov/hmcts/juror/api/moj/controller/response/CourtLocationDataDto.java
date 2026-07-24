@@ -19,16 +19,20 @@ import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 public class CourtLocationDataDto {
 
     @Schema(name = "locationCode", description = "3 digit identification code for a court location")
+    @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
     private String locationCode;
 
     @Schema(name = "locationName", description = "The court name")
+    @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
     private String locationName;
 
     @Schema(name = "attendanceTime", description = "The default start time for a court location")
+    @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
     private String attendanceTime;
 
     @Schema(name = "owner", description = "3 digit identification code for a primary court location which owns this "
         + "court location")
+    @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
     private String owner;
 
     /**

@@ -55,9 +55,12 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings({"PMD.TooManyMethods",
+@SuppressWarnings({
+    "PMD.TooManyMethods",
     "PMD.ExcessiveImports",
-    "PMD.GodClass"})
+    "PMD.AvoidInstantiatingObjectsInLoops",
+    "PMD.CouplingBetweenObjects"
+})
 public class JurorManagementServiceImpl implements JurorManagementService {
 
     private final PoolRequestRepository poolRequestRepository;
@@ -78,6 +81,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @SuppressWarnings({"PMD.ExceptionAsFlowControl", "PMD.CyclomaticComplexity", "PMD.CognitiveComplexity"})
     public ReassignPoolMembersResultDto reassignJurors(BureauJwtPayload payload,
                                                        JurorManagementRequestDto jurorManagementRequestDto) {
         log.trace("Entered reassignJurors method");

@@ -104,6 +104,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods",
     "PMD.NcssCount", "PMD.CouplingBetweenObjects"})
+
 @ExtendWith(SpringExtension.class)
 class JurorAppearanceServiceTest {
     @Mock
@@ -149,7 +150,7 @@ class JurorAppearanceServiceTest {
     private static final String JUROR_POOL_1 = "123456789";
 
     @BeforeEach
-    public void setUp() {
+     void setUp() {
         TestUtils.setUpMockAuthentication("415", "COURT_USER", "1", List.of("415"));
     }
 
@@ -805,7 +806,7 @@ class JurorAppearanceServiceTest {
         CourtLocation courtLocation = getCourtLocation();
         doReturn(Optional.of(courtLocation)).when(courtLocationRepository).findById(anyString());
 
-        doReturn(new ArrayList<Tuple>()).when(appearanceRepository).getAppearanceRecords(anyString(),
+        doReturn(new ArrayList<>()).when(appearanceRepository).getAppearanceRecords(anyString(),
             any(), anyString(), any());
 
         JurorAppearanceResponseDto jurorAppearanceResponseDto =
@@ -3147,8 +3148,8 @@ class JurorAppearanceServiceTest {
             commonData.setStatus(UpdateAttendanceStatus.CONFIRM_ATTENDANCE);
             commonData.setAttendanceDate(now().minusDays(1));
             commonData.setLocationCode(locationCode);
-            commonData.setCheckInTime(LocalTime.of(9, 00));
-            commonData.setCheckOutTime(LocalTime.of(16, 00));
+            commonData.setCheckInTime(LocalTime.of(9, 0));
+            commonData.setCheckOutTime(LocalTime.of(16, 0));
             commonData.setSingleJuror(Boolean.FALSE);
 
             UpdateAttendanceDto request = new UpdateAttendanceDto();
@@ -3171,8 +3172,8 @@ class JurorAppearanceServiceTest {
             final String locationCode = "415";
             final LocalDate attendanceDate = now().minusDays(7);
 
-            LocalTime checkInTime = LocalTime.of(9, 00);
-            LocalTime checkOutTime = LocalTime.of(16, 00);
+            LocalTime checkInTime = LocalTime.of(9, 0);
+            LocalTime checkOutTime = LocalTime.of(16, 0);
 
             Tuple t1 = mock(Tuple.class);
             mockUnconfirmedJurorTuple(t1,  "123456789",  "Joe",  "Lastname",
@@ -3255,8 +3256,8 @@ class JurorAppearanceServiceTest {
                 .jurorNumber(JUROR1)
                 .attendanceDate(now().minusDays(1))
                 .locationCode(locationCode)
-                .checkInTime(LocalTime.of(9, 00))
-                .checkOutTime(LocalTime.of(16, 00))
+                .checkInTime(LocalTime.of(9, 0))
+                .checkOutTime(LocalTime.of(16, 0))
                 .build();
 
             final CourtLocation courtLocation = new CourtLocation();
@@ -3321,8 +3322,8 @@ class JurorAppearanceServiceTest {
                 .jurorNumber(JUROR1)
                 .attendanceDate(now().minusDays(1))
                 .locationCode(locationCode)
-                .checkInTime(LocalTime.of(9, 00))
-                .checkOutTime(LocalTime.of(16, 00))
+                .checkInTime(LocalTime.of(9, 0))
+                .checkOutTime(LocalTime.of(16, 0))
                 .build();
 
             final CourtLocation courtLocation = new CourtLocation();
@@ -3385,8 +3386,8 @@ class JurorAppearanceServiceTest {
                 .jurorNumber(JUROR1)
                 .attendanceDate(now().minusDays(1))
                 .locationCode(locationCode)
-                .checkInTime(LocalTime.of(9, 00))
-                .checkOutTime(LocalTime.of(16, 00))
+                .checkInTime(LocalTime.of(9, 0))
+                .checkOutTime(LocalTime.of(16, 0))
                 .build();
 
             doReturn(Optional.empty()).when(courtLocationRepository).findByLocCode(locationCode);
@@ -3413,8 +3414,8 @@ class JurorAppearanceServiceTest {
                 .jurorNumber("987654321")
                 .attendanceDate(now().minusDays(1))
                 .locationCode(locationCode)
-                .checkInTime(LocalTime.of(9, 00))
-                .checkOutTime(LocalTime.of(16, 00))
+                .checkInTime(LocalTime.of(9, 0))
+                .checkOutTime(LocalTime.of(16, 0))
                 .build();
 
             final CourtLocation courtLocation = new CourtLocation();
@@ -3468,13 +3469,13 @@ class JurorAppearanceServiceTest {
             Appearance appearance1 = new Appearance();
             appearance1.setJurorNumber("111111111");
             appearance1.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
-            appearance1.setAppearanceStage(AppearanceStage.CHECKED_IN);
+            appearance1.setAppearanceStage(CHECKED_IN);
             appearance1.setAttendanceDate(now().minusDays(1));
 
             Appearance appearance2 = new Appearance();
             appearance2.setJurorNumber("111111111");
             appearance2.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
-            appearance2.setAppearanceStage(AppearanceStage.CHECKED_IN);
+            appearance2.setAppearanceStage(CHECKED_IN);
             appearance2.setAttendanceDate(now().minusDays(2));
 
 
@@ -3508,8 +3509,8 @@ class JurorAppearanceServiceTest {
                 .jurorNumber(JUROR1)
                 .attendanceDate(now().minusDays(1))
                 .locationCode(locationCode)
-                .checkInTime(LocalTime.of(9, 00))
-                .checkOutTime(LocalTime.of(16, 00))
+                .checkInTime(LocalTime.of(9, 0))
+                .checkOutTime(LocalTime.of(16, 0))
                 .build();
 
             final CourtLocation courtLocation = new CourtLocation();

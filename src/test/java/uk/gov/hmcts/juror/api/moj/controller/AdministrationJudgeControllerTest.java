@@ -46,10 +46,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
-@DisplayName("Controller: " + AdministrationJudgeControllerTest.BASE_URL)
-public class AdministrationJudgeControllerTest {
 
-    public static final String BASE_URL = "/api/v1/moj/administration/judges";
+@DisplayName("Controller: " + AdministrationJudgeControllerTest.BASE_URL)
+class AdministrationJudgeControllerTest {
+
+    static final String BASE_URL = "/api/v1/moj/administration/judges";
     @Autowired
     private MockMvc mockMvc;
 
@@ -62,7 +63,7 @@ public class AdministrationJudgeControllerTest {
     @Nested
     @DisplayName("GET " + ViewJudgeDetails.URL)
     class ViewJudgeDetails {
-        public static final String URL = BASE_URL + "/{judge_id}";
+        static final String URL = BASE_URL + "/{judge_id}";
 
         private String toUrl(long judgeId) {
             return toUrl(String.valueOf(judgeId));
@@ -102,7 +103,7 @@ public class AdministrationJudgeControllerTest {
     @Nested
     @DisplayName("DELETE " + DeleteJudge.URL)
     class DeleteJudge {
-        public static final String URL = BASE_URL + "/{judge_id}";
+        static final String URL = BASE_URL + "/{judge_id}";
 
         private String toUrl(long judgeId) {
             return toUrl(String.valueOf(judgeId));
@@ -135,7 +136,7 @@ public class AdministrationJudgeControllerTest {
     @Nested
     @DisplayName("PUT " + UpdateJudgeDetails.URL)
     class UpdateJudgeDetails {
-        public static final String URL = BASE_URL + "/{judge_id}";
+        static final String URL = BASE_URL + "/{judge_id}";
 
         private String toUrl(long judgeId) {
             return toUrl(String.valueOf(judgeId));
@@ -198,7 +199,7 @@ public class AdministrationJudgeControllerTest {
     @Nested
     @DisplayName("GET " + ViewAllJudgeDetails.URL)
     class ViewAllJudgeDetails {
-        public static final String URL = BASE_URL;
+        static final String URL = BASE_URL;
 
         @Test
         void positiveTypicalNoFilter() throws Exception {
@@ -264,7 +265,7 @@ public class AdministrationJudgeControllerTest {
     @Nested
     @DisplayName("POST " + CreateJudgeDetails.URL)
     class CreateJudgeDetails {
-        public static final String URL = BASE_URL;
+        static final String URL = BASE_URL;
 
         private JudgeCreateDto getValidPayload() {
             return JudgeCreateDto.builder()

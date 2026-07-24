@@ -42,6 +42,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class ResponseDisqualifyServiceImplTest {
 
     @Mock
@@ -73,7 +74,7 @@ public class ResponseDisqualifyServiceImplTest {
     private ResponseDisqualifyServiceImpl responseDisqualifyService;
 
     @Test
-    public void getDisqualifyReasons_happy() throws Exception {
+    public void disqualifyReasons_happy() throws Exception {
         List<DisqualifiedCode> disqualifyReasonsList = new ArrayList<>();
         disqualifyReasonsList.add(new DisqualifiedCode("A", "Description", true));
         disqualifyReasonsList.add(new DisqualifiedCode("B", "Description", true));

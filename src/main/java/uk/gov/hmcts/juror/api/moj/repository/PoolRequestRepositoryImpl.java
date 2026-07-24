@@ -154,7 +154,7 @@ public class PoolRequestRepositoryImpl extends PoolRequestSearchQueries implemen
             .groupBy(POOL_REQUEST.returnDate)
             .groupBy(POOL_REQUEST.numberRequested);
 
-        if (owner.equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER) || isReassign) {
+        if (JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(owner) || isReassign) {
             query.where(POOL_REQUEST.owner.eq(owner));
         }
 

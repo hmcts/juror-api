@@ -84,10 +84,10 @@ public enum MissingInformation {
         String separator = "";
 
         for (MissingInformation information : missingInformation) {
-            if (!welshTranslation) {
-                missingInformationString.append(separator).append(information.getEnglishTranslation());
-            } else {
+            if (welshTranslation) {
                 missingInformationString.append(separator).append(information.getWelshTranslation());
+            } else {
+                missingInformationString.append(separator).append(information.getEnglishTranslation());
             }
             separator = ", ";
         }

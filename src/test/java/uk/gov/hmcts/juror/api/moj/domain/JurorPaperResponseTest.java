@@ -997,7 +997,7 @@ public class JurorPaperResponseTest {
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
         assertThat(violations).as("No validation violations expected").isEmpty();
 
-        assertThat(response.getProcessingComplete()).isTrue();
+        assertThat(response.isProcessingComplete()).isTrue();
     }
 
     @Test
@@ -1010,7 +1010,7 @@ public class JurorPaperResponseTest {
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
         assertThat(violations).as("No validation violations expected").isEmpty();
 
-        assertThat(response.getProcessingComplete()).isFalse();
+        assertThat(response.isProcessingComplete()).isFalse();
     }
 
     @Test
@@ -1116,7 +1116,7 @@ public class JurorPaperResponseTest {
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
         assertThat(violations).as("No validation violations expected").isEmpty();
 
-        assertThat(response.getWelsh()).isTrue();
+        assertThat(response.isWelsh()).isTrue();
     }
 
     @Test
@@ -1129,7 +1129,7 @@ public class JurorPaperResponseTest {
         Set<ConstraintViolation<PaperResponse>> violations = validator.validate(response);
         assertThat(violations).as("No validation violations expected").isEmpty();
 
-        assertThat(response.getWelsh()).isFalse();
+        assertThat(response.isWelsh()).isFalse();
     }
 
 }

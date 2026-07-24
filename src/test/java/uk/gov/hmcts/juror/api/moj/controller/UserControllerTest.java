@@ -50,11 +50,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
-@DisplayName("Controller: " + UserControllerTest.BASE_URL)
+
 @SuppressWarnings("PMD.ExcessiveImports")
+@DisplayName("Controller: " + UserControllerTest.BASE_URL)
 class UserControllerTest {
 
-    public static final String BASE_URL = "/api/v1/moj/users";
+    static final String BASE_URL = "/api/v1/moj/users";
     @Autowired
     private MockMvc mockMvc;
 
@@ -64,11 +65,10 @@ class UserControllerTest {
     @InjectMocks
     private UserController userController;
 
-
     @Nested
     @DisplayName("POST " + ViewAllUsers.URL)
     class ViewAllUsers {
-        public static final String URL = BASE_URL;
+        static final String URL = BASE_URL;
 
         @Test
         void positiveTypical() throws Exception {
@@ -98,7 +98,7 @@ class UserControllerTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void negativeInvalidPayload() throws Exception {
             mockMvc.perform(post(URL)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -111,7 +111,7 @@ class UserControllerTest {
     @Nested
     @DisplayName("POST " + CreateUser.URL)
     class CreateUser {
-        public static final String URL = BASE_URL + "/create";
+        static final String URL = BASE_URL + "/create";
 
         @Test
         void positiveTypical() throws Exception {
@@ -153,7 +153,7 @@ class UserControllerTest {
     @Nested
     @DisplayName("GET " + GetUser.URL)
     class GetUser {
-        public static final String URL = BASE_URL + "/{username}";
+        static final String URL = BASE_URL + "/{username}";
 
 
         private String toUrl(String username) {
@@ -182,7 +182,7 @@ class UserControllerTest {
     @Nested
     @DisplayName("PUT " + UpdateUser.URL)
     class UpdateUser {
-        public static final String URL = BASE_URL + "/{username}";
+        static final String URL = BASE_URL + "/{username}";
 
 
         private String toUrl(String username) {
@@ -226,7 +226,7 @@ class UserControllerTest {
     @Nested
     @DisplayName("PATCH " + UpdateUser.URL)
     class AddCourt {
-        public static final String URL = BASE_URL + "/{username}/courts";
+        static final String URL = BASE_URL + "/{username}/courts";
 
 
         private String toUrl(String username) {
@@ -265,7 +265,7 @@ class UserControllerTest {
     @Nested
     @DisplayName("DELETE " + RemoveCourt.URL)
     class RemoveCourt {
-        public static final String URL = BASE_URL + "/{username}/courts";
+        static final String URL = BASE_URL + "/{username}/courts";
 
 
         private String toUrl(String username) {
@@ -303,7 +303,7 @@ class UserControllerTest {
     @Nested
     @DisplayName("PATCH " + UpdateUserType.URL)
     class UpdateUserType {
-        public static final String URL = BASE_URL + "/{username}/type/{type}";
+        static final String URL = BASE_URL + "/{username}/type/{type}";
 
 
         private String toUrl(String username, String type) {

@@ -41,7 +41,7 @@ class SummonsRepliesReportServiceImplTest {
     private final SummonsRepliesReportService summonsRepliesReportService;
     private final JurorResponseService jurorResponseService;
 
-    public SummonsRepliesReportServiceImplTest() {
+    private SummonsRepliesReportServiceImplTest() {
         this.jurorDigitalResponseRepositoryMod = mock(JurorDigitalResponseRepositoryModImpl.class);
         this.jurorResponseService = mock(JurorResponseService.class);
         this.summonsRepliesReportService = new SummonsRepliesReportServiceImpl(jurorDigitalResponseRepositoryMod,
@@ -57,7 +57,6 @@ class SummonsRepliesReportServiceImplTest {
 
     @Nested
     @DisplayName("Digital Summons Replies report tests")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //false positive
     class DigitalSummonsRepliesReportTests {
 
         @Test
@@ -111,7 +110,7 @@ class SummonsRepliesReportServiceImplTest {
             assertThat(headings.get("reply_count")).isEqualTo(AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Total number of replies received")
                 .dataType("Integer")
-                .value(Integer.valueOf(0))
+                .value(0)
                 .build());
 
             AbstractReportResponse.DataTypeValue timeCreated = headings.get("time_created");

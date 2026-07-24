@@ -33,18 +33,18 @@ class OnCallReportTest extends AbstractStandardReportTestSupport<OnCallReport> {
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         securityUtilMockedStatic.close();
     }
 
 
-    public OnCallReportTest() {
+    OnCallReportTest() {
         super(QJurorPool.jurorPool,
             OnCallReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
@@ -56,7 +56,7 @@ class OnCallReportTest extends AbstractStandardReportTestSupport<OnCallReport> {
     }
 
     @Override
-    public OnCallReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected OnCallReport createReport(PoolRequestRepository poolRequestRepository) {
         return new OnCallReport(poolRequestRepository);
     }
 
@@ -69,7 +69,7 @@ class OnCallReportTest extends AbstractStandardReportTestSupport<OnCallReport> {
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(VALID_COURT_LOCATION);
 

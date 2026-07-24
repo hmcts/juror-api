@@ -42,7 +42,7 @@ class ManuallyCreatedJurorsReportTest extends AbstractStandardReportTestSupport<
     private CourtLocationService courtLocationService;
 
 
-    public ManuallyCreatedJurorsReportTest() {
+    ManuallyCreatedJurorsReportTest() {
         super(QPendingJuror.pendingJuror,
             ManuallyCreatedJurorsReport.RequestValidator.class,
             PendingJurorTypes.JUROR_NUMBER,
@@ -60,7 +60,7 @@ class ManuallyCreatedJurorsReportTest extends AbstractStandardReportTestSupport<
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.courtLocationService = mock(CourtLocationService.class);
         super.beforeEach();
@@ -72,7 +72,7 @@ class ManuallyCreatedJurorsReportTest extends AbstractStandardReportTestSupport<
     }
 
     @Override
-    public ManuallyCreatedJurorsReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected ManuallyCreatedJurorsReport createReport(PoolRequestRepository poolRequestRepository) {
         return new ManuallyCreatedJurorsReport(this.courtLocationService);
     }
 
@@ -86,7 +86,7 @@ class ManuallyCreatedJurorsReportTest extends AbstractStandardReportTestSupport<
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         List<String> courts = List.of("415", "414", "413");
         securityUtilMockedStatic.when(SecurityUtil::getCourts).thenReturn(courts);
 

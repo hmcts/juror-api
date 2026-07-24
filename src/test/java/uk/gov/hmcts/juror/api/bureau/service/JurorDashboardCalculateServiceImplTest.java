@@ -205,7 +205,7 @@ public class JurorDashboardCalculateServiceImplTest {
     public void responsesByMethodCountsAll() {
 
         Integer expectedOnlineResponsesTotal = responsesList.stream()
-            .filter(r -> r.getResponseMethod().equals("Online"))
+            .filter(r -> "Online".equals(r.getResponseMethod()))
             .mapToInt(StatsResponseTime::getResponseCount)
             .sum();
 

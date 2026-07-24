@@ -73,15 +73,21 @@ repositories {
 }
 
 configurations {
-  dev
-  integrationTestImplementation.extendsFrom testImplementation
-  integrationTestRuntimeOnly.extendsFrom runtimeOnly
+    dev
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestCompileOnly.extendsFrom testCompileOnly
+    integrationTestAnnotationProcessor.extendsFrom testAnnotationProcessor
+    integrationTestRuntimeOnly.extendsFrom runtimeOnly
 
-  functionalTestImplementation.extendsFrom testImplementation
-  functionalTestRuntimeOnly.extendsFrom runtimeOnly
+    functionalTestImplementation.extendsFrom testImplementation
+    functionalTestCompileOnly.extendsFrom testCompileOnly
+    functionalTestAnnotationProcessor.extendsFrom testAnnotationProcessor
+    functionalTestRuntimeOnly.extendsFrom runtimeOnly
 
-  smokeTestImplementation.extendsFrom testImplementation
-  smokeTestRuntimeOnly.extendsFrom runtimeOnly
+    smokeTestImplementation.extendsFrom testImplementation
+    smokeTestCompileOnly.extendsFrom testCompileOnly
+    smokeTestAnnotationProcessor.extendsFrom testAnnotationProcessor
+    smokeTestRuntimeOnly.extendsFrom runtimeOnly
 
     mockitoAgent
 
@@ -303,20 +309,20 @@ checkstyle {
 }
 
 pmdTest {
-  maxFailures = 292
+    maxFailures = 140
 }
 pmdMain {
-  maxFailures = 752
+    maxFailures = 30
 }
 pmd {
-  maxFailures = 0
-  toolVersion = "6.55.0"
-  sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integrationTest,
-                sourceSets.functionalTest, sourceSets.smokeTest]
-  reportsDir = file("$project.buildDir/reports/pmd")
-  // https://github.com/pmd/pmd/issues/876
-  ruleSets = []
-  ruleSetFiles = files("config/pmd/ruleset.xml")
+    maxFailures = 0
+    toolVersion = "7.24.0"
+    sourceSets = [sourceSets.main, sourceSets.test, sourceSets.integrationTest,
+                  sourceSets.functionalTest, sourceSets.smokeTest]
+    reportsDir = file("$project.buildDir/reports/pmd")
+    // https://github.com/pmd/pmd/issues/876
+    ruleSets = []
+    ruleSetFiles = files("config/pmd/ruleset.xml")
 }
 
 test {

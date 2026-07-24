@@ -83,8 +83,9 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
             ));
 
         for (User staffMember : staff) {
-
+            @SuppressWarnings({"PMD.AvoidInstantiatingObjectsInLoops"})
             final List<DigitalResponse> toBeAllocated = new LinkedList<>();
+            @SuppressWarnings({"PMD.AvoidInstantiatingObjectsInLoops"})
             final List<UserJurorResponseAudit> auditEntries = new LinkedList<>();
 
             log.trace("Allocating backlog responses to bureau officer : {} ", staffMember.getUsername());
@@ -143,7 +144,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
                 log.warn("One or more Juror responses was updated by another user!. Try Allocation again.");
                 throw new BureauOptimisticLockingException(olfe);
             } catch (RuntimeException e) {
-                throw new BureauBacklogAllocateException.FailedToSaveAllocations(staffMember.getUsername());
+                throw new BureauBacklogAllocateException.FailedToSaveAllocations(staffMember.getUsername(), e);
             }
             log.debug(
                 "{} backlog responses allocated to bureau officer : {} ",
@@ -197,7 +198,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
             allocation.add(backlogItems.next());
         }
 
-        allocation.forEach((r) -> {
+        allocation.forEach(r -> {
             r.setStaff(staff);
             r.setStaffAssignmentDate(now);
             r.setVersion(r.getVersion() != null
@@ -229,14 +230,13 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
             throw new StaffAssignmentException("Assigning staff record does not exist!");
         }
 
-        allocation.forEach(r -> {
+        allocation.forEach(r ->
             auditEntries.add(UserJurorResponseAudit.builder()
                 .jurorNumber(r.getJurorNumber())
                 .assignedBy(assignedBy)
                 .assignedTo(staff)
                 .assignedOn(LocalDateTime.now())
-                .build());
-        });
+                .build()));
 
         return auditEntries;
     }
