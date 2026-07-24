@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.juror.controller.PublicAuthenticationController.PublicAuthenticationRequestDto;
 import uk.gov.hmcts.juror.api.juror.controller.PublicAuthenticationController.PublicAuthenticationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -34,6 +35,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.WHITESPACE_M
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class PublicAuthenticationServiceImpl implements PublicAuthenticationService {
     private static final String JUROR_ROLE = "juror";
+    private static final String DIGITAL_BY_DEFAULT_FEATURE_FLAG = "digital-by-default";
     private static final String JUROR_ALREADY_RESPONDED = "Juror already responded";
     private static final Integer MAX_FAILED_LOGIN_ATTEMPTS = 3;
 
@@ -42,6 +44,7 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
     private final JurorRepository jurorRepository;
     private final JurorServiceModImpl jurorServiceModImpl;
     private final JurorResponseServiceImpl jurorResponseServiceImpl;
+    private final FeatureFlagConfigurationProperties featureFlags;
 
 
     /**
@@ -105,6 +108,8 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
                 .firstName(juror.getFirstName())
                 .lastName(juror.getLastName())
                 .postcode(juror.getPostcode())
+                .digitalByDefault(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                    && jurorPool.getCourt().isDigitalByDefault())
                 .roles(Collections.singletonList(JUROR_ROLE))
                 .build();
         } catch (DataAccessException dae) {

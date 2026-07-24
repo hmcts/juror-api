@@ -112,6 +112,9 @@ public class PublicAuthenticationController {
         @Schema(description = "Juror post code", requiredMode = Schema.RequiredMode.REQUIRED)
         private String postcode;
 
+        @Schema(description = "Whether the juror is in digital by default")
+        private boolean digitalByDefault;
+
         @Schema(description = "Juror application roles", requiredMode = Schema.RequiredMode.REQUIRED)
         @Builder.Default
         private List<String> roles = new ArrayList<>(1);
