@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -43,7 +44,7 @@ public interface JurorHistoryService {
 
     void createUncompleteServiceHistory(JurorPool jurorPool);
 
-    void createDeferredLetterHistory(JurorPool jurorPool);
+    void createDeferredLetterHistory(JurorPool jurorPool, CommunicationChannel communicationChannel);
 
     void createEditBankSortCodeHistory(String jurorNumber);
 

@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -232,7 +233,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
 
         if (JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {
             printDataService.printDeferralLetter(jurorPool);
-            jurorHistoryService.createDeferredLetterHistory(jurorPool);
+            jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.LETTER);
         }
     }
 

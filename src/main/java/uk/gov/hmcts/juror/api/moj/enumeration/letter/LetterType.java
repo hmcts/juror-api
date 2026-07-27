@@ -67,7 +67,10 @@ public enum LetterType {
         ReissueLetterService.DataType.JUROR_DEFERRED_TO_REASON,
         ReissueLetterService.DataType.DATE_PRINTED,
         ReissueLetterService.DataType.EXTRACTED_FLAG,
-        ReissueLetterService.DataType.FORM_CODE),
+        ReissueLetterService.DataType.FORM_CODE,
+        ReissueLetterService.DataType.COMMUNICATION_CHANNEL,
+        ReissueLetterService.DataType.JUROR_PREFERENCE,
+        ReissueLetterService.DataType.EMAIL_STATUS),
         tupleJPAQuery -> tupleJPAQuery
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED)
                 .and(QJurorPool.jurorPool.deferralCode.ne(ExcusalCodeEnum.P.getCode()))),

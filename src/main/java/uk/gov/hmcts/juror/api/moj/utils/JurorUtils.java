@@ -211,4 +211,8 @@ public final class JurorUtils {
         return null;
     }
 
+    public static boolean isDigitalPreference(Juror juror) {
+        return ReplyMethod.DIGITAL.getDescription().equalsIgnoreCase(juror.getDbdPreference());
+    }
+
 }

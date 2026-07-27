@@ -3,6 +3,8 @@ package uk.gov.hmcts.juror.api.moj.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,6 +20,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 
 import java.time.LocalDate;
 
@@ -64,5 +68,19 @@ public class BulkPrintData {
 
     @Column(name = "digital_comms")
     private boolean digitalComms;
+
+    @NotNull
+    @Column(name = "communication_channel", length = 10, nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private CommunicationChannel communicationChannel = CommunicationChannel.LETTER;
+
+    @Length(max = 40)
+    @Column(name = "notify_template_name")
+    private String notifyTemplateName;
+
+    @Column(name = "email_status", length = 20)
+    @Enumerated(EnumType.STRING)
+    private EmailStatus emailStatus;
 
 }
