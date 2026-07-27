@@ -1731,7 +1731,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void processJurorDeferralPaperHappyPathMoveToDeferralMaintenance() {
+    void processJuror_deferral_paper_happy_path_moveToDeferralMaintenance() {
         TestUtils.mockBureauUser();
         final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";

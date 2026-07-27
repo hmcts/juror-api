@@ -20,6 +20,7 @@ import java.time.LocalDate;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings("PMD.TooManyMethods")
 public class EmailDataServiceImpl implements EmailDataService {
     private final BulkPrintDataRepository bulkPrintDataRepository;
     private final FormAttributeRepository formAttributeRepository;
