@@ -37,14 +37,3 @@ INSERT INTO juror_mod.bulk_print_data (juror_no,creation_date,form_type,detail_r
 ('555555566',current_date,'5229A','18 JANUARY 2024   THE CROWN COURT AT CHESTER                                 JURY CENTRAL SUMMONING BUREAU           THE COURT SERVICE                  FREEPOST LON 19669                 POCOCK STREET                      LONDON                                                                                                   SE1 0YG   0845 3555567            MONDAY 12 JUNE, 2023            09:00             FNAMEFIVEFOURZERO   LNAMEFIVEFOURZERO   540 STREET NAME                    ANYTOWN                                                                                                                                                                        CH1 2AN   555555561JURY MANAGER                  ',false,false),
 ('555555567',current_date-1,'5229AC','18 JANUARY 2024   THE CROWN COURT AT CHESTER                                 JURY CENTRAL SUMMONING BUREAU           THE COURT SERVICE                  FREEPOST LON 19669                 POCOCK STREET                      LONDON                                                                                                   SE1 0YG   0845 3555567            MONDAY 12 JUNE, 2023            09:00             FNAMEFIVEFOURZERO   LNAMEFIVEFOURZERO   540 STREET NAME                    ANYTOWN                                                                                                                                                                        CH1 2AN   555555561JURY MANAGER                  ',true,false),
 ('555555567',current_date-3,'5229AC','18 JANUARY 2024   THE CROWN COURT AT CHESTER                                 JURY CENTRAL SUMMONING BUREAU           THE COURT SERVICE                  FREEPOST LON 19669                 POCOCK STREET                      LONDON                                                                                                   SE1 0YG   0845 3555567            MONDAY 12 JUNE, 2023            09:00             FNAMEFIVEFOURZERO   LNAMEFIVEFOURZERO   540 STREET NAME                    ANYTOWN                                                                                                                                                                        CH1 2AN   555555561JURY MANAGER                  ',true,false);
-
-UPDATE juror_mod.juror SET dbd_preference = 'Paper';
-UPDATE juror_mod.juror SET dbd_preference = 'Digital' WHERE juror_number = '555555565';
-
-UPDATE juror_mod.bulk_print_data
-SET communication_channel = 'EMAIL',
-    email_status = 'PENDING',
-    extracted_flag = true,
-    digital_comms = true
-WHERE juror_no = '555555565'
-  AND form_type = '5229A';

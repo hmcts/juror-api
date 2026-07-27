@@ -116,7 +116,7 @@ public interface ReissueLetterService {
             }),
         JUROR_PREFERENCE(String.class, "Current preference", QJuror.juror.dbdPreference.as("current_preference"),
             List.of(QJuror.class), preference -> {
-                if (preference.equals("Digital")) {
+                if ("Digital".equals(preference)) {
                     return "EMAIL";
                 }
                 return "LETTER";
