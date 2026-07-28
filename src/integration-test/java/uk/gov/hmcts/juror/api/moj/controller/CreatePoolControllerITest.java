@@ -72,7 +72,9 @@ import static org.assertj.core.api.Assertions.assertThat;
     "PMD.LinguisticNaming",
     "PMD.ExcessiveImports",
     "PMD.ExcessivePublicCount"})
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = "feature-flags.flags.digital-by-default=false")
 public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Value("${jwt.secret.bureau}")

@@ -30,7 +30,7 @@ public class EmailDataServiceImpl implements EmailDataService {
     public void emailDeferralLetter(JurorPool jurorPool) {
         if (jurorPool == null) {
             throw new MojException.InternalServerError(
-                "Attempted to print deferral letter for null jurorPool", null);
+                "Attempted to email deferral letter for null jurorPool", null);
         }
 
         BulkPrintData bulkPrintData = new BulkPrintData();
@@ -41,7 +41,7 @@ public class EmailDataServiceImpl implements EmailDataService {
                 FormCode.BI_DEFERRAL.getCode(),
                 formAttributeRepository
             ));
-            // set the Welsh template name here
+            // Todo set the Welsh template name here
         } else {
             bulkPrintData.setFormAttribute(RepositoryUtils.retrieveFromDatabase(
                 FormCode.ENG_DEFERRAL.getCode(),
@@ -50,16 +50,20 @@ public class EmailDataServiceImpl implements EmailDataService {
             // temporary template name before we get the actual template
             bulkPrintData.setNotifyTemplateName("TEMP_DEF_GRANTED_ENG");
         }
+        setDefaults(bulkPrintData);
+        bulkPrintDataRepository.save(bulkPrintData);
+
+        jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.EMAIL);
+    }
+
+    private static void setDefaults(BulkPrintData bulkPrintData) {
         bulkPrintData.setCreationDate(LocalDate.now());
-        // Don't want any other comms going out so setting to true
+        // Don't want any other comms going out so setting flags to true
         bulkPrintData.setExtractedFlag(true);
         bulkPrintData.setDigitalComms(true);
         bulkPrintData.setDetailRec("N/A"); // cannot be null
         bulkPrintData.setCommunicationChannel(CommunicationChannel.EMAIL);
         bulkPrintData.setEmailStatus(EmailStatus.PENDING);
-        bulkPrintDataRepository.save(bulkPrintData);
-
-        jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.EMAIL);
     }
 
 
