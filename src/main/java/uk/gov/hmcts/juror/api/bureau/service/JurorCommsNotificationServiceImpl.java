@@ -162,6 +162,53 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
     }
 
 
+    @Override
+    public void sendJurorEmailComms(JurorPool jurorDetails, String templateName) {
+
+        NotifyTemplateMappingMod template = getTemplate(templateName);
+        if (template == null) {
+            log.error("Missing Template. Cannot determine the template to use for this notification.");
+            throw new IllegalStateException("Cannot find template");
+        }
+        final String templateId = template.getTemplateId();
+        log.debug("Inside sendJurorComms: templateId obtained as : {}", templateId);
+        //Deal with payload.
+        final Map<String, String> payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(
+            templateId,
+            jurorDetails
+        );
+
+        log.trace("sendJurorEmailComms- calling createEmailNotification");
+        final EmailNotification emailNotification = createEmailNotification(
+            jurorDetails,
+            JurorCommsNotifyTemplateType.LETTER_COMMS,
+            templateId,
+            payLoad
+        );
+
+        try {
+            if (notifyAdapter.sendCommsEmail(emailNotification) == null) {
+                throw new JurorCommsNotificationServiceException(
+                    "Failed to Send Comms to Notify : " + jurorDetails.getJurorNumber());
+            }
+
+        } catch (NotifyApiException nae) {
+            log.warn("Failed to send to Notify service: {}", nae.getMessage());
+            throw new JurorCommsNotificationServiceException("notifyApiAdapter failed to send", nae.getCause());
+        } catch (JurorCommsNotificationServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error sending notification! {}", e.getMessage());
+            throw new JurorCommsNotificationServiceException(e.getMessage(), e);
+        }
+
+        log.info("Sent Juror Notify Comms.");
+        if (log.isDebugEnabled()) {
+            log.debug("Sent {}", emailNotification);
+        }
+    }
+
+
     /**
      * Identify and return the templateId based on the paramters proivided.
      *
