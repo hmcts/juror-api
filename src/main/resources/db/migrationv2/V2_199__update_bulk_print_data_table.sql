@@ -21,3 +21,5 @@ ALTER TABLE juror_mod.bulk_print_data
     FOREIGN KEY (notify_template_name)
       REFERENCES juror_mod.notify_template_mapping(template_name);
 
+CREATE INDEX bulk_print_data_pending_email_idx
+  ON juror_mod.bulk_print_data (communication_channel, email_status);
