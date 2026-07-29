@@ -284,7 +284,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
                 payLoad.get("email address"),
                 payLoad
             );
-            emailNotification.setRecipientEmail(jurorDetails.getJuror().getEmail());
+
             emailNotification.setReferenceNumber(jurorDetails.getJurorNumber());
             return emailNotification;
 
