@@ -278,12 +278,13 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
                                                      final JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
                                                      final String templateId, final Map<String, String> payLoad) {
         try {
-            log.debug("Creating 9wks juror comms email");
+            log.debug("Creating juror comms email");
             final EmailNotification emailNotification = new EmailNotification(
                 templateId,
                 payLoad.get("email address"),
                 payLoad
             );
+            emailNotification.setRecipientEmail(jurorDetails.getJuror().getEmail());
             emailNotification.setReferenceNumber(jurorDetails.getJurorNumber());
             return emailNotification;
 
