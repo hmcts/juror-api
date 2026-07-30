@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -194,7 +195,7 @@ public class JurorDetailsCommonResponseDto {
         this.policeCheck = juror.getPoliceCheck();
         setPendingNameChange(juror);
 
-        this.digitalByDefault = juror.isDigitalByDefault();
+        this.digitalByDefault = JurorPoolUtils.isDigitalByDefault(jurorPool);
 
         this.dbdPreference = juror.getDbdPreference();
 
