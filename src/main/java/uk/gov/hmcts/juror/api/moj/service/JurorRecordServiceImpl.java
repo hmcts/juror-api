@@ -1708,7 +1708,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Transactional
     public void sendPaperSummonsPack(String jurorNumber) {
         log.info("Sending paper summons pack for juror {} requested by user {}",
-             jurorNumber, SecurityUtil.getActiveLogin());
+            jurorNumber, SecurityUtil.getActiveLogin());
 
         final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
                                                                              SecurityUtil.getActiveOwner());

@@ -35,7 +35,6 @@ import static org.springframework.http.HttpMethod.POST;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("BureauMessagingControllerITest: /api/v1/moj/messages/bureau/send")
 @Sql({"/db/mod/truncate.sql", "/db/mod/BureauMessagingControllerITest_typical.sql"})
-
 class BureauMessagingControllerITest extends AbstractIntegrationTest {
 
     private static final String URL = "/api/v1/moj/messages/bureau/send";

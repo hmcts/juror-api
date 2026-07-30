@@ -251,4 +251,9 @@ public final class JurorPoolUtils {
         return jurorPool;
     }
 
+    public static boolean isDigitalByDefault(JurorPool jurorPool) {
+        return jurorPool.getJuror().isDigitalByDefault()
+            && jurorPool.getCourt().isDigitalByDefault();
+    }
+
 }
