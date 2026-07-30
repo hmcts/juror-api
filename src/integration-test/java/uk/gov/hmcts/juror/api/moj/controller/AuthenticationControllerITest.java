@@ -45,20 +45,21 @@ import static org.springframework.http.HttpMethod.POST;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AuthenticationControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql(value = {"/db/administration/teardownUsers.sql",
     "/db/administration/createUsers.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @SuppressWarnings({
-    "PMD.JUnitTestsShouldIncludeAssert",
     "PMD.ExcessiveImports",
-    "PMD.JUnitAssertionsShouldIncludeMessage"//False positive
+//False positive
 })
-public class AuthenticationControllerITest extends AbstractIntegrationTest {
-    public static final String BASE_URL = "/api/v1/auth/moj";
+
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
+class AuthenticationControllerITest extends AbstractIntegrationTest {
+    static final String BASE_URL = "/api/v1/auth/moj";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private HttpHeaders httpHeaders;
 
     @Value("${jwt.secret.bureau}")
@@ -66,9 +67,10 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
 
     private final Clock clock;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
-        httpHeaders = new HttpHeaders();
+    void setUp() throws Exception {
+        HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
@@ -190,7 +192,7 @@ public class AuthenticationControllerITest extends AbstractIntegrationTest {
             return new EmailDto("test_court_standard" + EMAIL_SUFFIX);
         }
 
-        public String toUrl(String locCode) {
+        String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);
         }
 

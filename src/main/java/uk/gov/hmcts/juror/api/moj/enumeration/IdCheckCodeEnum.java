@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
+@SuppressWarnings("PMD.ShortVariable")
 public enum IdCheckCodeEnum {
 
     A('A', "Bank Statement"),
@@ -42,7 +43,7 @@ public enum IdCheckCodeEnum {
         if (code == null) {
             return null;
         }
-        for (IdCheckCodeEnum idCheckCode : IdCheckCodeEnum.values()) {
+        for (IdCheckCodeEnum idCheckCode : values()) {
             if (idCheckCode.getCode().equals(code)) {
                 return idCheckCode;
             }

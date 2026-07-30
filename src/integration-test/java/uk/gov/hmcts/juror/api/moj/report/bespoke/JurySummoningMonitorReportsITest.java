@@ -35,16 +35,14 @@ import static org.assertj.core.api.BDDAssertions.within;
     "/db/mod/truncate.sql",
     "/db/mod/reports/JurySummoningMonitor_typical.sql",
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert"//False positive
-)
 class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest<JurySummoningMonitorReportRequest,
     JurySummoningMonitorReportResponse> {
-    public static final String URL = "/api/v1/moj/reports/jury-summoning-monitor";
-    public static final String LOCAL_DATE = "LocalDate";
-    public static final String STRING = "String";
+    static final String URL = "/api/v1/moj/reports/jury-summoning-monitor";
+    static final String LOCAL_DATE = "LocalDate";
+    static final String STRING = "String";
 
     @Autowired
-    public JurySummoningMonitorReportsITest(TestRestTemplate template) {
+    JurySummoningMonitorReportsITest(TestRestTemplate template) {
         super(HttpMethod.POST, template, HttpStatus.OK);
     }
 
@@ -504,8 +502,7 @@ class JurySummoningMonitorReportsITest extends AbstractControllerIntegrationTest
         );
     }
 
-
-    public void verifyAndRemoveTimeCreated(JurySummoningMonitorReportResponse response) {
+    void verifyAndRemoveTimeCreated(JurySummoningMonitorReportResponse response) {
         Assertions.assertThat(response).isNotNull();
         Assertions.assertThat(response.getHeadings()).isNotNull();
         Assertions.assertThat(response.getHeadings().containsKey("report_created")).isTrue();

@@ -63,6 +63,7 @@ public class FileUploads implements Serializable {
     private LocalDateTime uploadDate;
 
     public FileUploads() {
+        // Intentionally empty constructor.
     }
 
     // Convenience constructor for required fields

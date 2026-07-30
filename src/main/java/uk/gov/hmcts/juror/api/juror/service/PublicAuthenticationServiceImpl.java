@@ -51,6 +51,7 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
      */
     @Override
     @Transactional(noRollbackFor = InvalidJurorCredentialsException.class)
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public PublicAuthenticationResponseDto authenticationJuror(final PublicAuthenticationRequestDto credentials) {
         log.debug("Authenticating juror with {}", credentials);
 
@@ -89,12 +90,12 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
                     return new JurorAlreadyRespondedException(JUROR_ALREADY_RESPONDED);
                 });
 
-            if (!isFutureHearingDate(jurorPool)) {
-                log.debug("Court Date {} has passed", jurorPool.getNextDate());
-                throw new CourtDateLapsedException("Not allowed. Court Date has already passed");
-            } else {
+            if (isFutureHearingDate(jurorPool)) {
                 log.info("Juror {} is valid for authentication", credentials.getJurorNumber());
                 clearFailedLoginAttempts(juror);
+            } else {
+                log.debug("Court Date {} has passed", jurorPool.getNextDate());
+                throw new CourtDateLapsedException("Not allowed. Court Date has already passed");
             }
 
             // juror is ok to authenticate
@@ -246,6 +247,7 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
     @ResponseStatus(HttpStatus.CONFLICT)
     public static class JurorAlreadyRespondedException extends RuntimeException {
         public JurorAlreadyRespondedException() {
+            super();
         }
 
         public JurorAlreadyRespondedException(String message) {

@@ -30,15 +30,16 @@ import static org.springframework.http.HttpMethod.GET;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + LaUserControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
 @Sql({"/db/jurorer/teardownUsers.sql", "/db/jurorer/createUsers.sql"})
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class LaUserControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/juror-er/users";
 
-    private final TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         initHeadersLaUsers("001");

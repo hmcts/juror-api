@@ -62,6 +62,7 @@ import java.util.Objects;
  *     <li>High Court</li>
  * </ul>
  */
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class PoolRequestSearchQueries implements IPoolRequestSearchQueries {
 
     @PersistenceContext
@@ -188,7 +189,7 @@ public class PoolRequestSearchQueries implements IPoolRequestSearchQueries {
             query.having(isRequested()
                 .or(isCreated().and(poolMembersRequested().and(isWithBureau())))
                 .or(isCreated().and(poolMembersRequested().and(hasActivePoolMembers())
-                    .or((isNilPool().or(isStagingPool())).and(hasActiveReturnDate())))));
+                    .or(isNilPool().or(isStagingPool()).and(hasActiveReturnDate())))));
 
         } else if (poolStatus.containsAll(REQUESTED_AND_COMPLETED)) {
             query.where(isRequested().or(isCreated().and(hasElapsedReturnDate())));
@@ -201,9 +202,9 @@ public class PoolRequestSearchQueries implements IPoolRequestSearchQueries {
             query.where(isRequested());
 
         } else if (poolStatus.contains(PoolStatus.ACTIVE)) {
-            query.where((isCreated().and(poolMembersRequested())
+            query.where(isCreated().and(poolMembersRequested())
                 .or(isNilPool().and(hasActiveReturnDate()))
-                .or(isStagingPool())));
+                .or(isStagingPool()));
             query.having(isNilPool().or(hasActivePoolMembers().or(isWithBureau())
                 .or(isStagingPool().and(hasActivePoolMembers().or(hasActiveReturnDate())))));
 
@@ -225,7 +226,7 @@ public class PoolRequestSearchQueries implements IPoolRequestSearchQueries {
     @Override
     public void addPoolStagePredicate(JPAQuery<Tuple> query, List<PoolSearchRequestDto.PoolStage> poolStage) {
         if (poolStage.size() == 1) {
-            if (poolStage.get(0).equals(PoolSearchRequestDto.PoolStage.BUREAU)) {
+            if (poolStage.get(0) == PoolSearchRequestDto.PoolStage.BUREAU) {
                 query.where(POOL_REQUEST.owner.eq(JurorDigitalApplication.JUROR_OWNER));
             } else {
                 query.where(POOL_REQUEST.owner.ne(JurorDigitalApplication.JUROR_OWNER));
@@ -310,38 +311,47 @@ public class PoolRequestSearchQueries implements IPoolRequestSearchQueries {
         }
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression hasActivePoolMembers() {
         return countActivePoolMembers().gt(0);
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression hasNoActivePoolMembers() {
         return countActivePoolMembers().eq(0);
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression isRequested() {
         return POOL_REQUEST.newRequest.ne('N');
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression isCreated() {
         return POOL_REQUEST.newRequest.eq('N');
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression isWithBureau() {
         return POOL_REQUEST.owner.eq(JurorDigitalApplication.JUROR_OWNER);
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression hasActiveReturnDate() {
         return POOL_REQUEST.returnDate.goe(LocalDate.now());
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression hasElapsedReturnDate() {
         return POOL_REQUEST.returnDate.before(LocalDate.now());
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression isNilPool() {
         return POOL_REQUEST.nilPool.eq(true).and(POOL_REQUEST.numberRequested.eq(0));
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // BooleanExpression is fine here.
     private static BooleanExpression isStagingPool() {
         return POOL_REQUEST.numberRequested.isNull();
     }

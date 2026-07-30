@@ -140,6 +140,7 @@ public class ErAdministrationServiceImpl implements ErAdministrationService {
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.ExhaustiveSwitchHasDefault", "PMD.ExceptionAsFlowControl"})
     public MarkAsDeliveredResponseDto markAsDelivered(MarkAsDeliveredRequestDto request) {
         log.info("Marking initial email as delivered for {} LAs", request.getLaCodes().size());
 

@@ -27,13 +27,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-@SuppressWarnings("Duplicates")
+@SuppressWarnings({"Duplicates",
+    "PMD.SingularField"})
 @RunWith(MockitoJUnitRunner.class)
 public class JurorDashboardServiceImplTest {
 
@@ -118,23 +120,20 @@ public class JurorDashboardServiceImplTest {
             StatsWelshOnlineResponse.builder().summonsMonth(getDate(today, 0)).welshResponseCount(3).build()
         ));
 
-        channelResp = new HashMap<String, Map<String, Integer>>() {
-            {
-                put("Paper", new HashMap<String, Integer>() {
-                    {
-                        put("Within 14 days", 10);
-                        put("Over 21 days", 25);
-                    }
-                });
-                put("Online", new HashMap<String, Integer>() {
-                    {
-                        put("Within 7 days", 20);
-                        put("Within 14 days", 20);
-                        put("Within 21 days", 5);
-                    }
-                });
-            }
-        };
+        channelResp = new HashMap<>();
+
+        Map<String, Integer> paperHashmapData  = new ConcurrentHashMap<>();
+        paperHashmapData.put("Within 14 days", 10);
+        paperHashmapData.put("Over 21 days", 25);
+
+        Map<String, Integer> onlineHashmapData  = new ConcurrentHashMap<>();
+        onlineHashmapData.put("Within 7 days", 20);
+        onlineHashmapData.put("Within 14 days", 20);
+        onlineHashmapData.put("Within 21 days", 5);
+
+        channelResp.put("Paper", paperHashmapData);
+        channelResp.put("Online", onlineHashmapData);
+
 
         autoOnlineResponseList = new ArrayList<>(Arrays.asList(
             StatsAutoProcessed.builder().processedDate(getDate(today, 0)).processedCount(5).build(),
@@ -165,7 +164,7 @@ public class JurorDashboardServiceImplTest {
     }
 
     @Test
-    public void getCumulativeTotalsHappyPath() {
+    public void cumulativeTotalsHappyPath() {
 
         given(jurorDashboardData.getResponsesOverTime(startDate, endDate)).willReturn(responsesList);
         given(jurorDashboardData.getNotResponded(startDate, endDate)).willReturn(notRespondedList);
@@ -196,7 +195,7 @@ public class JurorDashboardServiceImplTest {
     }
 
     @Test
-    public void getMandatoryKpisHappyPath() {
+    public void mandatoryKpisHappyPath() {
 
         given(jurorDashboardData.getResponsesOverTime(startDate, endDate)).willReturn(responsesList);
         given(jurorDashboardData.getNotResponded(startDate, endDate)).willReturn(notRespondedList);
@@ -235,7 +234,7 @@ public class JurorDashboardServiceImplTest {
     }
 
     @Test
-    public void getWeslshResponseDataHappyPath() {
+    public void weslshResponseDataHappyPath() {
 
         given(jurorDashboardData.getResponsesOverTime(startDate, endDate)).willReturn(responsesList);
         given(jurorDashboardData.getWelshOnlineResponses(startDate, endDate)).willReturn(welshOnlineResponseList);
@@ -256,7 +255,7 @@ public class JurorDashboardServiceImplTest {
     }
 
     @Test
-    public void getAutoResponseDataHappyPath() {
+    public void autoResponseDataHappyPath() {
         given(jurorDashboardData.getResponsesOverTime(startDate, endDate)).willReturn(responsesList);
         given(jurorDashboardData.getAutoOnlineResponses(startDate, endDate)).willReturn(autoOnlineResponseList);
 
@@ -276,7 +275,7 @@ public class JurorDashboardServiceImplTest {
     }
 
     @Test
-    public void getThirdPtyResponseDataHappyPath() {
+    public void thirdPtyResponseDataHappyPath() {
 
         given(jurorDashboardData.getResponsesOverTime(startDate, endDate)).willReturn(responsesList);
         given(jurorDashboardData.getThirdPtyOnlineResponses(startDate, endDate)).willReturn(thirdPartyOnlineRespList);
@@ -296,13 +295,13 @@ public class JurorDashboardServiceImplTest {
     }
 
     @Test(expected = DashboardException.InvalidDateRange.class)
-    public void getCumulativeTotalsInvalidDateRange() {
+    public void cumulativeTotalsInvalidDateRange() {
         requestDto = DashboardRequestDto.builder().startDate(endDate).endDate(startDate).build();
         jurorDashboardService.getCumulativeTotals(requestDto);
     }
 
     @Test
-    public void getMandatoryKpisNoData() {
+    public void mandatoryKpisNoData() {
 
         requestDto = DashboardRequestDto.builder().startDate(startDate).endDate(endDate).build();
         DashboardMandatoryKpiData mandatoryKpiData = jurorDashboardService.getMandatoryKpis(requestDto);

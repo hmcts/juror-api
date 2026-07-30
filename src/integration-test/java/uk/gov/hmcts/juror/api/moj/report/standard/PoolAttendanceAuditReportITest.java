@@ -21,11 +21,10 @@ import java.util.List;
     "/db/administration/createCourtRooms.sql",
     "/db/mod/reports/PoolAttendanceAuditReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class PoolAttendanceAuditReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public PoolAttendanceAuditReportITest(TestRestTemplate template) {
+    PoolAttendanceAuditReportITest(TestRestTemplate template) {
         super(template, PoolAttendanceAuditReport.class);
     }
 

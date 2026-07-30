@@ -36,7 +36,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @DisplayName("CompleteServiceServiceImpl")
-@SuppressWarnings("PMD.ExcessiveImports")
 class CompleteServiceServiceImplTest {
 
     private JurorPoolRepository jurorPoolRepository;
@@ -338,9 +337,6 @@ class CompleteServiceServiceImplTest {
         }
 
         @Test
-        @SuppressWarnings({
-            "PMD.JUnitTestsShouldIncludeAssert"//False positive
-        })
         void positiveTypicalMultiple() {
 
             final String firstName1 = RandomStringUtils.randomAlphabetic(20);

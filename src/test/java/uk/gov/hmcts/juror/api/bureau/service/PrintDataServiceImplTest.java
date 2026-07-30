@@ -40,6 +40,7 @@ import static org.mockito.Mockito.verify;
 
 
 @ExtendWith(SpringExtension.class)
+@SuppressWarnings("PMD.TooManyMethods")
 class PrintDataServiceImplTest {
     private MockedStatic<RepositoryUtils> mockRepositoryUtils;
     @Mock
@@ -87,7 +88,7 @@ class PrintDataServiceImplTest {
     @Test
     void bulkPrintSummonsLetterThrowsWithEmptyList() {
         assertThatExceptionOfType(MojException.InternalServerError.class).isThrownBy(() ->
-            printDataService.bulkPrintSummonsLetter(new ArrayList<JurorPool>()));
+            printDataService.bulkPrintSummonsLetter(new ArrayList<>()));
     }
 
     @Test
@@ -183,6 +184,7 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void printPostponeLetterCallsCommit() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 

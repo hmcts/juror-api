@@ -202,7 +202,7 @@ class JurorPoolSearchTest extends AbstractValidatorTest<JurorPoolSearch> {
     }
 
     @TestFactory
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     Stream<DynamicTest> sortFieldTests() {
         return Stream.of(
             sortFieldTest(JurorPoolSearch.SortField.JUROR_NUMBER, QJuror.juror.jurorNumber),

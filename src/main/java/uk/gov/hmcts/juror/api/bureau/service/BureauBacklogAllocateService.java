@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.request.BureauBacklogAllocateReq
 /**
  * Allocate juror responses to selected bureau officers.
  */
+@FunctionalInterface
 public interface BureauBacklogAllocateService {
 
     /**

@@ -10,12 +10,13 @@ import java.util.Map;
 @ToString(callSuper = true)
 @Data
 public final class SmsNotification extends Notification {
+    private String recipientPhoneNumber;
+
     public SmsNotification(final String templateId, final String recipientPhoneNumber,
                            final Map<String, String> payload) {
+        super();
         this.templateId = templateId;
         this.recipientPhoneNumber = recipientPhoneNumber;
         this.payload = payload;
     }
-
-    private String recipientPhoneNumber;
 }

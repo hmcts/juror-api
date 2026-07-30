@@ -10,7 +10,7 @@ public class StraightThroughProcessingServiceException extends RuntimeException 
 
 
     @Override
-    public synchronized Throwable fillInStackTrace() {
+    public Throwable fillInStackTrace() {
         return this;
     }
 
@@ -29,11 +29,6 @@ public class StraightThroughProcessingServiceException extends RuntimeException 
      */
     public static class AgeExcusal extends StraightThroughProcessingServiceException {
 
-        @Override
-        public synchronized Throwable fillInStackTrace() {
-            return this;
-        }
-
         public AgeExcusal(String message) {
             super(message);
         }
@@ -48,11 +43,6 @@ public class StraightThroughProcessingServiceException extends RuntimeException 
      * fails business rule validation.
      */
     public static class DeceasedExcusal extends StraightThroughProcessingServiceException {
-
-        @Override
-        public synchronized Throwable fillInStackTrace() {
-            return this;
-        }
 
         public DeceasedExcusal(String message) {
             super(message);

@@ -26,7 +26,7 @@ class PoolStatisticsReportTest extends AbstractGroupedReportTestSupport<PoolStat
     private static final LocalDate FROM_DATE = LocalDate.of(2024, 1, 1);
     private static final LocalDate TO_DATE = LocalDate.of(2024, 1, 30);
 
-    public PoolStatisticsReportTest() {
+    PoolStatisticsReportTest() {
         super(QJurorPool.jurorPool,
             PoolStatisticsReport.RequestValidator.class,
             ReportGroupBy.builder()

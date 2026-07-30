@@ -65,13 +65,14 @@ public class PoolMemberSequenceServiceImpl implements PoolMemberSequenceService 
      */
     @Override
     public String leftPadInteger(int intValue) {
-        int maxLength = 4;
-        String paddingChar = "0";
         if (intValue < 1 || intValue > 9999) {
             throw new IllegalArgumentException("Integer value to be converted must be between 1 and 9999 (inclusive)");
         }
         // Convert the value from an int to a numeric String, left padded with 0's
         String stringValue = String.valueOf(intValue);
+
+        int maxLength = 4;
+        String paddingChar = "0";
         return StringUtils.leftPad(stringValue, maxLength, paddingChar);
     }
 

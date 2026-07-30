@@ -194,9 +194,7 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
 
     public List<String> setUpNotifyRegionKeys() {
-        List<String> notifyRegionKeys;
-        notifyRegionKeys = notifyRegionsConfigurationProperties.getRegionKeys();
-        return notifyRegionKeys;
+        return notifyRegionsConfigurationProperties.getRegionKeys();
     }
 
     public List<String> setUpRegionIds() {
@@ -252,7 +250,7 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
             final String email = jurorCourtDetailExcusalList.getJuror().getEmail();
 
-            final int emailLength = (email != null ? email.length() : 0);
+            final int emailLength = email != null ? email.length() : 0;
             if (emailLength == 1) {
                 jurorCourtDetailExcusalList.getJuror().setEmail(null);
                 updateCommsStatusFlagExcusal(jurorCourtDetailExcusalList);
@@ -472,7 +470,7 @@ public class ExcusedCompletedCourtCommsServiceImpl implements BureauProcessServi
 
             final String email = jurorCourtDetailCompletedList.getJuror().getEmail();
 
-            final int emailLength = (email != null ? email.length() : 0);
+            final int emailLength = email != null ? email.length() : 0;
             if (emailLength == 1) {
                 jurorCourtDetailCompletedList.getJuror().setEmail(null);
                 updateCommsStatusFlagCompleted(jurorCourtDetailCompletedList);

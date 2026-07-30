@@ -53,7 +53,7 @@ public class ApplicationSettingsControllerIntegrationTest extends AbstractIntegr
     public void applicationSettings_happy() {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
 
-        ResponseEntity<String> responseEntity = template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> responseEntity = template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
             URI.create("/api/v1/auth/settings")), String.class);
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -69,7 +69,7 @@ public class ApplicationSettingsControllerIntegrationTest extends AbstractIntegr
         httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_INVALID);
 
         ResponseEntity<SpringBootErrorResponse> responseEntity =
-            template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/auth/settings")), SpringBootErrorResponse.class);
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getBody().getException()).isEqualTo(

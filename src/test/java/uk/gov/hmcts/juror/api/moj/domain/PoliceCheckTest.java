@@ -76,7 +76,7 @@ class PoliceCheckTest {
     @DisplayName("public static PoliceCheck getEffectiveValue(PoliceCheck oldValue, PoliceCheck newValue)")
     class GetEffectiveValue {
 
-        public static Stream<Arguments> getEffectiveValueSource() {
+        static Stream<Arguments> getEffectiveValueSource() {
             Stream.Builder<Arguments> builder = Stream.builder();
 
             List<PoliceCheck> policeCheckValues = new ArrayList<>();

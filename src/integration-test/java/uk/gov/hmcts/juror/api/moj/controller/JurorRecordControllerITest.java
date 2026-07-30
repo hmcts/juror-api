@@ -63,6 +63,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.NameDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.PendingJurorsResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto.JurorHistoryEntryDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
@@ -96,6 +97,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
+import uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
@@ -124,11 +126,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -137,9 +138,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.HttpMethod.POST;
 import static uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus.AWAITING_COURT_REPLY;
-import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD;
-import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_COMPLETION_DATE;
-import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_STATUS_MUST_BE_RESPONDED;
 
 
 /**
@@ -150,7 +148,6 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.CouplingBetweenObjects",
-    "PMD.ExcessivePublicCount",
     "PMD.LinguisticNaming",
     "PMD.NcssCount",
     "PMD.CyclomaticComplexity",
@@ -199,23 +196,25 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
 
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         initHeaders();
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void initHeaders() throws Exception {
 
         BureauJwtPayload.Staff staff = new BureauJwtPayload.Staff();
         staff.setCourts(Collections.singletonList("400"));
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userType(UserType.BUREAU)
-            .login("BUREAU_USER")
-            .owner("400")
-            .locCode("400")
-            .staff(staff)
-            .build());
+                                                   .userType(UserType.BUREAU)
+                                                   .login("BUREAU_USER")
+                                                   .owner("400")
+                                                   .locCode("400")
+                                                   .staff(staff)
+                                                   .build());
 
         httpHeaders = new HttpHeaders();
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -230,11 +229,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         JurorCreateRequestDto requestDto = createJurorRequestDto(poolNumber);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
 
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create-juror")), String.class);
+                                                      URI.create(BASE_URL + "/create-juror")),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be CREATED")
@@ -272,11 +272,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGAllPendingJurorRecordsHappyPath() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
 
         ResponseEntity<PendingJurorsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/pending-jurors/416")), PendingJurorsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/pending-jurors/416")),
+                                  PendingJurorsResponseDto.class);
 
         assertThat(response.getStatusCode()).as("Expect the HTTP Response Status to be OK")
             .isEqualTo(HttpStatus.OK);
@@ -331,12 +332,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGQueuedPendingJurorRecordsHappyPath() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
 
         ResponseEntity<PendingJurorsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/pending-jurors/416?status=QUEUED")),
-                PendingJurorsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/pending-jurors/416?status=QUEUED")),
+                                  PendingJurorsResponseDto.class);
 
         assertThat(response.getStatusCode()).as("Expect the HTTP Response Status to be OK")
             .isEqualTo(HttpStatus.OK);
@@ -377,11 +378,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         ProcessPendingJurorRequestDto requestDto = createProcessPendingJurorRequestDto(ApprovalDecision.APPROVE);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT, Role.SENIOR_JUROR_OFFICER));
+                                                                 UserType.COURT, Role.SENIOR_JUROR_OFFICER));
 
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/process-pending-juror")), String.class);
+                                                      URI.create(BASE_URL + "/process-pending-juror")),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP response to be OK")
@@ -408,11 +410,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         ProcessPendingJurorRequestDto requestDto = createProcessPendingJurorRequestDto(ApprovalDecision.REJECT);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT, Role.SENIOR_JUROR_OFFICER));
+                                                                 UserType.COURT, Role.SENIOR_JUROR_OFFICER));
 
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/process-pending-juror")), String.class);
+                                                      URI.create(BASE_URL + "/process-pending-juror")),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP response to be OK")
@@ -427,11 +430,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         ProcessPendingJurorRequestDto requestDto = createProcessPendingJurorRequestDto(ApprovalDecision.APPROVE);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
 
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/process-pending-juror")), String.class);
+                                                      URI.create(BASE_URL + "/process-pending-juror")),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP response to be FORBIDDEN")
@@ -447,7 +451,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/process-pending-juror")), String.class);
+                                                      URI.create(BASE_URL + "/process-pending-juror")),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP response to be FORBIDDEN")
@@ -472,7 +477,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto(true);
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
+                                                      URI.create(BASE_URL + "/edit-juror/" + jurorNumber)),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP status to be NO CONTENT")
@@ -512,7 +518,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto(false);
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
+                                                      URI.create(BASE_URL + "/edit-juror/" + jurorNumber)),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP status to be NO CONTENT")
@@ -554,7 +561,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
+                                                      URI.create(BASE_URL + "/edit-juror/" + jurorNumber)),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP status to be NO CONTENT")
@@ -645,11 +653,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto(true);
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
 
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
+                                                      URI.create(BASE_URL + "/edit-juror/" + jurorNumber)),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP status to be FORBIDDEN")
@@ -665,7 +674,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/edit-juror/" + jurorNumber)), String.class);
+                                                      URI.create(BASE_URL + "/edit-juror/" + jurorNumber)),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP status to be NOT_FOUND")
@@ -681,7 +691,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         JurorOpticRefRequestDto requestDto = createOpticRefRequestDto(jurorNumber, poolNumber, opticRef);
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
+                                                      URI.create(BASE_URL + "/create/optic-reference")),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be CREATED")
@@ -695,7 +706,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             //assert optic ref is same as set above
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, poolNumber,
-                    true).get();
+                                                                                       true).get();
             Juror juror = jurorPool.getJuror();
             assertThat(juror.getOpticRef()).isEqualTo(opticRef);
         });
@@ -710,7 +721,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         JurorOpticRefRequestDto requestDto = createOpticRefRequestDto(jurorNumber, poolNumber, opticRef);
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
+                                                      URI.create(BASE_URL + "/create/optic-reference")),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be CREATED")
@@ -724,7 +736,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             //assert optic ref is same as set above
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumberAndIsActive(jurorNumber, poolNumber,
-                    true).get();
+                                                                                       true).get();
             Juror juror = jurorPool.getJuror();
             assertThat(juror.getOpticRef()).isEqualTo(opticRef);
         });
@@ -739,10 +751,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         String opticRef = "12345678";
         JurorOpticRefRequestDto requestDto = createOpticRefRequestDto(jurorNumber, poolNumber, opticRef);
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
+                                                      URI.create(BASE_URL + "/create/optic-reference")),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be FORBIDDEN ")
@@ -759,10 +772,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         String opticRef = "12345678";
         JurorOpticRefRequestDto requestDto = createOpticRefRequestDto(jurorNumber, poolNumber, opticRef);
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<String> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
+                                                      URI.create(BASE_URL + "/create/optic-reference")),
+                                  String.class);
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be FORBIDDEN ")
             .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
@@ -779,10 +793,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         String opticRef = "12345678";
         JurorOpticRefRequestDto requestDto = createOpticRefRequestDto(jurorNumber, poolNumber, opticRef);
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<String> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
+                                                      URI.create(BASE_URL + "/create/optic-reference")),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be FORBIDDEN ")
@@ -797,10 +812,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         String opticRef = "12345678";
         JurorOpticRefRequestDto requestDto = createOpticRefRequestDto("900000000", poolNumber, opticRef);
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<String> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create("/api/v1/moj/juror-record/create/optic-reference")), String.class);
+                                                      URI.create(BASE_URL + "/create/optic-reference")),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be NOT_FOUND ")
@@ -812,8 +828,10 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorGetOpticalReferenceBureau.sql"})
     void testGOpticReferenceBureauUser() {
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-            URI.create("/api/v1/moj/juror-record/optic-reference/123456789/415220502")), String.class);
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/optic-reference/123456789/415220502")),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be OK")
@@ -828,9 +846,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorGetOpticalReferenceCourt.sql"})
     void testGOpticReferenceCourtUser() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-            URI.create("/api/v1/moj/juror-record/optic-reference/123456789/415220502")), String.class);
+                                                                 UserType.COURT));
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/optic-reference/123456789/415220502")),
+                                  String.class);
 
         assertThat(response.getStatusCode()).as("Expect the HTTP GET request to be OK")
             .isEqualTo(HttpStatus.OK);
@@ -844,9 +864,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorGetOpticalReferenceBureau.sql"})
     void testGOpticReferenceCourtUserWrongAccess() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-            URI.create("/api/v1/moj/juror-record/optic-reference/123456789/415220502")), String.class);
+                                                                 UserType.COURT));
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/optic-reference/123456789/415220502")),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be NOT_FOUND")
@@ -856,8 +878,10 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_jurorGetOpticalReferenceCourt.sql"})
     void testGOpticReferenceBureauUserCourtRecord() {
-        ResponseEntity<String> response = restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-            URI.create("/api/v1/moj/juror-record/optic-reference/123456789/415220502")), String.class);
+        ResponseEntity<String> response =
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/optic-reference/123456789/415220502")),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be OK")
@@ -877,10 +901,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorDetailsCourtUser() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/detail/641600090/416")),
+                                  JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -897,10 +922,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorDetailsCourtUserCourtRecordOnly() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/detail/641600090/416")),
+                                  JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -917,8 +943,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorDetailsBureauUserActiveRecord() {
 
         ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/detail/641600090/416")),
+                                  JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -936,8 +963,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorDetailsBureauUserActiveRecordSummoned() {
 
         ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600092/416")), JurorDetailsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/detail/641600092/416")),
+                                  JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -961,8 +989,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorDetailsBureauUser() {
 
         ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600096/416")), JurorDetailsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/detail/641600096/416")),
+                                  JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1023,8 +1052,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorDetailsBureauUserCourtRecordOnly() {
 
         ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/detail/641600090/416")),
+                                  JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1074,10 +1104,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorDetailsCourtUserForbiddenBureauRecord() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/detail/641600090/416")),
+                                  JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be forbidden as its a Bureau only record")
@@ -1090,10 +1121,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorDetailsCourtUserForbiddenDifferentCourt() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("417", Collections.singletonList("417"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600090/416")), JurorDetailsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/detail/641600090/416")),
+                                  JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be forbidden as its a different court record")
@@ -1105,10 +1137,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorDetailsCourtUserNoRecordMatch() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/detail/641600099/416")), JurorDetailsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/detail/641600099/416")),
+                                  JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP Status for request to be NOT_FOUND")
@@ -1123,8 +1156,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorOverviewBureauUserPaperResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600090/416")), JurorOverviewResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/641600090/416")),
+                                  JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1164,8 +1198,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorOverviewBureauUserOnlineResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600091/416")), JurorOverviewResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/641600091/416")),
+                                  JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1201,8 +1236,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorOverviewBureauUserSummonedResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600092/416")), JurorOverviewResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/641600092/416")),
+                                  JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1242,8 +1278,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorOverviewBureauUserDisqualifiedOnSelectionResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600093/416")), JurorOverviewResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/641600093/416")),
+                                  JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1268,8 +1305,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorOverviewBureauUserDisqualifiedNotOnSelectionResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600095/416")), JurorOverviewResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/641600095/416")),
+                                  JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1291,8 +1329,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorOverviewBureauUserNotAvailableResponse() {
 
         ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600094/416")), JurorOverviewResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/641600094/416")),
+                                  JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1315,10 +1354,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGOverviewDetailsCourtUserSummonedResponse() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/641600092/416")), JurorDetailsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/641600092/416")),
+                                  JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be forbidden as its a summoned user")
@@ -1334,9 +1374,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorSummonsReplyBureauUserPaperResponse() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600090/416")),
-                JurorSummonsReplyResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/summons-reply/641600090/416")),
+                                  JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1367,9 +1407,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorSummonsReplyBureauUserPaperResponseExcusalRefused() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600096/416")),
-                JurorSummonsReplyResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/summons-reply/641600096/416")),
+                                  JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1411,9 +1451,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorSummonsReplyBureauUserDigitalResponseExcusalRefused() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600097/416")),
-                JurorSummonsReplyResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/summons-reply/641600097/416")),
+                                  JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1454,9 +1494,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorSummonsReplyBureauUserOnlineResponse() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600091/416")),
-                JurorSummonsReplyResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/summons-reply/641600091/416")),
+                                  JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1487,9 +1527,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorSummonsReplyBureauUserSummonedResponse() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600092/416")),
-                JurorSummonsReplyResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/summons-reply/641600092/416")),
+                                  JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1515,9 +1555,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorSummonsReplyBureauUserDisqualifiedOnSelectionResponse() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600093/416")),
-                JurorSummonsReplyResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/summons-reply/641600093/416")),
+                                  JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1542,9 +1582,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorSummonsReplyBureauUserDisqualifiedNotOnSelectionResponse() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600095/416")),
-                JurorSummonsReplyResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/summons-reply/641600095/416")),
+                                  JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1566,9 +1606,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorSummonsReplyBureauUserNotAvailableResponse() {
 
         ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600094/416")),
-                JurorSummonsReplyResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/summons-reply/641600094/416")),
+                                  JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1593,11 +1633,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGJurorSummonsReplyCourtUserSummonedResponse() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<JurorSummonsReplyResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/summons-reply/641600092/416")),
-                JurorSummonsReplyResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/summons-reply/641600092/416")),
+                                  JurorSummonsReplyResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be forbidden as its a summoned user")
@@ -1614,9 +1654,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void searchJurorBureauUserActiveBureauRecord() {
 
         ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641600091")),
-                JurorRecordSearchDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/single-search?jurorNumber=641600091")),
+                                  JurorRecordSearchDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1640,9 +1680,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void searchJurorBureauUserActiveCourtRecord() {
 
         ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641600090")),
-                JurorRecordSearchDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/single-search?jurorNumber=641600090")),
+                                  JurorRecordSearchDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1666,9 +1706,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void searchJurorBureauUserMultipleActiveRecords() {
 
         ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641500091")),
-                JurorRecordSearchDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/single-search?jurorNumber=641500091")),
+                                  JurorRecordSearchDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1692,9 +1732,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void searchJurorBureauUserNoRecordFound() {
 
         ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641600099")),
-                JurorRecordSearchDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/single-search?jurorNumber=641600099")),
+                                  JurorRecordSearchDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1715,12 +1755,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void searchJurorCourtUserActiveCourtRecord() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416",
-            Collections.singletonList("416"), UserType.COURT));
+                                                                 Collections.singletonList("416"), UserType.COURT));
 
         ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641600090")),
-                JurorRecordSearchDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/single-search?jurorNumber=641600090")),
+                                  JurorRecordSearchDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1744,12 +1784,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void searchJurorCourtUserMultipleActiveRecords() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "767"),
-            UserType.COURT));
+                                                                 UserType.COURT));
 
         ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641500091")),
-                JurorRecordSearchDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/single-search?jurorNumber=641500091")),
+                                  JurorRecordSearchDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1772,8 +1812,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void testGJurorContactLogsBureauUserHappyPath() {
         ResponseEntity<ContactLogListDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/contact-log/123456789")), ContactLogListDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/contact-log/123456789")),
+                                  ContactLogListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1792,12 +1833,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void searchJurorCourtUserActiveBureauRecord() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
 
         ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641600091")),
-                JurorRecordSearchDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/single-search?jurorNumber=641600091")),
+                                  JurorRecordSearchDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1819,12 +1860,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void searchJurorCourtUserNoRecordFound() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
 
         ResponseEntity<JurorRecordSearchDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/single-search?jurorNumber=641600099")),
-                JurorRecordSearchDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/single-search?jurorNumber=641600099")),
+                                  JurorRecordSearchDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1843,8 +1884,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql(statements = {"DELETE FROM juror_mod.juror_pool", "DELETE FROM juror_mod.juror", "DELETE FROM juror_mod.pool"})
     void testGJurorContactLogsBureauUserJurorNotFound() {
         ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/contact-log/123456789")), JurorDetailsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/contact-log/123456789")),
+                                  JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be not found as the juror does not exist")
@@ -1855,10 +1897,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void testGJurorContactLogsCourtsUserHappyPath() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<ContactLogListDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/contact-log/123456789")), ContactLogListDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/contact-log/123456789")),
+                                  ContactLogListDto.class);
 
         ContactLogListDto contactLogListDto = response.getBody();
 
@@ -1872,10 +1915,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
     void testGJurorContactLogsCourtsUserBureauLogs() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/contact-log/123456789")), JurorDetailsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/contact-log/123456789")),
+                                  JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be forbidden as the juror is owned by the bureau")
@@ -1886,14 +1930,15 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void testGJurorContactLogsCourtsUserDifferentCourtLogs() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<JurorDetailsResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/123456789/415")), JurorDetailsResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/123456789/415")),
+                                  JurorDetailsResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be forbidden as the juror is owned by a court this user does "
-                + "not have access to")
+                    + "not have access to")
             .isEqualTo(HttpStatus.FORBIDDEN);
     }
 
@@ -1913,10 +1958,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void createJurorContactLogBureauUserHappyPath() {
         String jurorNumber = "123456789";
         ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, "LS",
-            "Repeat Enquiry Notes", true);
+                                                                     "Repeat Enquiry Notes", true);
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+                                                      URI.create(CONTACT_LOG_URL)),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1928,8 +1974,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(contactLogs.size())
             .as("Initial test data contained a single contact log, expect a second, new contact log to be created")
             .isEqualTo(2);
-        ContactLog contactLog = contactLogs.stream().filter(cl ->
-            cl.getEnquiryType().getCode().equals(IContactCode.LENGTH_OF_SERVICE.getCode())).findFirst().get();
+        ContactLog contactLog = contactLogs.stream()
+            .filter(cl -> cl.getEnquiryType().getCode()
+                .equals(IContactCode.LENGTH_OF_SERVICE.getCode()))
+            .findFirst()
+            .get();
 
         assertThat(contactLog.getJurorNumber())
             .as("The newly created contact log should have it's Juror Number value mapped from the request DTO")
@@ -1955,16 +2004,17 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         String jurorNumber = "111111111";
         LocalDateTime startCall = LocalDateTime.now();
         ContactLogRequestDto requestDto1 = createContactLogRequestDto(jurorNumber, "LS",
-            "Repeat Enquiry Notes", true);
+                                                                      "Repeat Enquiry Notes", true);
         ContactLogRequestDto requestDto2 = createContactLogRequestDto(jurorNumber, "GE",
-            "General Enquiry Notes", false);
+                                                                      "General Enquiry Notes", false);
 
         requestDto1.setStartCall(startCall);
         requestDto2.setStartCall(startCall);
 
         ResponseEntity<?> response1 =
             restTemplate.exchange(new RequestEntity<>(requestDto1, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+                                                      URI.create(CONTACT_LOG_URL)),
+                                  String.class);
 
         assertThat(response1.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1979,7 +2029,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<?> response2 =
             restTemplate.exchange(new RequestEntity<>(requestDto2, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+                                                      URI.create(CONTACT_LOG_URL)),
+                                  String.class);
 
         assertThat(response2.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -1998,16 +2049,17 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         String jurorNumber = "111111111";
         LocalDateTime startCall = LocalDateTime.now();
         ContactLogRequestDto requestDto1 = createContactLogRequestDto(jurorNumber, "LS",
-            "Repeat Enquiry Notes", true);
+                                                                      "Repeat Enquiry Notes", true);
         ContactLogRequestDto requestDto2 = createContactLogRequestDto(jurorNumber, "GE",
-            "General Enquiry Notes", false);
+                                                                      "General Enquiry Notes", false);
 
         requestDto1.setStartCall(startCall);
         requestDto2.setStartCall(startCall.plusSeconds(1));
 
         ResponseEntity<?> response1 =
             restTemplate.exchange(new RequestEntity<>(requestDto1, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+                                                      URI.create(CONTACT_LOG_URL)),
+                                  String.class);
 
         assertThat(response1.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2022,7 +2074,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<?> response2 =
             restTemplate.exchange(new RequestEntity<>(requestDto2, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+                                                      URI.create(CONTACT_LOG_URL)),
+                                  String.class);
 
         assertThat(response2.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2039,10 +2092,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
     void createJurorContactLogBureauUserJurorNotFound() {
         ContactLogRequestDto requestDto = createContactLogRequestDto("123456780", "LS",
-            "Enquiry Notes", false);
+                                                                     "Enquiry Notes", false);
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+                                                      URI.create(CONTACT_LOG_URL)),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be unsuccessful")
@@ -2054,10 +2108,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void createJurorContactLogBureauUserCourtOwnedJuror() {
         String jurorNumber = "123456789";
         ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, "LS",
-            "Enquiry Notes", false);
+                                                                     "Enquiry Notes", false);
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+                                                      URI.create(CONTACT_LOG_URL)),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be successful")
@@ -2074,10 +2129,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
     void createJurorContactLogBureauUserInvalidEnquiryType() {
         ContactLogRequestDto requestDto = createContactLogRequestDto("123456789", "ZZ",
-            "Enquiry Notes", false);
+                                                                     "Enquiry Notes", false);
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+                                                      URI.create(CONTACT_LOG_URL)),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be unsuccessful")
@@ -2088,13 +2144,14 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void createJurorContactLogCourtUserHappyPath() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         String jurorNumber = "123456789";
         ContactLogRequestDto requestDto = createContactLogRequestDto(jurorNumber, "ER",
-            "Repeat Enquiry Notes", true);
+                                                                     "Repeat Enquiry Notes", true);
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+                                                      URI.create(CONTACT_LOG_URL)),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2106,8 +2163,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(contactLogs.size())
             .as("Initial test data contained two contact logs, expect a third, new contact log to be created")
             .isEqualTo(3);
-        ContactLog newContactLog = contactLogs.stream().filter(cl ->
-            cl.getEnquiryType().getCode().equals(IContactCode.EARLY_RELEASE.getCode())).findFirst().get();
+        ContactLog newContactLog = contactLogs.stream()
+            .filter(cl -> cl.getEnquiryType().getCode()
+                .equals(IContactCode.EARLY_RELEASE.getCode()))
+            .findFirst()
+            .get();
 
 
         assertThat(newContactLog.getJurorNumber())
@@ -2132,12 +2192,13 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
     void createJurorContactLogCourtUserBureauOwnedRecord() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ContactLogRequestDto requestDto = createContactLogRequestDto("123456789", "ER",
-            "Enquiry Notes", false);
+                                                                     "Enquiry Notes", false);
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+                                                      URI.create(CONTACT_LOG_URL)),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be unsuccessful")
@@ -2148,35 +2209,37 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void createJurorContactLogCourtUserDifferentCourt() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ContactLogRequestDto requestDto = createContactLogRequestDto("123456789", "ER",
-            "Enquiry Notes", false);
+                                                                     "Enquiry Notes", false);
         ResponseEntity<?> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                URI.create(CONTACT_LOG_URL)), String.class);
+                                                      URI.create(CONTACT_LOG_URL)),
+                                  String.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be unsuccessful")
             .isEqualTo(HttpStatus.FORBIDDEN);
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private String initCourtsJwt(String owner, List<String> courts, UserType userType, Role... roles) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()
-            .login("COURT_USER")
-            .userType(userType)
-            .roles(Arrays.asList(roles))
-            .owner(owner)
-            .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
-            .build());
+                                 .login("COURT_USER")
+                                 .userType(userType)
+                                 .roles(Arrays.asList(roles))
+                                 .owner(owner)
+                                 .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
+                                 .build());
     }
 
     @Test
     void testGetContactEnquiryTypes() {
         ResponseEntity<ContactEnquiryTypeListDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/contact-log/enquiry-types")),
-                ContactEnquiryTypeListDto.class);
+                                                      URI.create(BASE_URL + "/contact-log/enquiry-types")),
+                                  ContactEnquiryTypeListDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2189,9 +2252,10 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         for (ContactCode contactEnquiryType : dbData) {
 
-            assertThat(contactEnquiryTypes.stream().anyMatch(enquiryType ->
-                enquiryType.getEnquiryCode() == ContactEnquiryCode.valueOf(contactEnquiryType.getCode())
-                    && enquiryType.getDescription().equals(contactEnquiryType.getDescription())))
+            ContactEnquiryCode expectedCode = ContactEnquiryCode.valueOf(contactEnquiryType.getCode());
+            assertThat(contactEnquiryTypes.stream()
+                           .anyMatch(enquiryType -> enquiryType.getEnquiryCode() == expectedCode
+                               && enquiryType.getDescription().equals(contactEnquiryType.getDescription())))
                 .as("Expect each record from the database to be correctly mapped in to the returned DTO")
                 .isTrue();
         }
@@ -2202,7 +2266,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGetJurorNotesBureauUserBureauOwnedRecord() {
         ResponseEntity<JurorNotesDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2221,7 +2286,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGetJurorNotesBureauUserCourtOwnedRecord() {
         ResponseEntity<JurorNotesDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2240,7 +2306,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGetJurorNotesBureauUserPoolMemberNotFound() {
         ResponseEntity<JurorNotesDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be unsuccessful")
@@ -2251,10 +2318,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void testGetJurorNotesCourtUserCourtOwnedRecord() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<JurorNotesDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2272,10 +2340,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
     void testGetJurorNotesCourtUserBureauOwnedRecord() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<JurorNotesDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be unsuccessful")
@@ -2286,10 +2355,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void testGetJurorNotesCourtUserDifferentCourt() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<JurorNotesDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be unsuccessful")
@@ -2300,10 +2370,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql"})
     void testGetJurorNotesCourtUserNoNotes() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<JurorNotesDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(response.getBody()).isNotNull();
         JurorNotesDto responseBody = response.getBody();
@@ -2319,7 +2390,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
         ResponseEntity<?> patchResponse =
             restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  Void.class);
 
         assertThat(patchResponse.getStatusCode())
             .as("Expect the HTTP PATCH request to be successful")
@@ -2327,7 +2399,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorNotesDto> getResponse =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(getResponse.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2347,7 +2420,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
         ResponseEntity<?> patchResponse =
             restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  Void.class);
 
         assertThat(patchResponse.getStatusCode())
             .as("Expect the HTTP PATCH request to be successful")
@@ -2355,7 +2429,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorNotesDto> getResponse =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(getResponse.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2375,7 +2450,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         JurorNotesRequestDto updateNotes = new JurorNotesRequestDto(generateString(2001));
         ResponseEntity<?> patchResponse =
             restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  Void.class);
 
         assertThat(patchResponse.getStatusCode())
             .as("Expect the HTTP PATCH request to be unsuccessful")
@@ -2386,11 +2462,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void testSetJurorNotesCourtUserCourtOwnedRecord() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
         ResponseEntity<?> patchResponse =
             restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  Void.class);
 
         assertThat(patchResponse.getStatusCode())
             .as("Expect the HTTP PATCH request to be successful")
@@ -2398,7 +2475,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorNotesDto> getResponse =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(getResponse.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2416,11 +2494,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauOwnedRecord.sql"})
     void testSetJurorNotesCourtUserBureauOwnedRecord() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
         ResponseEntity<?> patchResponse =
             restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  Void.class);
 
         assertThat(patchResponse.getStatusCode())
             .as("Expect the HTTP PATCH request to be unsuccessful")
@@ -2431,11 +2510,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void testSetJurorNotesCourtsUserMaxNotesLength() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         JurorNotesRequestDto updateNotes = new JurorNotesRequestDto(generateString(2000));
         ResponseEntity<?> patchResponse =
             restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  Void.class);
 
         assertThat(patchResponse.getStatusCode())
             .as("Expect the HTTP PATCH request to be successful")
@@ -2443,7 +2523,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<JurorNotesDto> getResponse =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(getResponse.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2461,11 +2542,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_transferredRecord.sql"})
     void testSetJurorNotesCourtUserDifferentCourt() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
         ResponseEntity<?> patchResponse =
             restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  Void.class);
 
         assertThat(patchResponse.getStatusCode())
             .as("Expect the HTTP PATCH request to be unsuccessful")
@@ -2476,11 +2558,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql("/db/mod/truncate.sql")
     void testSetJurorNotesCourtUserPoolMemberNotFound() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-            UserType.COURT));
+                                                                 UserType.COURT));
         JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
         ResponseEntity<?> patchResponse =
             restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders, HttpMethod.PATCH,
-                URI.create(GET_JUROR_NOTES_URL)), Void.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  Void.class);
 
         assertThat(patchResponse.getStatusCode())
             .as("Expect the HTTP PATCH request to be unsuccessful")
@@ -2493,7 +2576,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGetJurorNotesBureauUserEtagIsSet() {
         ResponseEntity<JurorNotesDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(response.getHeaders().size()).isGreaterThan(0);
 
@@ -2507,7 +2591,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGetJurorNotesBureauUserEtagIsSetThenNotModifiedReturned() {
         ResponseEntity<JurorNotesDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(response.getHeaders().getETag()).isNotNull();
 
@@ -2516,7 +2601,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         httpHeaders.set("If-none-match", etagValue);
         ResponseEntity<JurorNotesDto> response2 =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(response2.getStatusCode())
             .as("Expect the HTTP GET request to return not-modified 304")
@@ -2528,7 +2614,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     void testGetJurorNotesBureauUserEtagIsSetThenUpdateNotesThenModifiedReturned() throws Exception {
         ResponseEntity<JurorNotesDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         assertThat(response.getHeaders().getETag()).isNotNull();
 
@@ -2540,7 +2627,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         httpHeaders.set("If-none-match", etagValue);
         ResponseEntity<JurorNotesDto> response2 =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(GET_JUROR_NOTES_URL)), JurorNotesDto.class);
+                                                      URI.create(GET_JUROR_NOTES_URL)),
+                                  JurorNotesDto.class);
 
         // this is 200 but is seen as unsuccessful or modified by the frontend :D
         assertThat(response2.getStatusCode())
@@ -2554,7 +2642,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         final String jurorNumber = "222222222";
         ResponseEntity<BureauJurorDetailDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/digital-detail/" + jurorNumber)), BureauJurorDetailDto.class);
+                                                      URI.create(BASE_URL + "/digital-detail/" + jurorNumber)),
+                                  BureauJurorDetailDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET to return OK 200")
@@ -2580,7 +2669,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         final String jurorNumber = "641500001";
         ResponseEntity<BureauJurorDetailDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/digital-detail/" + jurorNumber)), BureauJurorDetailDto.class);
+                                                      URI.create(BASE_URL + "/digital-detail/" + jurorNumber)),
+                                  BureauJurorDetailDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET to return OK 200")
@@ -2611,7 +2701,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         final String bureauOwner = "400";
         ResponseEntity<BureauJurorDetailDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/digital-detail/" + jurorNumber)), BureauJurorDetailDto.class);
+                                                      URI.create(BASE_URL + "/digital-detail/" + jurorNumber)),
+                                  BureauJurorDetailDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET to return OK 200")
@@ -2622,7 +2713,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         executeInTransaction(() -> {
             JurorPool jurorPool =
                 jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(bureauOwner, jurorNumber,
-                        poolNumber)
+                                                                                    poolNumber)
                     .stream().findFirst().get();
 
             validateJurorDetailsMapping(dto, jurorPool, poolNumber);
@@ -2639,7 +2730,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         String jurorNumber = "333333333";
         ResponseEntity<BureauJurorDetailDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/digital-detail/" + jurorNumber)), BureauJurorDetailDto.class);
+                                                      URI.create(BASE_URL + "/digital-detail/" + jurorNumber)),
+                                  BureauJurorDetailDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET to return 404 NOT FOUND")
@@ -2653,16 +2745,19 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         String poolNumber = "435220502";
         String courtOwner = "435";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt(courtOwner, Collections.singletonList(courtOwner),
-            UserType.COURT));
+                                                                 UserType.COURT));
         ResponseEntity<BureauJurorDetailDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/digital-detail/" + jurorNumber)), BureauJurorDetailDto.class);
+                                                      URI.create(BASE_URL + "/digital-detail/" + jurorNumber)),
+                                  BureauJurorDetailDto.class);
 
         BureauJurorDetailDto dto = response.getBody();
         assertThat(dto).isNotNull();
         executeInTransaction(() -> {
-            JurorPool jurorPool = jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(courtOwner,
-                jurorNumber, poolNumber).get();
+            JurorPool jurorPool =
+                jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(
+                    courtOwner, jurorNumber, poolNumber)
+                    .get();
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET to return OK 200")
@@ -2679,10 +2774,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_bureauDigitalDetail.sql"})
     void testRetrieveJurorDetailsByIdCourtUserInvalidPermissions() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION,
-            initCourtsJwt("411", Collections.singletonList("411"), UserType.COURT));
+                        initCourtsJwt("411", Collections.singletonList("411"), UserType.COURT));
         ResponseEntity<BureauJurorDetailDto> response =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/digital-detail/111111111")), BureauJurorDetailDto.class);
+                                                      URI.create(BASE_URL + "/digital-detail/111111111")),
+                                  BureauJurorDetailDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET to return 403 FORBIDDEN")
@@ -2694,9 +2790,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusNotChecked(String jurorNumber) {
         ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                JurorOverviewResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/" + jurorNumber + "/415")),
+                                  JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2711,9 +2807,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusInsufficientInformation(String jurorNumber) {
         ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                JurorOverviewResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/" + jurorNumber + "/415")),
+                                  JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2727,8 +2823,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusNotCheckedThereWasAproblem() {
         ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/111111112/415")), JurorOverviewResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/111111112/415")),
+                                  JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2743,9 +2840,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusInProgress(String jurorNumber) {
         ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                    URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                JurorOverviewResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/" + jurorNumber + "/415")),
+                                  JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2767,9 +2864,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void connectionError() {
             final String jurorNumber = "111111117";
             ResponseEntity<JurorOverviewResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                    JurorOverviewResponseDto.class);
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                          URI.create(BASE_URL + "/overview/" + jurorNumber + "/415")),
+                                      JurorOverviewResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be successful")
@@ -2789,9 +2886,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void nameHasNumerics() {
             final String jurorNumber = "111111118";
             ResponseEntity<JurorOverviewResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                    JurorOverviewResponseDto.class);
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                          URI.create(BASE_URL + "/overview/" + jurorNumber + "/415")),
+                                      JurorOverviewResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be successful")
@@ -2811,9 +2908,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void otherErrorCode() {
             final String jurorNumber = "111111119";
             ResponseEntity<JurorOverviewResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                    JurorOverviewResponseDto.class);
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                          URI.create(BASE_URL + "/overview/" + jurorNumber + "/415")),
+                                      JurorOverviewResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be successful")
@@ -2833,9 +2930,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void noErrorReason() {
             final String jurorNumber = "111111120";
             ResponseEntity<JurorOverviewResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                    JurorOverviewResponseDto.class);
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                          URI.create(BASE_URL + "/overview/" + jurorNumber + "/415")),
+                                      JurorOverviewResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be successful")
@@ -2855,9 +2952,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void errorRetryUnexpectedException() {
             final String jurorNumber = "111111121";
             ResponseEntity<JurorOverviewResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/overview/" + jurorNumber + "/415")),
-                    JurorOverviewResponseDto.class);
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                          URI.create(BASE_URL + "/overview/" + jurorNumber + "/415")),
+                                      JurorOverviewResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be successful")
@@ -2876,8 +2973,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusPassed() {
         ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/111111114/415")), JurorOverviewResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/111111114/415")),
+                                  JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2891,8 +2989,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_policeCheck.sql"})
     void testGetJurorOverviewBureauUserHappyPathPoliceCheckStatusFailed() {
         ResponseEntity<JurorOverviewResponseDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                URI.create("/api/v1/moj/juror-record/overview/111111115/415")), JurorOverviewResponseDto.class);
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                      URI.create(BASE_URL + "/overview/111111115/415")),
+                                  JurorOverviewResponseDto.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP GET request to be successful")
@@ -2918,7 +3017,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<Void> response =
             restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/fix-name/" + jurorNumber)), Void.class);
+                                                      URI.create(BASE_URL + "/fix-name/" + jurorNumber)),
+                                  Void.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PATCH request to be successful")
@@ -2926,7 +3026,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         executeInTransaction(() -> {
             JurorPool jurorPool =
                 jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(owner, jurorNumber,
-                    poolNumber).get();
+                                                                                    poolNumber).get();
             Juror juror = jurorPool.getJuror();
 
             assertThat(juror.getTitle()).isEqualTo(dto.getTitle());
@@ -2943,10 +3043,10 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             List<String> historyInfoList = initChangedHistoryProperties();
 
             for (String historyInfo : historyInfoList) {
-                assertThat(jurorHistoryList.stream().filter(hist ->
-                        hist.getOtherInformation().equalsIgnoreCase(historyInfo))
-                    .findFirst()
-                    .orElse(null))
+                assertThat(jurorHistoryList.stream()
+                               .filter(hist -> hist.getOtherInformation().equalsIgnoreCase(historyInfo))
+                               .findFirst()
+                               .orElse(null))
                     .isNotNull();
             }
 
@@ -2974,7 +3074,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         final String username = "TEAM_LEADER";
         final String owner = "400";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initPayloadWithStaffRank(owner, username, UserType.BUREAU,
-            Role.MANAGER));
+                                                                            Role.MANAGER));
 
         JurorNameDetailsDto dto = new JurorNameDetailsDto("Mr", "First", "Last");
         final String jurorNumber = "222222222";
@@ -2982,7 +3082,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<Void> response =
             restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/fix-name/" + jurorNumber)), Void.class);
+                                                      URI.create(BASE_URL + "/fix-name/" + jurorNumber)),
+                                  Void.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PATCH request to be successful")
@@ -3008,10 +3109,10 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             List<String> historyInfoList = initChangedHistoryProperties();
 
             for (String historyInfo : historyInfoList) {
-                assertThat(jurorHistoryList.stream().filter(hist ->
-                        hist.getOtherInformation().equalsIgnoreCase(historyInfo))
-                    .findFirst()
-                    .orElse(null))
+                assertThat(jurorHistoryList.stream()
+                               .filter(hist -> hist.getOtherInformation().equalsIgnoreCase(historyInfo))
+                               .findFirst()
+                               .orElse(null))
                     .isNotNull();
             }
 
@@ -3046,7 +3147,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<Void> response =
             restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/change-name/" + jurorNumber)), Void.class);
+                                                      URI.create(BASE_URL + "/change-name/" + jurorNumber)),
+                                  Void.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PATCH request to be successful")
@@ -3077,10 +3179,10 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             historyInfoList.add("Name change approved");
 
             for (String historyInfo : historyInfoList) {
-                assertThat(jurorHistoryList.stream().filter(hist ->
-                        hist.getOtherInformation().equalsIgnoreCase(historyInfo))
-                    .findFirst()
-                    .orElse(null))
+                assertThat(jurorHistoryList.stream()
+                               .filter(hist -> hist.getOtherInformation().equalsIgnoreCase(historyInfo))
+                               .findFirst()
+                               .orElse(null))
                     .isNotNull();
             }
 
@@ -3121,7 +3223,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<Void> response =
             restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/change-name/" + jurorNumber)), Void.class);
+                                                      URI.create(BASE_URL + "/change-name/" + jurorNumber)),
+                                  Void.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PATCH request to be successful")
@@ -3183,19 +3286,21 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<Void> response =
             restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                URI.create("/api/v1/moj/juror-record/change-name/" + jurorNumber)), Void.class);
+                                                      URI.create(BASE_URL + "/change-name/" + jurorNumber)),
+                                  Void.class);
 
         assertThat(response.getStatusCode())
             .as("Expect the HTTP PATCH request to be unsuccessful")
             .isEqualTo(HttpStatus.FORBIDDEN);
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void updateNotesForEtag() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userType(UserType.BUREAU)
-            .login("BUREAU_USER")
-            .owner("400")
-            .build());
+                                                   .userType(UserType.BUREAU)
+                                                   .login("BUREAU_USER")
+                                                   .owner("400")
+                                                   .build());
 
         HttpHeaders httpHeaders2 = new HttpHeaders();
         httpHeaders2.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -3203,7 +3308,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         JurorNotesRequestDto updateNotes = new JurorNotesRequestDto("Some updated notes");
         restTemplate.exchange(new RequestEntity<>(updateNotes, httpHeaders2, HttpMethod.PATCH,
-            URI.create(GET_JUROR_NOTES_URL)), Void.class);
+                                                  URI.create(GET_JUROR_NOTES_URL)),
+                                  Void.class);
     }
 
     private String generateString(int length) {
@@ -3445,7 +3551,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         assertThat(dto.getWelsh())
             .as("Expect Welsh flag property to be mapped from the Juror Response record")
-            .isEqualTo(jurorResponse.getWelsh());
+            .isEqualTo(jurorResponse.isWelsh());
     }
 
     @Nested
@@ -3457,9 +3563,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void testGJurorAttendanceHappy() {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, getCourtJwt("415"));
             ResponseEntity<JurorAttendanceDetailsResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/attendance-detail/111111111")),
-                    JurorAttendanceDetailsResponseDto.class);
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                          URI.create(BASE_URL + "/attendance-detail/111111111")),
+                                      JurorAttendanceDetailsResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be successful")
@@ -3529,9 +3635,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void testGJurorAttendanceOnCall() {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, getCourtJwt("415"));
             ResponseEntity<JurorAttendanceDetailsResponseDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/attendance-detail/222222222")),
-                    JurorAttendanceDetailsResponseDto.class);
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                          URI.create(BASE_URL + "/attendance-detail/222222222")),
+                                      JurorAttendanceDetailsResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be successful")
@@ -3575,12 +3681,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             staff.setCourts(Collections.singletonList("415"));
 
             final String courtJwt = mintBureauJwt(BureauJwtPayload.builder()
-                .userType(UserType.COURT)
-                .login("COURT_USER")
-                .owner("415")
-                .locCode("415")
-                .staff(staff)
-                .build());
+                                                      .userType(UserType.COURT)
+                                                      .login("COURT_USER")
+                                                      .owner("415")
+                                                      .locCode("415")
+                                                      .staff(staff)
+                                                      .build());
 
             courtHeaders = new HttpHeaders();
             courtHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -3594,114 +3700,120 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void getJurorPayments() {
             ResponseEntity<JurorPaymentsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(courtHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/200956973/payments")),
-                    JurorPaymentsResponseDto.class);
+                                                          URI.create(BASE_URL + "/200956973/payments")),
+                                      JurorPaymentsResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be successful")
                 .isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isEqualTo(JurorPaymentsResponseDto.builder()
-                .attendances(6)
-                .nonAttendances(0)
-                .financialLoss(new BigDecimal("77.00"))
-                .travel(new BigDecimal("18.63"))
-                .subsistence(new BigDecimal("5.71"))
-                .totalPaid(new BigDecimal("101.34"))
-                .data(List.of(JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024, 5, 6))
-                        .attendanceAudit("P10011777")
-                        .paymentAudit("F12")
-                        .datePaid(LocalDateTime.of(2024, 5, 15, 18, 15, 6, 147_000_000))
-                        .travel(new BigDecimal("7.63"))
-                        .financialLoss(new BigDecimal("12.00"))
-                        .subsistence(new BigDecimal("0.00"))
-                        .smartcard(new BigDecimal("0"))
-                        .totalDue(new BigDecimal("19.63"))
-                        .totalPaid(new BigDecimal("19.63"))
-                        .build(),
-                    JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024, 5, 7))
-                        .attendanceAudit("P10012682")
-                        .paymentAudit("F16")
-                        .datePaid(LocalDateTime.of(2024, 5, 15, 18, 29, 58, 575_000_000))
-                        .travel(new BigDecimal("4.00"))
-                        .financialLoss(new BigDecimal("16.00"))
-                        .subsistence(new BigDecimal("0.00"))
-                        .smartcard(new BigDecimal("0"))
-                        .totalDue(new BigDecimal("20.00"))
-                        .totalPaid(new BigDecimal("20.00"))
-                        .build(),
-                    JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024, 5, 8))
-                        .attendanceAudit("P10013503")
-                        .paymentAudit("F12")
-                        .datePaid(LocalDateTime.of(2024, 5, 15, 18, 15, 6, 147_000_000))
-                        .travel(new BigDecimal("3.00"))
-                        .financialLoss(new BigDecimal("12.00"))
-                        .subsistence(new BigDecimal("5.71"))
-                        .smartcard(new BigDecimal("0"))
-                        .totalDue(new BigDecimal("20.71"))
-                        .totalPaid(new BigDecimal("20.71"))
-                        .build(),
-                    JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024, 5, 9))
-                        .attendanceAudit("P10014275")
-                        .paymentAudit("F10")
-                        .datePaid(LocalDateTime.of(2024, 5, 14, 18, 13, 17, 637_000_000))
-                        .travel(new BigDecimal("4.00"))
-                        .financialLoss(new BigDecimal("12.00"))
-                        .subsistence(new BigDecimal("0.00"))
-                        .smartcard(new BigDecimal("0"))
-                        .totalDue(new BigDecimal("16.00"))
-                        .totalPaid(new BigDecimal("16.00"))
-                        .build(),
-                    JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024, 5, 10))
-                        .attendanceAudit("P10014995")
-                        .paymentAudit("F10")
-                        .datePaid(LocalDateTime.of(2024, 5, 14, 18, 13, 17, 637_000_000))
-                        .travel(new BigDecimal("0.00"))
-                        .financialLoss(new BigDecimal("13.00"))
-                        .subsistence(new BigDecimal("0.00"))
-                        .smartcard(new BigDecimal("0"))
-                        .totalDue(new BigDecimal("13.00"))
-                        .totalPaid(new BigDecimal("13.00"))
-                        .build(),
-                    JurorPaymentsResponseDto.PaymentDayDto.builder()
-                        .attendanceDate(LocalDate.of(2024, 5, 13))
-                        .attendanceAudit("P10016300")
-                        .paymentAudit("F10")
-                        .datePaid(LocalDateTime.of(2024, 5, 14, 18, 13, 17, 637_000_000))
-                        .travel(new BigDecimal("0"))
-                        .financialLoss(new BigDecimal("12.00"))
-                        .subsistence(new BigDecimal("0"))
-                        .smartcard(new BigDecimal("0"))
-                        .totalDue(new BigDecimal("12.00"))
-                        .totalPaid(new BigDecimal("12.00"))
-                        .build()))
-                .build());
+                                                         .attendances(6)
+                                                         .nonAttendances(0)
+                                                         .financialLoss(new BigDecimal("77.00"))
+                                                         .travel(new BigDecimal("18.63"))
+                                                         .subsistence(new BigDecimal("5.71"))
+                                                         .totalPaid(new BigDecimal("101.34"))
+                                                         .data(List.of(JurorPaymentsResponseDto.PaymentDayDto.builder()
+                                                                           .attendanceDate(LocalDate.of(2024, 5, 6))
+                                                                           .attendanceAudit("P10011777")
+                                                                           .paymentAudit("F12")
+                                                                           .datePaid(LocalDateTime.of(
+                                                                               2024, 5, 15, 18, 15, 6, 147_000_000))
+                                                                           .travel(new BigDecimal("7.63"))
+                                                                           .financialLoss(new BigDecimal("12.00"))
+                                                                           .subsistence(new BigDecimal("0.00"))
+                                                                           .smartcard(new BigDecimal("0"))
+                                                                           .totalDue(new BigDecimal("19.63"))
+                                                                           .totalPaid(new BigDecimal("19.63"))
+                                                                           .build(),
+                                                                       JurorPaymentsResponseDto.PaymentDayDto.builder()
+                                                                           .attendanceDate(LocalDate.of(2024, 5, 7))
+                                                                           .attendanceAudit("P10012682")
+                                                                           .paymentAudit("F16")
+                                                                           .datePaid(LocalDateTime.of(
+                                                                               2024, 5, 15, 18, 29, 58, 575_000_000))
+                                                                           .travel(new BigDecimal("4.00"))
+                                                                           .financialLoss(new BigDecimal("16.00"))
+                                                                           .subsistence(new BigDecimal("0.00"))
+                                                                           .smartcard(new BigDecimal("0"))
+                                                                           .totalDue(new BigDecimal("20.00"))
+                                                                           .totalPaid(new BigDecimal("20.00"))
+                                                                           .build(),
+                                                                       JurorPaymentsResponseDto.PaymentDayDto.builder()
+                                                                           .attendanceDate(LocalDate.of(2024, 5, 8))
+                                                                           .attendanceAudit("P10013503")
+                                                                           .paymentAudit("F12")
+                                                                           .datePaid(LocalDateTime.of(
+                                                                               2024, 5, 15, 18, 15, 6, 147_000_000))
+                                                                           .travel(new BigDecimal("3.00"))
+                                                                           .financialLoss(new BigDecimal("12.00"))
+                                                                           .subsistence(new BigDecimal("5.71"))
+                                                                           .smartcard(new BigDecimal("0"))
+                                                                           .totalDue(new BigDecimal("20.71"))
+                                                                           .totalPaid(new BigDecimal("20.71"))
+                                                                           .build(),
+                                                                       JurorPaymentsResponseDto.PaymentDayDto.builder()
+                                                                           .attendanceDate(LocalDate.of(2024, 5, 9))
+                                                                           .attendanceAudit("P10014275")
+                                                                           .paymentAudit("F10")
+                                                                           .datePaid(LocalDateTime.of(
+                                                                               2024, 5, 14, 18, 13, 17, 637_000_000))
+                                                                           .travel(new BigDecimal("4.00"))
+                                                                           .financialLoss(new BigDecimal("12.00"))
+                                                                           .subsistence(new BigDecimal("0.00"))
+                                                                           .smartcard(new BigDecimal("0"))
+                                                                           .totalDue(new BigDecimal("16.00"))
+                                                                           .totalPaid(new BigDecimal("16.00"))
+                                                                           .build(),
+                                                                       JurorPaymentsResponseDto.PaymentDayDto.builder()
+                                                                           .attendanceDate(LocalDate.of(2024, 5, 10))
+                                                                           .attendanceAudit("P10014995")
+                                                                           .paymentAudit("F10")
+                                                                           .datePaid(LocalDateTime.of(
+                                                                               2024, 5, 14, 18, 13, 17, 637_000_000))
+                                                                           .travel(new BigDecimal("0.00"))
+                                                                           .financialLoss(new BigDecimal("13.00"))
+                                                                           .subsistence(new BigDecimal("0.00"))
+                                                                           .smartcard(new BigDecimal("0"))
+                                                                           .totalDue(new BigDecimal("13.00"))
+                                                                           .totalPaid(new BigDecimal("13.00"))
+                                                                           .build(),
+                                                                       JurorPaymentsResponseDto.PaymentDayDto.builder()
+                                                                           .attendanceDate(LocalDate.of(2024, 5, 13))
+                                                                           .attendanceAudit("P10016300")
+                                                                           .paymentAudit("F10")
+                                                                           .datePaid(LocalDateTime.of(
+                                                                               2024, 5, 14, 18, 13, 17, 637_000_000))
+                                                                           .travel(new BigDecimal("0"))
+                                                                           .financialLoss(new BigDecimal("12.00"))
+                                                                           .subsistence(new BigDecimal("0"))
+                                                                           .smartcard(new BigDecimal("0"))
+                                                                           .totalDue(new BigDecimal("12.00"))
+                                                                           .totalPaid(new BigDecimal("12.00"))
+                                                                           .build()))
+                                                         .build());
         }
 
         @Test
         void noJuror() {
             ResponseEntity<JurorPaymentsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(courtHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/200950000/payments")),
-                    JurorPaymentsResponseDto.class);
+                                                          URI.create(BASE_URL + "/200950000/payments")),
+                                      JurorPaymentsResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be okay")
                 .isEqualTo(HttpStatus.OK);
             assertThat(response.getBody())
                 .isEqualTo(JurorPaymentsResponseDto.builder()
-                    .data(new ArrayList<>())
-                    .attendances(0)
-                    .nonAttendances(0)
-                    .financialLoss(BigDecimal.ZERO)
-                    .travel(BigDecimal.ZERO)
-                    .subsistence(BigDecimal.ZERO)
-                    .totalPaid(BigDecimal.ZERO)
-                    .build());
+                               .data(new ArrayList<>())
+                               .attendances(0)
+                               .nonAttendances(0)
+                               .financialLoss(BigDecimal.ZERO)
+                               .travel(BigDecimal.ZERO)
+                               .subsistence(BigDecimal.ZERO)
+                               .totalPaid(BigDecimal.ZERO)
+                               .build());
         }
 
         @Test
@@ -3710,12 +3822,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             staff.setCourts(Collections.singletonList("417"));
 
             final String courtJwt = mintBureauJwt(BureauJwtPayload.builder()
-                .userType(UserType.COURT)
-                .login("COURT_USER")
-                .owner("417")
-                .locCode("417")
-                .staff(staff)
-                .build());
+                                                      .userType(UserType.COURT)
+                                                      .login("COURT_USER")
+                                                      .owner("417")
+                                                      .locCode("417")
+                                                      .staff(staff)
+                                                      .build());
 
             HttpHeaders otherCourtHeaders = new HttpHeaders();
             otherCourtHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -3724,7 +3836,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<JurorPaymentsResponseDto> response =
                 restTemplate.exchange(
                     new RequestEntity<>(otherCourtHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/200956973/payments")
+                                        URI.create(BASE_URL + "/200956973/payments")
                     ),
                     JurorPaymentsResponseDto.class
                 );
@@ -3734,14 +3846,14 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(HttpStatus.OK);
             assertThat(response.getBody())
                 .isEqualTo(JurorPaymentsResponseDto.builder()
-                    .data(new ArrayList<>())
-                    .attendances(0)
-                    .nonAttendances(0)
-                    .financialLoss(BigDecimal.ZERO)
-                    .travel(BigDecimal.ZERO)
-                    .subsistence(BigDecimal.ZERO)
-                    .totalPaid(BigDecimal.ZERO)
-                    .build());
+                               .data(new ArrayList<>())
+                               .attendances(0)
+                               .nonAttendances(0)
+                               .financialLoss(BigDecimal.ZERO)
+                               .travel(BigDecimal.ZERO)
+                               .subsistence(BigDecimal.ZERO)
+                               .totalPaid(BigDecimal.ZERO)
+                               .build());
         }
 
         @Test
@@ -3750,7 +3862,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<JurorPaymentsResponseDto> response =
                 restTemplate.exchange(
                     new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/200956973/payments")
+                                        URI.create(BASE_URL + "/200956973/payments")
                     ),
                     JurorPaymentsResponseDto.class
                 );
@@ -3768,89 +3880,91 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void getJurorHistory() {
             ResponseEntity<JurorHistoryResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/141500073/history")),
-                    JurorHistoryResponseDto.class);
+                                                          URI.create(BASE_URL + "/141500073/history")),
+                                      JurorHistoryResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be successful")
                 .isEqualTo(HttpStatus.OK);
 
-            assertThat(response.getBody().toString()).isEqualTo(JurorHistoryResponseDto.builder()
+            JurorHistoryResponseDto expectedResponse = JurorHistoryResponseDto.builder()
                 .data(List.of(
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
+                    JurorHistoryEntryDto.builder()
                         .description("Juror responded")
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 6, 15, 41, 20, 162_000_000))
                         .poolNumber("415240801")
                         .details(List.of("Responded"))
                         .build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
+                    JurorHistoryEntryDto.builder()
                         .description("Juror record updated")
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 6, 15, 41, 20, 281_000_000))
                         .poolNumber("415240801")
                         .details(List.of("Date Of Birth Changed"))
                         .build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
+                    JurorHistoryEntryDto.builder()
                         .description("Pool attendance confirmed")
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 6, 15, 41, 57, 117_000_000))
                         .poolNumber("415240801")
                         .details(List.of("Attendance date 1 Jan 2024",
-                            "Pool attendance audit report P10000000"
-                        )).build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
+                                         "Pool attendance audit report P10000000"))
+                        .build(),
+                    JurorHistoryEntryDto.builder()
                         .description("Expenses submitted for approval")
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 6, 15, 42, 18, 754_000_000))
                         .poolNumber("415240801")
                         .details(List.of("Attendance date 6 Jun 2024",
-                            "Attendance audit report F1",
-                            "Total due £20.00"))
+                                         "Attendance audit report F1",
+                                         "Total due £20.00"))
                         .build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
+                    JurorHistoryEntryDto.builder()
                         .description("Expenses approved")
                         .username("MODCOURT")
                         .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 15, 53, 433_000_000))
                         .poolNumber("")
                         .details(List.of("Attendance date 6 Jun 2024",
-                            "Attendance audit report F2",
-                            "Total paid £20.00"))
+                                         "Attendance audit report F2",
+                                         "Total paid £20.00"))
                         .build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
+                    JurorHistoryEntryDto.builder()
                         .description("Pool attendance confirmed")
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 18, 7, 342_000_000))
                         .poolNumber("415240801")
                         .details(List.of("Attendance date 2 Jan 2024",
-                            "Pool attendance audit report P10000001"))
+                                         "Pool attendance audit report P10000001"))
                         .build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
+                    JurorHistoryEntryDto.builder()
                         .description("Expenses submitted for approval")
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 18, 36, 476_000_000))
                         .poolNumber("415240801")
                         .details(List.of("Attendance date 7 Jun 2024",
-                            "Attendance audit report F3",
-                            "Total due £5.00"))
+                                         "Attendance audit report F3",
+                                         "Total due £5.00"))
                         .build(),
-                    JurorHistoryResponseDto.JurorHistoryEntryDto.builder()
+                    JurorHistoryEntryDto.builder()
                         .description("Pool attendance confirmed")
                         .username("Court_user")
                         .dateCreated(LocalDateTime.of(2024, 6, 7, 10, 19, 0, 505_000_000))
                         .poolNumber("415240801")
                         .details(List.of("Attendance date 3 Jan 2024",
-                            "Pool attendance audit report P10000002"))
+                                         "Pool attendance audit report P10000002"))
                         .build()))
-                .build().toString());
+                .build();
+
+            assertThat(response.getBody().toString()).isEqualTo(expectedResponse.toString());
         }
 
         @Test
         void noJuror() {
             ResponseEntity<JurorHistoryResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/141500000/history")),
-                    JurorHistoryResponseDto.class);
+                                                          URI.create(BASE_URL + "/141500000/history")),
+                                      JurorHistoryResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to fail")
@@ -3863,12 +3977,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             staff.setCourts(Collections.singletonList("417"));
 
             final String courtJwt = mintBureauJwt(BureauJwtPayload.builder()
-                .userType(UserType.COURT)
-                .login("COURT_USER")
-                .owner("417")
-                .locCode("417")
-                .staff(staff)
-                .build());
+                                                      .userType(UserType.COURT)
+                                                      .login("COURT_USER")
+                                                      .owner("417")
+                                                      .locCode("417")
+                                                      .staff(staff)
+                                                      .build());
 
             HttpHeaders otherCourtHeaders = new HttpHeaders();
             otherCourtHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
@@ -3877,7 +3991,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<JurorHistoryResponseDto> response =
                 restTemplate.exchange(
                     new RequestEntity<>(otherCourtHeaders, HttpMethod.GET,
-                        URI.create("/api/v1/moj/juror-record/141500073/history")
+                                        URI.create(BASE_URL + "/141500073/history")
                     ),
                     JurorHistoryResponseDto.class
                 );
@@ -3907,9 +4021,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void updatePncCheckStatusEligible(String jurorNumber) {
             ResponseEntity<PoliceCheckStatusDto> response =
                 restTemplate.exchange(new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.ELIGIBLE),
-                        httpHeaders, HttpMethod.PATCH,
-                        URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    PoliceCheckStatusDto.class);
+                                                          httpHeaders, HttpMethod.PATCH,
+                                                          URI.create(BASE_URL + "/pnc/" + jurorNumber)),
+                                      PoliceCheckStatusDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be accepted")
@@ -3922,21 +4036,21 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
 
             assertEquals(PoliceCheck.ELIGIBLE, juror.getPoliceCheck(),
-                "Police check should match");
+                         "Police check should match");
 
             assertNull(juror.getDisqualifyCode(),
-                "Disqualify code should be null");
+                       "Disqualify code should be null");
             assertNull(juror.getDisqualifyDate(),
-                "Disqualify date should be null");
+                       "Disqualify date should be null");
             assertEquals(2, jurorPool.getStatus().getStatus(),
-                "Juror pool status should match");
+                         "Juror pool status should match");
 
             List<JurorHistory> jurorHistoryList = new ArrayList<>(
                 jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber));
             jurorHistoryList.sort(Comparator.comparing(JurorHistory::getHistoryCode));
             verifyStandardJurorHistory(jurorPool, jurorHistoryList,
-                new JurorHistoryExpectedValues("RRES", "Confirmation Letter Auto", null, null),
-                new JurorHistoryExpectedValues("POLG", "Passed", null, null)
+                                       new JurorHistoryExpectedValues("RRES", "Confirmation Letter Auto", null, null),
+                                       new JurorHistoryExpectedValues("POLG", "Passed", null, null)
             );
             verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
         }
@@ -3959,9 +4073,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void updatePncCheckStatusIneligible(String jurorNumber) {
             ResponseEntity<PoliceCheckStatusDto> response =
                 restTemplate.exchange(new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.INELIGIBLE),
-                        httpHeaders, HttpMethod.PATCH,
-                        URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
-                    PoliceCheckStatusDto.class);
+                                                          httpHeaders, HttpMethod.PATCH,
+                                                          URI.create(BASE_URL + "/pnc/" + jurorNumber)),
+                                      PoliceCheckStatusDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP GET request to be accepted")
@@ -3974,23 +4088,23 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
 
             assertEquals(PoliceCheck.INELIGIBLE, juror.getPoliceCheck(),
-                "Police check should match");
+                         "Police check should match");
 
             assertEquals("E", juror.getDisqualifyCode(),
-                "Disqualify code should match");
+                         "Disqualify code should match");
             assertEquals(LocalDate.now(clock), juror.getDisqualifyDate(),
-                "Disqualify date should match");
+                         "Disqualify date should match");
             assertEquals(6, jurorPool.getStatus().getStatus(),
-                "Juror pool status should match");
+                         "Juror pool status should match");
 
             List<JurorHistory> jurorHistoryList = new ArrayList<>(
                 jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber));
 
             verifyStandardJurorHistory(jurorPool,
-                jurorHistoryList,
-                new JurorHistoryExpectedValues("POLF", "Failed", null, null),
-                new JurorHistoryExpectedValues("PDIS", null, null, "E"),
-                new JurorHistoryExpectedValues("RDIS", "Withdrawal Letter Auto", null, "E")
+                                       jurorHistoryList,
+                                       new JurorHistoryExpectedValues("POLF", "Failed", null, null),
+                                       new JurorHistoryExpectedValues("PDIS", null, null, "E"),
+                                       new JurorHistoryExpectedValues("RDIS", "Withdrawal Letter Auto", null, "E")
             );
             verifyBulkPrintData(jurorNumber, FormCode.ENG_WITHDRAWAL.getCode());
         }
@@ -4010,8 +4124,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<PoliceCheckStatusDto> response =
                 restTemplate.exchange(
                     new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR),
-                        httpHeaders, HttpMethod.PATCH,
-                        URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
+                                        httpHeaders, HttpMethod.PATCH,
+                                        URI.create(BASE_URL + "/pnc/" + jurorNumber)),
                     PoliceCheckStatusDto.class);
 
             assertThat(response.getStatusCode())
@@ -4026,14 +4140,14 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
 
             assertEquals(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR, juror.getPoliceCheck(),
-                "Police check should match");
+                         "Police check should match");
 
             assertNull(juror.getDisqualifyCode(),
-                "Disqualify code should be null");
+                       "Disqualify code should be null");
             assertNull(juror.getDisqualifyDate(),
-                "Disqualify date should be null");
+                       "Disqualify date should be null");
             assertEquals(2, jurorPool.getStatus().getStatus(),
-                "Juror pool status should match");
+                         "Juror pool status should match");
             verifyNoBulkPrintData(jurorNumber);
         }
 
@@ -4051,8 +4165,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             ResponseEntity<PoliceCheckStatusDto> response =
                 restTemplate.exchange(
                     new RequestEntity<>(new PoliceCheckStatusDto(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR),
-                        httpHeaders, HttpMethod.PATCH,
-                        URI.create("/api/v1/moj/juror-record/pnc/" + jurorNumber)),
+                                        httpHeaders, HttpMethod.PATCH,
+                                        URI.create(BASE_URL + "/pnc/" + jurorNumber)),
                     PoliceCheckStatusDto.class);
 
             assertThat(response.getStatusCode())
@@ -4066,20 +4180,20 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
 
             assertEquals(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED, juror.getPoliceCheck(),
-                "Police check should match");
+                         "Police check should match");
 
             assertNull(juror.getDisqualifyCode(),
-                "Disqualify code should be null");
+                       "Disqualify code should be null");
             assertNull(juror.getDisqualifyDate(),
-                "Disqualify date should be null");
+                       "Disqualify date should be null");
             assertEquals(2, jurorPool.getStatus().getStatus(),
-                "Juror pool status should match");
+                         "Juror pool status should match");
 
             List<JurorHistory> jurorHistoryList =
                 jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             JurorHistory jurorHistory = jurorHistoryList.get(0);
             verifyStandardJurorHistory(jurorPool, List.of(jurorHistory),
-                new JurorHistoryExpectedValues("POLG", "Unchecked - timed out", null, null)
+                                       new JurorHistoryExpectedValues("POLG", "Unchecked - timed out", null, null)
             );
             verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
         }
@@ -4109,7 +4223,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             JurorNumberAndPoolNumberDto dto = createDto(JUROR_NUMBER, POOL_NUMBER);
             ResponseEntity<Void> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), Void.class);
+                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)),
+                                  Void.class);
 
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
@@ -4117,7 +4232,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
             assertEquals(IJurorStatus.FAILED_TO_ATTEND, jurorPool.getStatus().getStatus(),
-                "Juror pool status should be failed to attend");
+                         "Juror pool status should be failed to attend");
 
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(1, jurorHistories.size(), "Should only be one history entry");
@@ -4127,7 +4242,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals("COURT_USER", jurorHistory.getCreatedBy(), "User id should match");
             assertEquals(HistoryCodeMod.FAILED_TO_ATTEND, jurorHistory.getHistoryCode(), "History code should match");
             assertEquals("FTA after responding", jurorHistory.getOtherInformation(),
-                "Info should match");
+                         "Info should match");
         }
 
         @Test
@@ -4136,12 +4251,13 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             JurorNumberAndPoolNumberDto dto = createDto("123456789", POOL_NUMBER);
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)),
+                                  String.class);
             assertErrorResponse(response,
-                HttpStatus.NOT_FOUND,
-                URL,
-                MojException.NotFound.class,
-                "Juror number 123456789 not found in pool " + POOL_NUMBER);
+                                HttpStatus.NOT_FOUND,
+                                URL,
+                                MojException.NotFound.class,
+                                "Juror number 123456789 not found in pool " + POOL_NUMBER);
         }
 
         @Test
@@ -4152,19 +4268,20 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)),
+                                  String.class);
             assertBusinessRuleViolation(response,
-                "Juror status must be responded in order to undo the failed to attend status.",
-                JUROR_STATUS_MUST_BE_RESPONDED
+                                        "Juror status must be responded in order to undo the failed to attend status.",
+                                        ErrorCode.JUROR_STATUS_MUST_BE_RESPONDED
             );
 
             JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, POOL_NUMBER);
             assertEquals(IJurorStatus.PANEL, jurorPool.getStatus().getStatus(),
-                "Juror pool status should not change");
+                         "Juror pool status should not change");
 
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(0, jurorHistories.size(),
-                "No new history entry as request should be rejected before processing");
+                         "No new history entry as request should be rejected before processing");
         }
 
         @Test
@@ -4175,20 +4292,21 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)),
+                                  String.class);
             assertBusinessRuleViolation(response,
-                "This juror cannot be given a Failed To Attend status because they have been given a completion date. "
-                    + "Only a Senior Jury Officer can be remove the completion date",
-                FAILED_TO_ATTEND_HAS_COMPLETION_DATE
-            );
+                                        "This juror cannot be given a Failed To Attend status because they have "
+                                            + "been given a completion date. "
+                                            + "Only a Senior Jury Officer can be remove the completion date",
+                                        ErrorCode.FAILED_TO_ATTEND_HAS_COMPLETION_DATE);
 
             JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, POOL_NUMBER);
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                "Juror pool status should not change");
+                         "Juror pool status should not change");
 
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(0, jurorHistories.size(),
-                "No new history entry as request should be rejected before processing");
+                         "No new history entry as request should be rejected before processing");
         }
 
         @Test
@@ -4199,20 +4317,21 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)),
+                                  String.class);
             assertBusinessRuleViolation(response,
-                "This juror cannot be given a Failed To Attend status because they have had attendances recorded."
-                    + " The Failed To Attend status is only for jurors who have not attended at all",
-                FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD
-            );
+                                        "This juror cannot be given a Failed To Attend status because they have "
+                                            + "had attendances recorded. The Failed To Attend status is only for "
+                                            + "jurors who have not attended at all",
+                                        ErrorCode.FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD);
 
             JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(jurorNumber, POOL_NUMBER);
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                "Juror pool status should not change");
+                         "Juror pool status should not change");
 
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(0, jurorHistories.size(),
-                "No new history entry as request should be rejected before processing");
+                         "No new history entry as request should be rejected before processing");
         }
 
         @Test
@@ -4221,18 +4340,20 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             JurorNumberAndPoolNumberDto dto = createDto("INVALID", POOL_NUMBER);
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)),
+                                  String.class);
             assertInvalidPayload(response,
-                new RestResponseEntityExceptionHandler.FieldError("jurorNumber", "must match \"^\\d{9}$\""));
+                                 new RestResponseEntityExceptionHandler.FieldError(
+                                     "jurorNumber", "must match \"^\\d{9}$\""));
 
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                "Juror pool status should not change");
+                         "Juror pool status should not change");
 
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(0, jurorHistories.size(),
-                "No new history entry as request should be rejected before processing");
+                         "No new history entry as request should be rejected before processing");
         }
 
         @Test
@@ -4241,18 +4362,19 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             JurorNumberAndPoolNumberDto dto = createDto(JUROR_NUMBER, POOL_NUMBER);
             ResponseEntity<String> response =
                 restTemplate.exchange(
-                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)), String.class);
+                    new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH, URI.create(URL)),
+                                  String.class);
 
             assertForbiddenResponse(response, URL);
 
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(JUROR_NUMBER, POOL_NUMBER);
             assertEquals(IJurorStatus.RESPONDED, jurorPool.getStatus().getStatus(),
-                "Juror pool status should not change");
+                         "Juror pool status should not change");
 
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(0, jurorHistories.size(),
-                "No new history entry as request should be rejected before processing");
+                         "No new history entry as request should be rejected before processing");
         }
     }
 
@@ -4271,12 +4393,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         @DisplayName("GetJurorBankDetailsHappyPath")
         void testGJurorBankDetailsHappyPath() throws Exception {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<JurorBankDetailsDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toUrl("123456789"))),
-                    JurorBankDetailsDto.class);
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                          URI.create(toUrl("123456789"))),
+                                      JurorBankDetailsDto.class);
 
             assertThat(response.getStatusCode()).as("Expect the HTTP Response Status to be OK")
                 .isEqualTo(HttpStatus.OK);
@@ -4321,12 +4443,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void testGJurorBankDetailsUnhappyPathBureauUserDoesNotHaveAccess() throws Exception {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
-                UserType.BUREAU));
+                                                                     UserType.BUREAU));
 
             ResponseEntity<JurorBankDetailsDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toUrl("111111111"))),
-                    JurorBankDetailsDto.class);
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                          URI.create(toUrl("111111111"))),
+                                      JurorBankDetailsDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP Response Status to be Forbidden")
@@ -4338,12 +4460,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void testGJurorBankDetailsUnhappyPathCourtUserDoesNotHaveAccessToJuror() throws Exception {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("416"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<JurorBankDetailsDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toUrl("123456789"))),
-                    JurorBankDetailsDto.class);
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                          URI.create(toUrl("123456789"))),
+                                      JurorBankDetailsDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP Response Status to be Forbidden")
@@ -4355,12 +4477,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void testGJurorBankDetailsUnhappyPathJurorNotFound() throws Exception {
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<JurorBankDetailsDto> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toUrl("000000000"))),
-                    JurorBankDetailsDto.class);
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                          URI.create(toUrl("000000000"))),
+                                      JurorBankDetailsDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP Response Status to be Not Found")
@@ -4387,12 +4509,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         @Test
         void testGJurorBankDetailsUnhappyPathInvalidJurorNumber() throws Exception {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<String> response =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
-                        URI.create(toUrl("INVALID"))),
-                    String.class);
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+                                                          URI.create(toUrl("INVALID"))),
+                                      String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP Response Status to be Bad Request")
@@ -4452,10 +4574,10 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL)
+                              FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
+                              FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
+                              FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS,
+                              FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL)
                 );
 
                 //Count validated in triggerValid so no need to do here
@@ -4498,7 +4620,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             void testGSingleGetNameDetails() {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS));
+                              FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS));
                 //Count validated in triggerValid so no need to do here
                 FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
                 assertThat(responseDto.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
@@ -4518,7 +4640,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             void testGSingleGetPaymentDetails() {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS));
+                              FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS));
                 //Count validated in triggerValid so no need to do here
                 FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
                 assertThat(responseDto.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
@@ -4539,7 +4661,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             void testGSingleGetAddressDetails() {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                        FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS));
+                              FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS));
                 //Count validated in triggerValid so no need to do here
                 FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
                 assertThat(responseDto.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
@@ -4562,9 +4684,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             void testGSingleGetAll() {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS)
+                              FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
+                              FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
+                              FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS)
                 );
                 //Count validated in triggerValid so no need to do here
                 FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
@@ -4600,9 +4722,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             void testGSingleGetAllFromVersion() {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, 2L,
-                        FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
-                        FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS)
+                              FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
+                              FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
+                              FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS)
                 );
                 //Count validated in triggerValid so no need to do here
                 FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
@@ -4639,14 +4761,14 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     List.of(
                         createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                            FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
-                            FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
-                            FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS),
+                                  FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
+                                  FilterableJurorDetailsRequestDto.IncludeType.PAYMENT_DETAILS,
+                                  FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS),
                         createDto("223456789", null,
-                            FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS),
+                                  FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS),
                         createDto("323456789", null,
-                            FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
-                            FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS)
+                                  FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS,
+                                  FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS)
                     )
                 );
                 //Count validated in triggerValid so no need to do here
@@ -4723,7 +4845,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             void typicalCourtGetActivePoolDetails() {
                 ResponseEntity<FilterableJurorDetailsResponseDto[]> responseEntity = triggerValid(
                     createDto(TestConstants.VALID_JUROR_NUMBER, null,
-                        FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL));
+                              FilterableJurorDetailsRequestDto.IncludeType.ACTIVE_POOL));
                 //Count validated in triggerValid so no need to do here
                 FilterableJurorDetailsResponseDto responseDto = Objects.requireNonNull(responseEntity.getBody())[0];
                 assertThat(responseDto.getJurorNumber()).isEqualTo(TestConstants.VALID_JUROR_NUMBER);
@@ -4759,34 +4881,35 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             @Test
             void jurorNotFound() throws Exception {
-                FilterableJurorDetailsRequestDto request = createDto("023456789", null,
-                    FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
+                FilterableJurorDetailsRequestDto request =
+                    createDto("023456789", null, FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
                 assertNotFound(triggerInvalid(request), URL,
-                    "Juror not found: JurorNumber: 023456789 Revision: null");
+                               "Juror not found: JurorNumber: 023456789 Revision: null");
             }
 
             @Test
             void jurorVersionNotFound() throws Exception {
-                FilterableJurorDetailsRequestDto request = createDto(TestConstants.VALID_JUROR_NUMBER, 9L,
-                    FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
+                FilterableJurorDetailsRequestDto request =
+                    createDto(TestConstants.VALID_JUROR_NUMBER, 9L,
+                              FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
                 assertNotFound(triggerInvalid(request), URL,
-                    "Juror not found: JurorNumber: " + TestConstants.VALID_JUROR_NUMBER + " Revision: 9");
+                               "Juror not found: JurorNumber: " + TestConstants.VALID_JUROR_NUMBER + " Revision: 9");
             }
 
             @Test
             void invalidPayload() throws Exception {
-                FilterableJurorDetailsRequestDto request = createDto("INVALID", 9L,
-                    FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
+                FilterableJurorDetailsRequestDto request =
+                    createDto("INVALID", 9L, FilterableJurorDetailsRequestDto.IncludeType.NAME_DETAILS);
 
                 assertInvalidPathParam(triggerInvalid(request),
-                    "getJurorDetailsBulkFilterable.request[0].jurorNumber: must match \"^\\d{9}$\"");
+                                       "getJurorDetailsBulkFilterable.request[0].jurorNumber: must match \"^\\d{9}$\"");
             }
 
             @Test
             @DisplayName("Empty request body")
             void emptyRequest() throws Exception {
                 assertInvalidPathParam(triggerInvalid(List.of()),
-                    "getJurorDetailsBulkFilterable.request: size must be between 1 and 20");
+                                       "getJurorDetailsBulkFilterable.request: size must be between 1 and 20");
             }
 
             @Test
@@ -4795,7 +4918,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 List<FilterableJurorDetailsRequestDto> request = new ArrayList<>();
                 request.add(null);
                 assertInvalidPathParam(triggerInvalid(request),
-                    "getJurorDetailsBulkFilterable.request[0].<list element>: must not be null");
+                                       "getJurorDetailsBulkFilterable.request[0].<list element>: must not be null");
             }
 
             @Test
@@ -4807,13 +4930,13 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                      index < maxRequests + 1;
                      index++) {
                     request.add(FilterableJurorDetailsRequestDto.builder()
-                        .jurorNumber(String.valueOf(100_000_000 + index))
-                        .include(List.of(FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS))
-                        .build());
+                                    .jurorNumber(String.valueOf(100_000_000 + index))
+                                    .include(List.of(FilterableJurorDetailsRequestDto.IncludeType.ADDRESS_DETAILS))
+                                    .build());
                 }
 
                 assertInvalidPathParam(triggerInvalid(request),
-                    "getJurorDetailsBulkFilterable.request: size must be between 1 and 20");
+                                       "getJurorDetailsBulkFilterable.request: size must be between 1 and 20");
             }
         }
 
@@ -4832,11 +4955,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             JurorCreateRequestDto requestDto = createJurorRequestDto(poolNumber, "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
+                                                          URI.create(URL)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be CREATED")
@@ -4848,7 +4972,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals(1, pools.size(), "Should only be one juror pool");
             PoolRequest pool = pools.get(0);
             assertEquals(LocalDateTime.of(2023, 11, 29, 9, 0, 0),
-                pool.getLastUpdate(), "Last updated should not change as pool should not be updated");
+                         pool.getLastUpdate(), "Last updated should not change as pool should not be updated");
 
             validatePendingJuror(requestDto, poolNumber, pool.getReturnDate());
         }
@@ -4861,11 +4985,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             JurorCreateRequestDto requestDto = createJurorRequestDto(null, "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
+                                                          URI.create(URL)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be CREATED")
@@ -4885,11 +5010,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             JurorCreateRequestDto requestDto = createJurorRequestDto(null, "415");
             requestDto.setFirstName(null);
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
+                                                          URI.create(URL)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be BAD_REQUEST")
@@ -4903,11 +5029,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         void negativeBureauUser() throws Exception {
             JurorCreateRequestDto requestDto = createJurorRequestDto(null, "415");
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("415"),
-                UserType.BUREAU));
+                                                                     UserType.BUREAU));
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
+                                                          URI.create(URL)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be FORBIDDEN")
@@ -4923,11 +5050,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             JurorCreateRequestDto requestDto = createJurorRequestDto(poolNumber, "415");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("416", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
+                                                          URI.create(URL)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be FORBIDDEN")
@@ -4948,11 +5076,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             dto.setNextDate(null);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), String.class);
+                                                          URI.create(url)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be ACCEPTED")
@@ -4975,7 +5104,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                                                          URI.create(url)), String.class);
+                                                          URI.create(url)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be ACCEPTED")
@@ -4993,11 +5123,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             dto.setNextDate(LocalDate.now().plusWeeks(4));
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), String.class);
+                                                          URI.create(url)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be ACCEPTED")
@@ -5015,11 +5146,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             dto.setNextDate(null);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), String.class);
+                                                          URI.create(url)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be NOT_FOUND")
@@ -5037,11 +5169,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             dto.setNextDate(null);
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), String.class);
+                                                          URI.create(url)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be NOT_FOUND")
@@ -5061,7 +5194,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), String.class);
+                                                          URI.create(url)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be NOT_FOUND")
@@ -5081,11 +5215,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             dto.setAccountHolderName("Mr Fname Lname");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be OK")
@@ -5126,11 +5261,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             dto.setAccountHolderName("Mr Fname Lname");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be NOT_FOUND")
@@ -5150,11 +5286,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             dto.setAccountHolderName("Mr Fname Lname");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("415"),
-                UserType.BUREAU));
+                                                                     UserType.BUREAU));
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be FORBIDDEN")
@@ -5174,11 +5311,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             dto.setAccountHolderName("Mr Fname Lname");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be BAD_REQUEST")
@@ -5198,11 +5336,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             dto.setAccountHolderName("Mr Fname Lname");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be BAD_REQUEST")
@@ -5222,11 +5361,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             dto.setAccountHolderName("Mr Fname Lname Too Long");
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be BAD_REQUEST")
@@ -5267,17 +5407,17 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertNotNull(poolRequest.getPoolNumber(), "Pool number must be created");
             assertEquals(owner, poolRequest.getOwner(), "Owner must match");
             assertEquals(dto.getLocationCode(), poolRequest.getCourtLocation().getLocCode(),
-                "CourtLocation must match");
+                         "CourtLocation must match");
             assertEquals('N', poolRequest.getNewRequest(), "new Request must match");
             assertEquals(dto.getStartDate(), poolRequest.getReturnDate(), "Return date must match");
             assertNull(poolRequest.getNumberRequested(), "Number requested must be null");
 
             assertEquals(LocalDateTime.of(dto.getStartDate(),
-                    courtLocation.getCourtAttendTime()),
-                poolRequest.getAttendTime(), "Attend Time must match");
+                                          courtLocation.getCourtAttendTime()),
+                         poolRequest.getAttendTime(), "Attend Time must match");
 
             assertEquals(dto.getPoolType(), poolRequest.getPoolType().getPoolType(),
-                "Pool type must match");
+                         "Pool type must match");
 
             List<PoolHistory> poolHistories = poolHistoryRepository.findAll();
             assertEquals(1, poolHistories.size(), "Should be one pool history");
@@ -5286,8 +5426,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertEquals("COURT_USER", poolHistory.getUserId(), "User id must match");
             assertEquals(HistoryCode.PREQ, poolHistory.getHistoryCode(), "History code must match");
             assertEquals(String.format("Pool Request %s created for pending Juror",
-                    poolRequest.getPoolNumber()),
-                poolHistory.getOtherInformation(), "Info must match");
+                                       poolRequest.getPoolNumber()),
+                         poolHistory.getOtherInformation(), "Info must match");
         }
 
         private JurorCreateRequestDto createJurorRequestDto(String poolNumber, String locationCode) {
@@ -5337,11 +5477,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .build();
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be OK")
@@ -5365,7 +5506,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(dto, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be FORBIDDEN")
@@ -5387,11 +5529,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             final String url = BASE_URL + "/mark-responded/" + jurorNumber;
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                     UserType.COURT));
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be OK")
@@ -5412,11 +5555,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             final String url = BASE_URL + "/mark-responded/" + jurorNumber;
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
-                UserType.BUREAU));
+                                                                     UserType.BUREAU));
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be OK")
@@ -5436,11 +5580,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             final String url = BASE_URL + "/mark-responded/" + jurorNumber;
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("400", Collections.singletonList("400"),
-                UserType.BUREAU));
+                                                                     UserType.BUREAU));
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
-                    URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be NOT_FOUND")
@@ -5466,7 +5611,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
-                                                          URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be OK")
@@ -5492,7 +5638,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
-                                                          URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be OK")
@@ -5517,7 +5664,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<Void> response =
                 restTemplate.exchange(new RequestEntity<>(null, httpHeaders, HttpMethod.PATCH,
-                                                          URI.create(url)), Void.class);
+                                                          URI.create(url)),
+                                  Void.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be NOT_FOUND")
@@ -5543,22 +5691,22 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .title("Mr")
                 .firstName("John")
                 .lastName("Smith")
-                    .address(JurorAddressDto.builder()
-                            .lineOne("1 High Street")
-                            .lineTwo("Test")
-                            .lineThree("Test")
-                            .town("Chester")
-                            .county("Test")
-                            .postcode("CH1 2AB")
-                    .build())
+                .address(JurorAddressDto.builder()
+                             .lineOne("1 High Street")
+                             .lineTwo("Test")
+                             .lineThree("Test")
+                             .town("Chester")
+                             .county("Test")
+                             .postcode("CH1 2AB")
+                             .build())
                 .primaryPhone("01234567890")
                 .emailAddress("test@test.com")
                 .notes("A manually created juror")
                 .build();
 
-            Set<Role> roles = new HashSet<>();
+            EnumSet<Role> roles = EnumSet.noneOf(Role.class);
             roles.add(Role.MANAGER);
-            Set<Permission> permissions = new HashSet<>();
+            EnumSet<Permission> permissions = EnumSet.noneOf(Permission.class);
             permissions.add(Permission.CREATE_JUROR);
             User user = User.builder()
                 .username("BUREAU_USER")
@@ -5566,18 +5714,20 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .permissions(permissions)
                 .build();
 
-            final BureauJwtPayload bureauJwtPayload = new BureauJwtPayload(user, UserType.BUREAU, "400",
-                Collections.singletonList(CourtLocation.builder()
-                    .locCode("400")
-                    .name("Bureau")
-                    .owner("400")
-                    .build()));
+            final BureauJwtPayload bureauJwtPayload =
+                new BureauJwtPayload(user, UserType.BUREAU, "400",
+                                     Collections.singletonList(CourtLocation.builder()
+                                                                   .locCode("400")
+                                                                   .name("Bureau")
+                                                                   .owner("400")
+                                                                   .build()));
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(bureauJwtPayload));
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
+                                                          URI.create(URL)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be CREATED")
@@ -5606,7 +5756,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(juror.getPostcode()).isEqualTo("CH1 2AB");
 
             JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndPoolPoolNumber(juror.getJurorNumber(),
-                poolNumber);
+                                                                                              poolNumber);
             assertThat(jurorPool).isNotNull();
             assertThat(jurorPool.getStatus().getStatus()).isEqualTo(IJurorStatus.SUMMONED);
             assertThat(jurorPool.getOwner()).isEqualTo("400");
@@ -5636,21 +5786,21 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .firstName("John")
                 .lastName("Smith")
                 .address(JurorAddressDto.builder()
-                    .lineOne("1 High Street")
-                    .lineTwo("Test")
-                    .lineThree("Test")
-                    .town("Chester")
-                    .county("Test")
-                    .postcode("CH1 2AB")
-                    .build())
+                             .lineOne("1 High Street")
+                             .lineTwo("Test")
+                             .lineThree("Test")
+                             .town("Chester")
+                             .county("Test")
+                             .postcode("CH1 2AB")
+                             .build())
                 .primaryPhone("01234567890")
                 .emailAddress("test@test.com")
                 .notes("A manually created juror")
                 .build();
 
-            Set<Role> roles = new HashSet<>();
+            EnumSet<Role> roles = EnumSet.noneOf(Role.class);
             roles.add(Role.MANAGER);
-            Set<Permission> permissions = new HashSet<>();
+            EnumSet<Permission> permissions = EnumSet.noneOf(Permission.class);
             User user = User.builder()
                 .username("BUREAU2")
                 .roles(roles)
@@ -5658,17 +5808,18 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .build();
 
             BureauJwtPayload bureauJwtPayload = new BureauJwtPayload(user, UserType.BUREAU, "400",
-                Collections.singletonList(CourtLocation.builder()
-                    .locCode("400")
-                    .name("Bureau")
-                    .owner("400")
-                    .build()));
+                                                                     Collections.singletonList(CourtLocation.builder()
+                                                                                                   .locCode("400")
+                                                                                                   .name("Bureau")
+                                                                                                   .owner("400")
+                                                                                                   .build()));
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(bureauJwtPayload));
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
+                                                          URI.create(URL)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be FORBIDDEN")
@@ -5686,24 +5837,25 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .firstName("John")
                 .lastName("Smith")
                 .address(JurorAddressDto.builder()
-                    .lineOne("1 High Street")
-                    .lineTwo("Test")
-                    .lineThree("Test")
-                    .town("Chester")
-                    .county("Test")
-                    .postcode("CH1 2AB")
-                    .build())
+                             .lineOne("1 High Street")
+                             .lineTwo("Test")
+                             .lineThree("Test")
+                             .town("Chester")
+                             .county("Test")
+                             .postcode("CH1 2AB")
+                             .build())
                 .primaryPhone("01234567890")
                 .emailAddress("test@test.com")
                 .notes("A manually created juror")
                 .build();
 
             httpHeaders.set(HttpHeaders.AUTHORIZATION,  initCourtsJwt("415", Collections.singletonList("415"),
-                UserType.COURT));
+                                                                      UserType.COURT));
 
             ResponseEntity<?> response =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(URL)), String.class);
+                                                          URI.create(URL)),
+                                  String.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be FORBIDDEN")
@@ -5732,9 +5884,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                        URI.create(URL)),
-                    new ParameterizedTypeReference<>() {
-                    });
+                                                          URI.create(URL)),
+                                      new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
@@ -5762,9 +5913,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                        URI.create(URL)),
-                    new ParameterizedTypeReference<>() {
-                    });
+                                                          URI.create(URL)),
+                                      new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
@@ -5792,7 +5942,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+                                                          URI.create(URL)), new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be NO CONTENT")
@@ -5812,7 +5962,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+                                                          URI.create(URL)), new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
@@ -5841,7 +5991,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+                                                          URI.create(URL)), new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
@@ -5869,7 +6019,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+                                                          URI.create(URL)), new ParameterizedTypeReference<>() {});
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
                 .isEqualTo(HttpStatus.OK);
@@ -5902,7 +6052,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+                                                          URI.create(URL)), new ParameterizedTypeReference<>() {});
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
                 .isEqualTo(HttpStatus.OK);
@@ -5935,7 +6085,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+                                                          URI.create(URL)), new ParameterizedTypeReference<>() {});
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
                 .isEqualTo(HttpStatus.OK);
@@ -5968,7 +6118,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+                                                          URI.create(URL)), new ParameterizedTypeReference<>() {});
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be successful")
                 .isEqualTo(HttpStatus.OK);
@@ -5995,7 +6145,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<PaginatedList<FilterJurorRecord>> response =
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, POST,
-                    URI.create(URL)), new ParameterizedTypeReference<>() {});
+                                                          URI.create(URL)), new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request (GET With Body) to be NO CONTENT")
@@ -6025,11 +6175,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         private void validateSearchResultByPool(PaginatedList<FilterJurorRecord> responseBody) {
             assertThat(responseBody.getTotalItems()).as("Expect the response body to contain a total count "
-                + "value of 10").isEqualTo(10);
+                                                            + "value of 10").isEqualTo(10);
             assertThat(responseBody.getTotalPages()).as("Expect the response body to contain a total page value of 2")
                 .isEqualTo(2);
             assertThat(responseBody.getCurrentPage()).as("Expect the response body to contain a current page value of"
-                    + " 2")
+                                                             + " 2")
                 .isEqualTo(2);
             List<FilterJurorRecord> data = responseBody.getData();
             assertThat(data.size()).as("Expect the response body to contain all 4 data items").isEqualTo(4);
@@ -6051,11 +6201,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
         private void validateSearchResultSortedDesc(PaginatedList<FilterJurorRecord> responseBody) {
             assertThat(responseBody.getTotalItems()).as("Expect the response body to contain a total count value "
-                + "of 10").isEqualTo(10);
+                                                            + "of 10").isEqualTo(10);
             assertThat(responseBody.getTotalPages()).as("Expect the response body to contain a total page value of 1")
                 .isEqualTo(1);
             assertThat(responseBody.getCurrentPage()).as("Expect the response body to contain a current page value of"
-                    + " 1")
+                                                             + " 1")
                 .isEqualTo(1);
             List<FilterJurorRecord> data = responseBody.getData();
             assertThat(data.size()).as("Expect the response body to contain all 10 data items").isEqualTo(10);
@@ -6081,7 +6231,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.getTotalPages()).as("Expect the response body to contain a total page value of 1")
                 .isEqualTo(1);
             assertThat(responseBody.getCurrentPage()).as("Expect the response body to contain a current page value of"
-                    + " 1")
+                                                             + " 1")
                 .isEqualTo(1);
             List<FilterJurorRecord> data = responseBody.getData();
             assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
@@ -6118,7 +6268,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<JurorSimpleDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                    URI.create(url)), JurorSimpleDetailsResponseDto.class);
+                                                          URI.create(url)),
+                                  JurorSimpleDetailsResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be OK")
@@ -6148,7 +6299,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<JurorSimpleDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                                                          URI.create(url)), JurorSimpleDetailsResponseDto.class);
+                                                          URI.create(url)),
+                                  JurorSimpleDetailsResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be OK")
@@ -6174,7 +6326,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<JurorSimpleDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                                                          URI.create(url)), JurorSimpleDetailsResponseDto.class);
+                                                          URI.create(url)),
+                                  JurorSimpleDetailsResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be OK")
@@ -6193,7 +6346,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             ResponseEntity<JurorSimpleDetailsResponseDto> response =
                 restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, POST,
-                                                          URI.create(url)), JurorSimpleDetailsResponseDto.class);
+                                                          URI.create(url)),
+                                  JurorSimpleDetailsResponseDto.class);
 
             assertThat(response.getStatusCode())
                 .as("Expect the HTTP POST request to be OK")
@@ -6220,21 +6374,21 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         for (JurorHistoryExpectedValues expectedValue : expectedValues) {
             JurorHistory jurorHistory = jurorHistoryValues.next();
             assertEquals(jurorPool.getPoolNumber(), jurorHistory.getPoolNumber(),
-                "Pool Number must match");
+                         "Pool Number must match");
             assertEquals(jurorPool.getJuror().getJurorNumber(), jurorHistory.getJurorNumber(),
-                "Juror Number must match");
+                         "Juror Number must match");
             assertEquals(jurorPool.getPoolNumber(), jurorHistory.getPoolNumber(),
-                "Pool Number must match");
+                         "Pool Number must match");
             assertEquals("SYSTEM", jurorHistory.getCreatedBy(),
-                "User Id must match");
+                         "User Id must match");
             assertEquals(expectedValue.historyCode, jurorHistory.getHistoryCode().getCode(),
-                "History Code must match");
+                         "History Code must match");
             assertEquals(expectedValue.info, jurorHistory.getOtherInformation(),
-                "Info must match");
+                         "Info must match");
             assertEquals(expectedValue.date, jurorHistory.getOtherInformationDate(),
-                "Other info Date must match");
+                         "Other info Date must match");
             assertEquals(expectedValue.ref, jurorHistory.getOtherInformationRef(),
-                "Other info Ref must match");
+                         "Other info Ref must match");
             assertThat(jurorHistory.getDateCreated())
                 .as("Date Part must match")
                 .isEqualToIgnoringHours(LocalDateTime.now());
@@ -6244,15 +6398,16 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     private record JurorHistoryExpectedValues(String historyCode, String info, LocalDate date, String ref) {
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private String initPayloadWithStaffRank(String owner, String username, UserType userType,
                                             Role... roles) throws Exception {
         return mintBureauJwt(BureauJwtPayload.builder()
-            .userType(userType)
-            .roles(List.of(roles))
-            .login(username)
-            .owner(owner)
-            .staff(BureauJwtPayload.Staff.builder().build())
-            .build());
+                                 .userType(userType)
+                                 .roles(List.of(roles))
+                                 .login(username)
+                                 .owner(owner)
+                                 .staff(BureauJwtPayload.Staff.builder().build())
+                                 .build());
     }
 
     private List<String> initChangedHistoryProperties() {
@@ -6320,11 +6475,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     private void setAuthorization(String login, String owner, UserType userType, Role... roles) {
         httpHeaders.remove(HttpHeaders.AUTHORIZATION);
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
-            .userType(userType)
-            .roles(List.of(roles))
-            .login(login)
-            .owner(owner)
-            .build()));
+                                                                     .userType(userType)
+                                                                     .roles(List.of(roles))
+                                                                     .login(login)
+                                                                     .owner(owner)
+                                                                     .build()));
     }
 
     private JurorOpticRefRequestDto createOpticRefRequestDto(String jurorNumber, String poolNumber,

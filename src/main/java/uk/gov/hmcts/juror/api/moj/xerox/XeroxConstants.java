@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 public final class XeroxConstants {
 
+    @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
     public static final Map<String, String> WELSH_DATE_TRANSLATION_MAP = Stream.of(new String[][]{
         {"MONDAY", "Dydd Llun"},
         {"TUESDAY", "Dydd Mawrth"},

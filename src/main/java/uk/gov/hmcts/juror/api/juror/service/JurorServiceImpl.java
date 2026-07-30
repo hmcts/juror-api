@@ -50,6 +50,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class JurorServiceImpl implements JurorService {
     private final ReplyTypeRepository replyTypeRepository;
 
@@ -139,6 +140,7 @@ public class JurorServiceImpl implements JurorService {
 
     @Transactional
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public DigitalResponse saveResponse(final JurorResponseDto responseDto) {
         //checks
         if (jurorResponseRepository.findByJurorNumber(responseDto.getJurorNumber()) != null) {
@@ -233,6 +235,7 @@ public class JurorServiceImpl implements JurorService {
      * @return Persisted entity of the response
      */
     @Transactional(propagation = Propagation.MANDATORY)
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.CognitiveComplexity", "PMD.NPathComplexity"})
     public DigitalResponse convertJurorResponseDtoToEntity(JurorResponseDto dto) {
         if (log.isTraceEnabled()) {
             log.trace("Consuming: {}", dto);

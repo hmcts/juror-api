@@ -51,7 +51,7 @@ class MessageSendRequestTest extends AbstractValidatorTest<MessageSendRequest> {
     class JurorAndSendTypeTest extends AbstractValidatorTest<MessageSendRequest.JurorAndSendType> {
 
 
-        public static MessageSendRequest.JurorAndSendType getValidObject() {
+        static MessageSendRequest.JurorAndSendType getValidObject() {
             return MessageSendRequest.JurorAndSendType.builder()
                 .jurorNumber(TestConstants.VALID_JUROR_NUMBER)
                 .poolNumber(TestConstants.VALID_POOL_NUMBER)

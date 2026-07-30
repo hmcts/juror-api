@@ -64,7 +64,7 @@ import java.util.List;
 @Tag(name = "Expenses")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @PreAuthorize("(" + SecurityUtil.LOC_CODE_AUTH + " and " + SecurityUtil.IS_COURT + ")")
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class JurorExpenseController {
 
     private final JurorExpenseService jurorExpenseService;
@@ -92,7 +92,7 @@ public class JurorExpenseController {
         @PathVariable(name = "juror_number") @JurorNumber @Valid String jurorNumber,
         @Valid @RequestBody @NotNull List<DailyExpense> request
     ) {
-        if (ExpenseType.DRAFT.equals(type)) {
+        if (type == ExpenseType.DRAFT) {
             return ResponseEntity.ok(bulkService.process(request,
                 dailyExpense -> jurorExpenseService.updateDraftExpense(locCode, jurorNumber, dailyExpense)));
         } else {
@@ -264,6 +264,7 @@ public class JurorExpenseController {
     @PostMapping("/{juror_number}/default-expenses")
     @Operation(summary = "Update default expense details for juror and appearance and persists them to database ")
     @ResponseStatus(HttpStatus.OK)
+    @SuppressWarnings({"PMD.LinguisticNaming"})
     public ResponseEntity<Void> setDefaultExpenses(
         @PathVariable("loc_code") @CourtLocationCode @Valid @P("loc_code") String locCode,
         @PathVariable("juror_number") @Valid @NotBlank @JurorNumber String jurorNumber,

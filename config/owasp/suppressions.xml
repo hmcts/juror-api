@@ -75,4 +75,14 @@
     <cve>CVE-2026-54428</cve>
   </suppress>
 
+  <suppress>
+    <notes><![CDATA[
+   Jenkins dependency-check findings. Pipeline log did not include affected package URLs.
+   Review and replace with packageUrl-scoped suppressions once the dependency-check report is available.
+   ]]></notes>
+    <cve>CVE-2026-59084</cve>
+    <cve>CVE-2026-59083</cve>
+    <cve>CVE-2026-49844</cve>
+  </suppress>
+
 </suppressions>

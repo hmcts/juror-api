@@ -46,7 +46,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @SuperBuilder
 @ToString(exclude = {"reasonableAdjustments", "cjsEmployments"})// lazy init fields
 @EqualsAndHashCode(callSuper = true, exclude = {"cjsEmployments", "reasonableAdjustments", "staff"})
-@SuppressWarnings("PMD.TooManyFields")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyFields"})
 public class CombinedJurorResponse extends Address implements Serializable {
 
     @Id
@@ -158,6 +158,7 @@ public class CombinedJurorResponse extends Address implements Serializable {
      */
     @OneToMany(mappedBy = "jurorNumber")
     @Builder.Default
+    @SuppressWarnings({"PMD.ImmutableField"}) // @Builder.Default raises false positive.
     private List<ContactLog> contactLog = new ArrayList<>();
 
 
@@ -166,6 +167,7 @@ public class CombinedJurorResponse extends Address implements Serializable {
      */
     @OneToMany(mappedBy = "jurorNumber")
     @Builder.Default
+    @SuppressWarnings({"PMD.ImmutableField"}) // @Builder.Default raises false positive.
     private List<JurorReasonableAdjustment> reasonableAdjustments = new ArrayList<>();
 
     /**
@@ -173,6 +175,7 @@ public class CombinedJurorResponse extends Address implements Serializable {
      */
     @OneToMany(mappedBy = "jurorNumber")
     @Builder.Default
+    @SuppressWarnings({"PMD.ImmutableField"}) // @Builder.Default raises false positive.
     private List<JurorResponseCjsEmployment> cjsEmployments = new ArrayList<>();
     /**
      * Flag that this response is urgent.
@@ -251,10 +254,12 @@ public class CombinedJurorResponse extends Address implements Serializable {
 
     @Column(name = "juror_phone_details")
     @Builder.Default
+    @SuppressWarnings({"PMD.ImmutableField"}) // @Builder.Default raises false positive.
     private Boolean jurorPhoneDetails = Boolean.TRUE;
 
     @Column(name = "juror_email_details")
     @Builder.Default
+    @SuppressWarnings({"PMD.ImmutableField"}) // @Builder.Default raises false positive.
     private Boolean jurorEmailDetails = Boolean.TRUE;
 
     //Paper
@@ -270,6 +275,7 @@ public class CombinedJurorResponse extends Address implements Serializable {
     }
 
     @PrePersist
+    @SuppressWarnings({"PMD.UnusedPrivateMethod"}) // this class used by @PrePersist
     private void ensureDefaults() {
         if (processingStatus == null) {
             processingStatus = ProcessingStatus.TODO;

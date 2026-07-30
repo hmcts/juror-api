@@ -22,6 +22,7 @@ public class PublicPreAuthenticationTokenFilter extends OncePerRequestFilter {
 
     public PublicPreAuthenticationTokenFilter(final String headerName,
                                               final AuthenticationManager authenticationManager) {
+        super();
         this.headerName = headerName;
         this.authenticationManager = authenticationManager;
         Assert.notNull(headerName, "The token header name was not set");

@@ -58,6 +58,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.GodClass", "PMD.TooManyMethods"})
 public class JurorPaperResponseServiceImpl implements JurorPaperResponseService {
 
     private static final String INVALID_CJS_EMPLOYMENT_ERROR_MESSAGE = "Invalid CJS Employment supplied for Juror %s";
@@ -207,7 +208,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         jurorPaperResponseDetailDto.setSigned(jurorPaperResponse.getSigned());
         jurorPaperResponseDetailDto.setProcessingStatus(jurorPaperResponse.getProcessingStatus().getDescription());
-        jurorPaperResponseDetailDto.setWelsh(jurorPaperResponse.getWelsh());
+        jurorPaperResponseDetailDto.setWelsh(jurorPaperResponse.isWelsh());
 
         jurorPaperResponseDetailDto.setCompletedAt(jurorPaperResponse.getCompletedAt());
 
@@ -336,7 +337,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
             throw new JurorPaperResponseException.JurorPaperResponseAlreadyExists(jurorNumber);
         }
 
-        jurorPaperResponse = createJurorPaperResponseEntity(paperResponseDto, jurorPool);
+        jurorPaperResponse = createJurorPaperResponseEntity(paperResponseDto);
 
         User staff = userRepository.findByUsername(payload.getLogin());
         jurorPaperResponse.setStaff(staff);
@@ -364,14 +365,14 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
     private PaperResponse updateWelshFlagBasedOnResponse(PaperResponse jurorPaperResponse, JurorPool jurorPool) {
         Juror juror = jurorPool.getJuror();
-        juror.setWelsh(jurorPaperResponse.getWelsh());
+        juror.setWelsh(jurorPaperResponse.isWelsh());
         jurorRepository.save(juror);
 
         jurorPaperResponse.setWelsh(jurorPool.getJuror().getWelsh());
         return jurorPaperResponse;
     }
 
-    private PaperResponse createJurorPaperResponseEntity(JurorPaperResponseDto paperResponseDto, JurorPool jurorPool) {
+    private PaperResponse createJurorPaperResponseEntity(JurorPaperResponseDto paperResponseDto) {
         PaperResponse jurorPaperResponse = new PaperResponse();
 
         jurorPaperResponse.setJurorNumber(paperResponseDto.getJurorNumber());
@@ -559,6 +560,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.CognitiveComplexity"})
     public void updateCjsDetails(BureauJwtPayload payload, CjsEmploymentDetailsDto cjsEmploymentDetailsDto,
                                  final String jurorNumber) {
         log.info(String.format("Updating paper response CJS Employment for Juror %s, by user %s",
@@ -648,6 +650,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.CognitiveComplexity"})
     public void updateReasonableAdjustmentsDetails(BureauJwtPayload payload,
                                                    ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto,
                                                    final String jurorNumber) {
@@ -752,14 +755,14 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     private void saveReasonableAdjustmentsToJurorRecord(String jurorNumber,
                                                         ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto) {
         Juror juror = JurorUtils.getActiveJurorRecord(jurorRepository, jurorNumber);
-        if (!Collections.isEmpty(reasonableAdjustmentDetailsDto.getReasonableAdjustments())) {
+        if (Collections.isEmpty(reasonableAdjustmentDetailsDto.getReasonableAdjustments())) {
+            juror.setReasonableAdjustmentMessage(null);
+            juror.setReasonableAdjustmentCode(null);
+        } else {
             JurorPaperResponseDto.ReasonableAdjustment newReasonableAdjustmentDetailsDto =
                 reasonableAdjustmentDetailsDto.getReasonableAdjustments().get(0);
             juror.setReasonableAdjustmentCode(newReasonableAdjustmentDetailsDto.getAssistanceType());
             juror.setReasonableAdjustmentMessage(newReasonableAdjustmentDetailsDto.getAssistanceTypeDetails());
-        } else {
-            juror.setReasonableAdjustmentMessage(null);
-            juror.setReasonableAdjustmentCode(null);
         }
         jurorRepository.save(juror);
     }
@@ -767,6 +770,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void updateJurorEligibilityDetails(BureauJwtPayload payload, EligibilityDetailsDto eligibilityDetailsDto,
                                               final String jurorNumber) {
 

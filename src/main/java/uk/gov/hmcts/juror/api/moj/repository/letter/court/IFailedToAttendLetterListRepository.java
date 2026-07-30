@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.FailedToAttendLetterList;
 
 import java.util.List;
 
+@FunctionalInterface
 public interface IFailedToAttendLetterListRepository {
     List<FailedToAttendLetterList> findJurorsEligibleForFailedToAttendLetter(CourtLetterSearchCriteria searchCriteria,
                                                                              String owner);

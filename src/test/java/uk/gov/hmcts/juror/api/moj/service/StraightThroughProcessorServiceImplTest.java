@@ -95,9 +95,9 @@ public class StraightThroughProcessorServiceImplTest {
         Mockito.doReturn(null).when(jurorDigitalResponseRepository).save(any());
 
         Mockito.doReturn(new ArrayList<>()).when(jurorResponseCjsEmploymentRepository)
-            .findByJurorNumber(Mockito.anyString());
+            .findByJurorNumber(any());
         Mockito.doReturn(new ArrayList<>()).when(jurorReasonableAdjustmentRepository)
-            .findByJurorNumber(Mockito.anyString());
+            .findByJurorNumber(any());
     }
 
     //Interface method: isValidResponseForStraightThroughProcessing
@@ -415,8 +415,8 @@ public class StraightThroughProcessorServiceImplTest {
         Mockito.verify(mergeService, Mockito.never())
             .mergeDigitalResponse(any(DigitalResponse.class), any(String.class));
         Mockito.verifyNoInteractions(jurorHistoryService);
-        Mockito.verify(printDataService, Mockito.never()).printWithdrawalLetter(Mockito.any());
-        Mockito.verify(jurorDigitalResponseRepository, Mockito.never()).save(Mockito.any());
+        Mockito.verify(printDataService, Mockito.never()).printWithdrawalLetter(any());
+        Mockito.verify(jurorDigitalResponseRepository, Mockito.never()).save(any());
     }
 
     @Test
@@ -465,8 +465,8 @@ public class StraightThroughProcessorServiceImplTest {
 
         Mockito.verify(jurorHistoryService).createDisqualifyHistory(jurorPool,"A");
         Mockito.verify(jurorHistoryService).createWithdrawHistoryUser(jurorPool,null,"A");
-        Mockito.verify(printDataService, Mockito.times(1)).printWithdrawalLetter(Mockito.any());
-        Mockito.verify(jurorDigitalResponseRepository, Mockito.times(1)).save(Mockito.any());
+        Mockito.verify(printDataService, Mockito.times(1)).printWithdrawalLetter(any());
+        Mockito.verify(jurorDigitalResponseRepository, Mockito.times(1)).save(any());
     }
 
     @Test
@@ -511,11 +511,11 @@ public class StraightThroughProcessorServiceImplTest {
             straightThroughProcessorService.processAgeDisqualification(digitalResponse, jurorPool,
                 TestUtils.createJwt("415", "Bureau_User")));
 
-        Mockito.verify(mergeService, Mockito.never()).mergeDigitalResponse(Mockito.any(DigitalResponse.class),
-            Mockito.any(String.class));
+        Mockito.verify(mergeService, Mockito.never()).mergeDigitalResponse(any(DigitalResponse.class),
+            any(String.class));
         Mockito.verifyNoInteractions(jurorHistoryService);
-        Mockito.verify(printDataService, Mockito.never()).printWithdrawalLetter(Mockito.any());
-        Mockito.verify(jurorDigitalResponseRepository, Mockito.never()).save(Mockito.any());
+        Mockito.verify(printDataService, Mockito.never()).printWithdrawalLetter(any());
+        Mockito.verify(jurorDigitalResponseRepository, Mockito.never()).save(any());
     }
 
     @Test

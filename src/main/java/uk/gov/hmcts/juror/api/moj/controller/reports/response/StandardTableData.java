@@ -23,6 +23,7 @@ public class StandardTableData extends ArrayList<LinkedHashMap<String, Object>> 
     }
 
     @SafeVarargs
+    @SuppressWarnings({"PMD.ShortMethodName"})
     public static StandardTableData of(LinkedHashMap<String, Object>... data) {
         return new StandardTableData(List.of(data));
     }

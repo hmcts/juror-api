@@ -6,6 +6,7 @@ import java.util.Locale;
 
 import static java.lang.String.format;
 
+@SuppressWarnings("PMD.AvoidStringBufferField")
 public abstract class AbstractLetterTest {
     protected final StringBuilder expectedEnglish = new StringBuilder();
     protected final StringBuilder expectedWelsh = new StringBuilder();

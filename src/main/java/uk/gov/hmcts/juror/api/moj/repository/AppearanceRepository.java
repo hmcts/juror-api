@@ -17,7 +17,7 @@ import java.util.Set;
 
 
 @Repository
-@SuppressWarnings("LineLength")
+@SuppressWarnings({"PMD.TooManyMethods", "LineLength"})
 public interface AppearanceRepository extends IAppearanceRepository, JpaRepository<Appearance, AppearanceId>,
     RevisionRepository<Appearance, AppearanceId, Long> {
 

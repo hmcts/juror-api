@@ -18,7 +18,7 @@ public class YesNo10Converter extends CharBooleanConverter {
 
     @Override
     protected String[] getValues() {
-        return VALUES;
+        return VALUES.clone();
     }
 
     @Override

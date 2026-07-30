@@ -59,7 +59,7 @@ import java.util.List;
 @Validated
 @Tag(name = "Summons Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class LetterController {
 
     @NonNull
@@ -152,7 +152,7 @@ public class LetterController {
         @PathVariable(name = "letter_type") CourtLetterType letterType,
         @PathVariable(name = "include_printed") Boolean includePrinted) {
 
-        if (CourtLetterType.FAILED_TO_ATTEND.equals(letterType) || CourtLetterType.SHOW_CAUSE.equals(letterType)) {
+        if (letterType == CourtLetterType.FAILED_TO_ATTEND || letterType == CourtLetterType.SHOW_CAUSE) {
             CourtLetterListRequestDto courtLetterListRequestDto = CourtLetterListRequestDto.builder()
                 .letterType(letterType)
                 .includePrinted(includePrinted)

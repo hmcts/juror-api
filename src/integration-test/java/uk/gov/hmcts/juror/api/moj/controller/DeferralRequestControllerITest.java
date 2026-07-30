@@ -57,6 +57,7 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
 
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void initHeaders() throws Exception {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
 

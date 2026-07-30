@@ -127,7 +127,7 @@ public class JurorCommsSentToCourtServiceImplTest {
 
     @Test
     public void process_noPending_sentToCourt_pool() {
-        given(poolRepository.findAll(any(BooleanExpression.class))).willReturn(new LinkedList<JurorPool>());
+        given(poolRepository.findAll(any(BooleanExpression.class))).willReturn(new LinkedList<>());
 
         service.process();
         verifyNoInteractions(jurorCommsNotificationService);

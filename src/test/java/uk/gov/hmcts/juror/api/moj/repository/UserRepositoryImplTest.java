@@ -71,6 +71,7 @@ class UserRepositoryImplTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
         void positiveNoFilter() {
             JPAQuery<Tuple> jpaQuery = mock(JPAQuery.class,
                 withSettings().defaultAnswer(RETURNS_SELF).verboseLogging());
@@ -276,6 +277,7 @@ class UserRepositoryImplTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
         void positiveUserNameFilter() {
             JPAQuery<Tuple> jpaQuery = standardSetup();
 
@@ -295,6 +297,7 @@ class UserRepositoryImplTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
         void positiveCourtFilter() {
             JPAQuery<Tuple> jpaQuery = standardSetup();
 
@@ -314,6 +317,7 @@ class UserRepositoryImplTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
         void positiveUserTypeFilter() {
             JPAQuery<Tuple> jpaQuery = standardSetup();
 
@@ -334,6 +338,7 @@ class UserRepositoryImplTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
         void positiveIsOnlyActiveFilter() {
             JPAQuery<Tuple> jpaQuery = standardSetup();
 
@@ -354,6 +359,7 @@ class UserRepositoryImplTest {
 
 
         @Test
+        @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
         void positiveSortMethodChange() {
             JPAQuery<Tuple> jpaQuery = standardSetup();
 
@@ -372,6 +378,7 @@ class UserRepositoryImplTest {
         }
 
         @Test
+        @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
         void positiveSortFieldChange() {
             JPAQuery<Tuple> jpaQuery = standardSetup();
 

@@ -97,7 +97,7 @@ public enum NotifyTemplateType {
             adjustSuffix
             :
                 "")
-            + ((this != EXCUSAL_DECEASED && this != DISQUALIFICATION_AGE)
+            + (this != EXCUSAL_DECEASED && this != DISQUALIFICATION_AGE
             && withIneligibility
             ?
             INELIGIBILITY_SUFFIX

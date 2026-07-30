@@ -50,7 +50,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods",
-    "PMD.GodClass"
+    "PMD.GodClass",
+    "PMD.CouplingBetweenObjects"
 })
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class PanelServiceImpl implements PanelService {
@@ -70,6 +71,7 @@ public class PanelServiceImpl implements PanelService {
 
     @Override
     @Transactional
+    @SuppressWarnings("PMD.AvoidReassigningParameters")
     public List<PanelListDto> createPanel(int numberRequested, String trialNumber,
                                           List<String> poolNumbers, String courtLocationCode,
                                           LocalDate attendanceDate,
@@ -246,6 +248,7 @@ public class PanelServiceImpl implements PanelService {
 
     @Override
     @Transactional
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public List<PanelListDto> processEmpanelled(JurorListRequestDto dto, BureauJwtPayload payload) {
         if (dto.getNumberRequested() <= 0 || dto.getNumberRequested() > 30) {
             throw new MojException.BadRequest(

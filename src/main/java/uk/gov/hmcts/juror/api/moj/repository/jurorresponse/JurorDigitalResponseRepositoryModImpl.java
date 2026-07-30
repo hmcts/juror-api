@@ -23,32 +23,32 @@ import java.util.List;
 public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalResponseRepositoryMod {
     @PersistenceContext
     EntityManager entityManager;
-    private final QDigitalResponse digitalResponse = QDigitalResponse.digitalResponse;
-    private final QUser user = QUser.user;
+    private static final QDigitalResponse DIGITAL_RESPONSE = QDigitalResponse.digitalResponse;
+    private static final QUser USER = QUser.user;
 
     @Override
     public Tuple getAssignRepliesStatistics() {
         JPAQuery<Tuple> query = getJpaQueryFactory().select(
                 new CaseBuilder()
-                    .when(digitalResponse.urgent.isFalse()
-                                .and(digitalResponse.processingStatus.ne(ProcessingStatus.AWAITING_CONTACT)
-                    .or(digitalResponse.processingStatus.ne(ProcessingStatus.AWAITING_COURT_REPLY))
-                                .or(digitalResponse.processingStatus.ne(ProcessingStatus.AWAITING_TRANSLATION))))
+                    .when(DIGITAL_RESPONSE.urgent.isFalse()
+                                .and(DIGITAL_RESPONSE.processingStatus.ne(ProcessingStatus.AWAITING_CONTACT)
+                    .or(DIGITAL_RESPONSE.processingStatus.ne(ProcessingStatus.AWAITING_COURT_REPLY))
+                                .or(DIGITAL_RESPONSE.processingStatus.ne(ProcessingStatus.AWAITING_TRANSLATION))))
                     .then(1L).otherwise(0L).sum().as("nonUrgent"),
                 new CaseBuilder()
-                    .when(digitalResponse.urgent.isTrue())
+                    .when(DIGITAL_RESPONSE.urgent.isTrue())
                     .then(1L).otherwise(0L).sum().as("urgent"),
                 new CaseBuilder()
-                    .when(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_CONTACT)
-                              .or(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_COURT_REPLY))
-                              .or(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_TRANSLATION)))
+                    .when(DIGITAL_RESPONSE.processingStatus.eq(ProcessingStatus.AWAITING_CONTACT)
+                              .or(DIGITAL_RESPONSE.processingStatus.eq(ProcessingStatus.AWAITING_COURT_REPLY))
+                              .or(DIGITAL_RESPONSE.processingStatus.eq(ProcessingStatus.AWAITING_TRANSLATION)))
                     .then(1L).otherwise(0L).sum().as("awaitingInfo"),
-                digitalResponse.count().as("allReplies"))
-            .from(digitalResponse)
-            .where(digitalResponse.processingStatus.ne(ProcessingStatus.CLOSED))
-            .where(digitalResponse.juror.bureauTransferDate.isNull())
-            .where(digitalResponse.staff.isNull())
-            .where(digitalResponse.replyType.type.eq(ReplyMethod.DIGITAL.getDescription()));
+                DIGITAL_RESPONSE.count().as("allReplies"))
+            .from(DIGITAL_RESPONSE)
+            .where(DIGITAL_RESPONSE.processingStatus.ne(ProcessingStatus.CLOSED))
+            .where(DIGITAL_RESPONSE.juror.bureauTransferDate.isNull())
+            .where(DIGITAL_RESPONSE.staff.isNull())
+            .where(DIGITAL_RESPONSE.replyType.type.eq(ReplyMethod.DIGITAL.getDescription()));
         return query.fetchOne();
     }
 
@@ -56,43 +56,43 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
     @Transactional
     public List<Tuple> getAssignRepliesStatisticForUsers() {
         JPAQuery<Tuple> query = getJpaQueryFactory().select(
-                user.username.as("login"),
-                user.name.as("name"),
+                USER.username.as("login"),
+                USER.name.as("name"),
                 new CaseBuilder()
-                    .when(digitalResponse.urgent.isFalse()
+                    .when(DIGITAL_RESPONSE.urgent.isFalse()
                               .and(QJuror.juror.isNotNull())
-                              .and(digitalResponse.processingStatus.eq(ProcessingStatus.TODO))
+                              .and(DIGITAL_RESPONSE.processingStatus.eq(ProcessingStatus.TODO))
                     )
                     .then(1L).otherwise(0L).sum().as("nonUrgent"),
                 new CaseBuilder()
                     .when(
-                        digitalResponse.urgent.isTrue()
+                        DIGITAL_RESPONSE.urgent.isTrue()
                             .and(QJuror.juror.isNotNull())
-                            .and(digitalResponse.processingStatus.eq(ProcessingStatus.TODO)
+                            .and(DIGITAL_RESPONSE.processingStatus.eq(ProcessingStatus.TODO)
                             ))
                     .then(1L).otherwise(0L).sum().as("urgent"),
                 new CaseBuilder()
                     .when(QJuror.juror.isNotNull()
                               .and(QJurorPool.jurorPool.isNotNull())
-                              .and(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_CONTACT)
-                                       .or(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_COURT_REPLY))
-                                       .or(digitalResponse.processingStatus.eq(ProcessingStatus.AWAITING_TRANSLATION))
+                              .and(DIGITAL_RESPONSE.processingStatus.eq(ProcessingStatus.AWAITING_CONTACT)
+                                       .or(DIGITAL_RESPONSE.processingStatus.eq(ProcessingStatus.AWAITING_COURT_REPLY))
+                                       .or(DIGITAL_RESPONSE.processingStatus.eq(ProcessingStatus.AWAITING_TRANSLATION))
                               )
                     )
                     .then(1L).otherwise(0L).sum().as("awaitingInfo"),
                 QJuror.juror.count().as("allReplies")
-            ).from(user)
-            .where(user.userType.eq(UserType.BUREAU))
-            .where(user.active.isTrue())
-            .leftJoin(digitalResponse)
-            .on(user.eq(digitalResponse.staff)
-                    .and(digitalResponse.processingStatus.ne(ProcessingStatus.CLOSED)))
-            .leftJoin(QJuror.juror).on(QJuror.juror.jurorNumber.eq(digitalResponse.jurorNumber)
+            ).from(USER)
+            .where(USER.userType.eq(UserType.BUREAU))
+            .where(USER.active.isTrue())
+            .leftJoin(DIGITAL_RESPONSE)
+            .on(USER.eq(DIGITAL_RESPONSE.staff)
+                    .and(DIGITAL_RESPONSE.processingStatus.ne(ProcessingStatus.CLOSED)))
+            .leftJoin(QJuror.juror).on(QJuror.juror.jurorNumber.eq(DIGITAL_RESPONSE.jurorNumber)
                                            .and(QJuror.juror.bureauTransferDate.isNull()))
-            .leftJoin(QJurorPool.jurorPool).on(QJurorPool.jurorPool.juror.jurorNumber.eq(digitalResponse.jurorNumber)
+            .leftJoin(QJurorPool.jurorPool).on(QJurorPool.jurorPool.juror.jurorNumber.eq(DIGITAL_RESPONSE.jurorNumber)
                                                    .and(QJurorPool.jurorPool.owner.eq("400"))
                                                    .and(QJurorPool.jurorPool.isActive.isTrue()))
-            .groupBy(user.username, user.name);
+            .groupBy(USER.username, USER.name);
         return query.fetch();
     }
 
@@ -104,17 +104,17 @@ public class JurorDigitalResponseRepositoryModImpl implements IJurorDigitalRespo
 
         // Extract day of month from dateReceived
         DateExpression<LocalDate> dayOfMonth =
-            Expressions.dateTemplate(LocalDate.class, "cast({0} as date)", digitalResponse.dateReceived);
+            Expressions.dateTemplate(LocalDate.class, "cast({0} as date)", DIGITAL_RESPONSE.dateReceived);
 
         LocalDate nextMonth = startMonth.plusMonths(1);
 
         return queryFactory
-            .select(dayOfMonth.as("day_of_month"), digitalResponse.count().as("responses"))
-            .from(digitalResponse)
+            .select(dayOfMonth.as("day_of_month"), DIGITAL_RESPONSE.count().as("responses"))
+            .from(DIGITAL_RESPONSE)
             .where(
-                digitalResponse.replyType.type.eq("Digital"),
-                digitalResponse.dateReceived.goe(startMonth.atStartOfDay()),
-                digitalResponse.dateReceived.lt(nextMonth.atStartOfDay())
+                DIGITAL_RESPONSE.replyType.type.eq("Digital"),
+                DIGITAL_RESPONSE.dateReceived.goe(startMonth.atStartOfDay()),
+                DIGITAL_RESPONSE.dateReceived.lt(nextMonth.atStartOfDay())
             )
             .groupBy(dayOfMonth)
             .orderBy(dayOfMonth.asc())

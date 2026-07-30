@@ -8,7 +8,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 class JurorStatusEnumTest {
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void confirmJurorStatusEnumValues() {
         assertEquals(JurorStatusEnum.POOL, 0);
         assertEquals(JurorStatusEnum.SUMMONED, 1);

@@ -100,25 +100,30 @@ import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods",
+    "PMD.CouplingBetweenObjects"
+})
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + JurorExpenseControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
-    public static final String JUROR_NUMBER = "641500020";
-    public static final String COURT_LOCATION = "415";
-    public static final String JUROR_NUMBER_NO_APPEARANCES = "641500024";
-    public static final String POOL_NUMBER = "415230101";
+    static final String JUROR_NUMBER = "641500020";
+    static final String COURT_LOCATION = "415";
+    static final String JUROR_NUMBER_NO_APPEARANCES = "641500024";
+    static final String POOL_NUMBER = "415230101";
     private static final String COURT_USER = "COURT_USER";
     private static final String BUREAU_USER = "BUREAU_USER";
 
-    public static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
+    static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
     private static final String URL_UNPAID_SUMMARY = BASE_URL + "/unpaid-summary";
 
-
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private final AppearanceRepository appearanceRepository;
     private final FinancialAuditDetailsRepository financialAuditDetailsRepository;
     private final FinancialAuditDetailsAppearancesRepository financialAuditDetailsAppearancesRepository;
@@ -134,7 +139,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     private Clock clock;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         transactionTemplate = new TransactionTemplate(transactionManager);
@@ -185,7 +190,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @DisplayName("POST " + URL_UNPAID_SUMMARY)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp.sql"})
     class GetUnpaidExpenses {
-        public String toUrl(String courtLocation) {
+        String toUrl(String courtLocation) {
             return URL_UNPAID_SUMMARY.replace("{loc_code}", courtLocation);
         }
 
@@ -328,9 +333,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_setUp_default_expenses.sql"})
     class GetDefaultExpenses {
 
-        public static final String URL = BASE_URL + "/{juror_number}/default-expenses";
+        static final String URL = BASE_URL + "/{juror_number}/default-expenses";
 
-        public String toUrl(String courtLocation, String jurorNumber) {
+        String toUrl(String courtLocation, String jurorNumber) {
             return URL.replace("{loc_code}", courtLocation)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -388,13 +393,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class SetDefaultExpenses {
 
-        public static final String URL = BASE_URL + "/{juror_number}/default-expenses";
+        static final String URL = BASE_URL + "/{juror_number}/default-expenses";
 
         private BigDecimal createBigDecimal(double value) {
             return new BigDecimal(String.format("%.2f", value));
         }
 
-        public String toUrl(String courtLocation, String jurorNumber) {
+        String toUrl(String courtLocation, String jurorNumber) {
             return URL.replace("{loc_code}", courtLocation)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -438,15 +443,14 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         }
-
     }
 
     @SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
     abstract class AbstractDraftDailyExpense {
-        public static final String URL = BASE_URL + "/{juror_number}/DRAFT/edit";
-        public static final String METHOD_NAME = "postEditDailyExpense";
+        static final String URL = BASE_URL + "/{juror_number}/DRAFT/edit";
+        static final String METHOD_NAME = "postEditDailyExpense";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
@@ -464,13 +468,13 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 .publicTransport(doubleToBigDecimal(publicTransport))
                 .taxi(doubleToBigDecimal(taxi));
 
-            if (TravelMethod.CAR.equals(travelMethod)) {
+            if (travelMethod == TravelMethod.CAR) {
                 builder.traveledByCar(true)
                     .jurorsTakenCar(jurorsTaken);
-            } else if (TravelMethod.MOTERCYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.MOTERCYCLE) {
                 builder.traveledByMotorcycle(true)
                     .jurorsTakenMotorcycle(jurorsTaken);
-            } else if (TravelMethod.BICYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.BICYCLE) {
                 builder.traveledByBicycle(true);
             }
 
@@ -815,17 +819,17 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         assertThat(appearance1.getMiscDescription()).isNull();
                         assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(525.00));
                     } else {
-                        if (PayAttendanceType.HALF_DAY.equals(appearance1.getPayAttendanceType())) {
+                        if (appearance1.getPayAttendanceType() == PayAttendanceType.HALF_DAY) {
                             assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
                             assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(31.46));
                             assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(0.00));
                             assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
                             assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(32.47));
-                        } else if (PayAttendanceType.FULL_DAY.equals(appearance1.getPayAttendanceType())) {
+                        } else if (appearance1.getPayAttendanceType() == PayAttendanceType.FULL_DAY) {
                             assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(1.01));
                             assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(50.00));
                             assertThat(appearance1.getMiscDescription()).isEqualTo("Desc 3");
-                            if (AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance1.getAttendanceType())) {
+                            if (appearance1.getAttendanceType() == AttendanceType.NON_ATTENDANCE_LONG_TRIAL) {
                                 assertThat(appearance1.getMiscAmountDue()).isEqualTo(doubleToBigDecimal(35.00));
                                 assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(86.01));
                             } else {
@@ -880,8 +884,8 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         assertThat(appearance1.getMiscDescription()).isNull();
                         assertThat(appearance1.getTotalDue()).isEqualTo(doubleToBigDecimal(525.00));
                     } else {
-                        if (AttendanceType.NON_ATTENDANCE.equals(appearance1.getAttendanceType())
-                            || AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance1.getAttendanceType())) {
+                        if (appearance1.getAttendanceType() == AttendanceType.NON_ATTENDANCE
+                            || appearance1.getAttendanceType() == AttendanceType.NON_ATTENDANCE_LONG_TRIAL) {
                             hasNonAttendanceDay.set(true);
                             assertThat(appearance1.getLossOfEarningsDue()).isEqualTo(doubleToBigDecimal(0.00));
                             assertThat(appearance1.getChildcareDue()).isEqualTo(doubleToBigDecimal(0.00));
@@ -1182,9 +1186,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_getEnteredExpenseDetails.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetEnteredExpenseDetails {
-        public static final String URL = BASE_URL + "/{juror_number}/entered";
+        static final String URL = BASE_URL + "/{juror_number}/entered";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
@@ -1439,15 +1443,16 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     }
 
 
+
     @Nested
     @DisplayName("POST /api/v1/moj/expenses/submit-for-approval")
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_submitForApprovalSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class SubmitForApproval {
 
-        public static final String URL = BASE_URL + "/{juror_number}/submit-for-approval";
+        static final String URL = BASE_URL + "/{juror_number}/submit-for-approval";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
@@ -1712,29 +1717,29 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_simplifiedExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetSimplifiedExpenseDetails {
-        public static final String URL = BASE_URL + "/{juror_number}/{type}/view/simplified";
+        static final String URL = BASE_URL + "/{juror_number}/{type}/view/simplified";
 
 
-        public String toUrl(String jurorNumber, ExpenseType expenseType) {
+        String toUrl(String jurorNumber, ExpenseType expenseType) {
             return toUrl(jurorNumber, expenseType.name());
         }
 
-        public String toUrl(String jurorNumber, String expenseType) {
+        String toUrl(String jurorNumber, String expenseType) {
             return toUrl(COURT_LOCATION, jurorNumber, expenseType);
         }
 
-        public String toUrl(String locCode, String jurorNumber, String expenseType) {
+        String toUrl(String locCode, String jurorNumber, String expenseType) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber)
                 .replace("{type}", expenseType);
         }
 
-        public URI toUri(String jurorNumber, String expenseType) {
+        URI toUri(String jurorNumber, String expenseType) {
             return URI.create(toUrl(jurorNumber, expenseType));
         }
 
-        public URI toUri(String owner, String jurorNumber, String expenseType) {
+        URI toUri(String owner, String jurorNumber, String expenseType) {
             return URI.create(toUrl(owner, jurorNumber, expenseType));
         }
 
@@ -2079,21 +2084,20 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
     }
 
-
     @Nested
     @DisplayName("GET " + GetDraftExpenses.URL)
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetDraftExpenses {
-        public static final String URL = BASE_URL + "/{juror_number}/DRAFT/view";
+        static final String URL = BASE_URL + "/{juror_number}/DRAFT/view";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
-        public URI toUri(String locCode, String jurorNumber) {
+        URI toUri(String locCode, String jurorNumber) {
             return URI.create(toUrl(locCode, jurorNumber));
         }
 
@@ -2260,15 +2264,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetExpenses {
-        public static final String URL = BASE_URL + "/{juror_number}/view";
+        static final String URL = BASE_URL + "/{juror_number}/view";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
-        public URI toUri(String locCode, String jurorNumber) {
+        URI toUri(String locCode, String jurorNumber) {
             return URI.create(toUrl(locCode, jurorNumber));
         }
 
@@ -2419,8 +2423,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     "Not all dates found");
             }
         }
-    }
 
+
+    }
 
     @Nested
     @DisplayName("POST " + ApproveExpenses.URL)
@@ -2429,15 +2434,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         "/db/JurorExpenseControllerITest_approveExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class ApproveExpenses {
-        public static final String URL = BASE_URL + "/{payment_method}/approve";
+        static final String URL = BASE_URL + "/{payment_method}/approve";
 
-        public String toUrl(String locCode, String paymentMethod) {
+        String toUrl(String locCode, String paymentMethod) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{payment_method}", paymentMethod);
         }
 
-        public String toUrl(String locCode, PaymentMethod paymentMethod) {
+        String toUrl(String locCode, PaymentMethod paymentMethod) {
             return toUrl(locCode, paymentMethod.name());
         }
 
@@ -2922,7 +2927,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class PostEditAttendedDayDailyExpense extends AbstractDraftDailyExpense {
 
-        public static final String URL = BASE_URL + "/{juror_number}/{type}/edit";
+        static final String URL = BASE_URL + "/{juror_number}/{type}/edit";
 
 
         protected String toUrl(String jurorNumber, ExpenseType type) {
@@ -2930,7 +2935,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         }
 
         @Override
-        public String toUrl(String jurorNumber, String type) {
+        String toUrl(String jurorNumber, String type) {
             return URL
                 .replace("{loc_code}", COURT_LOCATION)
                 .replace("{juror_number}", jurorNumber)
@@ -3324,16 +3329,16 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_calculateTotalExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class CalculateTotals extends AbstractDraftDailyExpense {
-        public static final String URL = BASE_URL + "/{juror_number}/calculate/totals";
+        static final String URL = BASE_URL + "/{juror_number}/calculate/totals";
 
         private static final String JUROR_NUMBER = "641500020";
 
-        public String toUrl(String jurorNumber) {
+        String toUrl(String jurorNumber) {
             return toUrl(COURT_LOCATION, jurorNumber);
         }
 
         @Override
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
@@ -3962,14 +3967,15 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                         .travelTime(LocalTime.of(1, 2))
                                         .payAttendance(PayAttendanceType.FULL_DAY)
                                         .build())
-                                    .financialLoss(
-                                        createDailyExpenseFinancialLoss(15.01, 6.00, 0.20, "Desc")
-                                    )
-                                    .travel(
-                                        createDailyExpenseTravel(TravelMethod.CAR, 3, 15, 13.25, 12.1, 9.4)
-                                    )
-                                    .foodAndDrink(
-                                        createDailyExpenseFoodAndDrink(FoodDrinkClaimType.MORE_THAN_10_HOURS, 4.1)
+                                        .financialLoss(
+                                            createDailyExpenseFinancialLoss(15.01, 6.00, 0.20, "Desc")
+                                        )
+                                        .travel(
+                                            createDailyExpenseTravel(TravelMethod.CAR, 3, 15, 13.25, 12.1, 9.4)
+                                        )
+                                        .foodAndDrink(
+                                            createDailyExpenseFoodAndDrink(
+                                                FoodDrinkClaimType.MORE_THAN_10_HOURS, 4.1)
                                     )
                                     .build()
                             ))
@@ -3986,7 +3992,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetCounts {
 
-        public static final String URL = BASE_URL + "/{juror_number}/counts";
+        static final String URL = BASE_URL + "/{juror_number}/counts";
 
         private String toUrl(String locCode, String jurorNumber) {
             return URL
@@ -4083,7 +4089,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_getApproveExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class GetExpensesForApproval {
-        public static final String URL = BASE_URL + "/{payment_method}/pending-approval";
+        static final String URL = BASE_URL + "/{payment_method}/pending-approval";
 
         private String toUrl(String locCode, PaymentMethod paymentMethod, LocalDate from, LocalDate to) {
             return toUrl(locCode, paymentMethod.name(),
@@ -4142,7 +4148,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalCash() {
                 PendingApprovalList pendingApprovals = triggerValid(COURT_LOCATION, null, null, PaymentMethod.CASH);
                 assertThat(pendingApprovals.getTotalPendingCash()).isEqualTo(2L);
@@ -4307,7 +4312,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalToDateFilter() {
                 PendingApprovalList pendingApprovals =
                     triggerValid(COURT_LOCATION, null, LocalDate.of(2025, 1, 9), PaymentMethod.BACS);
@@ -4364,7 +4368,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void typicalBothFromAndToFilter() {
                 PendingApprovalList pendingApprovals =
                     triggerValid(COURT_LOCATION, LocalDate.of(2025, 1, 9), LocalDate.of(2025, 1, 10), PaymentMethod
@@ -4423,7 +4426,6 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
-            @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
             void canNotApprove() {
                 PendingApprovalList pendingApprovals =
                     triggerValid("COURT_USER2", COURT_LOCATION, LocalDate.of(2025, 1, 9), LocalDate.of(2025, 1, 10),
@@ -4557,7 +4559,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/JurorExpenseControllerITest_draftExpenseSetUp.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class ApportionSmartCard {
-        public static final String URL = BASE_URL + "/{juror_number}/smartcard";
+        static final String URL = BASE_URL + "/{juror_number}/smartcard";
 
         private static final String JUROR_NUMBER = "641500020";
 
@@ -4568,7 +4570,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             LocalDate.of(2025, 1, 7)
         );
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
@@ -4603,7 +4605,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                           BigDecimal expectedSmartCardAmount) {
                 Appearance appearance = appearanceRepository
                     .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(
-                        COURT_LOCATION, ApportionSmartCard.JUROR_NUMBER, localDate).orElseThrow();
+                        COURT_LOCATION, JUROR_NUMBER, localDate).orElseThrow();
                 assertThat(appearance.getSmartCardAmountDue()).isEqualTo(expectedSmartCardAmount);
             }
 

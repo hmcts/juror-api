@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
+@SuppressWarnings("PMD.ShortVariable")
 public enum DisqualifyCode {
 
     A("A", "Age"),
@@ -30,7 +31,7 @@ public enum DisqualifyCode {
     }
 
     public static DisqualifyCode getDisqualifyCode(String code) {
-        for (DisqualifyCode disqualifyCode : DisqualifyCode.values()) {
+        for (DisqualifyCode disqualifyCode : values()) {
             if (disqualifyCode.getCode().equals(code)) {
                 return disqualifyCode;
             }

@@ -65,7 +65,6 @@ public class JurorManagementRequestDto {
     @Schema(description = "Deferral is occurring from deferral maintenance")
     private Boolean deferralMaintenance;
 
-    @JsonProperty("from_summons_reply")
     @Schema(description = "Reassign is occurring from summons reply")
     private Boolean fromSummonsReply;
 

@@ -35,6 +35,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @Setter
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Juror paper response personal details")
+@SuppressWarnings({"PMD.TooManyFields"})
 public class EditJurorRecordRequestDto {
 
     @JsonProperty("title")

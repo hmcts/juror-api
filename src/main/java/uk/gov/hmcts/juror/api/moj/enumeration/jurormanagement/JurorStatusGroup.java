@@ -16,7 +16,7 @@ public enum JurorStatusGroup {
 
     ALL(IJurorStatus.getAllExcluding());
 
-    private List<Integer> statusList;
+    private final List<Integer> statusList;
 
     JurorStatusGroup(List<Integer> statusList) {
         this.statusList = statusList;

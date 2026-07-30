@@ -55,7 +55,7 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
 
         query.join(JUROR_POOL).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
 
-        if (request.getLetterType().equals(LetterType.SUMMONED_REMINDER)) {
+        if (request.getLetterType() == LetterType.SUMMONED_REMINDER) {
             // for this letter type need to ensure any letters not printed (i.e. don't exist in bulk table) are
             // retrieved
             query.leftJoin(BULK_PRINT_DATA).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo)
@@ -81,12 +81,12 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
 
             query.where(QJurorHistory.jurorHistory.poolNumber.eq(JUROR_POOL.pool.poolNumber));
 
-            if (request.getLetterType().equals(LetterType.DEFERRAL_REFUSED)) {
+            if (request.getLetterType() == LetterType.DEFERRAL_REFUSED) {
                 query.where(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.NON_DEFERRED_LETTER));
             }
         }
 
-        if (!request.getLetterType().equals(LetterType.SUMMONED_REMINDER)) {
+        if (request.getLetterType() != LetterType.SUMMONED_REMINDER) {
             query.where(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
                 .map(FormCode::getCode).toList()));
         }
@@ -106,7 +106,7 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         } else if (request.getPoolNumber() != null) {
             query.where(JUROR_POOL.pool.poolNumber.eq(request.getPoolNumber()));
         } else if (Boolean.TRUE.equals(request.getShowAllQueued())) {
-            if  (request.getLetterType().equals(LetterType.SUMMONED_REMINDER)) {
+            if  (request.getLetterType() == LetterType.SUMMONED_REMINDER) {
                 query.where(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
                     .map(FormCode::getCode).toList()));
             }

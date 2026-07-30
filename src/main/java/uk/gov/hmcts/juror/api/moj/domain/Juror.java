@@ -61,6 +61,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @AuditOverride(forClass = Address.class)
 @ToString(exclude = {"jurorResponse"})
 @EqualsAndHashCode(callSuper = true, exclude = {"associatedPools", "jurorResponse"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyFields"})
 public class Juror extends Address implements Serializable {
 
     @Id

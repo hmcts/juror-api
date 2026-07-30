@@ -25,7 +25,7 @@ import java.time.LocalDate;
     @JsonSubTypes.Type(value = JurorToSendMessageBureau.class, name = "Bureau"),
     @JsonSubTypes.Type(value = JurorToSendMessageCourt.class, name = "Court")
 })
-public abstract class JurorToSendMessageBase {
+public class JurorToSendMessageBase {
 
     @JsonProperty("juror_number")
     private String jurorNumber;

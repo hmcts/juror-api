@@ -70,10 +70,9 @@ public class HolidayTest {
         Set<ConstraintViolation<Holidays>> violations = validator.validate(holiday);
 
         assertThat(violations.size()).as("Expect one violation").isEqualTo(1);
-        violations.forEach(holidaysConstraintViolation -> {
+        violations.forEach(holidaysConstraintViolation ->
             assertThat(holidaysConstraintViolation.getPropertyPath().toString()).as("Expected holiday constraint to "
-                + "fail").isEqualTo("holiday");
-        });
+                + "fail").isEqualTo("holiday"));
     }
 
     @Test
@@ -84,11 +83,10 @@ public class HolidayTest {
         Set<ConstraintViolation<Holidays>> violations = validator.validate(holiday);
 
         assertThat(violations.size()).as("Expect one violation").isEqualTo(1);
-        violations.forEach(holidaysConstraintViolation -> {
+        violations.forEach(holidaysConstraintViolation ->
             assertThat(holidaysConstraintViolation.getPropertyPath().toString()).as("Expected description constraint "
                 + "to "
-                + "fail").isEqualTo("description");
-        });
+                + "fail").isEqualTo("description"));
     }
 
     @Test
@@ -99,9 +97,8 @@ public class HolidayTest {
         Set<ConstraintViolation<Holidays>> violations = validator.validate(holiday);
 
         assertThat(violations.size()).as("Expect one violation").isEqualTo(1);
-        violations.forEach(holidaysConstraintViolation -> {
+        violations.forEach(holidaysConstraintViolation ->
             assertThat(holidaysConstraintViolation.getPropertyPath().toString()).as("Expected public constraint to "
-                + "fail").isEqualTo("publicHoliday");
-        });
+                + "fail").isEqualTo("publicHoliday"));
     }
 }

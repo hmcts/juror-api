@@ -21,10 +21,10 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implementation of {@link BureauProcessService}.
@@ -47,7 +47,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
      * Processes entries in the Juror.print_files table and sends the appropriate email notifications to
      * the juror.
      */
-    @SuppressWarnings("checkstyle:LineLength") // false positive
+    @SuppressWarnings({"checkstyle:LineLength", "PMD.CyclomaticComplexity", "PMD.CognitiveComplexity"}) // false positive
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -65,7 +65,9 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
         int commsSent = 0;
         int commsfailed = 0;
         int invalidEmailAddress = 0;
-        if (!bulkPrintDataNotifyCommsList.isEmpty()) {
+        if (bulkPrintDataNotifyCommsList.isEmpty()) {
+            log.trace("Letter Comms Processing : No pending records found.");
+        } else {
             Map<String, String> locCodeTemplateMap = getLocCodeTemplateMap();
             Map<String, String> changeTemplateMap = getChangeTemplateMap();
 
@@ -74,22 +76,22 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                     log.trace("LetterService :  jurorNumber {}", printFile.getJurorNo());
                     final JurorPool juror =
                         jurorPoolRepository.findByJurorJurorNumberAndIsActiveAndOwner(printFile.getJurorNo(), true,
-                            SecurityUtil.BUREAU_OWNER);
+                                                                                      SecurityUtil.BUREAU_OWNER);
                     String locCode = printFile.getLocCode();
 
                     if (Objects.equals(locCode, LOC_CODE_TAUNTON)) {
 
                         String templateName = printFile.getTemplateName();
 
-                        if (templateName.equals("CONFRIM_JUROR_ENG")
+                        if ("CONFRIM_JUROR_ENG".equals(templateName)
                             ||
-                            templateName.equals("DEF_DENIED_ENG")
+                            "DEF_DENIED_ENG".equals(templateName)
                             ||
-                            templateName.equals("DEF_GRANTED_ENG")
+                            "DEF_GRANTED_ENG".equals(templateName)
                             ||
-                            templateName.equals("EXC_DENIED_ENG")
+                            "EXC_DENIED_ENG".equals(templateName)
                             ||
-                            templateName.equals("POSTPONE_JUROR_ENG")) {
+                            "POSTPONE_JUROR_ENG".equals(templateName)) {
 
 
                             String currentTemplate = printFile.getTemplateName();
@@ -128,10 +130,8 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                 }
             }
             log.info("LetterService : Summary, identified:{}, sent:{}, failed:{},",
-                bulkPrintDataNotifyCommsList.size(), commsSent, commsfailed
+                     bulkPrintDataNotifyCommsList.size(), commsSent, commsfailed
             );
-        } else {
-            log.trace("Letter Comms Processing : No pending records found.");
         }
 
         SchedulerServiceClient.Result.Status status = commsfailed == 0
@@ -182,7 +182,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
     }
 
     private Map<String, String> getLocCodeTemplateMap() {
-        Map<String, String> locCodeTemplateMap = new HashMap<>();
+        Map<String, String> locCodeTemplateMap = new ConcurrentHashMap<>();
         locCodeTemplateMap.put("CONFIRMATION OF SERVICE TAUNTON", "ea38af04-0631-4c7c-bfc8-0c491b7e98a2");
         locCodeTemplateMap.put("TEMP_DEF_DENIED_ENG", "63d636d3-4ca2-452d-baa2-a940e4dcc48a");
         locCodeTemplateMap.put("TEMP_DEF_GRANTED_ENG", "f5072da7-b250-4f02-b206-f176b1a0b80b");
@@ -197,7 +197,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
     }
 
     private Map<String, String> getChangeTemplateMap() {
-        Map<String, String> changeTemplateMap = new HashMap<>();
+        Map<String, String> changeTemplateMap = new ConcurrentHashMap<>();
         changeTemplateMap.put("CONFRIM_JUROR_ENG", "CONFIRMATION OF SERVICE TAUNTON");
         changeTemplateMap.put("DEF_DENIED_ENG", "TEMP_DEF_DENIED_ENG");
         changeTemplateMap.put("DEF_GRANTED_ENG", "TEMP_DEF_GRANTED_ENG");

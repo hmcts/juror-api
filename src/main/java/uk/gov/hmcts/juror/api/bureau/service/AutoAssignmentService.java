@@ -16,7 +16,7 @@ public interface AutoAssignmentService {
      * @param requestingUser the username of the logged-in user (for audit purposes)
      * @throws AutoAssignException if unable to auto-assign
      */
-    void autoAssign(AutoAssignRequest request, String requestingUser) throws AutoAssignException;
+    void autoAssign(AutoAssignRequest request, String requestingUser);
 
     /**
      * Get auto-assignment capacity data.

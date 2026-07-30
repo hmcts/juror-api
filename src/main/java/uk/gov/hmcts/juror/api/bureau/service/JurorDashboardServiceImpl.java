@@ -31,6 +31,7 @@ import java.util.Map;
 
 @Slf4j
 @Service
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.TooManyMethods"})
 public class JurorDashboardServiceImpl implements JurorDashboardService {
 
     private static final String PAPER = "Paper";
@@ -100,14 +101,14 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
         cumulativeTotal.setRespondedTotal(jurorDashboardCalculateService.totalNoOfResponses(responsesOverTime));
         cumulativeTotal.setNotRespondedTotal(jurorDashboardCalculateService.totalNoOfNotResponded(notResponded));
 
-        int countTotalResponses = (jurorDashboardCalculateService.allResponsesTotal(allResponseTimesTotals));
-        int countTotalNotResponded = (jurorDashboardCalculateService.totalNoOfNotRespondedTotal(notRespondedTotal));
+        int countTotalResponses = jurorDashboardCalculateService.allResponsesTotal(allResponseTimesTotals);
+        int countTotalNotResponded = jurorDashboardCalculateService.totalNoOfNotRespondedTotal(notRespondedTotal);
         int countTotalOnlineResponses =
-            (jurorDashboardCalculateService.onlineResponsesTotal(onlineResponseTimesTotals));
+            jurorDashboardCalculateService.onlineResponsesTotal(onlineResponseTimesTotals);
         int totalSummonses = countTotalResponses + countTotalNotResponded;
-        cumulativeTotal.setTotalNumberSummonsesSent(appSetting.getTotalNumberSummonsesSent() + (totalSummonses));
+        cumulativeTotal.setTotalNumberSummonsesSent(appSetting.getTotalNumberSummonsesSent() + totalSummonses);
         cumulativeTotal.setTotalNumberOnlineReplies(
-            appSetting.getTotalNumberOnlineReplies() + (countTotalOnlineResponses));
+            appSetting.getTotalNumberOnlineReplies() + countTotalOnlineResponses);
         cumulativeTotal.setSummonedTotal(jurorDashboardCalculateService.totalNoOfSummoned(
             cumulativeTotal.getRespondedTotal(),
             cumulativeTotal.getNotRespondedTotal()
@@ -350,6 +351,7 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
 
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     @Override
     public DashboardResponseDto.SurveySatisfactionData getSurveyResponses(DashboardRequestDto request) {
 
@@ -377,11 +379,7 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
             throw new DashboardException.NoResponsesFound();
         } else {
             //Get ratings counts
-            for (int i = 0;
-                 i < surveyResponses.size();
-                 i++) {
-                SurveyResponse responseObj = surveyResponses.get(i);
-
+            for (SurveyResponse responseObj : surveyResponses) {
                 switch (responseObj.getSatisfactionDesc().toLowerCase()) {
                     case "very satisfied":
                         responseCount++;
@@ -461,7 +459,7 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
         Map<String, Map<String, Integer>> channelResponses, String channel) {
 
         Map<String, Integer> timeResponses = channelResponses.getOrDefault(channel, null);
-        return timeResponses != null && timeResponses.size() > 0
+        return timeResponses != null && !timeResponses.isEmpty()
             ?
             DashboardMandatoryKpiData.ResponseMethod.builder()
                 .within7days(timeResponses.getOrDefault(WITHIN7DAYS, 0))

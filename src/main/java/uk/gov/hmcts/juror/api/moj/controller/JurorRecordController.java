@@ -84,7 +84,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/moj/juror-record", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Juror Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 public class JurorRecordController {
 
     @NonNull
@@ -373,7 +373,7 @@ public class JurorRecordController {
 
         if (isBureauUser) {
             throw new MojException.Forbidden("User has insufficient permission to perform "
-                + "the process pending name change action", null);
+                                                 + "the process pending name change action", null);
         }
 
         jurorRecordService.processPendingNameChange(payload, jurorNumber, requestDto);
@@ -528,7 +528,7 @@ public class JurorRecordController {
     @Operation(summary = "Mark a juror as responded")
     @ResponseStatus(HttpStatus.OK)
     public void markResponded(@Valid @JurorNumber @P("juror_number") @PathVariable("juror_number")
-                                  @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
+                              @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
         jurorRecordService.markResponded(jurorNumber);
     }
 

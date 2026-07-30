@@ -55,7 +55,10 @@ import static org.mockito.Mockito.when;
 /**
  * Unit test of {@link JurorServiceImpl}.
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked",
+    "PMD.ExcessiveImports",
+    "PMD.CouplingBetweenObjects",
+    "PMD.TooManyFields"})
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class JurorServiceImplTest {
 
@@ -140,7 +143,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void getJurorByByJurorNumber_WithJurorNumber_ReturnsJurorDetails() {
+    public void jurorByByJurorNumber_WithJurorNumber_ReturnsJurorDetails() {
         when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPoolDetails);
 
         final JurorDetailDto jurorDto = defaultService.getJurorByJurorNumber(TEST_JUROR_NUMBER);
@@ -153,7 +156,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void getJurorByJurorNumber_alternatePath_uniquePoolAttendTime() {
+    public void jurorByJurorNumber_alternatePath_uniquePoolAttendTime() {
         doReturn(LocalDateTime.of(2024,1,1,8,0,0))
             .when(mockUniquePoolService).getPoolAttendanceTime("101");
 
@@ -165,6 +168,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.NcssCount")
     public void convertJurorResponseDtoToEntityTest() throws Exception {
         final String jurorNumber = "546547731";
         final LocalDate dob = LocalDate.now();
@@ -329,8 +333,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void processStraightThroughAcceptance_happyPath_processAcceptanceCalled() throws
-        StraightThroughProcessingServiceException {
+    public void processStraightThroughAcceptance_happyPath_processAcceptanceCalled()  {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
         final DigitalResponse jurorResponse = mock(DigitalResponse.class);
@@ -351,8 +354,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void processStraightThroughAcceptance_unhappyPath_processAcceptanceNotCalled() throws
-        StraightThroughProcessingServiceException {
+    public void processStraightThroughAcceptance_unhappyPath_processAcceptanceNotCalled() {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
         final DigitalResponse jurorResponse = mock(DigitalResponse.class);
@@ -373,8 +375,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void processDeceasedExcusal_happyPath_processDeceasedExcusalCalled() throws
-        StraightThroughProcessingServiceException {
+    public void processDeceasedExcusal_happyPath_processDeceasedExcusalCalled() {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
         final DigitalResponse jurorResponse = mock(DigitalResponse.class);
@@ -398,7 +399,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void processAgeExcusal_happyPath_ageExcusalCalled() throws StraightThroughProcessingServiceException {
+    public void processAgeExcusal_happyPath_ageExcusalCalled() {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
         final DigitalResponse jurorResponse = mock(DigitalResponse.class);
@@ -430,7 +431,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void processAgeExcusal_unhappyPath_ageExcusalNotCalled() throws StraightThroughProcessingServiceException {
+    public void processAgeExcusal_unhappyPath_ageExcusalNotCalled() {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
         final DigitalResponse jurorResponse = mock(DigitalResponse.class);

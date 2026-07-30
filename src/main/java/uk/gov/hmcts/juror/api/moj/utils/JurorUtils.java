@@ -67,7 +67,7 @@ public final class JurorUtils {
     public static void checkOwnershipForCurrentUser(Juror juror, String owner, boolean bureauAlwaysAllowed) {
         log.trace("Enter checkOwnershipForCurrentUser");
         log.debug("Check if current user (owner = {}) owns juror record: {}", owner, juror.getJurorNumber());
-        if (bureauAlwaysAllowed && owner.equals(SecurityUtil.BUREAU_OWNER)) {
+        if (bureauAlwaysAllowed && SecurityUtil.BUREAU_OWNER.equals(owner)) {
             log.debug("Bureau user is always allowed to edit juror records");
             return;
         }
@@ -133,6 +133,7 @@ public final class JurorUtils {
      * @return integer representation of age in whole years
      * @throws IllegalArgumentException thrown if either argument is null
      */
+    @SuppressWarnings("PMD.AvoidUncheckedExceptionsInSignatures")
     public static int getJurorAgeAtHearingDate(final LocalDate dateOfBirth,
                                                final LocalDate serviceStartDate) throws IllegalArgumentException {
         log.debug("Calculate Juror age using date of birth {} and service start date {}", dateOfBirth,

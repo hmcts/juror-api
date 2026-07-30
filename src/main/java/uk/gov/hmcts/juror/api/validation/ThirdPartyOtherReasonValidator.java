@@ -2,8 +2,8 @@ package uk.gov.hmcts.juror.api.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-
 
 public class ThirdPartyOtherReasonValidator implements ConstraintValidator<ThirdPartyOtherReason, JurorResponse> {
 
@@ -14,13 +14,12 @@ public class ThirdPartyOtherReasonValidator implements ConstraintValidator<Third
     }
 
     @Override
+    @SuppressWarnings("PMD.SimplifyBooleanReturns")
     public boolean isValid(JurorResponse jurorResponse, ConstraintValidatorContext context) {
         if (jurorResponse != null
-            && jurorResponse.getThirdPartyReason() != null
-            && !jurorResponse.getThirdPartyReason().trim().isEmpty()
+            && StringUtils.isNotBlank(jurorResponse.getThirdPartyReason())
             && "other".equals(jurorResponse.getThirdPartyReason().trim())) {
-            return (jurorResponse.getThirdPartyOtherReason() != null)
-                && !jurorResponse.getThirdPartyOtherReason().trim().isEmpty();
+            return StringUtils.isNotBlank(jurorResponse.getThirdPartyOtherReason());
         }
         return true;
     }

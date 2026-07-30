@@ -63,7 +63,8 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
+    protected void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -77,6 +78,7 @@ public abstract class AbstractControllerIntegrationTest<P, R> extends AbstractIn
     @Getter
     @Setter
     @Accessors(chain = true, fluent = true)
+    @SuppressWarnings("PMD.TypeParameterNamingConventions")
     public class ControllerTest<P1 extends P, R1 extends R> {
         private String jwt = getValidJwt();
         private String url = getValidUrl();

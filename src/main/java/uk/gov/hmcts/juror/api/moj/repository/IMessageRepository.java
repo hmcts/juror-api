@@ -6,6 +6,7 @@ import uk.gov.hmcts.juror.api.moj.controller.managementdashboard.SmsMessagesRepo
 import java.util.List;
 
 @Repository
+@FunctionalInterface
 public interface IMessageRepository {
 
     List<SmsMessagesReportResponseDto.SmsMessagesRecord> getSmsMessageCounts();

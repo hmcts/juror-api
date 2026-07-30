@@ -35,7 +35,7 @@ class DeferredListByDateReportTest extends AbstractStandardReportTestSupport<Def
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public DeferredListByDateReportTest() {
+    DeferredListByDateReportTest() {
         super(QJurorPool.jurorPool,
             DeferredListByDateReport.RequestValidator.class,
             DataType.DEFERRED_TO,
@@ -44,7 +44,7 @@ class DeferredListByDateReportTest extends AbstractStandardReportTestSupport<Def
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
     }
@@ -55,13 +55,13 @@ class DeferredListByDateReportTest extends AbstractStandardReportTestSupport<Def
     }
 
     @Override
-    public DeferredListByDateReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected DeferredListByDateReport createReport(PoolRequestRepository poolRequestRepository) {
         return new DeferredListByDateReport(poolRequestRepository);
     }
 
     @Override
     @DisplayName("positivePreProcessQueryTypicalCourt")
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn(TestConstants.VALID_COURT_LOCATION);
 

@@ -50,6 +50,8 @@ import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.owner;
  * Test for {@link UserServiceImpl}.
  */
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings({"PMD.ExcessiveImports",
+    "PMD.TooManyMethods"})
 public class UserServiceImplTest {
     @Mock
     private UserRepository mockuserRepository;
