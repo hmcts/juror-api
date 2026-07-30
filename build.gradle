@@ -220,8 +220,6 @@ tasks.withType(Test).configureEach() {
 
     jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
 
-    jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
-
     finalizedBy(jacocoTestReport)
 }
 
