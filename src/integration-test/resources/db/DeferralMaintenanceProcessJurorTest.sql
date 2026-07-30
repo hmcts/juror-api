@@ -15,6 +15,12 @@ delete from juror_mod.juror_pool;
 delete from juror_mod.juror;
 delete from juror_mod.pool;
 
+INSERT INTO juror_mod.notify_template_mapping (template_id, template_name, notify_name, form_type, notification_type, "version")
+VALUES
+    ('00000000-0000-0000-0000-000000106001', 'DBD_DEF_GRANTED_ENG', 'DBD DEFERRAL GRANTED ENGLISH TEST', NULL, 1, 0),
+    ('00000000-0000-0000-0000-000000106002', 'DBD_DEF_GRANTED_CY', 'DBD DEFERRAL GRANTED WELSH TEST', NULL, 1, 0)
+ON CONFLICT (template_name) DO NOTHING;
+
 -- Pool 415220401 requested 2 jurors for TIMESTAMP'2023-05-30 00:00:00.000000', 4 already supplied (2 surplus) - active with the buruea
 INSERT INTO JUROR_MOD.POOL (OWNER, POOL_NO, RETURN_DATE, TOTAL_NO_REQUIRED, NO_REQUESTED, POOL_TYPE, LOC_CODE, NEW_REQUEST, LAST_UPDATE)
 VALUES ('400', '415220401', TIMESTAMP'2023-05-30 00:00:00.000000', 2, 2, 'CRO','415', 'N', TIMESTAMP'2022-02-02 09:22:09.0');

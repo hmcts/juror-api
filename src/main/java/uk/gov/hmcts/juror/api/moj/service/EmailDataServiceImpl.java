@@ -8,6 +8,7 @@ import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
 import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
@@ -33,27 +34,32 @@ public class EmailDataServiceImpl implements EmailDataService {
                 "Attempted to email deferral letter for null jurorPool", null);
         }
 
-        BulkPrintData bulkPrintData = new BulkPrintData();
-        bulkPrintData.setJurorNo(jurorPool.getJurorNumber());
+        boolean welsh = jurorPool.getJuror().isWelsh();
+        FormCode formCode = welsh ? FormCode.BI_DEFERRAL : FormCode.ENG_DEFERRAL;
+        DigitalByDefaultEmailTemplate template = welsh
+            ? DigitalByDefaultEmailTemplate.DEFERRAL_GRANTED_WELSH
+            : DigitalByDefaultEmailTemplate.DEFERRAL_GRANTED_ENGLISH;
 
-        if (jurorPool.getJuror().isWelsh()) {
-            bulkPrintData.setFormAttribute(RepositoryUtils.retrieveFromDatabase(
-                FormCode.BI_DEFERRAL.getCode(),
-                formAttributeRepository
-            ));
-            // Todo set the Welsh template name here
-        } else {
-            bulkPrintData.setFormAttribute(RepositoryUtils.retrieveFromDatabase(
-                FormCode.ENG_DEFERRAL.getCode(),
-                formAttributeRepository
-            ));
-            // temporary template name before we get the actual template
-            bulkPrintData.setNotifyTemplateName("TEMP_DEF_GRANTED_ENG");
-        }
-        setDefaults(bulkPrintData);
+        BulkPrintData bulkPrintData = createPendingEmail(jurorPool, formCode, template);
         bulkPrintDataRepository.save(bulkPrintData);
 
         jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.EMAIL);
+    }
+
+    private BulkPrintData createPendingEmail(
+        JurorPool jurorPool,
+        FormCode formCode,
+        DigitalByDefaultEmailTemplate template
+    ) {
+        BulkPrintData bulkPrintData = new BulkPrintData();
+        bulkPrintData.setJurorNo(jurorPool.getJurorNumber());
+        bulkPrintData.setFormAttribute(RepositoryUtils.retrieveFromDatabase(
+            formCode.getCode(),
+            formAttributeRepository
+        ));
+        bulkPrintData.setNotifyTemplateName(template.getTemplateName());
+        setDefaults(bulkPrintData);
+        return bulkPrintData;
     }
 
     private static void setDefaults(BulkPrintData bulkPrintData) {
