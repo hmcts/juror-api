@@ -35,6 +35,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
 import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -966,7 +967,8 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 assertThat(emailData.getDetailRec()).isEqualTo("N/A");
                 assertThat(emailData.getCommunicationChannel()).isEqualTo(CommunicationChannel.EMAIL);
                 assertThat(emailData.getEmailStatus()).isEqualTo(EmailStatus.PENDING);
-                assertThat(emailData.getNotifyTemplateName()).isEqualTo("TEMP_DEF_GRANTED_ENG");
+                assertThat(emailData.getNotifyTemplateName()).isEqualTo(
+                    DigitalByDefaultEmailTemplate.DEFERRAL_GRANTED_ENGLISH.getTemplateName());
 
                 Integer historyEventCount = jdbcTemplate.queryForObject(
                     "SELECT count(*) FROM juror_mod.juror_history WHERE juror_number = ? AND history_code = ? "
