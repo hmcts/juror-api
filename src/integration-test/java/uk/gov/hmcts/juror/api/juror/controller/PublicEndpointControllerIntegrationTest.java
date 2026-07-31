@@ -267,7 +267,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        ResponseEntity<DbdInformationResponseDto> exchange = template.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<DbdInformationResponseDto> exchange = template.exchange(new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/public/juror/209092530/dbd-information")),
             DbdInformationResponseDto.class);
 
@@ -294,7 +294,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        ResponseEntity<String> exchange = template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> exchange = template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
             URI.create("/api/v1/public/juror/12345/dbd-information")), String.class);
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
@@ -315,7 +315,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        ResponseEntity<String> exchange = template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> exchange = template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
             URI.create("/api/v1/public/juror/209092530/dbd-information")), String.class);
 
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
