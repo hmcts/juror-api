@@ -254,7 +254,7 @@ public class UserServiceModImpl implements UserService {
 
 
     String createUsername(String email) {
-        String baseUsername = email.split("@")[0];
+        String baseUsername = email.trim().split("@")[0];
         String usernameTemp = baseUsername.substring(0, Math.min(baseUsername.length(), USERNAME_MAX_LENGTH));
         int suffix = 1;
         while (userRepository.existsById(usernameTemp)) {

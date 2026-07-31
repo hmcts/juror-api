@@ -121,6 +121,25 @@ class UserServiceModImplTest {
         }
 
         @Test
+        void createsUserWithoutLeadingOrTrailingSpacesInUsername() {
+            CreateUserDto createUserDto = CreateUserDto.builder()
+                .email(" court.user@email.gov.uk ")
+                .name("Court User")
+                .userType(UserType.COURT)
+                .build();
+
+            when(userRepository.existsByEmail("court.user@email.gov.uk")).thenReturn(false);
+            when(userRepository.existsById("court.user")).thenReturn(false);
+
+            UsernameDto response = userService.createUser(createUserDto);
+
+            assertThat(response.getUsername()).isEqualTo("court.user");
+            verify(userRepository).save(userCaptor.capture());
+            assertThat(userCaptor.getValue().getUsername()).isEqualTo("court.user");
+            assertThat(userCaptor.getValue().getEmail()).isEqualTo("court.user@email.gov.uk");
+        }
+
+        @Test
         void rejectsCreateWhenEmailIsAlreadyInUse() {
             CreateUserDto createUserDto = CreateUserDto.builder()
                 .email("test.user@email.gov.uk")
@@ -173,6 +192,75 @@ class UserServiceModImplTest {
             assertThat(existingUser.isActive()).isFalse();
             assertThat(existingUser.getApprovalLimit()).isEqualByComparingTo("25.50");
             assertThat(existingUser.getRoles()).containsExactly(Role.MANAGER);
+            verify(userRepository).save(existingUser);
+        }
+
+        @Test
+        void adminCannotUpdateUserToEmailAlreadyInUseByAnotherUser() {
+            User existingUser = User.builder()
+                .username("court.user")
+                .email("old@email.gov.uk")
+                .name("Old Name")
+                .active(true)
+                .approvalLimit(new BigDecimal("10.00"))
+                .roles(Set.of())
+                .userType(UserType.COURT)
+                .build();
+            UpdateUserDto updateUserDto = UpdateUserDto.builder()
+                .email(" taken@EMAIL.GOV.UK ")
+                .name("New Name")
+                .isActive(true)
+                .roles(Set.of())
+                .build();
+
+            when(userRepository.findById("court.user")).thenReturn(Optional.of(existingUser));
+            when(userRepository.existsByEmail("taken@email.gov.uk")).thenReturn(true);
+
+            try (MockedStatic<SecurityUtil> securityUtil = mockStatic(SecurityUtil.class)) {
+                securityUtil.when(SecurityUtil::isAdministration).thenReturn(true);
+
+                assertThatThrownBy(() -> userService.updateUser("court.user", updateUserDto))
+                    .isInstanceOf(MojException.BusinessRuleViolation.class)
+                    .hasMessage("Email is already in use");
+            }
+
+            assertThat(existingUser.getEmail()).isEqualTo("old@email.gov.uk");
+            assertThat(existingUser.getName()).isEqualTo("Old Name");
+            verify(userRepository, never()).save(any());
+        }
+
+        @Test
+        void adminCanUpdateUserWithSameEmailUsingDifferentCaseAndWhitespace() {
+            User existingUser = User.builder()
+                .username("court.user")
+                .email("test.user@email.gov.uk")
+                .name("Old Name")
+                .active(true)
+                .approvalLimit(new BigDecimal("10.00"))
+                .roles(Set.of())
+                .userType(UserType.COURT)
+                .build();
+            UpdateUserDto updateUserDto = UpdateUserDto.builder()
+                .email(" Test.User@EMAIL.GOV.UK ")
+                .name("New Name")
+                .isActive(false)
+                .roles(Set.of(Role.MANAGER))
+                .build();
+
+            when(userRepository.findById("court.user")).thenReturn(Optional.of(existingUser));
+
+            try (MockedStatic<SecurityUtil> securityUtil = mockStatic(SecurityUtil.class)) {
+                securityUtil.when(SecurityUtil::isAdministration).thenReturn(true);
+                securityUtil.when(SecurityUtil::canEditApprovalLimit).thenReturn(false);
+
+                userService.updateUser("court.user", updateUserDto);
+            }
+
+            assertThat(existingUser.getEmail()).isEqualTo("test.user@email.gov.uk");
+            assertThat(existingUser.getName()).isEqualTo("New Name");
+            assertThat(existingUser.isActive()).isFalse();
+            assertThat(existingUser.getRoles()).containsExactly(Role.MANAGER);
+            verify(userRepository, never()).existsByEmail(any());
             verify(userRepository).save(existingUser);
         }
 
@@ -472,6 +560,15 @@ class UserServiceModImplTest {
 
             verify(userRepository, times(1)).existsById("existing.user");
             verify(userRepository, times(1)).existsById("existing.user1");
+        }
+
+        @Test
+        void createUsernameTrimsEmailBeforeUsingLocalPart() {
+            when(userRepository.existsById("existing.user")).thenReturn(false);
+
+            assertThat(userService.createUsername(" existing.user@email.gov.uk ")).isEqualTo("existing.user");
+
+            verify(userRepository).existsById("existing.user");
         }
 
         @Test
