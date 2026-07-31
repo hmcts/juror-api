@@ -450,6 +450,17 @@ class UserServiceModImplTest {
     @Nested
     class Helpers {
         @Test
+        void createUsernameTruncatesLocalPartToThirtyCharactersWhenUnique() {
+            String localPart = "abcdefghijklmnopqrstuvwxyz1234567890";
+            String expectedUsername = localPart.substring(0, 30);
+            when(userRepository.existsById(expectedUsername)).thenReturn(false);
+
+            assertThat(userService.createUsername(localPart + "@email.gov.uk")).isEqualTo(expectedUsername);
+
+            verify(userRepository).existsById(expectedUsername);
+        }
+
+        @Test
         void createUsernameAppendsOneForSingleCollision() {
             when(userRepository.existsById("existing.user")).thenReturn(true);
             when(userRepository.existsById("existing.user1")).thenReturn(false);
@@ -458,6 +469,35 @@ class UserServiceModImplTest {
 
             verify(userRepository, times(1)).existsById("existing.user");
             verify(userRepository, times(1)).existsById("existing.user1");
+        }
+
+        @Test
+        void createUsernameIncrementsSuffixForMultipleCollisions() {
+            when(userRepository.existsById("existing.user")).thenReturn(true);
+            when(userRepository.existsById("existing.user1")).thenReturn(true);
+            when(userRepository.existsById("existing.user2")).thenReturn(false);
+
+            assertThat(userService.createUsername("existing.user@email.gov.uk")).isEqualTo("existing.user2");
+
+            verify(userRepository).existsById("existing.user");
+            verify(userRepository).existsById("existing.user1");
+            verify(userRepository).existsById("existing.user2");
+        }
+
+        @Test
+        void createUsernameShortensTruncatedUsernameToMakeRoomForSuffix() {
+            String localPart = "abcdefghijklmnopqrstuvwxyz1234567890";
+            String truncatedUsername = localPart.substring(0, 30);
+            String expectedUsername = localPart.substring(0, 29) + "1";
+            when(userRepository.existsById(truncatedUsername)).thenReturn(true);
+            when(userRepository.existsById(expectedUsername)).thenReturn(false);
+
+            assertThat(userService.createUsername(localPart + "@email.gov.uk"))
+                .isEqualTo(expectedUsername)
+                .hasSize(30);
+
+            verify(userRepository).existsById(truncatedUsername);
+            verify(userRepository).existsById(expectedUsername);
         }
     }
 

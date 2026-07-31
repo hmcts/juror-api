@@ -34,6 +34,7 @@ import java.util.Optional;
 @SuppressWarnings("PMD.TooManyMethods")
 public class UserServiceModImpl implements UserService {
 
+    private static final int USERNAME_MAX_LENGTH = 30;
 
     private final UserRepository userRepository;
     private final CourtLocationRepository courtLocationRepository;
@@ -253,12 +254,14 @@ public class UserServiceModImpl implements UserService {
 
 
     String createUsername(String email) {
-        String username = email.split("@")[0];
-        username = username.substring(0, Math.min(username.length(), 30));
-        // limit to 28 characters (DB constraint + 2 digits for numerics)
-        String usernameTemp = username;
+        String baseUsername = email.split("@")[0];
+        String usernameTemp = baseUsername.substring(0, Math.min(baseUsername.length(), USERNAME_MAX_LENGTH));
+        int suffix = 1;
         while (userRepository.existsById(usernameTemp)) {
-            usernameTemp = username + 1;
+            String suffixText = String.valueOf(suffix);
+            int usernameLength = USERNAME_MAX_LENGTH - suffixText.length();
+            usernameTemp = baseUsername.substring(0, Math.min(baseUsername.length(), usernameLength)) + suffixText;
+            suffix++;
         }
         return usernameTemp;
     }
