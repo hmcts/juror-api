@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -265,10 +266,12 @@ class UserServiceModImplTest {
             when(courtLocationRepository.findByOwner(COURT_OWNER)).thenReturn(List.of(satelliteCourt, mainCourt));
             when(jwtService.generateBureauJwtToken(eq("court.user"), any(BureauJwtPayload.class))).thenReturn("jwt");
 
+            LocalDateTime before = LocalDateTime.now();
             JwtDto response = userService.createJwt("court.user@email.gov.uk", "462");
+            LocalDateTime after = LocalDateTime.now();
 
             assertThat(response.getJwt()).isEqualTo("jwt");
-            assertThat(user.getLastLoggedIn()).isNotNull();
+            assertThat(user.getLastLoggedIn()).isBetween(before, after);
             verify(userRepository).save(user);
             verify(jwtService).generateBureauJwtToken(eq("court.user"), jwtPayloadCaptor.capture());
             BureauJwtPayload payload = jwtPayloadCaptor.getValue();

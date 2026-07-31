@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.service.JwtService;
 import uk.gov.hmcts.juror.api.moj.service.JwtServiceImpl;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -124,9 +125,13 @@ class LaUserServiceImplTest {
                                              anyMap())).thenReturn("jwt-token");
 
 
+            LocalDateTime before = LocalDateTime.now();
             LaJwtDto dto = laUserService.createJwt(email, "001");
+            LocalDateTime after = LocalDateTime.now();
+
             assertNotNull(dto);
             assertEquals("jwt-token", dto.getJwt());
+            assertThat(laUser.getLastLoggedIn()).isBetween(before, after);
         }
 
         verify(userRepository).findByUsernameIgnoreCase(email);
