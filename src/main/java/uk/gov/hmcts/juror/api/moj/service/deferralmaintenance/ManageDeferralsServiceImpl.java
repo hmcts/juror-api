@@ -237,14 +237,10 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     private void sendDeferralComms(BureauJwtPayload payload, JurorPool jurorPool) {
-        if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)) {
 
-            if (JurorPoolUtils.isDigitalByDefault(jurorPool)
-                && JurorUtils.isDigitalPreference(jurorPool.getJuror())) {
-                emailDeferralLetter(payload.getOwner(), jurorPool);
-            } else {
-                printDeferralLetter(payload.getOwner(), jurorPool);
-            }
+        if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+            && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+            emailDeferralLetter(payload.getOwner(), jurorPool);
         } else {
             printDeferralLetter(payload.getOwner(), jurorPool);
         }
