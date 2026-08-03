@@ -58,6 +58,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_PROCESS_EMPANELLED_JUROR;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_AVAILABLE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
 
@@ -406,24 +407,25 @@ class PanelServiceImplTest {
         int totalUnusedJurors = 0;
         List<Panel> panelMembers = createPanelMembers(totalPanelMembers);
         BureauJwtPayload payload = buildPayload();
+        JurorListRequestDto jurorListRequestDto =
+            createEmpanelledListRequestDto(panelMembers);
 
         for (Panel member : panelMembers) {
+            final PanelResult requestedResult = member.getResult();
+            member.setResult(null);
             doReturn(member).when(panelRepository)
                 .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
                     "T100000025", "415", member.getJurorNumber());
             doReturn(Optional.of(createAppearance(member.getJurorNumber()))).when(appearanceRepository)
                 .findByLocCodeAndJurorNumberAndAttendanceDateAndAppearanceStage(
                     "415", member.getJurorNumber(), now(), AppearanceStage.CHECKED_IN);
-            if (member.getResult() != PanelResult.JUROR) {
+            if (requestedResult != PanelResult.JUROR) {
                 totalUnusedJurors++;
             }
         }
 
         doReturn(Optional.of(createTrial())).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),
             anyString());
-
-        JurorListRequestDto jurorListRequestDto =
-            createEmpanelledListRequestDto(panelMembers);
 
         panelService.processEmpanelled(jurorListRequestDto, payload);
 
@@ -443,8 +445,11 @@ class PanelServiceImplTest {
         for (Panel panelMember : panelMembers) {
             panelMember.setResult(PanelResult.CHALLENGED);
         }
+        JurorListRequestDto jurorListRequestDto =
+            createEmpanelledListRequestDto(panelMembers);
 
         for (Panel member : panelMembers) {
+            member.setResult(null);
             doReturn(member).when(panelRepository)
                 .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
                     "T100000025",
@@ -457,9 +462,6 @@ class PanelServiceImplTest {
 
         doReturn(Optional.of(createTrial())).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),
             anyString());
-
-        JurorListRequestDto jurorListRequestDto =
-            createEmpanelledListRequestDto(panelMembers);
 
         BureauJwtPayload payload = buildPayload();
         panelService.processEmpanelled(jurorListRequestDto, payload);
@@ -512,11 +514,13 @@ class PanelServiceImplTest {
     void processEmpanelledWrongJurorStatusSet() {
         Panel panel = createSinglePanelData();
         panel.setResult(PanelResult.RETURNED);
+        panel.setCompleted(false);
         doReturn(panel).when(panelRepository)
             .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(anyString(), anyString(),
                 anyString());
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(panel));
+        panel.setResult(null);
         jurorListRequestDto.setNumberRequested(1);
         BureauJwtPayload payload = buildPayload();
         assertThrows(MojException.BadRequest.class, () ->
@@ -525,12 +529,37 @@ class PanelServiceImplTest {
     }
 
     @Test
+    void processEmpanelledCompletedPanelMemberCannotBeProcessedAgain() {
+        Panel panel = createSinglePanelData();
+        panel.setResult(PanelResult.NOT_USED);
+        panel.setCompleted(true);
+        doReturn(panel).when(panelRepository)
+            .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(anyString(), anyString(),
+                anyString());
+        JurorListRequestDto jurorListRequestDto =
+            createEmpanelledListRequestDto(Collections.singletonList(panel));
+        jurorListRequestDto.setNumberRequested(1);
+        BureauJwtPayload payload = buildPayload();
+
+        MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class, () ->
+            panelService.processEmpanelled(jurorListRequestDto, payload));
+
+        assertThat(exception.getErrorCode()).isEqualTo(CANNOT_PROCESS_EMPANELLED_JUROR);
+        verify(panelRepository, never()).saveAndFlush(any());
+        verify(appearanceRepository, never()).saveAndFlush(any());
+        verify(jurorHistoryService, never()).createReturnFromPanelHistory(any(), any());
+    }
+
+    @Test
     void processEmpanelledNoAppearance() {
         final int totalPanelMembers = 10;
         List<Panel> panelMembers = createPanelMembers(totalPanelMembers);
         BureauJwtPayload payload = buildPayload();
+        JurorListRequestDto jurorListRequestDto =
+            createEmpanelledListRequestDto(panelMembers);
 
         for (Panel member : panelMembers) {
+            member.setResult(null);
             doReturn(member).when(panelRepository)
                 .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
                     "T100000025", "415", member.getJurorNumber());
@@ -541,9 +570,6 @@ class PanelServiceImplTest {
 
         doReturn(Optional.of(createTrial())).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),
             anyString());
-
-        JurorListRequestDto jurorListRequestDto =
-            createEmpanelledListRequestDto(panelMembers);
 
         assertThatExceptionOfType(MojException.BusinessRuleViolation.class).isThrownBy(() ->
             panelService.processEmpanelled(jurorListRequestDto, payload));
