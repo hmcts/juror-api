@@ -39,11 +39,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_PROCESS_EMPANELLED_JUROR;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_MUST_BE_CHECKED_IN;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NO_PANEL_EXIST;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_AVAILABLE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.PANEL_MEMBER_ALREADY_PROCESSED;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.TRIAL_HAS_ENDED;
 
 @Slf4j
@@ -309,7 +309,7 @@ public class PanelServiceImpl implements PanelService {
         if (panelMember.isCompleted() || panelMember.getResult() != null) {
             throw new MojException.BusinessRuleViolation(
                 "Cannot process juror %s - panel member has already been processed".formatted(jurorNumber),
-                CANNOT_PROCESS_EMPANELLED_JUROR);
+                PANEL_MEMBER_ALREADY_PROCESSED);
         }
     }
 

@@ -58,9 +58,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_PROCESS_EMPANELLED_JUROR;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_AVAILABLE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.PANEL_MEMBER_ALREADY_PROCESSED;
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({
@@ -544,7 +544,7 @@ class PanelServiceImplTest {
         MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class, () ->
             panelService.processEmpanelled(jurorListRequestDto, payload));
 
-        assertThat(exception.getErrorCode()).isEqualTo(CANNOT_PROCESS_EMPANELLED_JUROR);
+        assertThat(exception.getErrorCode()).isEqualTo(PANEL_MEMBER_ALREADY_PROCESSED);
         verify(panelRepository, never()).saveAndFlush(any());
         verify(appearanceRepository, never()).saveAndFlush(any());
         verify(jurorHistoryService, never()).createReturnFromPanelHistory(any(), any());
