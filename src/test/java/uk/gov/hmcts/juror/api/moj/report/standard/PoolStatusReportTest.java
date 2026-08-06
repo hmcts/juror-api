@@ -27,7 +27,7 @@ public class PoolStatusReportTest extends AbstractStandardReportTestSupport<Pool
 
     private final JurorPoolRepository jurorPoolRepository;
 
-    public PoolStatusReportTest() {
+    PoolStatusReportTest() {
         super(QJurorPool.jurorPool,
             PoolStatusReport.RequestValidator.class,
             DataType.SUMMONS_TOTAL,
@@ -44,7 +44,7 @@ public class PoolStatusReportTest extends AbstractStandardReportTestSupport<Pool
     }
 
     @Override
-    public PoolStatusReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected PoolStatusReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PoolStatusReport(poolRequestRepository, this.jurorPoolRepository);
     }
 
@@ -56,7 +56,7 @@ public class PoolStatusReportTest extends AbstractStandardReportTestSupport<Pool
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         report.preProcessQuery(query, request);
         verify(query).where(QJurorPool.jurorPool.pool.poolNumber.eq(request.getPoolNumber()));
     }

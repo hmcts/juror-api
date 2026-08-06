@@ -8,7 +8,6 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -107,8 +106,12 @@ import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDefer
 import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsServiceTestData.createJurorResponseForDeferrals;
 import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsServiceTestData.createJurorResponseWithoutDeferrals;
 
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods"
+})
+
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 class ManageDeferralsServiceTest {
 
     private static final String BUREAU_OWNER = "400";
@@ -169,7 +172,7 @@ class ManageDeferralsServiceTest {
     private ListAppender<ILoggingEvent> listAppender;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         final Logger logger = (Logger) LoggerFactory.getLogger(ManageDeferralsServiceImpl.class);
 
         doReturn(Optional.of(createJurorStatus(2, "RESPONDED")))
@@ -194,7 +197,6 @@ class ManageDeferralsServiceTest {
     class ProcessJurorPostponement {
 
         @Test
-        @SuppressWarnings({"PMD.TooManyFields"})
         void processJurorPostponementHappyPathMoveToActivePoolPoliceChecked() {
             TestUtils.mockBureauUser();
             LocalDate newAttendanceDate = LocalDate.now();
@@ -248,7 +250,6 @@ class ManageDeferralsServiceTest {
         }
 
         @Test
-        @SuppressWarnings({"PMD.TooManyFields"})
         void processJurorPostponementHappyPathMoveToActivePoolNotPoliceChecked() {
             TestUtils.mockBureauUser();
             LocalDate newAttendanceDate = LocalDate.now();
@@ -610,7 +611,6 @@ class ManageDeferralsServiceTest {
     class MoveDeferredJurorToAnotherCourt {
 
         @Test
-        @SuppressWarnings({"PMD.TooManyFields"})
         void moveDeferredJuror() {
             TestUtils.mockBureauUser();
             LocalDate newAttendanceDate = LocalDate.now();
@@ -790,7 +790,6 @@ class ManageDeferralsServiceTest {
         }
 
         @Test
-        @SuppressWarnings({"PMD.TooManyFields"})
         void moveDeferredJurorInvalidStatus() {
             TestUtils.mockBureauUser();
             LocalDate newAttendanceDate = LocalDate.now();
@@ -917,9 +916,8 @@ class ManageDeferralsServiceTest {
 
         when(currentlyDeferredRepository.findById(any())).thenReturn(Optional.empty());
 
-        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() -> {
-            manageDeferralsService.deleteDeferral(bureauPayload, jurorNumber);
-        });
+        assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+            manageDeferralsService.deleteDeferral(bureauPayload, jurorNumber));
 
         verify(jurorPoolService, times(1))
             .getJurorPoolFromUser(any());
@@ -942,7 +940,7 @@ class ManageDeferralsServiceTest {
     @Test
     void useDeferralsNoDeferralsUsed() {
         PoolRequest poolRequest = createPoolRequest("123456789", "123", LocalDate.now());
-        doReturn(new ArrayList<CurrentlyDeferred>()).when(currentlyDeferredRepository)
+        doReturn(new ArrayList<>()).when(currentlyDeferredRepository)
             .findAll((Predicate) any());
 
         int deferralsUsed = manageDeferralsService.useCourtDeferrals(poolRequest,
@@ -1023,7 +1021,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void useCourtDeferralsDeferralsUsedNoJurorPool() {
         String courtLocation = "415";
         LocalDate newAttendanceDate = LocalDate.now();
@@ -1076,7 +1073,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void useCourtDeferralsDeferralsUsedNoPoolRequest() {
         String courtLocation = "415";
         LocalDate newAttendanceDate = LocalDate.now();
@@ -1446,7 +1442,7 @@ class ManageDeferralsServiceTest {
 
         when(jurorPoolService.getJurorPoolFromUser(jurorNumber)).thenReturn(jurorPool);
 
-        MojException.BusinessRuleViolation exception = Assertions.assertThrows(MojException.BusinessRuleViolation.class,
+        MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class,
             () -> manageDeferralsService.processJurorDeferral(bureauPayload, jurorNumber, dto),
             "Exception should be thrown");
 
@@ -1532,7 +1528,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void changeDeferralDate_happy_path_moveToActivePool_RemoveFromDeferralMaintenance() {
+    void changeDeferralDateHappyPathMoveToActivePoolRemoveFromDeferralMaintenance() {
         TestUtils.mockBureauUser();
         LocalDate newAttendanceDate = LocalDate.now();
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
@@ -1598,7 +1594,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void processJuror_deferral_paper_happy_path_moveToActivePool() {
+    void processJurorDeferralPaperHappyPathMoveToActivePool() {
         TestUtils.mockBureauUser();
         LocalDate newAttendanceDate = LocalDate.now();
         LocalDate oldAttendanceDate = LocalDate.of(2022, 6, 6);
@@ -1632,7 +1628,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void processJuror_deferral_digital_happy_path_moveToDeferralMaintenance() {
+    void processJurorDeferralDigitalHappyPathMoveToDeferralMaintenance() {
         TestUtils.mockBureauUser();
         final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
@@ -1735,7 +1731,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void processJuror_deferral_paper_happy_path_moveToDeferralMaintenance() {
+    void processJurorDeferralPaperHappyPathMoveToDeferralMaintenance() {
         TestUtils.mockBureauUser();
         final BureauJwtPayload bureauPayload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
@@ -1793,7 +1789,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_findActivePoolsForDates_happyPath() {
+    void testFindActivePoolsForDatesHappyPath() {
         TestUtils.mockBureauUser();
         String bureauOwner = "400";
         final String jurorNumber = "123456789";
@@ -1923,8 +1919,8 @@ class ManageDeferralsServiceTest {
             .isEqualTo(2);
 
         DeferralOptionsDto.DeferralOptionDto option2Summary = secondOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber()
-                .equalsIgnoreCase("415230601")).findFirst().orElse(null);
+            .filter(option -> "415230601"
+                .equalsIgnoreCase(option.getPoolNumber())).findFirst().orElse(null);
         assert option2Summary != null;
         assertThat(option2Summary.getServiceStartDate()).as("Verify service start date")
             .isEqualTo(LocalDate.of(2023, 6, 12));
@@ -1933,7 +1929,7 @@ class ManageDeferralsServiceTest {
             .isEqualTo(PoolUtilisationDescription.NEEDED);
 
         DeferralOptionsDto.DeferralOptionDto option3Summary = secondOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415230602"))
+            .filter(option -> "415230602".equalsIgnoreCase(option.getPoolNumber()))
             .findFirst().orElse(null);
         assert option3Summary != null;
         assertThat(option3Summary.getServiceStartDate()).as("Verify service start date")
@@ -1961,7 +1957,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_findActivePoolsForDates_invalidAccess() {
+    void testFindActivePoolsForDatesInvalidAccess() {
         TestUtils.mockBureauUser();
         String bureauOwner = "400";
         String jurorNumber = "123456789";
@@ -2031,7 +2027,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_findActivePoolsForDates_noDates() {
+    void testFindActivePoolsForDatesNoDates() {
         TestUtils.mockBureauUser();
         String bureauOwner = "400";
         String jurorNumber = "123456789";
@@ -2066,7 +2062,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void test_getPreferredDeferralDates_threeValidDates() {
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
@@ -2097,7 +2092,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void testFindActivePoolsForDatesAndLocationCodeHappyPath() {
         TestUtils.mockBureauUser();
         String bureauOwner = "400";
@@ -2230,8 +2224,8 @@ class ManageDeferralsServiceTest {
             .isEqualTo(2);
 
         DeferralOptionsDto.DeferralOptionDto option2Summary = secondOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber()
-                .equalsIgnoreCase("415230601")).findFirst().orElse(null);
+            .filter(option -> "415230601"
+                .equalsIgnoreCase(option.getPoolNumber())).findFirst().orElse(null);
         assert option2Summary != null;
         assertThat(option2Summary.getServiceStartDate()).as("Verify service start date")
             .isEqualTo(LocalDate.of(2023, 6, 12));
@@ -2240,7 +2234,7 @@ class ManageDeferralsServiceTest {
             .isEqualTo(PoolUtilisationDescription.NEEDED);
 
         DeferralOptionsDto.DeferralOptionDto option3Summary = secondOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415230602"))
+            .filter(option -> "415230602".equalsIgnoreCase(option.getPoolNumber()))
             .findFirst().orElse(null);
         assert option3Summary != null;
         assertThat(option3Summary.getServiceStartDate()).as("Verify service start date")
@@ -2268,7 +2262,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void testFindActivePoolsForDatesAndLocationCodeNoDates() {
         String bureauOwner = "400";
         String jurorNumber = "123456789";
@@ -2301,7 +2294,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void testFindActivePoolsForDatesAndLocationCodeNoLocationCode() {
         String bureauOwner = "400";
         String jurorNumber = "123456789";
@@ -2342,7 +2334,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void test_getPreferredDeferralDates_twoValidDates() {
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
@@ -2372,7 +2363,6 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void test_getPreferredDeferralDates_oneValidDate() {
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
@@ -2401,7 +2391,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_getPreferredDeferralDates_noValidDates() {
+    void testGetPreferredDeferralDatesNoValidDates() {
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
 
@@ -2427,7 +2417,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_getPreferredDeferralDates_invalidReadAccess() {
+    void testGetPreferredDeferralDatesInvalidReadAccess() {
         final BureauJwtPayload payload = TestUtils.createJwt("415", "BUREAU_USER");
         String jurorNumber = "123456789";
 
@@ -2450,7 +2440,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_getPreferredDeferralDates_noDigitalResponse() {
+    void testGetPreferredDeferralDatesNoDigitalResponse() {
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         String jurorNumber = "123456789";
 
@@ -2473,7 +2463,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_moveJurorsToActivePool_singleJuror() {
+    void testMoveJurorsToActivePoolSingleJuror() {
         TestUtils.mockBureauUser();
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         final String courtLocationCode = "415";
@@ -2516,7 +2506,7 @@ class ManageDeferralsServiceTest {
     }
 
     @Test
-    void test_moveJurorsToActivePool_singleJuror_noDob() {
+    void testMoveJurorsToActivePoolSingleJurorNoDob() {
         TestUtils.mockBureauUser();
         final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
         final String courtLocationCode = "415";
@@ -2802,7 +2792,7 @@ class ManageDeferralsServiceTest {
         assertThat(firstDateOption.getDeferralOptions().size()).isEqualTo(2);
 
         DeferralOptionsDto.DeferralOptionDto option1ForFirstDate = firstDateOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415220502"))
+            .filter(option -> "415220502".equalsIgnoreCase(option.getPoolNumber()))
             .findFirst().orElse(null);
         assert option1ForFirstDate != null;
         assertThat(option1ForFirstDate.getServiceStartDate())
@@ -2812,7 +2802,7 @@ class ManageDeferralsServiceTest {
             .NEEDED);
 
         DeferralOptionsDto.DeferralOptionDto option2ForFirstDate = firstDateOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415220401"))
+            .filter(option -> "415220401".equalsIgnoreCase(option.getPoolNumber()))
             .findFirst().orElse(null);
         assert option2ForFirstDate != null;
         assertThat(option2ForFirstDate.getServiceStartDate())
@@ -2829,7 +2819,7 @@ class ManageDeferralsServiceTest {
         assertThat(secondDateOption.getDeferralOptions().size()).isEqualTo(1);
 
         DeferralOptionsDto.DeferralOptionDto option2Summary1 = secondDateOption.getDeferralOptions().stream()
-            .filter(option -> option.getPoolNumber().equalsIgnoreCase("415220503"))
+            .filter(option -> "415220503".equalsIgnoreCase(option.getPoolNumber()))
             .findFirst().orElse(null);
         assert option2Summary1 != null;
         assertThat(option2Summary1.getServiceStartDate())

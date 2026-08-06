@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.moj.utils.BigDecimalUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -18,30 +19,30 @@ class BigDecimalUtilsTest {
 
 
     abstract class ComparisonTest {
-        private final ArrayList<DynamicTest> tests;
+        private final List<DynamicTest> tests;
 
         protected ComparisonTest(String symbol, boolean passLessThan, boolean passEqualTo, boolean passGreaterThan) {
             this.tests = new ArrayList<>();
             BigDecimal value1 = new BigDecimal("1.00");
             BigDecimal value2 = new BigDecimal("2.00");
 
-            //Less Than
             tests.add(
                 DynamicTest.dynamicTest(value1 + " " + symbol + " " + value2 + " = " + passLessThan,
-                    () -> assertThat(compare(value1, value2)).isEqualTo(passLessThan)));
-            //Greater Than
+                                        () -> assertThat(compare(value1, value2)).isEqualTo(passLessThan)));
+
             tests.add(
-                DynamicTest.dynamicTest(value2 + " " + symbol + " " + value1 + " = " + !passLessThan,
-                    () -> assertThat(compare(value2, value1)).isEqualTo(passGreaterThan)));
-            //Equal to
+                DynamicTest.dynamicTest(value2 + " " + symbol + " " + value1 + " = " + passGreaterThan,
+                                        () -> assertThat(compare(value2, value1)).isEqualTo(passGreaterThan)));
+
             tests.add(
-                DynamicTest.dynamicTest(value1 + " " + symbol + " " + value2 + " = " + passLessThan,
-                    () -> assertThat(compare(value1, value1)).isEqualTo(passEqualTo)));
+                DynamicTest.dynamicTest(value1 + " " + symbol + " " + value1 + " = " + passEqualTo,
+                                        () -> assertThat(compare(value1, value1)).isEqualTo(passEqualTo)));
         }
 
         abstract boolean compare(BigDecimal value1, BigDecimal value2);
 
         @TestFactory
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         Stream<DynamicTest> comparisonTests() {
             return tests.stream();
         }
@@ -119,13 +120,19 @@ class BigDecimalUtilsTest {
     }
 
     @Test
-    void currencyFormat() {
+    void currencyFormatFor103() {
         assertThat(BigDecimalUtils.currencyFormat(new BigDecimal("1.03")))
             .isEqualTo("£1.03");
+    }
 
-        assertThat(BigDecimalUtils.currencyFormat(new BigDecimal("1")))
+    @Test
+    void currencyFormatForOne() {
+        assertThat(BigDecimalUtils.currencyFormat(BigDecimal.ONE))
             .isEqualTo("£1.00");
+    }
 
+    @Test
+    void currencyFormatFor10233() {
         assertThat(BigDecimalUtils.currencyFormat(new BigDecimal("1.0233")))
             .isEqualTo("£1.02");
     }

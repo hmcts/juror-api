@@ -26,13 +26,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({
+    "PMD.TooManyMethods",
+    "unchecked"
+})
 class CourtsWithIncompleteServiceReportTest
     extends AbstractStandardReportTestSupport<CourtsWithIncompleteServiceReport> {
 
     private static final LocalDate CUTOFF_DATE = LocalDate.of(2025, 12, 16);
 
-    public CourtsWithIncompleteServiceReportTest() {
+    CourtsWithIncompleteServiceReportTest() {
         super(QJurorPool.jurorPool,
               CourtsWithIncompleteServiceReport.RequestValidator.class,
               DataType.COURT_LOCATION_NAME_AND_CODE_JP,
@@ -40,7 +43,7 @@ class CourtsWithIncompleteServiceReportTest
     }
 
     @Override
-    public CourtsWithIncompleteServiceReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected CourtsWithIncompleteServiceReport createReport(PoolRequestRepository poolRequestRepository) {
         return new CourtsWithIncompleteServiceReport(poolRequestRepository);
     }
 
@@ -53,7 +56,7 @@ class CourtsWithIncompleteServiceReportTest
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         // The parent class provides a request but it might not be a mock
         // Don't try to stub it - just execute the method
         report.preProcessQuery(query, request);

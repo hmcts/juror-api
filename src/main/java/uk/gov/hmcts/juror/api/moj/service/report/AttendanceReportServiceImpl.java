@@ -30,6 +30,7 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
 
     @Override
     @Transactional(readOnly = true)
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public WeekendAttendanceReportResponse getWeekendAttendanceReport() {
 
         if (!SecurityUtil.hasPermission(Permission.SUPER_USER)) {
@@ -56,13 +57,13 @@ public class AttendanceReportServiceImpl implements AttendanceReportService {
         if (bankHolidaysThisMonth == null) {
             bankHolidaysThisMonth = List.of();
         }
-        var bankHolidayDatesInMonth = bankHolidaysThisMonth.stream()
+        List<LocalDate> bankHolidayDatesInMonth = bankHolidaysThisMonth.stream()
                 .map(HolidayDate::getDate)
                 .filter(date -> !date.isBefore(fromDate) && !date.isAfter(toDate))
                 .toList();
 
         // combine all dates into a single list
-        var allRelevantDates = new ArrayList<LocalDate>();
+        ArrayList<LocalDate> allRelevantDates = new ArrayList<>();
         allRelevantDates.addAll(saturdayDates);
         allRelevantDates.addAll(sundayDates);
         allRelevantDates.addAll(bankHolidayDatesInMonth);

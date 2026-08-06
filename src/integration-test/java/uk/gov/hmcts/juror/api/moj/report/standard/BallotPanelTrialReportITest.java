@@ -18,10 +18,9 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/BallotPanelTrIalITest.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest {
     @Autowired
-    public BallotPanelTrialReportITest(TestRestTemplate template) {
+    BallotPanelTrialReportITest(TestRestTemplate template) {
         super(template, BallotPanelTrialReport.class);
     }
 
@@ -33,8 +32,8 @@ class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest 
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-                                 .trialNumber(TestConstants.VALID_TRIAL_NUMBER)
-                                 .build());
+            .trialNumber(TestConstants.VALID_TRIAL_NUMBER)
+            .build());
     }
 
     @Test
@@ -124,37 +123,6 @@ class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest 
                             .add("first_name", "John9")
                             .add("last_name", "Smith9")
                             .add("juror_postcode", "AD9 2HP")
-                    ))
-                    .build())
-            .build();
-    }
-
-    private StandardReportResponse getCurrentJurorsOnlyResponse() {
-        return StandardReportResponse.builder()
-            .headings(new ReportHashMap<>())
-            .tableData(
-                StandardReportResponse.TableData.<StandardTableData>builder()
-                    .headings(getStandardHeadings())
-                    .data(StandardTableData.of(
-                        // 200000001, 200000002, 200000003 — result J, empanelled, no return date
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "200000001")
-                            .add("first_name", "John1")
-                            .add("last_name", "Smith1")
-                            .add("juror_postcode", "AD1 2HP"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "200000002")
-                            .add("first_name", "John2")
-                            .add("last_name", "Smith2")
-                            .add("juror_postcode", "AD2 2HP"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "200000003")
-                            .add("first_name", "John3")
-                            .add("last_name", "Smith3")
-                            .add("juror_postcode", "AD3 2HP")
-                    // 200000007 excluded — result NU
-                    // 200000008 excluded — result CD
-                    // 200000009 excluded — result J but return_date set
                     ))
                     .build())
             .build();

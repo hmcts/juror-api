@@ -7,7 +7,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 
 import java.time.LocalDateTime;
 
-public class JurorHistoryUtils {
+public final class JurorHistoryUtils {
 
     private JurorHistoryUtils() {
     }

@@ -25,6 +25,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @NoArgsConstructor
 @Getter
 @Setter
+@SuppressWarnings({"PMD.TooManyFields"})
 public class Voters implements Serializable {
 
     @Id

@@ -20,11 +20,10 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/ExcusedAndDisqualifiedListReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class ExcusedAndDisqualifiedListReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
-    public ExcusedAndDisqualifiedListReportITest(TestRestTemplate template) {
+    ExcusedAndDisqualifiedListReportITest(TestRestTemplate template) {
         super(template, ExcusedAndDisqualifiedListReport.class);
     }
 

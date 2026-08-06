@@ -20,8 +20,8 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class AvailableListByDateReportCourt extends AbstractGroupedReport implements AvailableListReport {
@@ -70,7 +70,7 @@ public class AvailableListByDateReportCourt extends AbstractGroupedReport implem
     public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
         StandardReportRequest request,
         AbstractReportResponse.TableData<GroupedTableData> tableData) {
-        Map<String, AbstractReportResponse.DataTypeValue> headings = new LinkedHashMap<>(
+        Map<String, AbstractReportResponse.DataTypeValue> headings = new ConcurrentHashMap<>(
             getHeadingsInternal(request, tableData));
         addCourtNameHeader(headings, courtLocationService.getCourtLocation(SecurityUtil.getActiveOwner()));
         headings.put("attendance_date",

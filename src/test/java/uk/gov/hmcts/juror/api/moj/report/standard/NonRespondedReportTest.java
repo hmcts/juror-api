@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 
 class NonRespondedReportTest extends AbstractStandardReportTestSupport<NonRespondedReport> {
 
-    public NonRespondedReportTest() {
+    NonRespondedReportTest() {
         super(QJurorPool.jurorPool,
             NonRespondedReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
@@ -34,12 +34,12 @@ class NonRespondedReportTest extends AbstractStandardReportTestSupport<NonRespon
 
 
     @Override
-    public NonRespondedReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected NonRespondedReport createReport(PoolRequestRepository poolRequestRepository) {
         return new NonRespondedReport(poolRequestRepository);
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         request.setPoolNumber(TestConstants.VALID_POOL_NUMBER);
         report.preProcessQuery(query, request);
         verify(query, times(1))
@@ -56,7 +56,7 @@ class NonRespondedReportTest extends AbstractStandardReportTestSupport<NonRespon
         StandardReportRequest request,
         AbstractReportResponse.TableData<StandardTableData> tableData,
         StandardTableData data) {
-        
+
         when(data.size()).thenReturn(2);
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);
         assertHeadingContains(map,

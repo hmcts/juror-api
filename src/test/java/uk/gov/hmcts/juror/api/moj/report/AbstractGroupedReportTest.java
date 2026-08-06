@@ -30,12 +30,11 @@ class AbstractGroupedReportTest {
     private PoolRequestRepository poolRequestRepository;
 
     @BeforeEach
-    void beforeEach() {
+    protected void beforeEach() {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructor() {
         IReportGroupBy groupBy = createGroupBy();
         AbstractGroupedReport report = new AbstractStandardReportTestImpl(
@@ -73,7 +72,6 @@ class AbstractGroupedReportTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveGetTableData() {
         final List<Tuple> data = List.of(mock(Tuple.class), mock(Tuple.class));
 
@@ -115,7 +113,8 @@ class AbstractGroupedReportTest {
         verify(report).getTableDataAsList(data);
     }
 
-    @SuppressWarnings("unchecked")//TODO
+    //TODO
+    @SuppressWarnings({"unchecked", "PMD.ShortVariable"})
     private List<LinkedHashMap<String, Object>> toLinkedHashMapList(Object o) {
         return (List<LinkedHashMap<String, Object>>) o;
     }
@@ -152,10 +151,9 @@ class AbstractGroupedReportTest {
             .build();
     }
 
-
     private static class AbstractStandardReportTestImpl extends AbstractGroupedReport {
 
-        public AbstractStandardReportTestImpl(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
+        AbstractStandardReportTestImpl(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
                                               IReportGroupBy groupBy, DataType... dataType) {
             super(poolRequestRepository, from, groupBy, dataType);
         }

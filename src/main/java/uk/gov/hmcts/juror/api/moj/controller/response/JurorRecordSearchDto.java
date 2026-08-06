@@ -36,30 +36,37 @@ public class JurorRecordSearchDto {
 
         @NotNull
         @Schema(name = "Juror number", description = "Jurors Number")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String jurorNumber;
 
         @NotNull
         @Length(max = 20)
         @Schema(description = "Juror first name", requiredMode = Schema.RequiredMode.REQUIRED)
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String firstName;
 
         @NotNull
         @Length(max = 20)
         @Schema(description = "Juror last name", requiredMode = Schema.RequiredMode.REQUIRED)
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String lastName;
 
         @NotNull
         @Length(max = 8)
         @Schema(description = "Juror address post code", requiredMode = Schema.RequiredMode.REQUIRED)
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String addressPostcode;
 
         @Schema(name = "Pool number", description = "The unique number for a pool request")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String poolNumber;
 
         @Schema(name = "Court name", description = "Name for a given court location")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String courtName;
 
         @Schema(name = "Court Location Code", description = "3 digit numeric String to identify a Court Location")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String courtLocationCode;
 
         /**

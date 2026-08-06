@@ -96,15 +96,20 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static uk.gov.hmcts.juror.api.TestUtil.getValuesInJsonObject;
-import static uk.gov.hmcts.juror.api.TestUtils.objectMapper;
+import static uk.gov.hmcts.juror.api.TestUtils.OBJECT_MAPPER;
 import static uk.gov.hmcts.juror.api.utils.DataConversionUtil.getExceptionDetails;
 
 /**
  * Integration tests for the API endpoints defined in LetterController.
  */
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.NcssCount",
+    "PMD.TooManyMethods",
+    "PMD.CouplingBetweenObjects"
+})
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.NcssCount"})
 class LetterControllerITest extends AbstractIntegrationTest {
     private static final String GET_LETTER_LIST_URI = "/api/v1/moj/letter/court-letter-list";
     private static final String HISTORY_RECORD_ADDED_TEXT = "History record should have been added";
@@ -125,8 +130,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -708,7 +714,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(1);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (DeferralLetterData) data)
+                    .map(DeferralLetterData.class::cast)
                     .filter(data -> "555555562".equalsIgnoreCase(data.getJurorNumber()))
                     .toList();
 
@@ -748,7 +754,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(5);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (DeferralLetterData) data)
+                    .map(DeferralLetterData.class::cast)
                     .filter(data -> data.getPostcode().equalsIgnoreCase(postcode)
                         && data.getDatePrinted() == null)
                     .toList();
@@ -788,7 +794,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(6);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (DeferralLetterData) data)
+                    .map(DeferralLetterData.class::cast)
                     .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                     .toList();
 
@@ -832,7 +838,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(3);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (DeferralLetterData) data)
+                    .map(DeferralLetterData.class::cast)
                     .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber)
                         && data.getDatePrinted() == null)
                     .toList();
@@ -872,7 +878,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(5);
 
                 List<DeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (DeferralLetterData) data)
+                    .map(DeferralLetterData.class::cast)
                     .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                     .toList();
 
@@ -1124,7 +1130,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(2);
 
                 List<NonDeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (NonDeferralLetterData) data)
+                    .map(NonDeferralLetterData.class::cast)
                     .filter(data -> "555555566".equalsIgnoreCase(data.getJurorNumber()))
                     .toList();
 
@@ -1136,7 +1142,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
 
                 dataList = responseBody.stream()
-                    .map(data -> (NonDeferralLetterData) data)
+                    .map(NonDeferralLetterData.class::cast)
                     .filter(data -> "555555569".equalsIgnoreCase(data.getJurorNumber()))
                     .toList();
 
@@ -1178,7 +1184,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(3);
 
                 List<NonDeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (NonDeferralLetterData) data)
+                    .map(NonDeferralLetterData.class::cast)
                     .filter(data -> data.getPostcode().equalsIgnoreCase(postcode)
                         && data.getDatePrinted() == null)
                     .toList();
@@ -1218,7 +1224,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(6);
 
                 List<NonDeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (NonDeferralLetterData) data)
+                    .map(NonDeferralLetterData.class::cast)
                     .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                     .toList();
 
@@ -1263,7 +1269,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(1);
 
                 List<NonDeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (NonDeferralLetterData) data)
+                    .map(NonDeferralLetterData.class::cast)
                     .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber)
                         && data.getDatePrinted() == null)
                     .toList();
@@ -1303,7 +1309,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseBody.size()).isEqualTo(3);
 
                 List<NonDeferralLetterData> dataList = responseBody.stream()
-                    .map(data -> (NonDeferralLetterData) data)
+                    .map(NonDeferralLetterData.class::cast)
                     .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                     .toList();
 
@@ -1549,7 +1555,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(2);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
-                .map(data -> (ExcusalLetterData) data)
+                .map(ExcusalLetterData.class::cast)
                 .filter(data -> "FNAME3".equalsIgnoreCase(data.getFirstName()))
                 .toList();
 
@@ -1586,7 +1592,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(2);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
-                .map(data -> (ExcusalLetterData) data)
+                .map(ExcusalLetterData.class::cast)
                 .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                 .toList();
 
@@ -1624,7 +1630,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(5);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
-                .map(data -> (ExcusalLetterData) data)
+                .map(ExcusalLetterData.class::cast)
                 .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                 .toList();
 
@@ -1661,7 +1667,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(2);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
-                .map(data -> (ExcusalLetterData) data)
+                .map(ExcusalLetterData.class::cast)
                 .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                 .toList();
 
@@ -1699,7 +1705,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(5);
 
             List<ExcusalLetterData> dataList = responseBody.stream()
-                .map(data -> (ExcusalLetterData) data)
+                .map(ExcusalLetterData.class::cast)
                 .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                 .toList();
 
@@ -1735,7 +1741,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferrals(reissueLetterListResponseDto);
@@ -1783,7 +1789,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferrals(reissueLetterListResponseDto);
@@ -1831,7 +1837,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferrals(reissueLetterListResponseDto);
@@ -1875,7 +1881,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferrals(reissueLetterListResponseDto);
@@ -2003,7 +2009,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesConfirmation(reissueLetterListResponseDto);
@@ -2043,7 +2049,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesConfirmation(reissueLetterListResponseDto);
@@ -2083,7 +2089,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesConfirmation(reissueLetterListResponseDto);
@@ -2114,7 +2120,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as("Expect HTTP Response to be OK").isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesConfirmation(reissueLetterListResponseDto);
@@ -2156,7 +2162,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferralDenied(reissueLetterListResponseDto);
@@ -2201,7 +2207,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferralDenied(reissueLetterListResponseDto);
@@ -2246,7 +2252,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferralDenied(reissueLetterListResponseDto);
@@ -2279,7 +2285,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesDeferralDenied(reissueLetterListResponseDto);
@@ -2313,7 +2319,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesWithdrawal(reissueLetterListResponseDto);
@@ -2358,7 +2364,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesWithdrawal(reissueLetterListResponseDto);
@@ -2402,7 +2408,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesWithdrawal(reissueLetterListResponseDto);
@@ -2440,7 +2446,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesInformationRequest(reissueLetterListResponseDto);
@@ -2482,7 +2488,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesInformationRequest(reissueLetterListResponseDto);
@@ -2525,7 +2531,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesInformationRequest(reissueLetterListResponseDto);
@@ -2559,7 +2565,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesInformationRequest(reissueLetterListResponseDto);
@@ -2778,7 +2784,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesSummons(reissueLetterListResponseDto);
@@ -2822,7 +2828,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesSummons(reissueLetterListResponseDto);
@@ -2856,7 +2862,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(OK);
 
             assertThat(response.getBody()).isNotNull();
-            ReissueLetterListResponseDto reissueLetterListResponseDto = objectMapper.readValue(response.getBody(),
+            ReissueLetterListResponseDto reissueLetterListResponseDto = OBJECT_MAPPER.readValue(response.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesSummons(reissueLetterListResponseDto);
@@ -3342,7 +3348,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @Nested
         @DisplayName("Summons Reminder Letter")
         //False positive
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+
         class SummonsReminderLetter {
             @Test
             @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
@@ -3613,7 +3619,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @Test
             @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
             //False positive
-            @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
             void summonsReminderReissueLetterUsingADifferentCreationDate() {
                 triggerValidBureau(
                     ReissueLetterRequestDto.ReissueLetterRequestData.builder()
@@ -3865,7 +3870,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertResponseOkay(responseEntity);
 
-            ReissueLetterListResponseDto response = objectMapper.readValue(responseEntity.getBody(),
+            ReissueLetterListResponseDto response = OBJECT_MAPPER.readValue(responseEntity.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesExcusals(response, EXCUSED);
@@ -3893,7 +3898,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertResponseOkay(responseEntity);
 
-            ReissueLetterListResponseDto response = objectMapper.readValue(responseEntity.getBody(),
+            ReissueLetterListResponseDto response = OBJECT_MAPPER.readValue(responseEntity.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesExcusals(response, EXCUSED);
@@ -3917,7 +3922,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertResponseOkay(responseEntity);
 
-            ReissueLetterListResponseDto response = objectMapper.readValue(responseEntity.getBody(),
+            ReissueLetterListResponseDto response = OBJECT_MAPPER.readValue(responseEntity.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesExcusals(response, EXCUSED);
@@ -3954,7 +3959,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertResponseOkay(responseEntity);
 
-            ReissueLetterListResponseDto response = objectMapper.readValue(responseEntity.getBody(),
+            ReissueLetterListResponseDto response = OBJECT_MAPPER.readValue(responseEntity.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesExcusals(response, EXCUSED);
@@ -4018,7 +4023,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertResponseOkay(responseEntity);
 
-            ReissueLetterListResponseDto response = objectMapper.readValue(responseEntity.getBody(),
+            ReissueLetterListResponseDto response = OBJECT_MAPPER.readValue(responseEntity.getBody(),
                 ReissueLetterListResponseDto.class);
 
             verifyHeadingsAndTypesExcusals(response, "refused");
@@ -4138,7 +4143,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
     @DisplayName("POST /api/v1/moj/letter/reissue-letter-list (summons reminder)")
     class ReissueSummonsReminderLetterList {
-        public static final String URL = "/api/v1/moj/letter/reissue-letter-list";
+        static final String URL = "/api/v1/moj/letter/reissue-letter-list";
 
         @Test
         @DisplayName("Reissue Letter List - Summons Reminder - juror name")
@@ -4307,6 +4312,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             verifyResponse(dataIndex12, "564", "2024-01-20", false, "5228");
         }
 
+        @SuppressWarnings("PMD.SignatureDeclareThrowsException")
         protected ReissueLetterListResponseDto triggerValid(ReissueLetterListRequestDto requestDto) throws Exception {
             final String jwt = createJwtBureau("BUREAU_USER");
             httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
@@ -4997,7 +5003,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(2);
 
             List<WithdrawalLetterData> dataList = responseBody.stream()
-                .map(data -> (WithdrawalLetterData) data)
+                .map(WithdrawalLetterData.class::cast)
                 .filter(data -> "FNAME3".equalsIgnoreCase(data.getFirstName()))
                 .toList();
 
@@ -5034,7 +5040,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(2);
 
             List<WithdrawalLetterData> dataList = responseBody.stream()
-                .map(data -> (WithdrawalLetterData) data)
+                .map(WithdrawalLetterData.class::cast)
                 .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                 .toList();
 
@@ -5072,7 +5078,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(4);
 
             List<WithdrawalLetterData> dataList = responseBody.stream()
-                .map(data -> (WithdrawalLetterData) data)
+                .map(WithdrawalLetterData.class::cast)
                 .filter(data -> data.getPostcode().equalsIgnoreCase(postcode))
                 .toList();
 
@@ -5109,7 +5115,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(2);
 
             List<WithdrawalLetterData> dataList = responseBody.stream()
-                .map(data -> (WithdrawalLetterData) data)
+                .map(WithdrawalLetterData.class::cast)
                 .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                 .toList();
 
@@ -5147,7 +5153,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.size()).isEqualTo(4);
 
             List<WithdrawalLetterData> dataList = responseBody.stream()
-                .map(data -> (WithdrawalLetterData) data)
+                .map(WithdrawalLetterData.class::cast)
                 .filter(data -> data.getPoolNumber().equalsIgnoreCase(poolNumber))
                 .toList();
 
@@ -5241,8 +5247,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .as("Expect postponed date to be " + LocalDate.now().plusDays(10))
                 .isEqualTo(LocalDate.now().plusDays(10).format(DateTimeFormatter.ofPattern("dd MMMM yyyy")));
             assertThat(dto.getAttendTime())
-                .as("Expect attend time to be " + LocalTime.of(9, 00))
-                .isEqualTo(LocalTime.of(9, 00));
+                .as("Expect attend time to be " + LocalTime.of(9, 0))
+                .isEqualTo(LocalTime.of(9, 0));
         }
     }
 
@@ -5257,7 +5263,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Nested
         @DisplayName("POST - /api/v1/moj/letter/print-certificate-of-exemption")
-        class PrintCertificateOfExemption {
+        final class PrintCertificateOfExemption {
             static final String PRINT_CERTIFICATE_OF_EXEMPTION_URL =
                 "/api/v1/moj/letter/print-certificate-of-exemption";
 
@@ -5451,7 +5457,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
         @Nested
         @DisplayName("GET - /api/v1/moj/letter/trials-exemption-list")
-        class TrialExemptionList {
+        final class TrialExemptionList {
 
             static final String TRIAL_EXEMPTION_URL = "/api/v1/moj/letter/trials-exemption-list";
 
@@ -5824,6 +5830,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 }
             }
 
+            @SuppressWarnings("PMD.InsufficientStringBufferDeclaration")
             private String buildJurorExemptionUri(String caseNumber, String courtLocation) {
                 StringBuilder builder = new StringBuilder(JUROR_EXEMPITON_URL);
 
@@ -6433,7 +6440,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
                 ResponseEntity<String> response =
-                    template.exchange(new RequestEntity<Void>(httpHeaders, GET, URL), String.class);
+                    template.exchange(new RequestEntity<>(httpHeaders, GET, URL), String.class);
 
                 assertThat(response.getStatusCode()).as("Status code should be NOT_FOUND")
                     .isEqualTo(NOT_FOUND);
@@ -6446,7 +6453,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, payload);
 
             ResponseEntity<LetterListResponseDto> response =
-                template.exchange(new RequestEntity<Void>(httpHeaders, GET, URI.create(url + "/" + includePrinted)),
+                template.exchange(new RequestEntity<>(httpHeaders, GET, URI.create(url + "/" + includePrinted)),
                     LetterListResponseDto.class);
 
             assertThat(response).as(RESPONSE_ENTITY_NOT_NULL_MESSAGE).isNotNull();
@@ -6584,7 +6591,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - invalid request - missing mandatory data: showCauseDate")
         //False Positive
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void printCourtLettersShowCauseInvalidRequestMissingShowCauseDate() {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt("COURT_USER", "415"));
 
@@ -6616,7 +6622,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
         @SneakyThrows
         @DisplayName("Reissue Show Cause letter - invalid request - missing mandatory data: showCauseTime")
         //False Positive
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void printCourtLettersShowCauseInvalidRequestMissingShowCauseTime() {
             List<String> jurorNumbers = new ArrayList<>();
             jurorNumbers.add(JUROR_NUMBER + "61");
@@ -6692,7 +6697,6 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .build();
         }
 
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         private void verifyDataEnglish(PrintLetterDataResponseDto response,
                                        PrintLettersRequestDto request,
                                        LocalDate attendanceDate,

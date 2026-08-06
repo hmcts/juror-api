@@ -266,7 +266,6 @@ public class JurorResponseSearchServiceImplTest extends AbstractIntegrationTest 
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/JurorResponseSearchServiceImpl_searchForResponses_bureauOfficer.sql")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
     public void searchForResponses_lastNameAndPostcode() {
         final JurorResponseSearchResults dto =
             searchService.searchForResponses(JurorResponseSearchRequest.builder().lastName("Larson").postCode(

@@ -32,12 +32,13 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public final class TestUtils {
-    public static final ObjectMapper objectMapper;
+    public static final ObjectMapper OBJECT_MAPPER;
     private static MockedStatic<SecurityUtil> securityUtilMock;
 
     static {
-        objectMapper = new ObjectMapper().findAndRegisterModules();
+        OBJECT_MAPPER = new ObjectMapper().findAndRegisterModules();
     }
 
     private TestUtils() {
@@ -129,9 +130,10 @@ public final class TestUtils {
      * @return a String containing the object structure and data in JSON format
      */
     @SneakyThrows
+    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     public static String asJsonString(final Object obj) {
         try {
-            return objectMapper.findAndRegisterModules().writeValueAsString(obj);
+            return OBJECT_MAPPER.findAndRegisterModules().writeValueAsString(obj);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -155,7 +157,7 @@ public final class TestUtils {
 
         BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
         when(auth.getPrincipal())
-            .thenReturn(TestUtils.createJwt(owner, username, userLevel, courts));
+            .thenReturn(createJwt(owner, username, userLevel, courts));
 
         SecurityContext securityContext = mock(SecurityContext.class);
         when(securityContext.getAuthentication()).thenReturn(auth);
@@ -163,7 +165,7 @@ public final class TestUtils {
         SecurityContextHolder.setContext(securityContext);
     }
 
-
+    @SuppressWarnings("PMD.UseEnumCollections")
     public static @NotNull BureauJwtPayload getJwtPayloadSuperUser(String locCode, String courtName) {
         Set<Permission> permissions = new HashSet<>();
         permissions.add(Permission.SUPER_USER);
@@ -182,6 +184,7 @@ public final class TestUtils {
 
 
     @AfterAll
+    @SuppressWarnings("PMD.NonThreadSafeSingleton")
     public static void afterAll() {
         if (securityUtilMock != null) {
             securityUtilMock.close();
@@ -189,6 +192,7 @@ public final class TestUtils {
         }
     }
 
+    @SuppressWarnings("PMD.NonThreadSafeSingleton")
     public static MockedStatic<SecurityUtil> getSecurityUtilMock() {
         if (securityUtilMock == null) {
             securityUtilMock = mockStatic(SecurityUtil.class, withSettings().defaultAnswer(CALLS_REAL_METHODS));

@@ -20,11 +20,10 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PanelSummaryReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public PanelSummaryReportITest(TestRestTemplate template) {
+    PanelSummaryReportITest(TestRestTemplate template) {
         super(template, PanelSummaryReport.class);
     }
 
@@ -36,9 +35,9 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-                                 .trialNumber("T100000001")
-                                 .locCode(TestConstants.VALID_COURT_LOCATION)
-                                 .build());
+            .trialNumber("T100000001")
+            .locCode(TestConstants.VALID_COURT_LOCATION)
+            .build());
     }
 
     @Test
@@ -48,8 +47,6 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
     }
-
-
 
     @Test
     void positiveCurrentJurorsOnlyFalse() {
@@ -162,34 +159,6 @@ class PanelSummaryReportITest extends AbstractStandardReportControllerITest {
                             .add("juror_number", "415000006")
                             .add("first_name", "FNAME6")
                             .add("last_name", "LNAME6")))
-                    .build())
-            .build();
-    }
-
-    private StandardReportResponse getCurrentJurorsOnlyResponse() {
-        return StandardReportResponse.builder()
-            .headings(getStandardResponseHeadings())
-            .tableData(
-                StandardReportResponse.TableData.<StandardTableData>builder()
-                    .headings(getStandardTableHeadings())
-                    .data(StandardTableData.of(
-                        // 415000001, 415000002, 415000003 — result J, empanelled, no return date
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "415000001")
-                            .add("first_name", "FNAME1")
-                            .add("last_name", "LNAME1"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "415000002")
-                            .add("first_name", "FNAME2")
-                            .add("last_name", "LNAME2"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number", "415000003")
-                            .add("first_name", "FNAME3")
-                            .add("last_name", "LNAME3")
-                    // 415000004 excluded — result NU
-                    // 415000005 excluded — result CD
-                    // 415000006 excluded — result J but return_date set
-                    ))
                     .build())
             .build();
     }

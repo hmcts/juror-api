@@ -25,12 +25,11 @@ import static uk.gov.hmcts.juror.api.moj.report.AvailableListReportUtil.JUROR_07
     "/db/mod/truncate.sql",
     "/db/mod/reports/AvailableListReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class AvailableListByPoolReportITest extends AbstractStandardReportControllerITest {
 
 
     @Autowired
-    public AvailableListByPoolReportITest(TestRestTemplate template) {
+    AvailableListByPoolReportITest(TestRestTemplate template) {
         super(template, AvailableListByPoolReport.class);
     }
 

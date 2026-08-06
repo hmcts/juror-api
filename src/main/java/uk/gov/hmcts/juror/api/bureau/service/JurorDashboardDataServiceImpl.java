@@ -49,9 +49,7 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
     public List<StatsResponseTime> getResponsesOverTime(Date startDate, Date endDate) {
         log.debug("Called Service : JurorDashboardDataServiceImpl.getResponsesOverTime()... ");
 
-        List<StatsResponseTime> responsesOverTime = null;
-
-        responsesOverTime = Lists.newLinkedList(
+        List<StatsResponseTime> responsesOverTime = Lists.newLinkedList(
             statsResponseTimeRepository.findBySummonsMonthBetween(startDate, endDate));
         log.debug("ResponseOverTimeContents Counts : {} ", responsesOverTime.size());
 

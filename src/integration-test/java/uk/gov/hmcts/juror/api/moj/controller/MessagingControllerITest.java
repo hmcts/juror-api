@@ -71,7 +71,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @SuppressWarnings({
     "LineLength",
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.CouplingBetweenObjects"
 })
 class MessagingControllerITest extends AbstractIntegrationTest {
 
@@ -86,16 +87,16 @@ class MessagingControllerITest extends AbstractIntegrationTest {
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
 
-
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
     protected static class TestData {
-        public static final String ENGLISH_SUBJECT = "Your Jury Service";
-        public static final String WELSH_SUBJECT = "Eich Gwasanaeth Rheithgor";
+        static final String ENGLISH_SUBJECT = "Your Jury Service";
+        static final String WELSH_SUBJECT = "Eich Gwasanaeth Rheithgor";
         protected static final String ENGLISH_LOC_CODE = "462";
         protected static final String WELSH_LOC_CODE = "756";
 
@@ -128,7 +129,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     .build();
             }
 
-            public ViewMessageTemplateDto.Placeholder toPlaceholder() {
+            ViewMessageTemplateDto.Placeholder toPlaceholder() {
                 return this.placeholder;
             }
         }
@@ -714,7 +715,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET " + GetMessageDetails.URL)
     class GetMessageDetails {
 
-        public static final String URL = BASE_URL + "/view/{message_type}/{loc_code}";
+        static final String URL = BASE_URL + "/view/{message_type}/{loc_code}";
 
 
         protected URI toUri(MessageType messageType, String locCode) {
@@ -1050,14 +1051,13 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert"//False positive
-            })
+            @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
 
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private ResponseEntity<ViewMessageTemplateDto> triggerValid(
                 MessageType messageType, String locCode) throws Exception {
                 final String jwt = createJwt(COURT_USER, "415", locCode);
@@ -1087,6 +1087,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 ));
             }
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private void triggerAndValidate(MessageType messageType, String englishTemplate, String welshTemplate,
                                             List<ViewMessageTemplateDto.Placeholder> placeholders,
                                             MessageType.SendType sendType) throws Exception {
@@ -1116,6 +1117,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         @Nested
         @DisplayName("Negative")
         class Negative {
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private ResponseEntity<String> triggerInvalid(
                 String messageType, String locCode, String court) throws Exception {
                 final String jwt = createJwt(COURT_USER, court, court);
@@ -2325,6 +2327,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 ));
             }
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private void triggerValid(
                 MessageType messageType, String locCode, MessageSendRequest request) throws Exception {
                 final String jwt = createBureauJwt(COURT_USER, "415", locCode);
@@ -2343,9 +2346,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert"//False positive
-            })
+            @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
@@ -2358,8 +2359,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 validateMessage(message,
                     ENGLISH_JUROR_NUMBER_WELSH_FLAG_FALSE,
                     TestData.ENGLISH_LOC_CODE,
-                    MessageType.SendType.SMS.equals(sendType) ? "07777000002" : null,
-                    MessageType.SendType.EMAIL.equals(sendType) ? "FNAME02.LNAME02@email.com" : null,
+                    sendType == MessageType.SendType.SMS ? "07777000002" : null,
+                    sendType == MessageType.SendType.EMAIL ? "FNAME02.LNAME02@email.com" : null,
                     ENGLISH_POOL_NUMBER_WELSH_FLAG_FALSE,
                     TestData.ENGLISH_SUBJECT,
                     messageText,
@@ -2374,8 +2375,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 validateMessage(message,
                     ENGLISH_JUROR_NUMBER_WELSH_FLAG_TRUE,
                     TestData.ENGLISH_LOC_CODE,
-                    MessageType.SendType.SMS.equals(sendType) ? "07777000004" : null,
-                    MessageType.SendType.EMAIL.equals(sendType) ? "FNAME04.LNAME04@email.com" : null,
+                    sendType == MessageType.SendType.SMS ? "07777000004" : null,
+                    sendType == MessageType.SendType.EMAIL ? "FNAME04.LNAME04@email.com" : null,
                     ENGLISH_POOL_NUMBER_WELSH_FLAG_TRUE,
                     TestData.ENGLISH_SUBJECT,
                     messageText,
@@ -2390,8 +2391,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 validateMessage(message,
                     WELSH_JUROR_NUMBER_WELSH_FLAG_FALSE,
                     TestData.WELSH_LOC_CODE,
-                    MessageType.SendType.SMS.equals(sendType) ? "07777000014" : null,
-                    MessageType.SendType.EMAIL.equals(sendType) ? "FNAME14.LNAME14@email.com" : null,
+                    sendType == MessageType.SendType.SMS ? "07777000014" : null,
+                    sendType == MessageType.SendType.EMAIL ? "FNAME14.LNAME14@email.com" : null,
                     WELSH_POOL_NUMBER_WELSH_FLAG_FALSE,
                     TestData.ENGLISH_SUBJECT,
                     messageText,
@@ -2406,8 +2407,8 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 validateMessage(message,
                     WELSH_JUROR_NUMBER_WELSH_FLAG_TRUE,
                     TestData.WELSH_LOC_CODE,
-                    MessageType.SendType.SMS.equals(sendType) ? "07777000001" : null,
-                    MessageType.SendType.EMAIL.equals(sendType) ? "FNAME01.LNAME01@email.com" : null,
+                    sendType == MessageType.SendType.SMS ? "07777000001" : null,
+                    sendType == MessageType.SendType.EMAIL ? "FNAME01.LNAME01@email.com" : null,
                     WELSH_POOL_NUMBER_WELSH_FLAG_TRUE,
                     TestData.WELSH_SUBJECT,
                     messageText,
@@ -2443,7 +2444,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
             @Getter
             @Setter
             @Builder
-            private static class JurorData {
+            private static final class JurorData {
                 private String jurorPoolNumber;
                 private String jurorNumber;
                 private MessageType.SendType sendType;
@@ -2549,6 +2550,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 this.tests.add(DynamicContainer.dynamicContainer(messageType.name(), dynamicTests));
             }
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private void addTest(
                 MessageType messageType,
                 String locCode,
@@ -2608,7 +2610,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 }
             }
 
-
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private void addTest(
                 MessageType messageType,
                 String locCode,
@@ -2703,6 +2705,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         @DisplayName("Negative")
         class Negative {
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private ResponseEntity<String> triggerInvalid(
                 String messageType, String locCode, String court, MessageSendRequest request) throws Exception {
                 final String jwt = createJwt(COURT_USER, court, court);
@@ -3325,6 +3328,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 );
             }
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private ResponseEntity<ViewMessageTemplateDto> triggerValid(
                 MessageType messageType, String locCode, Map<String, String> placeholders) throws Exception {
                 final String jwt = createBureauJwt(COURT_USER, "415", locCode);
@@ -3343,9 +3347,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
             @TestFactory
             @DisplayName("Generated")
-            @SuppressWarnings({
-                "PMD.JUnitTestsShouldIncludeAssert"//False positive
-            })
+            @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
             Stream<DynamicContainer> tests() {
                 return tests.stream();
             }
@@ -3381,6 +3383,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 this.tests.add(DynamicContainer.dynamicContainer(messageType.name(), dynamicTests));
             }
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private void addTest(MessageType messageType,
                                  String locCode,
                                  String englishMessage,
@@ -3402,6 +3405,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
         @DisplayName("Negative")
         class Negative {
 
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             private ResponseEntity<String> triggerInvalid(
                 String messageType, String locCode, String court, Map<String, String> request) throws Exception {
                 final String jwt = createJwt(COURT_USER, court, court);
@@ -3409,7 +3413,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 return template.exchange(
                     new RequestEntity<>(request, httpHeaders, POST, toUri(messageType, locCode)), String.class);
             }
-
 
             @Test
             void missingPlaceholderValue() throws Exception {
@@ -3498,7 +3501,6 @@ class MessagingControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("POST " + GetMessageDetailsPopulated.URL)
     @Sql({"/db/mod/truncate.sql", "/db/MessagingControllerITest_toCsv.sql"})
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     class ToCsv extends AbstractControllerIntegrationTest<ExportContactDetailsRequest, String> {
 
         private static final String URL = BASE_URL + "/csv/{loc_code}";
@@ -3543,7 +3545,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
         @BeforeEach
         @Override
-        public void setUp() throws Exception {
+        protected void setUp() throws Exception {
             httpHeaders = new HttpHeaders();
             httpHeaders.set("Accept", "text/csv," + MediaType.APPLICATION_JSON_VALUE);
         }

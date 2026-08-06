@@ -21,7 +21,7 @@ import java.util.List;
 })
 class PostponedListByPoolReportITest extends AbstractStandardReportControllerITest {
     @Autowired
-    public PostponedListByPoolReportITest(TestRestTemplate template) {
+    PostponedListByPoolReportITest(TestRestTemplate template) {
         super(template, PostponedListByPoolReport.class);
     }
 
@@ -38,7 +38,6 @@ class PostponedListByPoolReportITest extends AbstractStandardReportControllerITe
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -47,7 +46,6 @@ class PostponedListByPoolReportITest extends AbstractStandardReportControllerITe
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -57,7 +55,6 @@ class PostponedListByPoolReportITest extends AbstractStandardReportControllerITe
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);
@@ -68,7 +65,6 @@ class PostponedListByPoolReportITest extends AbstractStandardReportControllerITe
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getCourtJwt("414"))

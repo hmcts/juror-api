@@ -12,6 +12,7 @@ public enum PaymentMethod {
     BACS("BACS", appearance -> !appearance.isPayCash());
 
     final String name;
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // makes sense as a name
     final Function<Appearance, Boolean> isApplicableFunction;
 
     PaymentMethod(String name, Function<Appearance, Boolean> isApplicableFunction) {

@@ -67,11 +67,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.TooManyMethods",
     "PMD.LinguisticNaming",
     "PMD.ExcessiveImports",
-    "PMD.ExcessivePublicCount"})
+    "PMD.ExcessivePublicCount",
+    "PMD.CouplingBetweenObjects"})
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = "feature-flags.flags.digital-by-default=false")
@@ -205,8 +205,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         final SummonsFormRequestDto summonsFormRequest1 =
             new SummonsFormRequestDto("415220110", "415",
-                LocalDateTime.of(2022, 10, 04, 9, 0, 0),
-                140, LocalDate.of(2022, 10, 04));
+                LocalDateTime.of(2022, 10, 4, 9, 0, 0),
+                140, LocalDate.of(2022, 10, 4));
 
 
         final URI uri = URI.create("/api/v1/moj/pool-create/summons-form");
@@ -276,7 +276,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql",
         "/db/CreatePoolController_createPool.sql",
         "/db/CreatePoolController_loadVotersWithFlags.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void createPool_withDisqualifiedOnSelection() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
@@ -328,7 +327,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_createPool.sql",
         "/db/CreatePoolController_excludedJurorsTest.sql",
         "/db/CreatePoolController_loadVotersWithDeceasedJurors.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void createPool_withDeceasedVoters() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
                                    .userType(UserType.BUREAU)
@@ -356,7 +354,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql",
         "/db/CreatePoolController_createPool.sql",
         "/db/CreatePoolController_loadVotersWithOverseasFlags.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void createPool_withVotersOverseasFlags() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
@@ -427,7 +424,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_createPool.sql",
         "/db/CreatePoolController_excludedJurorsTest.sql",
         "/db/CreatePoolController_loadVotersWithExcluded.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void createPool_withExcludedVoters() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
                                        .userType(UserType.BUREAU)
@@ -845,7 +841,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     public void testGThinPoolMembersHappyPath() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")

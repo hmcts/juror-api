@@ -75,7 +75,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.ExcessivePublicCount"})
+
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = JurorRecordController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ContextConfiguration(classes = {JurorRecordController.class, BulkServiceImpl.class})
@@ -235,7 +236,7 @@ class JurorRecordControllerTest {
             .getJurorOverview(bureauJwtPayload, JUROR_NUMBER, LOC_CODE);
     }
 
-    public class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
+    class PrincipalDetailsArgumentResolver implements HandlerMethodArgumentResolver {
 
         @Override
         public boolean supportsParameter(MethodParameter parameter) {
@@ -1032,14 +1033,13 @@ class JurorRecordControllerTest {
         return jwtPayload;
     }
 
-
     @Nested
     @DisplayName(UpdatePncCheckStatus.URL)
     class UpdatePncCheckStatus extends AbstractControllerTest<PoliceCheckStatusDto, Void> {
         private static final String URL = BASE_URL + "/pnc/{jurorNumber}";
         private static final BureauJwtAuthentication MOCK_PRINCIPAL = mock(BureauJwtAuthentication.class);
 
-        public UpdatePncCheckStatus() {
+        UpdatePncCheckStatus() {
             super(HttpMethod.PATCH, URL, MOCK_PRINCIPAL);
             bureauJwtPayload = TestUtils.createJwt("400", "BUREAU_USER");
             when(MOCK_PRINCIPAL.getPrincipal()).thenReturn(bureauJwtPayload);
@@ -1083,7 +1083,7 @@ class JurorRecordControllerTest {
         private static final String URL = BASE_URL + "/failed-to-attend";
         private static final BureauJwtAuthentication MOCK_PRINCIPAL = mock(BureauJwtAuthentication.class);
 
-        public UpdateJurorToFailedToAttend() {
+        UpdateJurorToFailedToAttend() {
             super(HttpMethod.PATCH, URL, MOCK_PRINCIPAL);
             bureauJwtPayload = TestUtils.createJwt("415", "COURT_USER");
             when(MOCK_PRINCIPAL.getPrincipal()).thenReturn(bureauJwtPayload);
@@ -1133,7 +1133,7 @@ class JurorRecordControllerTest {
         private static final String URL = BASE_URL + "/create-juror";
         private static final BureauJwtAuthentication MOCK_PRINCIPAL = mock(BureauJwtAuthentication.class);
 
-        public CreateJurorRecord() {
+        CreateJurorRecord() {
             super(HttpMethod.POST, URL, MOCK_PRINCIPAL);
         }
 
@@ -1232,7 +1232,7 @@ class JurorRecordControllerTest {
     @Nested
     @DisplayName("POST" + GetJurorBankDetails.URL)
     class GetJurorBankDetails extends JurorBankDetailsDto {
-        public static final String JUROR_NUMBER = "123456789";
+        static final String JUROR_NUMBER = "123456789";
         private static final String URL = BASE_URL + "/{juror_number}/bank-details";
 
         @Test
@@ -1243,7 +1243,7 @@ class JurorRecordControllerTest {
             BureauJwtAuthentication mockPrincipal = mock(BureauJwtAuthentication.class);
             when(mockPrincipal.getPrincipal()).thenReturn(jwtPayload);
 
-            JurorBankDetailsDto jurorBankDetailsDto = JurorBankDetailsDto.builder()
+            JurorBankDetailsDto jurorBankDetailsDto = builder()
                 .bankAccountNumber("12345678")
                 .sortCode("115578")
                 .accountHolderName("Mr Fname Lname")
@@ -1337,7 +1337,7 @@ class JurorRecordControllerTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void invalidAccountNumber() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
@@ -1365,7 +1365,7 @@ class JurorRecordControllerTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void wrongSortCode() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,
@@ -1393,7 +1393,7 @@ class JurorRecordControllerTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void wrongAccountName() throws Exception {
             BureauJwtPayload jwtPayload = TestUtils.createJwt(TestConstants.VALID_COURT_LOCATION, "COURT_USER");
             jwtPayload.setStaff(TestUtils.staffBuilder("Court User", 1,

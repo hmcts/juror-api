@@ -31,13 +31,13 @@ public abstract class AbstractJurorAmendmentReportTestSupport<R extends Abstract
     protected JurorServiceMod jurorService;
     protected UserService userService;
 
-    public AbstractJurorAmendmentReportTestSupport(Class<?> validatorClass) {
+    protected AbstractJurorAmendmentReportTestSupport(Class<?> validatorClass) {
         this.validatorClass = validatorClass;
     }
 
 
     @BeforeEach
-    void beforeEach() {
+    protected void beforeEach() {
         this.jurorAuditService = mock(JurorAuditService.class);
         this.jurorService = mock(JurorServiceMod.class);
         this.userService = mock(UserService.class);
@@ -45,7 +45,7 @@ public abstract class AbstractJurorAmendmentReportTestSupport<R extends Abstract
 
     protected abstract StandardReportRequest getValidRequest();
 
-    public abstract R createReport();
+    protected abstract R createReport();
 
 
     protected void assertValidationFails(StandardReportRequest request,

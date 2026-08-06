@@ -45,10 +45,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
-@DisplayName("Controller: " + AdministrationCourtRoomControllerTest.BASE_URL)
-public class AdministrationCourtRoomControllerTest {
 
-    public static final String BASE_URL = "/api/v1/moj/administration/court-rooms";
+@DisplayName("Controller: " + AdministrationCourtRoomControllerTest.BASE_URL)
+class AdministrationCourtRoomControllerTest {
+
+    static final String BASE_URL = "/api/v1/moj/administration/court-rooms";
     @Autowired
     private MockMvc mockMvc;
 
@@ -77,7 +78,7 @@ public class AdministrationCourtRoomControllerTest {
     @Nested
     @DisplayName("GET " + ViewCourtRoomsDetails.URL)
     class ViewCourtRoomsDetails {
-        public static final String URL = BASE_URL + "/{loc_code}";
+        static final String URL = BASE_URL + "/{loc_code}";
 
         private String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);
@@ -108,11 +109,10 @@ public class AdministrationCourtRoomControllerTest {
         }
     }
 
-
     @Nested
     @DisplayName("POST " + CreateCourtRoom.URL)
     class CreateCourtRoom {
-        public static final String URL = BASE_URL + "/{loc_code}";
+        static final String URL = BASE_URL + "/{loc_code}";
 
 
         private String toUrl(String locCode) {
@@ -161,7 +161,7 @@ public class AdministrationCourtRoomControllerTest {
     @Nested
     @DisplayName("GET " + ViewCourtRoomDetails.URL)
     class ViewCourtRoomDetails {
-        public static final String URL = BASE_URL + "/{loc_code}/{id}";
+        static final String URL = BASE_URL + "/{loc_code}/{id}";
 
         private String toUrl(String locCode, String id) {
             return URL.replace("{loc_code}", locCode)
@@ -204,7 +204,7 @@ public class AdministrationCourtRoomControllerTest {
     @Nested
     @DisplayName("PUT " + UpdateCourtRoom.URL)
     class UpdateCourtRoom {
-        public static final String URL = BASE_URL + "/{loc_code}/{id}";
+        static final String URL = BASE_URL + "/{loc_code}/{id}";
 
         private String toUrl(String locCode, String id) {
             return URL.replace("{loc_code}", locCode)

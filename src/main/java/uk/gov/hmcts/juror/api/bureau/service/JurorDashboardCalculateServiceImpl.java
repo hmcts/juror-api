@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.summingInt;
 
 @Slf4j
 @Service
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class JurorDashboardCalculateServiceImpl implements JurorDashboardCalculateService {
 
     @Override

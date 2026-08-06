@@ -10,7 +10,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.TooManyMethods"})
 public interface JurorHistoryService {
     void createPoliceCheckDisqualifyHistory(JurorPool jurorPool);
 

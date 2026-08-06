@@ -37,13 +37,14 @@ import static org.springframework.http.HttpMethod.POST;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + UploadControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql({"/db/jurorer/teardownUploadTests.sql", "/db/jurorer/setupUploadControllerITest.sql"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UploadControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/juror-er/upload";
 
-    private final TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
     private HttpHeaders httpHeaders;
 
     @BeforeEach

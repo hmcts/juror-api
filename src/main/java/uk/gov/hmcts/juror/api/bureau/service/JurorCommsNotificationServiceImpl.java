@@ -49,6 +49,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
      * @param smsComms                     is a sms message to be sent.
      */
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExceptionAsFlowControl"}) // EAFC suppressed as breaks unit test
     public void sendJurorComms(
         final JurorPool jurorDetails,
         final JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
@@ -85,7 +86,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
 
         log.trace("sendJurorComms- calling createEmailNotification");
         final EmailNotification emailNotification = createEmailNotification(jurorDetails, jurorCommsNotifyTemplateType,
-            templateId, payLoad
+                                                                            templateId, payLoad
         );
 
         try {
@@ -96,7 +97,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
             log.info("Sent Juror Notify Email Comms for juror {}", jurorDetails.getJurorNumber());
         } catch (NotifyApiException nae) {
             log.warn("Failed to send to Notify service: {}", nae.getMessage());
-            throw new JurorCommsNotificationServiceException("notifyApiAdapter failed to send", nae.getCause());
+            throw new JurorCommsNotificationServiceException("notifyApiAdapter failed to send", nae);
         } catch (Exception e) {
             log.error("Error sending notification! {}", e.getMessage());
         }
@@ -118,11 +119,11 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
      * @param smsComms                     is a sms message to be sent.
      */
     @Override
+    @SuppressWarnings({"PMD.ExceptionAsFlowControl"}) // EAFC suppressed as breaks unit test
     public void sendJurorCommsSms(final JurorPool jurorDetails,
                                   final JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
                                   final String commsTemplateId, final String detailData, final Boolean smsComms) {
 
-        String templateId;
         final String templateKey = getTemplateKey(jurorDetails, jurorCommsNotifyTemplateType, smsComms);
         // get template for given template key.
         log.debug(" sms template key obtained as {}", templateKey);
@@ -131,14 +132,14 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
             log.error("Missing Template. Cannot determine the sms template to use for this notification.");
             throw new IllegalStateException("Cannot find template");
         }
-        templateId = template.getTemplateId();
+        String templateId = template.getTemplateId();
         log.debug("Inside sendJurorCommsSms: templateId obtained as : {}", templateId);
         //Deal with payload.
         Map<String, String> payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(templateId, jurorDetails);
 
         log.debug("sendJurorCommsSms - calling createSmsNotification");
         final SmsNotification smsNotification = createSmsNotification(jurorDetails, jurorCommsNotifyTemplateType,
-            templateId, payLoad
+                                                                      templateId, payLoad
         );
 
         try {
@@ -149,7 +150,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
             log.info("Sent Juror Notify SMS Comms for juror {}", jurorDetails.getJurorNumber());
         } catch (NotifyApiException nae) {
             log.warn("Failed to send SMS to Notify service: {}", nae.getMessage());
-            throw new JurorCommsNotificationServiceException("notifyApiAdapter failed to send SMS", nae.getCause());
+            throw new JurorCommsNotificationServiceException("notifyApiAdapter failed to send SMS", nae);
         } catch (Exception e) {
             log.error("Error sending SMS notification! {}", e.getMessage());
         }
@@ -215,6 +216,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
      * @param smsComms                     is sms required for this type of comms.
      * @return String - TemplateId.
      */
+    @SuppressWarnings({"PMD.ExceptionAsFlowControl"}) // EAFC suppressed as breaks unit test
     private String getTemplateKey(JurorPool jurorDetails, JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
                                   Boolean smsComms) {
         try {

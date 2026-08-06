@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.PaymentMethod;
 import java.time.LocalDate;
 import java.util.List;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public interface JurorExpenseService {
 
     void applyDefaultExpenses(Appearance appearance, Juror juror);

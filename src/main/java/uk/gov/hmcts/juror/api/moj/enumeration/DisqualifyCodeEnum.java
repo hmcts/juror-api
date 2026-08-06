@@ -11,6 +11,7 @@ import lombok.Getter;
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
+@SuppressWarnings("PMD.ShortVariable")
 public enum DisqualifyCodeEnum {
     A("A", "Age", "A", "Less Than Eighteen Years of Age or Over 75"),
     B("B", "Bail", "B", "On Bail"),
@@ -32,7 +33,7 @@ public enum DisqualifyCodeEnum {
     private final String heritageDescription;
 
     public static DisqualifyCodeEnum fromCode(String code) {
-        for (DisqualifyCodeEnum disqualifyCodeEnum : DisqualifyCodeEnum.values()) {
+        for (DisqualifyCodeEnum disqualifyCodeEnum : values()) {
             if (disqualifyCodeEnum.getCode().equals(code)) {
                 return disqualifyCodeEnum;
             }

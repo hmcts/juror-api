@@ -71,7 +71,6 @@ class CourtFailedToAttendLetterServiceImplTest {
 
         @Test
         @DisplayName("getEligibleList - exclude printed")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListExcludePrinted() {
             mockCurrentUser(OWNER);
 
@@ -101,7 +100,6 @@ class CourtFailedToAttendLetterServiceImplTest {
 
         @Test
         @DisplayName("getEligibleList - include printed")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListIncludePrinted() {
             mockCurrentUser(OWNER);
 
@@ -132,7 +130,6 @@ class CourtFailedToAttendLetterServiceImplTest {
 
         @Test
         @DisplayName("getEligibleList - no data")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void eligibleListNoData() {
             mockCurrentUser(OWNER);
 

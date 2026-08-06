@@ -79,6 +79,7 @@ public class JurorResponseRetrieveServiceImpl implements JurorResponseRetrieveSe
             .build();
     }
 
+    @SuppressWarnings({"PMD.ConfusingTernary", "PMD.CyclomaticComplexity"})
     private void validateRequest(JurorResponseRetrieveRequestDto request, boolean isBureauUser, boolean isTeamLeader) {
         if (!isBureauUser) {
             throw new MojException.Forbidden("This service is for Bureau users only",

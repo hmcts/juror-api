@@ -46,14 +46,14 @@ class PanelListDetailedReportTest extends AbstractStandardReportTestSupport<Pane
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         super.beforeEach();
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         this.trialRepository = mock(TrialRepository.class);
     }
 
 
-    public PanelListDetailedReportTest() {
+    PanelListDetailedReportTest() {
         super(QPanel.panel,
             PanelListDetailedReport.RequestValidator.class,
             DataType.JUROR_NUMBER,
@@ -65,12 +65,12 @@ class PanelListDetailedReportTest extends AbstractStandardReportTestSupport<Pane
 
 
     @Override
-    public PanelListDetailedReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected PanelListDetailedReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PanelListDetailedReport(poolRequestRepository, trialRepository);
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         request.setTrialNumber(TestConstants.VALID_TRIAL_NUMBER);
         request.setLocCode(TestConstants.VALID_COURT_LOCATION);

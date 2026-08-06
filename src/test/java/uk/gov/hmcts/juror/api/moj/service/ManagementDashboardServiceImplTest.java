@@ -36,7 +36,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings("PMD.SingularField") // will be fixed when tests are updated
 class ManagementDashboardServiceImplTest {
 
     @Mock
@@ -86,7 +85,6 @@ class ManagementDashboardServiceImplTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void overdueUtilisationReportHappyPath() {
 
         LocalDate dateLastRun = LocalDate.now().minusMonths(2).withDayOfMonth(1);
@@ -197,7 +195,6 @@ class ManagementDashboardServiceImplTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     void smsMessagesReportLimitToTen() {
 
         // need more than 10 records to test the limit

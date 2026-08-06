@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 @Getter
-@SuppressWarnings({"PMD.ArrayIsStoredDirectly", "unchecked"})
+@SuppressWarnings({"unchecked", "PMD.ExcessivePublicCount"})
 public enum DataType implements IDataType {
     JUROR_NUMBER("Juror Number", String.class, QJuror.juror.jurorNumber, QJuror.juror),
     FIRST_NAME("First Name", String.class, QJuror.juror.firstName, QJuror.juror),
@@ -569,7 +569,8 @@ public enum DataType implements IDataType {
         this.requiredTables = null;
     }
 
-    public final String getId() {
+    @Override
+    public String getId() {
         return this.name().toLowerCase(Locale.ROOT);
     }
 }

@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.GodClass", "PMD.TooManyMethods"})
 public class JurorHistoryServiceImpl implements JurorHistoryService {
     private static final String SYSTEM_USER_ID = "SYSTEM";
     private final JurorHistoryRepository jurorHistoryRepository;
@@ -60,6 +61,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
             panelMember.getTrial().getTrialNumber());
     }
 
+    @Override
     public void createReassignedToPanelHistory(JurorPool jurorPool, Panel panelMember) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.REASSIGN_PANEL, null, null,
                                                panelMember.getTrial().getTrialNumber());
@@ -162,6 +164,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
             SecurityUtil.getActiveLogin());
     }
 
+    @Override
     @PreAuthorize("isAuthenticated()")
     public void createExpenseForApprovalHistory(FinancialAuditDetails financialAuditDetails,
                                                 Appearance appearance) {
@@ -395,9 +398,9 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
 
-
+    @Override
     public void createPostponementLetterHistory(JurorPool jurorPool, String confirmationLetter) {
-        if (jurorPool.getDeferralDate() == null || !jurorPool.getDeferralCode().equals("P")) {
+        if (jurorPool.getDeferralDate() == null || !"P".equals(jurorPool.getDeferralCode())) {
             throw new MojException.InternalServerError("A postponed juror_pool record should exist for "
                 + "the juror relating to the original pool they were summoned to and postponed from", null);
         }
@@ -407,6 +410,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
     }
 
+    @Override
     public void createJuryAttendanceHistory(JurorPool jurorPool, Appearance appearance, Panel panel) {
         registerHistoryWithAdditionalInfo(jurorPool, HistoryCodeMod.JURY_ATTENDANCE,
             panel.getTrial().getTrialNumber(),
@@ -415,6 +419,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
             appearance.getAttendanceAuditNumber());
     }
 
+    @Override
     public void createPoolAttendanceHistory(JurorPool jurorPool, Appearance appearance) {
         registerHistoryWithAdditionalInfo(jurorPool, HistoryCodeMod.POOL_ATTENDANCE,
             null,

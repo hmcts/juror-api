@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.juror.domain.Holidays;
 import java.util.Date;
 import java.util.List;
 
+@FunctionalInterface
 public interface HolidaysDateService {
 
     /**

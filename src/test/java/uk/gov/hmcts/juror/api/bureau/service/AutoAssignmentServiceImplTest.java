@@ -42,9 +42,13 @@ import static uk.gov.hmcts.juror.api.bureau.service.AutoAssignmentServiceImpl.DE
  * Unit tests for {@link AutoAssignmentServiceImpl}.
  */
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods"
+})
 public class AutoAssignmentServiceImplTest {
 
-    private static final Comparator<DigitalResponse> ascendingDateOrder =
+    private static final Comparator<DigitalResponse> ASCENDING_DATE_ORDER =
         Comparator.comparing(DigitalResponse::getDateReceived);
     private static final long FIRST_STAFF_MEMBER_ASSIGNED_INCOMPLETES = 5;
     private static final long SECOND_STAFF_MEMBER_ASSIGNED_INCOMPLETES = 7;
@@ -68,17 +72,18 @@ public class AutoAssignmentServiceImplTest {
     private User user1;
     private User user2;
     private User user3;
-    private User testUser;
 
     private List<DigitalResponse> backlog;
 
     @Before
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void setUp() {
         autoAssignmentService = new AutoAssignmentServiceImpl(responseRepo, userRepo, appSettingService, auditRepo);
         user1 = User.builder().userType(UserType.BUREAU).name("Post Staff 1").username("staff1").active(true).build();
         user2 = User.builder().userType(UserType.BUREAU).name("Post Staff 2").username("staff2").active(true).build();
         user3 = User.builder().userType(UserType.BUREAU).name("Post Staff 3").username("staff3").active(true).build();
-        testUser = User.builder().userType(UserType.BUREAU).name("Test User").username("testUser").active(true).build();
+        User testUser = User.builder().userType(UserType.BUREAU).name("Test User").username("testUser").active(true)
+            .build();
 
         doReturn(Arrays.asList(user1, user2)).when(userRepo).findAll(UserQueries.activeBureauOfficers());
         doReturn(testUser).when(userRepo).findByUsername("testUser");
@@ -106,7 +111,7 @@ public class AutoAssignmentServiceImplTest {
         }
 
         // This is the order the repository will return entries in
-        backlog.sort(ascendingDateOrder);
+        backlog.sort(ASCENDING_DATE_ORDER);
 
         // If the service class doesn't use the correct parameters (for whatever reason) the tests will fall over
         // because the mock repo will return nothing
@@ -158,7 +163,7 @@ public class AutoAssignmentServiceImplTest {
         verify(responseRepo, times(1)).saveAll(backlog);
         verify(auditRepo).saveAll(auditCaptor.capture());
         List<UserJurorResponseAudit> auditEntries =
-            Lists.newLinkedList((auditCaptor.getValue()));
+            Lists.newLinkedList(auditCaptor.getValue());
 
         for (DigitalResponse backlogItem : backlog) {
 
@@ -269,7 +274,7 @@ public class AutoAssignmentServiceImplTest {
         final List<DigitalResponse> unassigned = backlog.stream()
             .filter(r -> r.getStaff() == null).collect(Collectors.toList());
 
-        assertThat(assigned).isSortedAccordingTo(ascendingDateOrder);
+        assertThat(assigned).isSortedAccordingTo(ASCENDING_DATE_ORDER);
 
         // Should be assigned in simple order (not round-robin)
         for (int i = 0; i < 10; i++) {
@@ -296,7 +301,7 @@ public class AutoAssignmentServiceImplTest {
      * When the capacity value is set in the database, that value should be used.
      */
     @Test
-    public void getAutoAssignmentData_defaultCapacitySetInDatabase() {
+    public void autoAssignmentData_defaultCapacitySetInDatabase() {
         final int expectedCapacity = 50;
 
         doReturn(expectedCapacity).when(appSettingService).getDefaultCapacity();
@@ -346,7 +351,7 @@ public class AutoAssignmentServiceImplTest {
      * If the setting is not set in the database, the fallback default of 60 should be used.
      */
     @Test
-    public void getAutoAssignmentData_alternatePath_defaultCapacityNotSetInDatabase() {
+    public void autoAssignmentData_alternatePath_defaultCapacityNotSetInDatabase() {
         doReturn(null).when(appSettingService).getDefaultCapacity();
 
         assertThat(autoAssignmentService.getAutoAssignmentData().getData()).isNotNull().hasSize(2)
@@ -357,7 +362,7 @@ public class AutoAssignmentServiceImplTest {
      * If the setting in the database is invalid, the fallback default of 60 should be used.
      */
     @Test
-    public void getAutoAssignmentData_errorPath_invalidDefaultCapacitySetInDatabase() {
+    public void autoAssignmentData_errorPath_invalidDefaultCapacitySetInDatabase() {
         doReturn(-5).when(appSettingService).getDefaultCapacity();
 
         assertThat(autoAssignmentService.getAutoAssignmentData().getData()).isNotNull().hasSize(2)

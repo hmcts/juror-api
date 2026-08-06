@@ -28,7 +28,7 @@ class ExpensePaymentByTypeReportTest extends AbstractStandardReportTestSupport<E
     private static final LocalDate TO_DATE = LocalDate.of(2024, 1, 31);
     private static final List<String> COURTS = List.of("415", "416", "417");
 
-    public ExpensePaymentByTypeReportTest() {
+    ExpensePaymentByTypeReportTest() {
         super(QAppearance.appearance,
               ExpensePaymentByTypeReport.RequestValidator.class,
               DataType.COURT_LOCATION_NAME_AND_CODE_EP,
@@ -46,7 +46,7 @@ class ExpensePaymentByTypeReportTest extends AbstractStandardReportTestSupport<E
     }
 
     @Override
-    public ExpensePaymentByTypeReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected ExpensePaymentByTypeReport createReport(PoolRequestRepository poolRequestRepository) {
         return new ExpensePaymentByTypeReport();
     }
 
@@ -61,7 +61,7 @@ class ExpensePaymentByTypeReportTest extends AbstractStandardReportTestSupport<E
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         report.preProcessQuery(query, request);
 
         verify(query, times(1))
