@@ -27,7 +27,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.OK;
-import static uk.gov.hmcts.juror.api.TestUtils.objectMapper;
+import static uk.gov.hmcts.juror.api.TestUtils.OBJECT_MAPPER;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -72,7 +72,7 @@ class LetterDigitalByDefaultControllerITest extends AbstractIntegrationTest {
             .isEqualTo(OK);
         assertThat(response.getBody()).isNotNull();
 
-        ReissueLetterListResponseDto responseDto = objectMapper.readValue(
+        ReissueLetterListResponseDto responseDto = OBJECT_MAPPER.readValue(
             response.getBody(), ReissueLetterListResponseDto.class);
 
         assertThat(responseDto.getHeadings()).containsExactly(
