@@ -234,7 +234,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         if (StringUtils.isEmpty(deferralReasonDto.getPoolNumber())) {
             // this is for the deferral journey to move them to deferred state
             setupDeferralEntry(deferralReasonDto, auditorUsername, jurorPool);
-            printDeferralLetter(payload.getOwner(), jurorPool);
+            sendDeferralComms(payload, jurorPool);
         } else {
 
             // only check the DOB if there is no reply method as the DOB may not be present yet
@@ -344,7 +344,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername, JurorHistory.ADDED,
                                HistoryCodeMod.DEFERRED_POOL_MEMBER);
 
-            printDeferralLetter(payload.getOwner(), jurorPool);
+            sendDeferralComms(payload, jurorPool);
         } else {
 
             checkDobPresent(jurorNumber, jurorPool);
@@ -373,7 +373,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                                HistoryCodeMod.DEFERRED_POOL_MEMBER);
 
             printConfirmationLetter(payload.getOwner(), newJurorPool);
-            printDeferralLetter(payload.getOwner(), jurorPool);
+            sendDeferralComms(payload, jurorPool);
 
         }
 
