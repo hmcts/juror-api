@@ -81,7 +81,7 @@ public class CreatePoolDigitalByDefaultControllerITest extends AbstractIntegrati
             .owner("400")
             .build());
 
-        PoolCreateRequestDto poolCreateRequest = setUpDigitalByDefaultPoolCreateRequestDto();
+        PoolCreateRequestDto poolCreateRequest = getUpDigitalByDefaultPoolCreateRequestDto();
 
         final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
 
@@ -103,7 +103,7 @@ public class CreatePoolDigitalByDefaultControllerITest extends AbstractIntegrati
         });
     }
 
-    private PoolCreateRequestDto setUpDigitalByDefaultPoolCreateRequestDto() {
+    private PoolCreateRequestDto getUpDigitalByDefaultPoolCreateRequestDto() {
         PoolCreateRequestDto poolCreateRequestDto = new PoolCreateRequestDto();
         poolCreateRequestDto.setPoolNumber("419221201");
         poolCreateRequestDto.setStartDate(LocalDate.of(2022, 12, 4));

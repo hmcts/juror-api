@@ -42,7 +42,7 @@ class LetterDigitalByDefaultControllerITest extends AbstractIntegrationTest {
     private HttpHeaders httpHeaders;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }

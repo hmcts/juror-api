@@ -82,7 +82,8 @@ import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.D
     "PMD.GodClass",
     "PMD.ExcessiveImports",
     "PMD.CyclomaticComplexity",
-    "PMD.CouplingBetweenObjects"})
+    "PMD.CouplingBetweenObjects",
+    "PMD.CognitiveComplexity"})
 public class PoolCreateServiceImpl implements PoolCreateService {
 
     private static final String AGE_DISQ_CODE = "A";
@@ -389,7 +390,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         });
         jurorHistoryRepository.saveAll(historyList);
     }
-    
+
     @SuppressWarnings("PMD.ExceptionAsFlowControl")
     private List<JurorPool> getJurorPools(String login, String owner, PoolCreateRequestDto poolCreateRequestDto,
                                           boolean isDigitalByDefault) {
