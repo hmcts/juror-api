@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -131,11 +132,17 @@ public class JurorDetailsCommonResponseDto {
 
     private LocalDate bureauTransferDate;
 
+    @Schema(name = "Digital by Default", description = "Flag to indicate if the juror is digital by default")
+    private boolean digitalByDefault;
+
+    @Schema (name = "dbd_preference",description = "If the juror prefers Paper or Digital")
+    private String dbdPreference;
     /**
      * Initialise an instance of this DTO class using a JurorPool object to populate its properties.
      *
      * @param jurorPool an object representation of a JurorPool association record
      */
+
     @Autowired
     public JurorDetailsCommonResponseDto(JurorPool jurorPool,
                                          JurorStatusRepository jurorStatusRepository,
@@ -162,6 +169,7 @@ public class JurorDetailsCommonResponseDto {
         this.bureauTransferDate = juror.getBureauTransferDate();
         this.responseEntered = juror.isResponseEntered();
 
+
         if (this.excusalCode != null) {
             this.excusalDescription = ExcusalCodeEnum.fromCode(this.excusalCode).getDescription();
         }
@@ -186,6 +194,10 @@ public class JurorDetailsCommonResponseDto {
 
         this.policeCheck = juror.getPoliceCheck();
         setPendingNameChange(juror);
+
+        this.digitalByDefault = JurorPoolUtils.isDigitalByDefault(jurorPool);
+
+        this.dbdPreference = juror.getDbdPreference();
 
         this.manuallyCreated = pendingJurorRepository.findById(jurorPool.getJurorNumber()).isPresent();
     }
