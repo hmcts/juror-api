@@ -73,6 +73,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -80,12 +82,11 @@ import java.util.stream.Collectors;
     "PMD.GodClass",
     "PMD.ExcessiveImports",
     "PMD.CyclomaticComplexity",
-    "PMD.CouplingBetweenObjects"})
+    "PMD.CouplingBetweenObjects",
+    "PMD.CognitiveComplexity"})
 public class PoolCreateServiceImpl implements PoolCreateService {
 
     private static final String AGE_DISQ_CODE = "A";
-
-    private static final String DIGITAL_BY_DEFAULT_FEATURE_FLAG = "digital-by-default";
 
     private static final int LOWER_REQUEST_LIMIT = 30;
 
@@ -389,7 +390,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         });
         jurorHistoryRepository.saveAll(historyList);
     }
-    
+
     @SuppressWarnings("PMD.ExceptionAsFlowControl")
     private List<JurorPool> getJurorPools(String login, String owner, PoolCreateRequestDto poolCreateRequestDto,
                                           boolean isDigitalByDefault) {

@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -110,7 +111,8 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
                 query.where(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
                     .map(FormCode::getCode).toList()));
             }
-            query.where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false)));
+            query.where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false))
+                            .or(BULK_PRINT_DATA.emailStatus.eq(EmailStatus.PENDING)));
         } else if (request.getJurorName() != null) {
             query.where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
                 .likeIgnoreCase("%" + request.getJurorName().toLowerCase(Settings.LOCALE) + "%"));
