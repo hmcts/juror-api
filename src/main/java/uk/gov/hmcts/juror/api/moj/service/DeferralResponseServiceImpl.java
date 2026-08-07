@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.AgeDisqualifiedJurorDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -234,6 +235,8 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         jurorHistoryRepository.save(jurorHistory);
 
         if (JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {
+            printDataService.removeQueuedLetterForJuror(jurorPool, List.of(FormCode.ENG_DEFERRAL,
+                                                                           FormCode.BI_DEFERRAL));
             printDataService.printDeferralLetter(jurorPool);
             jurorHistoryService.createDeferredLetterHistory(jurorPool);
         }
