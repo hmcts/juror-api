@@ -179,7 +179,7 @@ public class DeferralResponseServiceImplTest {
         inOrder.verify(printDataService).removeQueuedLetterForJuror(any(),
             eq(List.of(FormCode.ENG_DEFERRAL, FormCode.BI_DEFERRAL)));
         inOrder.verify(printDataService).printDeferralLetter(any());
-        verify(jurorHistoryService, times(1)).createDeferredLetterHistory(any());
+        verify(jurorHistoryService, times(1)).createDeferredLetterHistory(any(), any());
     }
 
     @Test
