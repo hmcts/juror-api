@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,10 +18,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
+import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
@@ -28,6 +34,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRep
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,10 +43,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration tests for the API endpoints defined in {@link ExcusalResponseController}.
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = "feature-flags.flags.digital-by-default=true")
 @SuppressWarnings("PMD.TooManyMethods")
 public class DeferralRequestControllerITest extends AbstractIntegrationTest {
 
+    @Autowired
+    private BulkPrintDataRepository bulkPrintDataRepository;
     @Autowired
     private TestRestTemplate restTemplate;
     @Autowired
@@ -393,6 +403,32 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
             .as("Expect the HTTP PUT request to be BAD_REQUEST")
             .isEqualTo(HttpStatus.BAD_REQUEST);
 
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createPoolAndResponse.sql"})
+    public void grantDeferralHappyPathBureauUserDigitalByDefaultQueuesEmail() {
+        String jurorNumber = "987654322";
+        String deferralReason = "B";
+
+        DeferralRequestDto requestDto = createGrantDeferralDecisionDto(jurorNumber, deferralReason);
+
+        ResponseEntity<DeferralRequestDto> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                                                      URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        executeInTransaction(() -> {
+            List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
+            assertThat(bulkPrintData).hasSize(1);
+
+            BulkPrintData emailData = bulkPrintData.get(0);
+            assertThat(emailData.getCommunicationChannel()).isEqualTo(CommunicationChannel.EMAIL);
+            assertThat(emailData.getEmailStatus()).isEqualTo(EmailStatus.PENDING);
+            assertThat(emailData.getNotifyTemplateName()).isEqualTo(
+                DigitalByDefaultEmailTemplate.DEFERRAL_GRANTED_ENGLISH.getTemplateName());
+        });
     }
 
     private DeferralRequestDto createDeferralDecisionDto(String jurorNumber,
