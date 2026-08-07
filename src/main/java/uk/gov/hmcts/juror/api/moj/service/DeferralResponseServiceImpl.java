@@ -244,6 +244,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
                 && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
                 emailDataService.emailDeferralLetter(jurorPool);
             } else {
+                printDataService.printDeferralLetter(jurorPool);
                 jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.LETTER);
             }
         }

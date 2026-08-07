@@ -17,24 +17,25 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
-import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
+import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
-import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
 import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.Set;
 import java.util.List;
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -43,7 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = "feature-flags.flags.digital-by-default=true")
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings("PMD")
 public class DeferralRequestControllerITest extends AbstractIntegrationTest {
 
     @Autowired
