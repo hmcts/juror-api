@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -126,14 +127,23 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
-    public void createDeferredLetterHistory(JurorPool jurorPool) {
+    public void createDeferredLetterHistory(JurorPool jurorPool, CommunicationChannel communicationChannel) {
         if (jurorPool.getDeferralDate() == null || jurorPool.getDeferralCode() == null) {
             throw new MojException.InternalServerError("A deferred juror_pool record should exist for "
                 + "the juror relating to the original pool they were summoned to and deferred from", null);
         }
 
-        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.DEFERRED_LETTER,
-            "Deferral Letter Printed", jurorPool.getDeferralDate(), jurorPool.getDeferralCode());
+        if (communicationChannel == CommunicationChannel.LETTER) {
+            registerHistoryLoginUserAdditionalInfo(
+                jurorPool, HistoryCodeMod.DEFERRED_LETTER,
+                "Deferral Letter Printed", jurorPool.getDeferralDate(), jurorPool.getDeferralCode()
+            );
+        } else {
+            registerHistoryLoginUserAdditionalInfo(
+                jurorPool, HistoryCodeMod.DEFERRED_LETTER,
+                "Deferral Email Sent", jurorPool.getDeferralDate(), jurorPool.getDeferralCode()
+            );
+        }
     }
 
     @Override
