@@ -32,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterLis
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ValidateReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.DeferralLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ExcusalLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.FailedToAttendLetterData;
@@ -3412,6 +3413,64 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
                     verifyPoolHistoryCreated();
                 });
+            }
+
+            @Test
+            @Sql({
+                "/db/mod/truncate.sql",
+                "/db/letter/LetterController_initSummonsReminderLetter.sql",
+                "/db/letter/LetterController_initValidateReissueSummonsReminderLetter.sql"
+            })
+            void validateSummonsReminderLetterReturnsValidAndInvalidJurors() throws Exception {
+                final URI uri = URI.create("/api/v1/moj/letter/validate-reissue-letter");
+                final String bureauJwt = createJwtBureau("BUREAU_USER");
+
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+                ReissueLetterRequestDto requestDto = ReissueLetterRequestDto.builder()
+                    .letters(List.of(
+                        ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                            .jurorNumber("555555570")
+                            .formCode(FormCode.ENG_SUMMONS_REMINDER.getCode())
+                            .datePrinted(LocalDate.of(2024, 1, 31))
+                            .build(),
+                        ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                            .jurorNumber("555555571")
+                            .formCode(FormCode.ENG_SUMMONS_REMINDER.getCode())
+                            .datePrinted(LocalDate.of(2024, 1, 31))
+                            .build()
+                    ))
+                    .build();
+
+                RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(requestDto,
+                    httpHeaders, POST, uri);
+                ResponseEntity<String> response = template.exchange(request, String.class);
+
+                assertThat(response).isNotNull();
+                assertThat(response.getStatusCode()).isEqualTo(OK);
+
+                ValidateReissueLetterListResponseDto responseDto = OBJECT_MAPPER.readValue(response.getBody(),
+                    ValidateReissueLetterListResponseDto.class);
+
+                assertThat(responseDto.getValidSummonedJurors()).hasSize(1);
+                ValidateReissueLetterListResponseDto.ValidSummonedJurors validJuror =
+                    responseDto.getValidSummonedJurors().get(0);
+                assertThat(validJuror.getJurorNumber()).isEqualTo("555555570");
+                assertThat(validJuror.getFirstName()).isEqualTo("Juror570");
+                assertThat(validJuror.getLastName()).isEqualTo("Juror570Surname");
+                assertThat(validJuror.getPostcode()).isEqualTo("CH1 2AN");
+
+                assertThat(responseDto.getInvalidSummonedJurors()).hasSize(1);
+                ValidateReissueLetterListResponseDto.InvalidSummonedJurors invalidJuror =
+                    responseDto.getInvalidSummonedJurors().get(0);
+                assertThat(invalidJuror.getJurorNumber()).isEqualTo("555555571");
+                assertThat(invalidJuror.getFirstName()).isEqualTo("Juror571");
+                assertThat(invalidJuror.getLastName()).isEqualTo("Juror571Surname");
+                assertThat(invalidJuror.getPostcode()).isEqualTo("CH1 2AN");
+                assertThat(invalidJuror.getErrorMessage()).isEqualTo("Juror has responded");
+
+                assertThat(bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted("555555570",
+                    FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())).isEmpty();
             }
 
             @Test

@@ -7,6 +7,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ValidateReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
@@ -35,6 +36,8 @@ public interface ReissueLetterService {
     ReissueLetterListResponseDto reissueLetterList(ReissueLetterListRequestDto request);
 
     ReissueLetterReponseDto reissueLetter(ReissueLetterRequestDto request);
+
+    ValidateReissueLetterListResponseDto validateReissueLetterRequest(ReissueLetterRequestDto request);
 
     void deletePendingLetter(ReissueLetterRequestDto request);
 
