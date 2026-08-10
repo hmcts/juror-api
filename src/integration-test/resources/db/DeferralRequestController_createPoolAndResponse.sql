@@ -15,3 +15,12 @@ INSERT INTO juror_mod.juror_pool ("owner",juror_number,pool_number,user_edtq,sta
 INSERT INTO juror_mod.juror_response (juror_number,date_received,title,first_name,last_name,address_line_1,address_line_2,address_line_3,address_line_4,address_line_5,postcode,processing_status,date_of_birth,phone_number,alt_phone_number,email,residency,residency_detail,mental_health_act,mental_health_capacity,mental_health_act_details,bail,bail_details,convictions,convictions_details,deferral,deferral_reason,deferral_date,reasonable_adjustments_arrangements,excusal,excusal_reason,processing_complete,signed,"version",thirdparty_fname,thirdparty_lname,relationship,main_phone,other_phone,email_address,thirdparty_reason,thirdparty_other_reason,juror_phone_details,juror_email_details,staff_login,staff_assignment_date,urgent,completed_at,welsh,reply_type) VALUES
 	 ('987654321','2022-05-17 13:34:17.202',NULL,'FNAMEONE','LNAMEONE','1 STREET NAME','ANYTOWN',NULL,'New Town',NULL,'CH1 2AN','TODO',NULL,NULL,NULL,NULL,true,NULL,false,false,NULL,false,NULL,false,NULL,false,NULL,NULL,NULL,false,NULL,false,true,2,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,true,true,'MODTESTBUREAU',NULL,false,NULL,false,'Paper'),
 	 ('987654322','2022-05-17 15:41:04.698',NULL,'fname','LNAMESEVENFIVETHREE','address',NULL,NULL,'Address Line Four',NULL,'CH1 2AN','TODO','1995-08-24','0207 821 1818','','email@outlook.com',true,'',false,NULL,'',false,'',false,'',NULL,'Deferral Reason','01/12/2025, 08/12/2025, 15/12/2025','',NULL,NULL,false,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,true,true,'ARAMIS1','2025-07-17 00:00:00.000',false,NULL,false,'Digital');
+
+UPDATE juror_mod.court_location SET digital_by_default = true WHERE loc_code = '415';
+UPDATE juror_mod.juror SET digital_by_default = true, dbd_preference = 'Digital' WHERE juror_number = '987654322';
+
+INSERT INTO juror_mod.notify_template_mapping (template_id, template_name, notify_name, form_type, notification_type, "version")
+VALUES
+    ('00000000-0000-0000-0000-000000106001', 'DBD_DEF_GRANTED_ENG', 'DBD DEFERRAL GRANTED ENGLISH TEST', NULL, 1, 0),
+    ('00000000-0000-0000-0000-000000106002', 'DBD_DEF_GRANTED_CY', 'DBD DEFERRAL GRANTED WELSH TEST', NULL, 1, 0)
+ON CONFLICT (template_name) DO NOTHING;

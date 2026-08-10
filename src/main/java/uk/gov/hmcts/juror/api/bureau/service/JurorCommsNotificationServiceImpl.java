@@ -18,6 +18,7 @@ import java.util.Map;
 
 @Service
 @Slf4j
+@SuppressWarnings("PMD")
 public class JurorCommsNotificationServiceImpl implements JurorCommsNotificationService {
 
     private final NotifyAdapter notifyAdapter;
