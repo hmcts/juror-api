@@ -467,6 +467,12 @@ public class JurorServiceImplTest {
     public void getDbdInformation_WithJurorNumber_ReturnsDbdInformation() {
         final LocalDate serviceStartDate = LocalDate.of(2026, 8, 10);
         jurorPoolDetails.getCourt().setLocCourtName("Test Court");
+        jurorPoolDetails.getCourt().setAddress1("Address line 1");
+        jurorPoolDetails.getCourt().setAddress2("Address line 2");
+        jurorPoolDetails.getCourt().setAddress3("Adderss line 3");
+        jurorPoolDetails.getCourt().setAddress4("Address line 4");
+        jurorPoolDetails.getCourt().setAddress5("Address line 5");
+        jurorPoolDetails.getCourt().setPostcode("AB1 2CD");
         jurorPoolDetails.getPool().setReturnDate(serviceStartDate);
 
         when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPoolDetails);
@@ -476,6 +482,11 @@ public class JurorServiceImplTest {
         assertThat(dbdInformationDto).isNotNull();
         assertThat(dbdInformationDto.getCourtName()).isEqualTo("Test Court");
         assertThat(dbdInformationDto.getServiceStartDate()).isEqualTo(serviceStartDate);
+        assertThat(dbdInformationDto)
+            .extracting("courtAddress1", "courtAddress2", "courtAddress3", "courtAddress4", "courtAddress5",
+                "courtPostcode")
+            .containsExactly("Address line 1", "Address line 2", "Address line 3", "Address line 4", "Address line 5",
+                "AB1 2CD");
     }
 
     @Test
