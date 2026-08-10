@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
@@ -71,6 +72,10 @@ public class DeferralResponseServiceImplTest {
     private JurorResponseService jurorResponseService;
     @Mock
     private JurorAppearanceService jurorAppearanceService;
+    @Mock
+    private EmailDataService emailDataService;
+    @Mock
+    private FeatureFlagConfigurationProperties featureFlags;
 
     @InjectMocks
     private DeferralResponseServiceImpl deferralResponseService;

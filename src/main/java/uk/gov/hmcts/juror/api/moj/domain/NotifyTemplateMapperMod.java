@@ -26,6 +26,7 @@ public enum NotifyTemplateMapperMod {
 
     JUROR_POOL_NEXT_DATE(Type.JUROR, context -> context.getJurorPool().getNextDate()),
     JUROR_POOL_LOC_CODE(Type.JUROR, context -> context.getJurorPool().getCourt().getLocCode()),
+    JUROR_POOL_DEF_DATE(Type.JUROR,(context -> context.getJurorPool().getDeferralDate())),
 
     POOL_ATTEND_TIME(Type.JUROR, context -> context.getPoolRequest().getAttendTime()),
     POOL_RETURN_DATE(Type.JUROR, context -> context.getPoolRequest().getReturnDate()),
