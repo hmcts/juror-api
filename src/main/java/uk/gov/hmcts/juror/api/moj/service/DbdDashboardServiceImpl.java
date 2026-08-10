@@ -71,11 +71,8 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
     private Map<String, List<DbdResponseStats>> fetchByLocCode(
         Set<String> locCodes, DbdDashboardRequestDto.DateRangeDto range) {
 
-        var start = range.getStartDate().atStartOfDay();
-        var end = range.getEndDate().atTime(23, 59, 59);
-
-        List<DbdResponseStats> rows =
-            dbdResponseStatsRepository.findByLocCodeInAndSummonsDateBetween(locCodes, start, end);
+        List<DbdResponseStats> rows = dbdResponseStatsRepository.findByLocCodeInAndSummonsDateBetween(
+            locCodes, range.getStartDate(), range.getEndDate());
 
         return rows.stream().collect(Collectors.groupingBy(DbdResponseStats::getLocCode));
     }
