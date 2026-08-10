@@ -415,7 +415,7 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
 
         ResponseEntity<DeferralRequestDto> response =
             restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
-                                                      URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
+                      URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 

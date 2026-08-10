@@ -469,7 +469,7 @@ public class JurorServiceImplTest {
         jurorPoolDetails.getCourt().setLocCourtName("Test Court");
         jurorPoolDetails.getCourt().setAddress1("Address line 1");
         jurorPoolDetails.getCourt().setAddress2("Address line 2");
-        jurorPoolDetails.getCourt().setAddress3("Adderss line 3");
+        jurorPoolDetails.getCourt().setAddress3("Address line 3");
         jurorPoolDetails.getCourt().setAddress4("Address line 4");
         jurorPoolDetails.getCourt().setAddress5("Address line 5");
         jurorPoolDetails.getCourt().setPostcode("AB1 2CD");
