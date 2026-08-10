@@ -240,6 +240,9 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         jurorHistoryRepository.save(jurorHistory);
 
         if (JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {
+            printDataService.removeQueuedLetterForJuror(jurorPool,
+                                                        List.of(FormCode.ENG_DEFERRAL, FormCode.BI_DEFERRAL));
+
             if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
                 && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
                 emailDataService.emailDeferralLetter(jurorPool);
