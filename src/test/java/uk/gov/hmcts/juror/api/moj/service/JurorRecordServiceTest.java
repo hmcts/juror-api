@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.service.BureauService;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
@@ -77,6 +78,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.IdCheckCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
@@ -226,6 +228,10 @@ class JurorRecordServiceTest {
     private JurorThirdPartyService jurorThirdPartyService;
     @Mock
     private PoolMemberSequenceService poolMemberSequenceService;
+    @Mock
+    private FeatureFlagConfigurationProperties featureFlags;
+    @Mock
+    private EmailDataService emailDataService;
 
     @Mock
     private Clock clock;
@@ -2616,7 +2622,8 @@ class JurorRecordServiceTest {
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verify(printDataService, times(1)).printConfirmationLetter(jurorPool);
             verify(jurorHistoryService, times(1)).createConfirmationLetterHistory(jurorPool,
-                                                                                  "Confirmation Letter Auto");
+                                                                                  "Confirmation Letter Auto",
+                                                                                  CommunicationChannel.LETTER);
             verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
 
@@ -2636,7 +2643,8 @@ class JurorRecordServiceTest {
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verify(printDataService, times(1)).printConfirmationLetter(jurorPool);
             verify(jurorHistoryService, times(1)).createConfirmationLetterHistory(jurorPool,
-                                                                                  "Confirmation Letter Auto");
+                                                                                  "Confirmation Letter Auto",
+                                                                                  CommunicationChannel.LETTER);
             verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
 
@@ -2688,7 +2696,8 @@ class JurorRecordServiceTest {
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verify(printDataService, times(1)).printConfirmationLetter(jurorPool);
             verify(jurorHistoryService, times(1)).createConfirmationLetterHistory(jurorPool,
-                                                                                  "Confirmation Letter Auto");
+                                                                                  "Confirmation Letter Auto",
+                                                                                  CommunicationChannel.LETTER);
             verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
         }
 
@@ -2774,7 +2783,7 @@ class JurorRecordServiceTest {
                 .createPoliceCheckDisqualifyHistory(jurorPool);
             verify(printDataService, times(1)).printWithdrawalLetter(jurorPool);
             verify(jurorHistoryService, times(1))
-                .createWithdrawHistory(jurorPool, "Withdrawal Letter Auto", "E");
+                .createWithdrawHistory(jurorPool, "Withdrawal Letter Auto", "E", CommunicationChannel.LETTER);
 
             verify(jurorPoolService, times(1))
                 .getJurorPoolFromUser(TestConstants.VALID_JUROR_NUMBER);

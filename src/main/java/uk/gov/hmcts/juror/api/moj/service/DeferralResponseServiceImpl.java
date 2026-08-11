@@ -187,17 +187,25 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         jurorHistoryRepository.save(jurorHistory);
 
         if (SecurityUtil.isBureau()) {
-            printDataService.printDeferralDeniedLetter(jurorPool);
+            printDataService.removeQueuedLetterForJuror(jurorPool,
+                            List.of(FormCode.ENG_DEFERRALDENIED, FormCode.BI_DEFERRALDENIED));
+
+            if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+                emailDataService.emailDeferralDeniedLetter(jurorPool);
+            } else {
+                printDataService.printDeferralDeniedLetter(jurorPool);
+            }
 
             jurorHistoryRepository.save(JurorHistory.builder()
-                .jurorNumber(jurorPool.getJurorNumber())
-                .dateCreated(LocalDateTime.now())
-                .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
-                .createdBy(payload.getLogin())
-                .poolNumber(jurorPool.getPoolNumber())
-                .otherInformation("Deferral Denied")
-                .otherInformationRef(deferralRequestDto.getDeferralReason())
-                .build());
+                                            .jurorNumber(jurorPool.getJurorNumber())
+                                            .dateCreated(LocalDateTime.now())
+                                            .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
+                                            .createdBy(payload.getLogin())
+                                            .poolNumber(jurorPool.getPoolNumber())
+                                            .otherInformation("Deferral Denied")
+                                            .otherInformationRef(deferralRequestDto.getDeferralReason())
+                                            .build());
         }
     }
 

@@ -140,17 +140,17 @@ class JurorHistoryServiceImplTest {
     @Test
     void createConfirmServiceHistory() {
         JurorPool jurorPool = createJurorPool();
-        jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Some Other Info");
+        jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Some Other Info",CommunicationChannel.LETTER);
         assertStandardValuesSystem(jurorPool, new JurorHistoryPartHistoryJurorHistoryExpectedValues(
-            HistoryCodeMod.RESPONDED_LETTER, "Some Other Info"));
+            HistoryCodeMod.RESPONDED_LETTER, "Some Other Info Printed"));
     }
 
     @Test
     void createWithdrawHistory() {
         JurorPool jurorPool = createJurorPool();
-        jurorHistoryService.createWithdrawHistory(jurorPool, "Other Info", "E");
+        jurorHistoryService.createWithdrawHistory(jurorPool, "Other Info", "E",CommunicationChannel.LETTER);;
         assertStandardValuesSystem(jurorPool, new JurorHistoryPartHistoryJurorHistoryExpectedValues(
-            HistoryCodeMod.WITHDRAWAL_LETTER, "Other Info"));
+            HistoryCodeMod.WITHDRAWAL_LETTER, "Other Info Printed"));
     }
 
     @Test
