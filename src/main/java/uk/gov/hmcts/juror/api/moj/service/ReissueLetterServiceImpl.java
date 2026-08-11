@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusDto;
@@ -35,6 +36,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -48,6 +51,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private final JurorHistoryService jurorHistoryService;
     private final JurorPoolService jurorPoolService;
     private final JurorRepository jurorRepository;
+    private final EmailDataService emailDataService;
+    private final FeatureFlagConfigurationProperties featureFlags;
     private final PoolHistoryService poolHistoryService;
     private static final List<String> CREATE_LETTER_IF_NOT_EXIST_CODES = List.of(
         FormCode.ENG_SUMMONS_REMINDER.getCode(),
@@ -166,7 +171,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         // if no jurors with a modified status are found, print the requested letters
         if (response.getJurors().isEmpty()) {
             request.getLetters().forEach(letter -> {
-                printLetterFromFormCode(letter, true);
+                reissueLetterOrEmail(letter, true);
                 // get the pool number for the juror
                 JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
                 poolLetterCount.merge(jurorPool.getPoolNumber(), 1, Integer::sum);
@@ -199,10 +204,33 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         final FormCode formCode = FormCode.getFormCode(letter.getFormCode());
         log.debug("Printing letter for juror number {} with form code {}", jurorNumber, formCode);
 
-        log.debug("Printing letter for juror number {} with form code {}", letter.getJurorNumber(),
-                  letter.getFormCode());
-
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
+
+        printLetter(jurorNumber, jurorPool, formCode);
+
+        // create letter history
+        createLetterHistory(letter);
+    }
+
+    private void reissueLetterOrEmail(ReissueLetterRequestDto.@NotNull ReissueLetterRequestData letter,
+                                      boolean requirePrintedLetter) {
+        validateRequestedLetter(letter, requirePrintedLetter);
+        final String jurorNumber = letter.getJurorNumber();
+        final FormCode formCode = FormCode.getFormCode(letter.getFormCode());
+        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
+
+        if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+            && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)
+            && emailDataService.emailReissueLetter(jurorPool, formCode)) {
+            return;
+        }
+
+        printLetter(jurorNumber, jurorPool, formCode);
+        createLetterHistory(letter);
+    }
+
+    private void printLetter(String jurorNumber, JurorPool jurorPool, FormCode formCode) {
+        log.debug("Printing letter for juror number {} with form code {}", jurorNumber, formCode);
 
         BiConsumer<PrintDataService, JurorPool> letterPrinter = formCode.getLetterPrinter();
         if (letterPrinter == null) {
@@ -211,9 +239,6 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         }
 
         letterPrinter.accept(printDataService, jurorPool);
-
-        // create letter history
-        createLetterHistory(letter);
     }
 
     private void validateReissueRequest(ReissueLetterRequestDto request, ReissueLetterReponseDto response) {
