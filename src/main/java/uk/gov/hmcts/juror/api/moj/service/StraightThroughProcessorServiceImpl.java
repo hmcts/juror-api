@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReplyType;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
@@ -39,7 +40,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.GodClass", "PMD.TooManyMethods"})
+@SuppressWarnings("PMD")
 public class StraightThroughProcessorServiceImpl implements StraightThroughProcessorService {
 
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;
@@ -286,7 +287,7 @@ public class StraightThroughProcessorServiceImpl implements StraightThroughProce
         printDataService.printWithdrawalLetter(jurorPool);
 
         // record disqualification letter entry history record
-        jurorHistoryService.createWithdrawHistoryUser(jurorPool, null, "A");
+        jurorHistoryService.createWithdrawHistoryUser(jurorPool, null, "A", CommunicationChannel.LETTER);
     }
 
     private void updateJurorPoolForAgeExcusal(JurorPool jurorPool, String username) {
