@@ -44,7 +44,7 @@ public class JwtAuthenticationInterceptor implements ClientHttpRequestIntercepto
     }
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(this.config.getSecret()));
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(this.config.getSecret()));
     }
 
 }
