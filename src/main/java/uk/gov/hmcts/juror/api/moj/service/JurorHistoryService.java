@@ -99,6 +99,8 @@ public interface JurorHistoryService {
 
     void createExcusedLetter(JurorPool jurorPool, CommunicationChannel communicationChannel);
 
+    void createExcusedLetter(JurorPool jurorPool, CommunicationChannel communicationChannel);
+
     void createPoolEditHistory(JurorPool updatedPool);
 
     void createUndeliveredSummonsHistory(JurorPool jurorPool);
