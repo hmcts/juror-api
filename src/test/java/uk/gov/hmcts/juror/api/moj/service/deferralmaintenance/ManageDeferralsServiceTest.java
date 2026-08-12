@@ -252,6 +252,51 @@ class ManageDeferralsServiceTest {
         }
 
         @Test
+        void processJurorPostponementDigitalByDefaultEmailsConfirmationAndPostponementLetters() {
+            TestUtils.mockBureauUser();
+            LocalDate newAttendanceDate = LocalDate.now();
+            LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
+
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER,
+                UserType.BUREAU, Collections.singletonList(Role.MANAGER));
+
+            final PoolRequest oldPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111111, LOC_CODE_415,
+                oldAttendanceDate);
+
+            final PoolRequest newPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111112, LOC_CODE_415,
+                newAttendanceDate);
+            newPoolRequest.getCourtLocation().setDigitalByDefault(true);
+
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+            JurorPool jurorPool = createJurorPool(JUROR_123456789);
+            setDigitalByDefaultJuror(jurorPool, ReplyMethod.DIGITAL);
+
+            doReturn(true).when(featureFlags).isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG);
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(JUROR_123456789);
+
+            doReturn(Optional.of(oldPoolRequest)).when(poolRequestRepository).findByPoolNumber(POOL_111111111);
+            doReturn(Optional.of(jurorStatus)).when(jurorStatusRepository).findById(anyInt());
+            doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+            doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
+
+            DeferralAgeDisqualificationResponseDto response =
+                manageDeferralsService.processJurorPostponement(bureauPayload, createProcessJurorRequestDto());
+
+            assertThat(response.getEligible()).isEqualTo(1);
+
+            verify(emailDataService, times(1)).emailConfirmationLetter(any(JurorPool.class));
+            verify(emailDataService, times(1)).emailPostponementLetter(jurorPool);
+            verify(printDataService, never()).printConfirmationLetter(any());
+            verify(printDataService, never()).printPostponeLetter(any());
+            verify(jurorHistoryService, never()).createConfirmationLetterHistory(any(), anyString(), any());
+            verify(jurorHistoryService, never()).createPostponementLetterHistory(jurorPool, "Postponed Letter",
+                                                                                 CommunicationChannel.LETTER);
+        }
+
+        @Test
         void processJurorPostponementHappyPathMoveToActivePoolNotPoliceChecked() {
             TestUtils.mockBureauUser();
             LocalDate newAttendanceDate = LocalDate.now();
@@ -3092,6 +3137,41 @@ class ManageDeferralsServiceTest {
             assertThat(response.getFailedToDisqualify()).isEmpty();
 
             verify(printDataService, times(1)).printWithdrawalLetter(jurorPool);
+        }
+
+        @Test
+        void bulkDisqualifyForAgeDigitalByDefaultQueuesEmailWithdrawalLetter() {
+            TestUtils.mockBureauUser();
+            final BureauJwtPayload bureauPayload =
+                TestUtils.createJwt(JurorDigitalApplication.JUROR_OWNER, BUREAU_USER);
+
+            JurorPool jurorPool = createJurorPool(JUROR_123456789);
+            jurorPool.setOwner(JurorDigitalApplication.JUROR_OWNER);
+            setDigitalByDefaultJuror(jurorPool, ReplyMethod.DIGITAL);
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+
+            JurorStatus disqualifiedStatus = new JurorStatus();
+            disqualifiedStatus.setStatus(IJurorStatus.DISQUALIFIED);
+            doReturn(Optional.of(disqualifiedStatus))
+                .when(jurorStatusRepository)
+                .findById(IJurorStatus.DISQUALIFIED);
+
+            doReturn(true).when(featureFlags).isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG);
+            doReturn(null).when(digitalResponseRepository).findByJurorNumber(JUROR_123456789);
+            doReturn(null).when(paperResponseRepository).findByJurorNumber(JUROR_123456789);
+
+            BulkDisqualifyRequestDto requestDto =
+                new BulkDisqualifyRequestDto(Collections.singletonList(JUROR_123456789));
+
+            BulkDisqualifyResponseDto response =
+                manageDeferralsService.bulkDisqualifyForAge(bureauPayload, requestDto);
+
+            assertThat(response.getDisqualifiedCount()).isEqualTo(1);
+            assertThat(response.getDisqualified()).hasSize(1);
+            assertThat(response.getFailedToDisqualify()).isEmpty();
+
+            verify(emailDataService, times(1)).emailWithdrawalLetter(jurorPool, DisqualifyCode.A.getCode());
+            verify(printDataService, never()).printWithdrawalLetter(any());
         }
 
         @Test

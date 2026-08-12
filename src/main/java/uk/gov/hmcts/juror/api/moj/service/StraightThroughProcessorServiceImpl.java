@@ -40,7 +40,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.GodClass", "PMD.TooManyMethods"})
+@SuppressWarnings("PMD")
 public class StraightThroughProcessorServiceImpl implements StraightThroughProcessorService {
 
     private final JurorPaperResponseRepositoryMod jurorPaperResponseRepository;

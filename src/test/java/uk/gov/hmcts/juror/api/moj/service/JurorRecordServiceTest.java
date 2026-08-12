@@ -149,6 +149,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 
 @ExtendWith(SpringExtension.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects",
@@ -1280,6 +1281,12 @@ class JurorRecordServiceTest {
         jurorPool.setJuror(juror);
 
         return jurorPool;
+    }
+
+    private void setDigitalByDefaultJuror(JurorPool jurorPool) {
+        jurorPool.getJuror().setDigitalByDefault(true);
+        jurorPool.getJuror().setDbdPreference("Digital");
+        jurorPool.getCourt().setDigitalByDefault(true);
     }
 
     private List<JurorPool> createJurorPoolList(String jurorNumber, String owner) {
@@ -2649,6 +2656,24 @@ class JurorRecordServiceTest {
         }
 
         @Test
+        @DisplayName("ELIGIBLE - digital by default")
+        void positiveEligibleDigitalByDefaultEmailsConfirmationLetter() {
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            setDigitalByDefaultJuror(jurorPool);
+            doReturn(true).when(featureFlags).isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG);
+
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.ELIGIBLE);
+
+            assertEquals(PoliceCheck.ELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be ELIGIBLE.");
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckQualifyHistory(jurorPool, true);
+            verify(emailDataService, times(1)).emailConfirmationLetter(jurorPool);
+            verify(printDataService, never()).printConfirmationLetter(any());
+            verify(jurorHistoryService, never()).createConfirmationLetterHistory(any(), anyString(), any());
+        }
+
+        @Test
         @DisplayName("ELIGIBLE - Court")
         void positiveEligibleCourt() {
             JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
@@ -2790,6 +2815,29 @@ class JurorRecordServiceTest {
             verify(jurorPoolRepository, times(1)).save(jurorPool);
             verify(jurorRepository, times(1)).save(jurorPool.getJuror());
             verifyNoMoreInteractions(jurorPoolRepository, jurorRepository, jurorHistoryService, printDataService);
+        }
+
+        @Test
+        @DisplayName("INELIGIBLE - digital by default")
+        void positiveInEligibleDigitalByDefaultEmailsWithdrawalLetter() {
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(6);
+            when(jurorStatusRepository.findById(6)).thenReturn(Optional.of(jurorStatus));
+            JurorPool jurorPool = setupJurorPool(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR);
+            setDigitalByDefaultJuror(jurorPool);
+            doReturn(true).when(featureFlags).isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG);
+
+            jurorRecordService.updatePncStatus(TestConstants.VALID_JUROR_NUMBER, PoliceCheck.INELIGIBLE);
+
+            assertEquals(PoliceCheck.INELIGIBLE, jurorPool.getJuror().getPoliceCheck(),
+                         "Police status be INELIGIBLE.");
+            assertEquals("E", jurorPool.getJuror().getDisqualifyCode(),
+                         "Juror disqualify code must be 'E'");
+            verify(jurorHistoryService, times(1))
+                .createPoliceCheckDisqualifyHistory(jurorPool);
+            verify(emailDataService, times(1)).emailWithdrawalLetter(jurorPool, "E");
+            verify(printDataService, never()).printWithdrawalLetter(any());
+            verify(jurorHistoryService, never()).createWithdrawHistory(any(), anyString(), anyString(), any());
         }
 
         @Test
