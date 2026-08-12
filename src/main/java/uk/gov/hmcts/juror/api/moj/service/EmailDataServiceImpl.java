@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
+import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
@@ -25,6 +26,26 @@ public class EmailDataServiceImpl implements EmailDataService {
     private final FormAttributeRepository formAttributeRepository;
     private final JurorHistoryService jurorHistoryService;
 
+
+
+    @Override
+    public void emailConfirmationLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to email confirmation letter for null jurorPool", null);
+        }
+        boolean welsh = jurorPool.getJuror().isWelsh();
+        FormCode formCode = welsh ? FormCode.BI_CONFIRMATION : FormCode.ENG_CONFIRMATION;
+        DigitalByDefaultEmailTemplate template = welsh
+            ? DigitalByDefaultEmailTemplate.CONFIRMATION_WELSH
+            : DigitalByDefaultEmailTemplate.CONFIRMATION_ENGLISH;
+
+        BulkPrintData bulkPrintData = createPendingEmail(jurorPool, formCode, template);
+        bulkPrintDataRepository.save(bulkPrintData);
+
+        jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter",
+                                                            CommunicationChannel.EMAIL);
+    }
 
     @Override
     public void emailDeferralLetter(JurorPool jurorPool) {
@@ -43,6 +64,96 @@ public class EmailDataServiceImpl implements EmailDataService {
         bulkPrintDataRepository.save(bulkPrintData);
 
         jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.EMAIL);
+    }
+
+    @Override
+    public void emailDeferralDeniedLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to email deferral denied letter for null jurorPool", null);
+        }
+        boolean welsh = jurorPool.getJuror().isWelsh();
+        FormCode formCode = welsh ? FormCode.BI_DEFERRALDENIED : FormCode.ENG_DEFERRALDENIED;
+        DigitalByDefaultEmailTemplate template = welsh
+            ? DigitalByDefaultEmailTemplate.DEFERRAL_DENIED_WELSH
+            : DigitalByDefaultEmailTemplate.DEFERRAL_DENIED_ENGLISH;
+
+        BulkPrintData bulkPrintData = createPendingEmail(jurorPool, formCode, template);
+        bulkPrintDataRepository.save(bulkPrintData);
+    }
+
+    @Override
+    public void emailExcusalGrantedLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to email excusal granted letter for null jurorPool", null);
+        }
+        boolean welsh = jurorPool.getJuror().isWelsh();
+        FormCode formCode = welsh ? FormCode.BI_EXCUSAL : FormCode.ENG_EXCUSAL;
+        DigitalByDefaultEmailTemplate template = welsh
+            ? DigitalByDefaultEmailTemplate.EXCUSAL_GRANTED_WELSH
+            : DigitalByDefaultEmailTemplate.EXCUSAL_GRANTED_ENGLISH;
+
+        BulkPrintData bulkPrintData = createPendingEmail(jurorPool, formCode, template);
+        bulkPrintDataRepository.save(bulkPrintData);
+
+        jurorHistoryService.createExcusedLetter(jurorPool, CommunicationChannel.EMAIL);
+    }
+
+    @Override
+    public void emailExcusalDeniedLetter(JurorPool jurorPool, String refusedExcusal) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to email excusal denied letter for null jurorPool", null);
+        }
+        boolean welsh = jurorPool.getJuror().isWelsh();
+        FormCode formCode = welsh ? FormCode.BI_EXCUSALDENIED : FormCode.ENG_EXCUSALDENIED;
+        DigitalByDefaultEmailTemplate template = welsh
+            ? DigitalByDefaultEmailTemplate.EXCUSAL_DENIED_WELSH
+            : DigitalByDefaultEmailTemplate.EXCUSAL_DENIED_ENGLISH;
+
+        BulkPrintData bulkPrintData = createPendingEmail(jurorPool, formCode, template);
+        bulkPrintDataRepository.save(bulkPrintData);
+
+        jurorHistoryService.createNonExcusedLetterHistory(jurorPool, refusedExcusal, CommunicationChannel.EMAIL);
+    }
+
+    @Override
+    public void emailWithdrawalLetter(JurorPool jurorPool, String code) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to email withdrawal letter for null jurorPool", null);
+        }
+        boolean welsh = jurorPool.getJuror().isWelsh();
+        FormCode formCode = welsh ? FormCode.BI_WITHDRAWAL : FormCode.ENG_WITHDRAWAL;
+        DigitalByDefaultEmailTemplate template = welsh
+            ? DigitalByDefaultEmailTemplate.WITHDRAWAL_WELSH
+            : DigitalByDefaultEmailTemplate.WITHDRAWAL_ENGLISH;
+
+        BulkPrintData bulkPrintData = createPendingEmail(jurorPool, formCode, template);
+        bulkPrintDataRepository.save(bulkPrintData);
+
+        jurorHistoryService.createWithdrawHistory(jurorPool, "Withdrawal Letter", DisqualifyCode.A.getCode(),
+                                                  CommunicationChannel.EMAIL);
+    }
+
+    @Override
+    public void emailPostponementLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to email postponement letter for null jurorPool", null);
+        }
+        boolean welsh = jurorPool.getJuror().isWelsh();
+        FormCode formCode = welsh ? FormCode.BI_POSTPONE : FormCode.ENG_POSTPONE;
+        DigitalByDefaultEmailTemplate template = welsh
+            ? DigitalByDefaultEmailTemplate.POSTPONEMENT_WELSH
+            : DigitalByDefaultEmailTemplate.POSTPONEMENT_ENGLISH;
+
+        BulkPrintData bulkPrintData = createPendingEmail(jurorPool, formCode, template);
+        bulkPrintDataRepository.save(bulkPrintData);
+
+        jurorHistoryService.createPostponementLetterHistory(jurorPool, "Postponed Letter",
+                                                            CommunicationChannel.EMAIL);
     }
 
     private BulkPrintData createPendingEmail(
@@ -70,6 +181,5 @@ public class EmailDataServiceImpl implements EmailDataService {
         bulkPrintData.setCommunicationChannel(CommunicationChannel.EMAIL);
         bulkPrintData.setEmailStatus(EmailStatus.PENDING);
     }
-
 
 }

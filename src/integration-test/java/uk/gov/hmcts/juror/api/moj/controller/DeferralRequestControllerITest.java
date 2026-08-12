@@ -431,6 +431,32 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
         });
     }
 
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/DeferralRequestController_createPoolAndResponse.sql"})
+    public void denyDeferralHappyPathBureauUserDigitalByDefaultQueuesEmail() {
+        String jurorNumber = "987654322";
+        String deferralReason = "B";
+
+        DeferralRequestDto requestDto = createDeferralDecisionDto(jurorNumber, deferralReason);
+
+        ResponseEntity<DeferralRequestDto> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PUT,
+                URI.create("/api/v1/moj/deferral-response/juror/" + jurorNumber)), DeferralRequestDto.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        executeInTransaction(() -> {
+            List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
+            assertThat(bulkPrintData).hasSize(1);
+
+            BulkPrintData emailData = bulkPrintData.get(0);
+            assertThat(emailData.getCommunicationChannel()).isEqualTo(CommunicationChannel.EMAIL);
+            assertThat(emailData.getEmailStatus()).isEqualTo(EmailStatus.PENDING);
+            assertThat(emailData.getNotifyTemplateName()).isEqualTo(
+                DigitalByDefaultEmailTemplate.DEFERRAL_DENIED_ENGLISH.getTemplateName());
+        });
+    }
+
 
     private DeferralRequestDto createDeferralDecisionDto(String jurorNumber,
                                                          String deferralReason) {

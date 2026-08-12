@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
@@ -736,16 +737,17 @@ class ExcusalResponseServiceImplTest {
         verify(jurorPoolRepository, times(1)).save(any());
         verify(jurorHistoryRepository, times(jurorHistoryRepositoryTimes)).save(any());
         if (shouldCreateNonExcusedLetter) {
-            verify(jurorHistoryService).createNonExcusedLetterHistory(any(), eq("Refused Excusal"));
+            verify(jurorHistoryService).createNonExcusedLetterHistory(any(), eq("Refused Excusal"),
+                                                              eq(CommunicationChannel.LETTER));
         } else {
-            verify(jurorHistoryService, never()).createNonExcusedLetterHistory(any(), any());
+            verify(jurorHistoryService, never()).createNonExcusedLetterHistory(any(), any(),any());
         }
     }
 
     private void verifyHappyGrantJurorPoolPath() {
         verify(jurorPoolRepository, times(1)).save(any());
         verify(jurorHistoryRepository, times(1)).save(any());
-        verify(jurorHistoryService).createExcusedLetter(any());
+        verify(jurorHistoryService).createExcusedLetter(any(),eq(CommunicationChannel.LETTER));
     }
 
     private void verifyHappyGrantJurorPoolPathNoLetter() {

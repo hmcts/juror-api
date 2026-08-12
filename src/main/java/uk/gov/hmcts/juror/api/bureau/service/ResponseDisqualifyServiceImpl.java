@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.repository.DisqualifiedCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
@@ -146,7 +147,7 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
 
             // Age disqualifications require a second PART_HIST entry
             if (DisCode.AGE.equalsIgnoreCase(disqualifyCodeDto.getDisqualifyCode())) {
-                jurorHistoryService.createWithdrawHistoryUser(jurorDetails,null,"A");
+                jurorHistoryService.createWithdrawHistoryUser(jurorDetails, null, "A", CommunicationChannel.LETTER);
             }
 
             // disq_lett table entry

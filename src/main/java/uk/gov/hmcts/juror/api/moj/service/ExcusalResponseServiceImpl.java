@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
@@ -188,7 +189,8 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         if (SecurityUtil.isBureau()) {
             printDataService.printExcusalDeniedLetter(jurorPool);
 
-            jurorHistoryService.createNonExcusedLetterHistory(jurorPool, "Refused Excusal");
+            jurorHistoryService.createNonExcusedLetterHistory(jurorPool, "Refused Excusal",
+                                                              CommunicationChannel.LETTER);
         }
 
     }
@@ -198,7 +200,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         printDataService.printExcusalLetter(jurorPool);
 
-        jurorHistoryService.createExcusedLetter(jurorPool);
+        jurorHistoryService.createExcusedLetter(jurorPool, CommunicationChannel.LETTER);
 
         log.info(String.format("Excusal letter enqueued for Juror %s", jurorNumber));
     }
