@@ -38,27 +38,14 @@ public class EmailDataServiceImpl implements EmailDataService {
         boolean welsh = jurorPool.getJuror().isWelsh();
         FormCode formCode = welsh ? FormCode.BI_DEFERRAL : FormCode.ENG_DEFERRAL;
 
-        Optional<EmailTemplateData> templateData = getTemplateData(formCode, welsh);
+        DigitalByDefaultEmailTemplate template = welsh
+            ? DigitalByDefaultEmailTemplate.DEFERRAL_GRANTED_WELSH
+            : DigitalByDefaultEmailTemplate.DEFERRAL_GRANTED_ENGLISH;
 
-        BulkPrintData bulkPrintData = createPendingEmail(jurorPool,
-                                                         templateData.get().formCode,
-                                                         templateData.get().template);
+        BulkPrintData bulkPrintData = createPendingEmail(jurorPool, formCode, template);
         bulkPrintDataRepository.save(bulkPrintData);
 
         jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.EMAIL);
-    }
-
-    private static @NonNull Optional<EmailTemplateData> getTemplateData(FormCode formCode, boolean welsh) {
-        Optional<EmailTemplateData> templateData = getEmailTemplateData(
-            formCode,
-            welsh
-        );
-
-        if (templateData.isEmpty()) {
-            throw new MojException.InternalServerError(
-                "No email template data found for form code: " + formCode, null);
-        }
-        return templateData;
     }
 
     @Override
