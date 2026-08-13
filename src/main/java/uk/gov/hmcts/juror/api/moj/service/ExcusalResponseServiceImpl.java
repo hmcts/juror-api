@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.ExcusalDecisionDto;
 import uk.gov.hmcts.juror.api.moj.domain.ExcusalDecision;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -32,6 +34,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
+
 /**
  * Excusal Response service.
  */
@@ -50,6 +54,8 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private final JurorPoolService jurorPoolService;
     private final JurorResponseService jurorResponseService;
     private final JurorRecordService jurorRecordService;
+    private final EmailDataService emailDataService;
+    private final FeatureFlagConfigurationProperties featureFlags;
 
 
 
@@ -198,9 +204,18 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private void sendExcusalLetter(JurorPool jurorPool, String jurorNumber) {
         log.info(String.format("Preparing an excusal letter for Juror %s", jurorNumber));
 
-        printDataService.printExcusalLetter(jurorPool);
+        printDataService.removeQueuedLetterForJuror(
+            jurorPool,
+            List.of(FormCode.ENG_EXCUSAL, FormCode.BI_EXCUSAL)
+        );
 
-        jurorHistoryService.createExcusedLetter(jurorPool, CommunicationChannel.LETTER);
+        if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+            && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+            emailDataService.emailExcusalGrantedLetter(jurorPool);
+        } else {
+            printDataService.printExcusalLetter(jurorPool);
+            jurorHistoryService.createExcusedLetter(jurorPool, CommunicationChannel.LETTER);
+        }
 
         log.info(String.format("Excusal letter enqueued for Juror %s", jurorNumber));
     }
