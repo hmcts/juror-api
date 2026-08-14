@@ -28,24 +28,24 @@ public enum NotifyTemplateMapperMod {
     JUROR_POOL_LOC_CODE(Type.JUROR, context -> context.getJurorPool().getCourt().getLocCode()),
     JUROR_POOL_SERVICE_START_DATE(
         Type.JUROR,
-        context -> context.getJurorPool().getNextDate() != null
-            ? context.getJurorPool().getNextDate()
-            : context.getJurorPool().getDeferralDate()
+            context -> context.getJurorPool().getNextDate() != null
+                ? context.getJurorPool().getNextDate()
+                : context.getJurorPool().getDeferralDate()
     ),
     JUROR_OR_RESPONSE_EMAIL(
         Type.JUROR,
-        context -> {
-            String jurorEmail = context.getJuror().getEmail();
-            if (jurorEmail !=null && !jurorEmail.trim().isEmpty()) {
-                return jurorEmail;
-            }
+            context -> {
+                String jurorEmail = context.getJuror().getEmail();
+                if (jurorEmail != null && !jurorEmail.trim().isEmpty()) {
+                    return jurorEmail;
+                }
 
-            if (context.getAbstractResponse() == null) {
-                return null;
-            }
+                if (context.getAbstractResponse() == null) {
+                    return null;
+                }
 
-            return context.getAbstractResponse().getEmail();
-        }
+                return context.getAbstractResponse().getEmail();
+            }
     ),
 
     POOL_ATTEND_TIME(Type.JUROR, context -> context.getPoolRequest().getAttendTime()),
