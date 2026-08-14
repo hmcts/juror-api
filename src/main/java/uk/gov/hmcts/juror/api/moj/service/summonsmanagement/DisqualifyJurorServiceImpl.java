@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement.DisqualifyJurorDto;
@@ -24,9 +25,11 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
+import uk.gov.hmcts.juror.api.moj.service.EmailDataService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorResponseUtils;
 
 import java.time.LocalDate;
@@ -36,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Objects.isNull;
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 import static uk.gov.hmcts.juror.api.moj.domain.IJurorStatus.DISQUALIFIED;
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorDigitalResponse;
 import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorPaperResponse;
@@ -56,6 +60,8 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
     private final SummonsReplyMergeService summonsReplyMergeService;
     private final PrintDataService printDataService;
     private final JurorHistoryService jurorHistoryService;
+    private final EmailDataService emailDataService;
+    private final FeatureFlagConfigurationProperties featureFlags;
 
     @Override
     public DisqualifyReasonsDto getDisqualifyReasons(BureauJwtPayload payload) {
@@ -131,8 +137,12 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
         jurorHistoryService.createDisqualifyHistory(jurorPool, disqualifyJurorDto.getCode().getCode());
 
         if (JurorDigitalApplication.JUROR_OWNER.equals(payload.getOwner())) {
-            //Queue request for a letter to be sent to the juror
-            printDataService.printWithdrawalLetter(jurorPool);
+            if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+                emailDataService.emailWithdrawalLetter(jurorPool, disqualifyJurorDto.getCode().getCode());
+            } else {
+                printDataService.printWithdrawalLetter(jurorPool);
+            }
         }
 
         log.trace("Juror {} - Api service method disqualifyJuror() finished.  Juror disqualified with code {}",
@@ -180,16 +190,21 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
     private void processDisqualification(JurorPool jurorPool, AbstractJurorResponse response,
                                          BureauJwtPayload bureauJwtPayload, DisqualifyCodeEnum disqualifyCodeEnum) {
         saveJurorPoolRecord(jurorPool, response.getJurorNumber(), disqualifyCodeEnum,
-            bureauJwtPayload.getLogin());
+                            bureauJwtPayload.getLogin());
         jurorHistoryService.createDisqualifyHistory(jurorPool, disqualifyCodeEnum.getCode());
 
         if (JurorDigitalApplication.JUROR_OWNER.equals(bureauJwtPayload.getOwner())) {
-            // TODO need to check if this is the right letter to send
-            printDataService.printWithdrawalLetter(jurorPool);
+            if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+                emailDataService.emailWithdrawalLetter(jurorPool, disqualifyCodeEnum.getCode());
+            } else {
+
+                printDataService.printWithdrawalLetter(jurorPool);
+            }
         }
 
         log.trace("Juror {} - Api service method disqualifyJuror() finished.  Juror disqualified with code {}",
-            response.getJurorNumber(), disqualifyCodeEnum);
+                  response.getJurorNumber(), disqualifyCodeEnum);
     }
 
     private void saveJurorPoolRecord(JurorPool jurorPool,
