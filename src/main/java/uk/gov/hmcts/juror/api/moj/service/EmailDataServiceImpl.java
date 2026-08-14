@@ -9,7 +9,6 @@ import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
-import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
@@ -133,8 +132,7 @@ public class EmailDataServiceImpl implements EmailDataService {
         BulkPrintData bulkPrintData = createPendingEmail(jurorPool, formCode, template);
         bulkPrintDataRepository.save(bulkPrintData);
 
-        jurorHistoryService.createWithdrawHistory(jurorPool, "Withdrawal Letter", DisqualifyCode.A.getCode(),
-                                                  CommunicationChannel.EMAIL);
+        jurorHistoryService.createWithdrawHistory(jurorPool, "Withdrawal Letter", code, CommunicationChannel.EMAIL);
     }
 
     @Override

@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -379,6 +380,8 @@ public class DisqualifyJurorServiceImplTest {
         disqualifyJurorService.disqualifyJuror(jurorNumber, disqualifyJurorDto, courtPayload);
 
         verify(printDataService).printWithdrawalLetter(jurorPoolList.get(0));
+        verify(jurorHistoryService).createWithdrawHistoryUser(jurorPoolList.get(0), "Withdrawal Letter", "N",
+                                                              CommunicationChannel.LETTER);
         verify(emailDataService, never()).emailWithdrawalLetter(any(JurorPool.class), anyString());
     }
 

@@ -155,6 +155,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
             JUROR_NUMBER_123456789, BUREAU_USER, "400", HttpStatus.OK);
 
         assertQueuedWithdrawalEmail(JUROR_NUMBER_123456789);
+        assertWithdrawalEmailHistory(JUROR_NUMBER_123456789, "N");
     }
 
     @Test
@@ -324,6 +325,19 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
                 EmailStatus.PENDING.name(),
                 DigitalByDefaultEmailTemplate.WITHDRAWAL_ENGLISH.getTemplateName()))
                 .as("A pending DBD withdrawal email should be queued")
+                .isEqualTo(1);
+        });
+    }
+
+    private void assertWithdrawalEmailHistory(String jurorNumber, String disqualifyCode) {
+        executeInTransaction(() -> {
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history WHERE "
+                    + "juror_number = ? AND history_code = 'RDIS' "
+                    + "AND other_information = 'Withdrawal Letter Email Sent' AND other_info_reference = ?",
+                Integer.class,
+                jurorNumber,
+                disqualifyCode))
+                .as("Juror history should record the emailed withdrawal letter")
                 .isEqualTo(1);
         });
     }

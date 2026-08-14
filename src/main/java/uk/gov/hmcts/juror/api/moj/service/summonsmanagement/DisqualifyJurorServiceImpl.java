@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -142,6 +143,9 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
                 emailDataService.emailWithdrawalLetter(jurorPool, disqualifyJurorDto.getCode().getCode());
             } else {
                 printDataService.printWithdrawalLetter(jurorPool);
+                jurorHistoryService.createWithdrawHistoryUser(jurorPool, "Withdrawal Letter",
+                                                              disqualifyJurorDto.getCode().getCode(),
+                                                              CommunicationChannel.LETTER);
             }
         }
 
@@ -200,6 +204,9 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
             } else {
 
                 printDataService.printWithdrawalLetter(jurorPool);
+                jurorHistoryService.createWithdrawHistoryUser(jurorPool, "Withdrawal Letter",
+                                                              disqualifyCodeEnum.getCode(),
+                                                              CommunicationChannel.LETTER);
             }
         }
 

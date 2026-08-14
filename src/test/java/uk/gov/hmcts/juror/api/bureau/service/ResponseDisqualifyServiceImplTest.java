@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.DisqualifiedCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -149,6 +150,8 @@ public class ResponseDisqualifyServiceImplTest {
 
         verify(jurorHistoryService).createDisqualifyHistory(poolDetails, disqualifyCode);
         verify(printDataService).printWithdrawalLetter(poolDetails);
+        verify(jurorHistoryService).createWithdrawHistoryUser(poolDetails, "Withdrawal Letter", disqualifyCode,
+                                                              CommunicationChannel.LETTER);
         verify(emailDataService, never()).emailWithdrawalLetter(any(JurorPool.class), any(String.class));
     }
 
@@ -207,6 +210,8 @@ public class ResponseDisqualifyServiceImplTest {
 
         assertThat(result).isTrue();
         verify(printDataService).printWithdrawalLetter(poolDetails);
+        verify(jurorHistoryService).createWithdrawHistoryUser(poolDetails, "Withdrawal Letter", disqualifyCode,
+                                                              CommunicationChannel.LETTER);
         verify(emailDataService, never()).emailWithdrawalLetter(any(JurorPool.class), any(String.class));
     }
 

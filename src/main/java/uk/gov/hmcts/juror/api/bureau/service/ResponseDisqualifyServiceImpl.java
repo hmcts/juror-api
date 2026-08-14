@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseDisqualifyController;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseDisqualifyController.DisqualifyCodeDto;
-import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.exception.DisqualifyException;
 import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -152,17 +151,15 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
             // audit pool
             jurorHistoryService.createDisqualifyHistory(jurorDetails, disqualifyCodeDto.getDisqualifyCode());
 
-            // Age disqualifications require a second PART_HIST entry
-            if (DisCode.AGE.equalsIgnoreCase(disqualifyCodeDto.getDisqualifyCode())) {
-                jurorHistoryService.createWithdrawHistoryUser(jurorDetails, null, "A", CommunicationChannel.LETTER);
-            }
-
             // disq_lett table entry
             if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
                 && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorDetails)) {
                 emailDataService.emailWithdrawalLetter(jurorDetails, disqualifyCodeDto.getDisqualifyCode());
             } else {
                 printDataService.printWithdrawalLetter(jurorDetails);
+                jurorHistoryService.createWithdrawHistoryUser(jurorDetails, "Withdrawal Letter",
+                                                              disqualifyCodeDto.getDisqualifyCode(),
+                                                              CommunicationChannel.LETTER);
             }
         } catch (DisqualifyException.JurorNotFound e) {
             log.debug("Error while attempting to disqualify Juror {}: {}", jurorId, e.getMessage());
