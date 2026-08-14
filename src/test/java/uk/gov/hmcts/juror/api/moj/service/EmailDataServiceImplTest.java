@@ -118,6 +118,35 @@ class EmailDataServiceImplTest {
     }
 
     @Test
+    void emailWithdrawalLetter_englishJuror_queuesPendingEmailAndCreatesHistoryWithCode() {
+        JurorPool jurorPool = createJurorPool(false);
+        FormAttribute formAttribute = FormAttribute.builder()
+            .formType(FormCode.ENG_WITHDRAWAL.getCode())
+            .directoryName("DIR")
+            .maxRecLen(100)
+            .build();
+
+        when(formAttributeRepository.findById(FormCode.ENG_WITHDRAWAL.getCode()))
+            .thenReturn(Optional.of(formAttribute));
+
+        emailDataService.emailWithdrawalLetter(jurorPool, "N");
+
+        ArgumentCaptor<BulkPrintData> captor = ArgumentCaptor.forClass(BulkPrintData.class);
+        verify(bulkPrintDataRepository).save(captor.capture());
+
+        BulkPrintData emailData = captor.getValue();
+        assertThat(emailData.getJurorNo()).isEqualTo("123456789");
+        assertThat(emailData.getFormAttribute()).isEqualTo(formAttribute);
+        assertThat(emailData.getNotifyTemplateName()).isEqualTo(
+            DigitalByDefaultEmailTemplate.WITHDRAWAL_ENGLISH.getTemplateName());
+        assertThat(emailData.getCommunicationChannel()).isEqualTo(CommunicationChannel.EMAIL);
+        assertThat(emailData.getEmailStatus()).isEqualTo(EmailStatus.PENDING);
+
+        verify(jurorHistoryService).createWithdrawHistory(jurorPool, "Withdrawal Letter", "N",
+                                                          CommunicationChannel.EMAIL);
+    }
+
+    @Test
     void emailExcusalGrantedLetter_nullJurorPool_throwsInternalServerError() {
         assertThatThrownBy(() -> emailDataService.emailExcusalGrantedLetter(null))
             .isInstanceOf(MojException.InternalServerError.class)
