@@ -191,8 +191,11 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         jurorHistoryRepository.save(jurorHistory);
 
-        // bureau only - queue letter for xerox
-        if (SecurityUtil.isBureau()) {
+        if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+            && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+            emailDataService.emailExcusalDeniedLetter(jurorPool, "Refused Excusal");
+        } else if (SecurityUtil.isBureau()) {
+            // bureau only - queue letter for xerox
             printDataService.printExcusalDeniedLetter(jurorPool);
 
             jurorHistoryService.createNonExcusedLetterHistory(jurorPool, "Refused Excusal",
