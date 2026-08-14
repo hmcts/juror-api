@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseDisqualifyController;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseDisqualifyController.DisqualifyCodeDto;
-import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.exception.DisqualifyException;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -23,14 +23,18 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.EmailDataService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 
 @Slf4j
 @Service
@@ -48,6 +52,8 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
     private final AssignOnUpdateService assignOnUpdateService;
     private final JurorHistoryService jurorHistoryService;
     private final PrintDataService printDataService;
+    private final EmailDataService emailDataService;
+    private final FeatureFlagConfigurationProperties featureFlags;
 
     /**
      * Gets disqualification reasons.
@@ -145,13 +151,16 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
             // audit pool
             jurorHistoryService.createDisqualifyHistory(jurorDetails, disqualifyCodeDto.getDisqualifyCode());
 
-            // Age disqualifications require a second PART_HIST entry
-            if (DisCode.AGE.equalsIgnoreCase(disqualifyCodeDto.getDisqualifyCode())) {
-                jurorHistoryService.createWithdrawHistoryUser(jurorDetails, null, "A", CommunicationChannel.LETTER);
-            }
-
             // disq_lett table entry
-            printDataService.printWithdrawalLetter(jurorDetails);
+            if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorDetails)) {
+                emailDataService.emailWithdrawalLetter(jurorDetails, disqualifyCodeDto.getDisqualifyCode());
+            } else {
+                printDataService.printWithdrawalLetter(jurorDetails);
+                jurorHistoryService.createWithdrawHistoryUser(jurorDetails, "Withdrawal Letter",
+                                                              disqualifyCodeDto.getDisqualifyCode(),
+                                                              CommunicationChannel.LETTER);
+            }
         } catch (DisqualifyException.JurorNotFound e) {
             log.debug("Error while attempting to disqualify Juror {}: {}", jurorId, e.getMessage());
             throw e;
