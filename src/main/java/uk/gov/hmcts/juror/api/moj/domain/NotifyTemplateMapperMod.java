@@ -44,7 +44,7 @@ public enum NotifyTemplateMapperMod {
                 return null;
             }
 
-            return context.getAbstractResponse().getEmailAddress();
+            return context.getAbstractResponse().getEmail();
         }
     ),
 
