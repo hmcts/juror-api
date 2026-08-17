@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -37,6 +39,9 @@ public interface BulkPrintDataRepository extends IReissueLetterRepository, JpaRe
 
     List<BulkPrintData> findByJurorNoAndCreationDateAndFormAttributeFormTypeIn(String jurorNo, LocalDate creationDate,
                                                                                List<String> formCodes);
+
+    List<BulkPrintData> findByCommunicationChannelAndEmailStatus(CommunicationChannel communicationChannel,
+                                                                 EmailStatus emailStatus);
 
     // invoke the juror_mod.delete_printfiles() function using a native query
     @Procedure(procedureName = "juror_mod.delete_printfiles")

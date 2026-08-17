@@ -73,7 +73,7 @@ import static org.assertj.core.api.Assertions.assertThat;
     "PMD.CouplingBetweenObjects"})
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = "feature-flags.flags.digital-by-default=true")
+    properties = "feature-flags.flags.digital-by-default=false")
 public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Autowired

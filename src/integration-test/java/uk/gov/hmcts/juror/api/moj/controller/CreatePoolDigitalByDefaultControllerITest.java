@@ -121,7 +121,7 @@ public class CreatePoolDigitalByDefaultControllerITest extends AbstractIntegrati
         });
     }
 
-    private ResponseEntity<String> createPool(PoolCreateRequestDto poolCreateRequest) {
+    public void createPool_digitalByDefaultCourt_doesNotCreateSummonsLetter() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .roles(Set.of(Role.MANAGER))
@@ -129,6 +129,8 @@ public class CreatePoolDigitalByDefaultControllerITest extends AbstractIntegrati
             .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
             .owner("400")
             .build());
+
+        PoolCreateRequestDto poolCreateRequest = getUpDigitalByDefaultPoolCreateRequestDto();
 
         final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
 
@@ -141,13 +143,31 @@ public class CreatePoolDigitalByDefaultControllerITest extends AbstractIntegrati
     private PoolCreateRequestDto setUpPoolCreateRequestDto() {
         PoolCreateRequestDto poolCreateRequestDto = new PoolCreateRequestDto();
         poolCreateRequestDto.setPoolNumber("415221201");
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+
+        executeInTransaction(() -> {
+            List<Juror> jurors = jurorRepository.findAll();
+            assertThat(jurors).hasSize(8);
+            assertThat(jurors).allSatisfy(juror -> {
+                assertThat(juror.isDigitalByDefault()).isTrue();
+                assertThat(juror.getDbdPreference()).isEqualTo(ReplyMethod.DIGITAL.getDescription());
+            });
+
+            assertThat(bulkPrintDataRepository.count()).isZero();
+        });
+    }
+
+    private PoolCreateRequestDto getUpDigitalByDefaultPoolCreateRequestDto() {
+        PoolCreateRequestDto poolCreateRequestDto = new PoolCreateRequestDto();
+        poolCreateRequestDto.setPoolNumber("419221201");
         poolCreateRequestDto.setStartDate(LocalDate.of(2022, 12, 4));
         poolCreateRequestDto.setAttendTime(LocalDateTime.of(2022, 12, 4, 9, 0, 0));
         poolCreateRequestDto.setNoRequested(5);
         poolCreateRequestDto.setBureauDeferrals(0);
         poolCreateRequestDto.setNumberRequired(4);
         poolCreateRequestDto.setCitizensToSummon(8);
-        poolCreateRequestDto.setCatchmentArea("415");
+        poolCreateRequestDto.setCatchmentArea("419");
         List<String> postcodes = new ArrayList<>();
         postcodes.add("CH1");
         postcodes.add("CH2");

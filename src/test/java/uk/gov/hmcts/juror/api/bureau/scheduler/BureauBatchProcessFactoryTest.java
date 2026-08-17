@@ -9,6 +9,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.juror.api.bureau.service.JurorCommsEmailServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsLetterServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsSentToCourtServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsWeeklyInfoServiceImpl;
@@ -43,6 +44,8 @@ class BureauBatchProcessFactoryTest {
     private JurorDashboardSmartSurveyImportImpl jurorDashboardSmartSurveyImport;
     @Mock
     private UrgentStatusScheduler urgentStatusScheduler;
+    @Mock
+    private JurorCommsEmailServiceImpl jurorCommsEmailService;
 
     @InjectMocks
     private BureauBatchProcessFactory bureauBatchProcessFactory;
@@ -63,7 +66,8 @@ class BureauBatchProcessFactoryTest {
             arguments("courtComms", MessagesServiceImpl.class),
             arguments("excusalCompletedServiceCourtComms", ExcusedCompletedCourtCommsServiceImpl.class),
             arguments("smartSurveyImport", JurorDashboardSmartSurveyImportImpl.class),
-            arguments("urgentSuperUrgentStatus", UrgentStatusScheduler.class)
+            arguments("urgentSuperUrgentStatus", UrgentStatusScheduler.class),
+            arguments("emailComms", JurorCommsEmailServiceImpl.class)
         );
     }
 

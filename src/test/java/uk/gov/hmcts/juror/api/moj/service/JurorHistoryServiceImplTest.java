@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Trial;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -139,17 +140,17 @@ class JurorHistoryServiceImplTest {
     @Test
     void createConfirmServiceHistory() {
         JurorPool jurorPool = createJurorPool();
-        jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Some Other Info");
+        jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Some Other Info",CommunicationChannel.LETTER);
         assertStandardValuesSystem(jurorPool, new JurorHistoryPartHistoryJurorHistoryExpectedValues(
-            HistoryCodeMod.RESPONDED_LETTER, "Some Other Info"));
+            HistoryCodeMod.RESPONDED_LETTER, "Some Other Info Printed"));
     }
 
     @Test
     void createWithdrawHistory() {
         JurorPool jurorPool = createJurorPool();
-        jurorHistoryService.createWithdrawHistory(jurorPool, "Other Info", "E");
+        jurorHistoryService.createWithdrawHistory(jurorPool, "Other Info", "E",CommunicationChannel.LETTER);;
         assertStandardValuesSystem(jurorPool, new JurorHistoryPartHistoryJurorHistoryExpectedValues(
-            HistoryCodeMod.WITHDRAWAL_LETTER, "Other Info"));
+            HistoryCodeMod.WITHDRAWAL_LETTER, "Other Info Printed"));
     }
 
     @Test
@@ -304,10 +305,27 @@ class JurorHistoryServiceImplTest {
         jurorPool.setStatus(jurorStatus);
 
         mockCurrentUser("someNewUser");
-        jurorHistoryService.createDeferredLetterHistory(jurorPool);
+        jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.LETTER);
         assertValuesAdditional(jurorPool, "someNewUser", jurorPool.getDeferralDate(), jurorPool.getDeferralCode(),
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.DEFERRED_LETTER,
                 "Deferral Letter Printed"));
+    }
+
+    @Test
+    void typicalCreateDeferredEmailHistory() {
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.setDeferralCode("A");
+        jurorPool.setDeferralDate(LocalDate.now(clock).plusMonths(3));
+
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.DEFERRED);
+        jurorPool.setStatus(jurorStatus);
+
+        mockCurrentUser("someNewUser");
+        jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.EMAIL);
+        assertValuesAdditional(jurorPool, "someNewUser", jurorPool.getDeferralDate(), jurorPool.getDeferralCode(),
+            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.DEFERRED_LETTER,
+                "Deferral Email Sent"));
     }
 
     @Test
@@ -320,7 +338,7 @@ class JurorHistoryServiceImplTest {
 
         mockCurrentUser("someNewUser");
         MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
-            () -> jurorHistoryService.createDeferredLetterHistory(jurorPool),
+            () -> jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.LETTER),
             "Exception must be thrown");
         assertEquals("A deferred juror_pool record should exist for the juror relating to the original pool they were "
                 + "summoned to and deferred from",
@@ -338,7 +356,7 @@ class JurorHistoryServiceImplTest {
 
         mockCurrentUser("someNewUser");
         MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
-            () -> jurorHistoryService.createDeferredLetterHistory(jurorPool),
+            () -> jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.LETTER),
             "Exception must be thrown");
         assertEquals("A deferred juror_pool record should exist for the juror relating to the original pool they were "
                 + "summoned to and deferred from",
@@ -355,7 +373,7 @@ class JurorHistoryServiceImplTest {
 
         mockCurrentUser("someNewUser");
         MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
-            () -> jurorHistoryService.createDeferredLetterHistory(jurorPool),
+            () -> jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.LETTER),
             "Exception must be thrown");
         assertEquals("A deferred juror_pool record should exist for the juror relating to the original pool they were "
                 + "summoned to and deferred from",

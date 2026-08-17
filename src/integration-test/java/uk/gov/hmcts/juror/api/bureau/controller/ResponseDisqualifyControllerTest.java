@@ -23,6 +23,9 @@ import uk.gov.hmcts.juror.api.bureau.controller.ResponseDisqualifyController.Dis
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
 import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 
 import java.net.URI;
 import java.sql.Timestamp;
@@ -35,7 +38,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Integration test for {@link ResponseDisqualifyController}.
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = "feature-flags.flags.digital-by-default=true")
 public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -163,8 +168,9 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
             .isEqualTo((String) null);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history WHERE "
                 + "juror_number='644892530'", Integer.class))
-            .as("There should be 1 entry in PART_HIST for Juror (plus 3 for TITLE, LNAME, and FNAME changes)")
-            .isEqualTo(4);
+            .as("There should be disqualification and withdrawal entries in PART_HIST "
+                + "(plus 3 for TITLE, LNAME, and FNAME changes)")
+            .isEqualTo(5);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history WHERE "
                 + "juror_number='644892530' AND HISTORY_CODE='PDIS'", Integer.class))
             .as("Juror's PART_HIST entry should have PDIS set as HISTORY_CODE")
@@ -181,6 +187,12 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 + "juror_number='644892530' AND HISTORY_CODE='PDIS'", String.class))
             .as("Juror's PART_HIST entry should have the appropriate pool code set as POOL_NO")
             .isEqualTo("555");
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history WHERE "
+                + "juror_number='644892530' AND HISTORY_CODE='RDIS' "
+                + "AND other_information='Withdrawal Letter Printed' AND other_info_reference='B'",
+            Integer.class))
+            .as("Juror's PART_HIST entry should record the printed withdrawal letter")
+            .isEqualTo(1);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data WHERE "
                 + "juror_no='644892530' and form_type in ('5224','5224C')", Integer.class))
             .as("Juror's has a disqualified letter")
@@ -190,6 +202,64 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
             .as("As response was in the backlog, it needs assigned to the logged in user changing it.")
             .isEqualTo(loginName);
         softly.assertAll();
+    }
+
+    @Test
+    @Sql({
+        "/db/truncate.sql",
+        "/db/mod/truncate.sql",
+        "/db/standing_data.sql",
+        "/db/ResponseDisqualifyAndExcusalControllerTestData.sql"
+    })
+    public void disqualifyJuror_digitalByDefaultEligible_queuesWithdrawalEmail() throws Exception {
+        final String loginName = "testlogin";
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau(loginName));
+        jdbcTemplate.update("UPDATE juror_mod.juror SET digital_by_default = true, dbd_preference = 'Digital' "
+            + "WHERE juror_number = ?", "644892530");
+        jdbcTemplate.update("UPDATE juror_mod.court_location SET digital_by_default = true WHERE loc_code = ?",
+            "448");
+        insertDbdWithdrawalTemplateMapping();
+
+        DisqualifiedCode disqualifyCodeEntity = new DisqualifiedCode("B", "On Bail", true);
+        DisqualifyCodeDto disqualifyDto = new DisqualifyCodeDto(disqualifyCodeEntity);
+        disqualifyDto.setVersion(555);
+
+        URI uri = URI.create("/api/v1/bureau/juror/disqualify/644892530");
+        RequestEntity<DisqualifyCodeDto> requestEntity =
+            new RequestEntity<>(disqualifyDto, httpHeaders, HttpMethod.POST, uri);
+
+        ResponseEntity<SpringBootErrorResponse> responseEntity = template.exchange(requestEntity,
+            new ParameterizedTypeReference<>() {
+            });
+
+        SoftAssertions softly = new SoftAssertions();
+        softly.assertThat(responseEntity).isNotNull();
+        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.OK.value());
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.bulk_print_data WHERE "
+                + "juror_no = '644892530' AND form_type = '5224' AND digital_comms = true "
+                + "AND extracted_flag = true AND communication_channel = ? AND email_status = ? "
+                + "AND notify_template_name = ?",
+            Integer.class,
+            CommunicationChannel.EMAIL.name(),
+            EmailStatus.PENDING.name(),
+            DigitalByDefaultEmailTemplate.WITHDRAWAL_ENGLISH.getTemplateName()))
+            .as("A pending DBD withdrawal email should be queued")
+            .isEqualTo(1);
+        softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history WHERE "
+                + "juror_number='644892530' AND HISTORY_CODE='RDIS' "
+                + "AND other_information='Withdrawal Letter Email Sent' AND other_info_reference='B'",
+            Integer.class))
+            .as("Juror history should record the emailed withdrawal letter")
+            .isEqualTo(1);
+        softly.assertAll();
+    }
+
+    private void insertDbdWithdrawalTemplateMapping() {
+        jdbcTemplate.update("INSERT INTO juror_mod.notify_template_mapping "
+            + "(template_id, template_name, notify_name, form_type, notification_type, version) "
+            + "VALUES ('2d7e9717-829b-4dcc-8f18-f0cdf047fc8d', ?, 'DBD withdrawal English', '5224', 1, 0) "
+            + "ON CONFLICT (template_name) DO NOTHING",
+            DigitalByDefaultEmailTemplate.WITHDRAWAL_ENGLISH.getTemplateName());
     }
 
     @Test
