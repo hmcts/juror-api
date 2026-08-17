@@ -30,7 +30,6 @@ import uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsSer
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
-import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -46,6 +45,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class DeferralResponseServiceImpl implements DeferralResponseService {
 
     public static final String DEFERRAL_REJECTED_CODE = "Z";
@@ -67,6 +67,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
 
     @Override
     @Transactional
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     public DeferralAgeDisqualificationResponseDto respondToDeferralRequest(BureauJwtPayload payload,
                                                                            DeferralRequestDto deferralRequestDto) {
 
@@ -85,11 +86,11 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         int deferralCount = Optional.ofNullable(juror.getNoDefPos()).orElse(0);
         boolean firstDeferral = deferralCount == 0;
 
-        if (firstDeferral && deferralRequestDto.getDeferralDecision().equals(DeferralDecision.REFUSE)) {
+        if (firstDeferral && deferralRequestDto.getDeferralDecision() == DeferralDecision.REFUSE) {
             log.debug("Cannot decline first deferral for juror {}", jurorNumber);
             throw new MojException.BusinessRuleViolation("Cannot decline first deferral request for juror",
-                                                         CANNOT_REFUSE_FIRST_DEFERRAL);
-        } else if (deferralRequestDto.getDeferralDecision().equals(DeferralDecision.REFUSE)) {
+                CANNOT_REFUSE_FIRST_DEFERRAL);
+        } else if (deferralRequestDto.getDeferralDecision() == DeferralDecision.REFUSE) {
             log.debug("Begin processing decline deferral juror {} by user {}", jurorNumber, payload.getLogin());
             jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
             declineDeferralForJurorPool(payload, deferralRequestDto, jurorPool);
@@ -98,45 +99,47 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
                 .eligible(1)
                 .ageDisqualified(List.of())
                 .build();
-        } else if (!deferralRequestDto.isAllowMultipleDeferrals() && !firstDeferral) {
-            log.debug("Can not defer juror multiple times without allowMultipleDeferrals flag. Juror {}",
-                      jurorNumber);
-            throw new MojException.BusinessRuleViolation("Juror has been deferred before. Please use "
-                                                             + "allow_multiple_deferrals to bypass this error.",
-                                     MojException.BusinessRuleViolation.ErrorCode.JUROR_HAS_BEEN_DEFERRED_BEFORE);
-        } else if (deferralRequestDto.getDeferralDecision().equals(DeferralDecision.GRANT)) {
-            log.info("Begin processing grant deferral juror {} by user {}", jurorNumber, payload.getLogin());
+        } else if (deferralRequestDto.isAllowMultipleDeferrals() || firstDeferral) {
+            if (deferralRequestDto.getDeferralDecision() == DeferralDecision.GRANT) {
+                log.info("Begin processing grant deferral juror {} by user {}", jurorNumber, payload.getLogin());
 
-            // age check - only applies to grant path since we are moving juror to a future date
-            LocalDate currentServiceStartDate = jurorPool.getReturnDate();
-            LocalDate newDate = deferralRequestDto.getDeferralDate();
-            LocalDate dob = JurorUtils.resolveDateOfBirth(
-                jurorPool.getJuror(), digitalResponseRepository, paperResponseRepository,null);
+                // age check - only applies to grant path since we are moving juror to a future date
+                LocalDate currentServiceStartDate = jurorPool.getReturnDate();
+                LocalDate newDate = deferralRequestDto.getDeferralDate();
+                LocalDate dob = ManageDeferralsService.resolveDateOfBirth(
+                    jurorPool, digitalResponseRepository, paperResponseRepository,null);
 
-            if (JurorUtils.isAgeDisqualified(dob, newDate)) {
+                if (ManageDeferralsService.isAgeDisqualified(dob, newDate)) {
+                    return DeferralAgeDisqualificationResponseDto.builder()
+                        .eligible(0)
+                        .ageDisqualified(List.of(
+                            AgeDisqualifiedJurorDto.builder()
+                                .jurorNumber(jurorNumber)
+                                .dob(dob)
+                                .currentServiceStartDate(currentServiceStartDate)
+                                .newDate(newDate)
+                                .build()
+                        ))
+                        .build();
+                }
+
+                jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
+                grantDeferralForJurorPool(payload, deferralRequestDto, jurorPool);
+
                 return DeferralAgeDisqualificationResponseDto.builder()
-                    .eligible(0)
-                    .ageDisqualified(List.of(
-                        AgeDisqualifiedJurorDto.builder()
-                            .jurorNumber(jurorNumber)
-                            .dob(dob)
-                            .currentServiceStartDate(currentServiceStartDate)
-                            .newDate(newDate)
-                            .build()
-                    ))
+                    .eligible(1)
+                    .ageDisqualified(List.of())
                     .build();
+            } else {
+                log.error("Invalid deferral decision for juror {}", jurorNumber);
+                throw new MojException.BadRequest("Invalid deferral decision", null);
             }
-
-            jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
-            grantDeferralForJurorPool(payload, deferralRequestDto, jurorPool);
-
-            return DeferralAgeDisqualificationResponseDto.builder()
-                .eligible(1)
-                .ageDisqualified(List.of())
-                .build();
         } else {
-            log.error("Invalid deferral decision for juror {}", jurorNumber);
-            throw new MojException.BadRequest("Invalid deferral decision", null);
+            log.debug("Can not defer juror multiple times without allowMultipleDeferrals flag. Juror {}",
+                jurorNumber);
+            throw new MojException.BusinessRuleViolation("Juror has been deferred before. Please use "
+                + "allow_multiple_deferrals to bypass this error.",
+                MojException.BusinessRuleViolation.ErrorCode.JUROR_HAS_BEEN_DEFERRED_BEFORE);
         }
     }
 
@@ -181,14 +184,14 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
             printDataService.printDeferralDeniedLetter(jurorPool);
 
             jurorHistoryRepository.save(JurorHistory.builder()
-                                            .jurorNumber(jurorPool.getJurorNumber())
-                                            .dateCreated(LocalDateTime.now())
-                                            .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
-                                            .createdBy(payload.getLogin())
-                                            .poolNumber(jurorPool.getPoolNumber())
-                                            .otherInformation("Deferral Denied")
-                                            .otherInformationRef(deferralRequestDto.getDeferralReason())
-                                            .build());
+                .jurorNumber(jurorPool.getJurorNumber())
+                .dateCreated(LocalDateTime.now())
+                .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
+                .createdBy(payload.getLogin())
+                .poolNumber(jurorPool.getPoolNumber())
+                .otherInformation("Deferral Denied")
+                .otherInformationRef(deferralRequestDto.getDeferralReason())
+                .build());
         }
     }
 

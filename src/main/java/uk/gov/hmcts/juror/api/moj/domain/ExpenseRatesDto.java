@@ -53,10 +53,12 @@ public class ExpenseRatesDto {
     private BigDecimal limitFinancialLossFullDayLongTrial;
 
     //TODO setting default value for the following field until another ticket is created to update the value
+    @SuppressWarnings({"PMD.UnusedAssignment"})
     @Builder.Default
     private BigDecimal limitFinancialLossHalfDayExtraLongTrial = BigDecimal.valueOf(114.3);
 
     //TODO setting default value for the following field until another ticket is created to update the value
+    @SuppressWarnings({"PMD.UnusedAssignment"})
     @Builder.Default
     private BigDecimal limitFinancialLossFullDayExtraLongTrial = BigDecimal.valueOf(228.6);
 

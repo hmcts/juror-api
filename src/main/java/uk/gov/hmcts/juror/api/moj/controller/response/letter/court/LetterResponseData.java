@@ -27,4 +27,8 @@ public abstract class LetterResponseData {
     LocalDate datePrinted;
 
     String poolNumber;
+
+    protected LetterResponseData() {
+        throw new IllegalArgumentException("LetterResponseData should not be instantiated");
+    }
 }

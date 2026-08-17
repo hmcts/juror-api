@@ -35,7 +35,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings("PMD.TooManyMethods") // test class with multiple test cases
 class LaUserServiceImplTest {
 
     @Mock
@@ -51,7 +50,6 @@ class LaUserServiceImplTest {
     private LaUserServiceImpl laUserService;
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     void testGetLocalAuthoritiesHappy() {
 
         String email = "testemail@localauth1.gov.uk";
@@ -99,7 +97,6 @@ class LaUserServiceImplTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     void createJwtHappy() {
 
         String email = "testemail@localauth1.gov.uk";
@@ -282,7 +279,6 @@ class LaUserServiceImplTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     void testGetAllLaEmailAddresses() {
 
         when(localAuthorityRepository.findAll()).thenReturn(List.of());

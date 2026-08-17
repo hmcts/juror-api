@@ -56,7 +56,8 @@ public class JurorAuditChangeServiceTest {
         Mockito.doReturn(null).when(jurorHistoryRepository).save(Mockito.any());
     }
 
-    public void test_initChangedPropertyMap_nameDetails_noChanges() {
+    @Test
+    public void testInitChangedPropertyMapNameDetailsNoChanges() {
         JurorPool jurorPool = createJurorPool("415");
         Juror juror = jurorPool.getJuror();
         JurorNameDetailsDto dto = new JurorNameDetailsDto(null, "Test", "Person");
@@ -71,7 +72,8 @@ public class JurorAuditChangeServiceTest {
         }
     }
 
-    public void test_initChangedPropertyMap_nameDetails_titleChanged() {
+    @Test
+    public void testInitChangedPropertyMapNameDetailsTitleChanged() {
         JurorPool jurorPool = createJurorPool("415");
         Juror juror = jurorPool.getJuror();
         JurorNameDetailsDto dto = new JurorNameDetailsDto("Mr", "Test", "Person");
@@ -84,7 +86,8 @@ public class JurorAuditChangeServiceTest {
         Assertions.assertThat(changedProperties.get("last Name")).isFalse();
     }
 
-    public void test_initChangedPropertyMap_nameDetails_firstNameChanged() {
+    @Test
+    public void testInitChangedPropertyMapNameDetailsFirstNameChanged() {
         JurorPool jurorPool = createJurorPool("415");
         Juror juror = jurorPool.getJuror();
         JurorNameDetailsDto dto = new JurorNameDetailsDto(null, "First", "Person");
@@ -97,7 +100,8 @@ public class JurorAuditChangeServiceTest {
         Assertions.assertThat(changedProperties.get("last Name")).isFalse();
     }
 
-    public void test_initChangedPropertyMap_nameDetails_lastNameChanged() {
+    @Test
+    public void testInitChangedPropertyMapNameDetailsLastNameChanged() {
         JurorPool jurorPool = createJurorPool("415");
         Juror juror = jurorPool.getJuror();
         JurorNameDetailsDto dto = new JurorNameDetailsDto(null, "Test", "Last");
@@ -110,7 +114,8 @@ public class JurorAuditChangeServiceTest {
         Assertions.assertThat(changedProperties.get("last Name")).isTrue();
     }
 
-    public void test_initChangedPropertyMap_nameDetails_allChanged() {
+    @Test
+    public void testInitChangedPropertyMapNameDetailsAllChanged() {
         JurorPool jurorPool = createJurorPool("415");
         Juror juror = jurorPool.getJuror();
         JurorNameDetailsDto dto = new JurorNameDetailsDto("Mrs", "First", "Last");

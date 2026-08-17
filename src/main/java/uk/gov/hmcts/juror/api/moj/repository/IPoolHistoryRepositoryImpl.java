@@ -55,17 +55,22 @@ public class IPoolHistoryRepositoryImpl implements IPoolHistoryRepository {
         List<PoolHistory> poolHistoryList = new ArrayList<>();
 
         for (Tuple tuple : resultList) {
-            PoolHistory poolHistory = new PoolHistory();
-            poolHistory.setPoolNumber(tuple.get(0, String.class));
-            poolHistory.setUserId(tuple.get(1, String.class));
-            poolHistory.setHistoryCode(tuple.get(2, HistoryCode.class));
-            poolHistory.setHistoryDate(tuple.get(3, LocalDateTime.class));
-            poolHistory.setOtherInformation(tuple.get(4, String.class));
+            PoolHistory poolHistory = getPoolHistory(tuple);
 
             poolHistoryList.add(poolHistory);
         }
 
         return poolHistoryList;
+    }
+
+    private static PoolHistory getPoolHistory(Tuple tuple) {
+        PoolHistory poolHistory = new PoolHistory();
+        poolHistory.setPoolNumber(tuple.get(0, String.class));
+        poolHistory.setUserId(tuple.get(1, String.class));
+        poolHistory.setHistoryCode(tuple.get(2, HistoryCode.class));
+        poolHistory.setHistoryDate(tuple.get(3, LocalDateTime.class));
+        poolHistory.setOtherInformation(tuple.get(4, String.class));
+        return poolHistory;
     }
 
 }

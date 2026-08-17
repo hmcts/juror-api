@@ -43,14 +43,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Integration tests for the ER Administration controller.
  */
+
+@SuppressWarnings("PMD.ExcessiveImports")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.ExcessiveImports") // false positive, the test needs to import a lot of classes
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class ErAdministrationControllerITest extends AbstractIntegrationTest {
 
-    public static final String EXPECT_THE_STATUS_TO_BE_FORBIDDEN = "Expect the status to be forbidden.";
-    private final TestRestTemplate restTemplate;
+    static final String EXPECT_THE_STATUS_TO_BE_FORBIDDEN = "Expect the status to be forbidden.";
+    @Autowired
+    private TestRestTemplate restTemplate;
 
     private HttpHeaders httpHeaders;
 
@@ -58,8 +60,9 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     private final DeadlineRepository deadlineRepository;
     private final LaUserRepository laUserRepository;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         initHeadersBureau();
     }
 
@@ -187,7 +190,6 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("PUT /api/v1/moj/er-administration/deadline")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     class ChangeDeadlineTest {
 
         @Test
@@ -266,7 +268,6 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("PUT /api/v1/moj/er-administration/mark-delivered")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     class MarkAsDeliveredTest {
 
         @Test
@@ -329,7 +330,6 @@ class ErAdministrationControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("PUT /api/v1/moj/er-administration/email-sent")
     @Sql({"/db/mod/truncate.sql","/db/jurorer/ErDashboardData.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     class UpdateEmailRequestSentTest {
 
         @Test

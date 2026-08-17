@@ -55,9 +55,9 @@ public class ApproveExpenseDto  {
 
     public enum ApprovalType {
         FOR_APPROVAL(appearance -> !appearance.isDraftExpense()
-            && AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage())),
+            && appearance.getAppearanceStage() == AppearanceStage.EXPENSE_ENTERED),
         FOR_REAPPROVAL(appearance -> !appearance.isDraftExpense()
-            && AppearanceStage.EXPENSE_EDITED.equals(appearance.getAppearanceStage()));
+            && appearance.getAppearanceStage() == AppearanceStage.EXPENSE_EDITED);
         @SuppressWarnings("PMD.LinguisticNaming")
         private final Function<Appearance, Boolean> isApplicableFunction;
 

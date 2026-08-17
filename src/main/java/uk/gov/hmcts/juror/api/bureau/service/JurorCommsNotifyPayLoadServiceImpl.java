@@ -27,12 +27,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods"})
 public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLoadService {
 
     private static final String SERVICE_START_DATE = "SERVICESTARTDATE";
@@ -67,6 +68,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
      * @param detailData source of data.
      * @return Map pairing for each template placeholder:value.
      */
+    @SuppressWarnings({"PMD.NcssCount", "PMD.CyclomaticComplexity", "PMD.CognitiveComplexity"})
     @Override
     public Map<String, String> generatePayLoadData(String templateId, String detailData, JurorPool juror) {
 
@@ -102,7 +104,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
 
 
 
-        final Map<String, String> map = new HashMap<>();
+        final Map<String, String> map = new ConcurrentHashMap<>();
         Object fieldValue = null;
         try {
             for (NotifyTemplateFieldMod field : fields) {
@@ -123,7 +125,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                             String formattedDateWelsh = WELSH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
                             String str;
                             Map<String, String> myWelshTranslationMap;
-                            myWelshTranslationMap = setUpTranslationMap();
+                            myWelshTranslationMap = getTranslationMap();
 
                             for (Map.Entry<String, String> entry : myWelshTranslationMap.entrySet()) {
                                 str = formattedDateWelsh.replace(entry.getKey(), entry.getValue());
@@ -159,7 +161,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
             log.error(
                 "Failed to establish data needed for notify template fields to send comms (missing template fields "
                     + "data)", stre);
-            throw new StringIndexOutOfBoundsException();
+            throw stre;
         } catch (Exception e) {
             log.error(
                 "Failed to establish data needed for notify template fields to send comms (missing template fields "
@@ -175,6 +177,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
      * @param templateId template for which the payload is to be assembled for.
      * @return Map pairing for each template placeholder:value.
      */
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.CognitiveComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     @Override
     public Map<String, String> generatePayLoadData(String templateId, JurorPool jurorPool) {
 
@@ -202,7 +205,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         Boolean isWelshCourt = isWelshCourtAndComms(jurorPool.getJuror().getWelsh(), welshCourtLocation);
 
 
-        final Map<String, String> map = new HashMap<>();
+        final Map<String, String> map = new ConcurrentHashMap<>();
         try {
             Object fieldValue = null;
             String value;
@@ -215,14 +218,14 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                 } else if (mapperObject.getType() == NotifyTemplateMapperMod.Type.JUROR) {
                     fieldValue = invokeGetter(context, mapperObject);
 
-                    if (field.getTemplateField().equalsIgnoreCase(SERVICE_START_DATE)) {
+                    if (SERVICE_START_DATE.equalsIgnoreCase(field.getTemplateField())) {
                         String formattedDate = ENGLISH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
                         String formattedDateWelsh = WELSH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
                         String str;
 
                         if (isWelshCourt) {
                             Map<String, String> myWelshTranslationMap;
-                            myWelshTranslationMap = setUpTranslationMap();
+                            myWelshTranslationMap = getTranslationMap();
 
                             for (Map.Entry<String, String> entry : myWelshTranslationMap.entrySet()) {
                                 str = formattedDateWelsh.replace(entry.getKey(), entry.getValue());
@@ -317,13 +320,11 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         return notifyTemplateFieldRepositoryMod.findByTemplateId(templateId);
     }
 
-    public List<String> setUpWelshMonthDays() {
-        List<String> welshMonthsDays;
-        welshMonthsDays = welshDayMonthTranslationConfig.getWelshDaysMonths();
-        return welshMonthsDays;
+    public List<String> getWelshMonthDays() {
+        return welshDayMonthTranslationConfig.getWelshDaysMonths();
     }
 
-    public List<String> setUpEnglishDaysWeek() {
+    public List<String> getEnglishDaysWeek() {
         List<String> daysWeek = new ArrayList<>();
         for (String dayOfWeek : new DateFormatSymbols().getWeekdays()) {
             if (dayOfWeek != null && !dayOfWeek.isEmpty()) {
@@ -333,7 +334,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         return daysWeek;
     }
 
-    public List<String> setUpEnglishMonths() {
+    public List<String> getEnglishMonths() {
         List<String> monthNames = new ArrayList<>();
         for (String nameOfMonth : new DateFormatSymbols().getMonths()) {
             if (nameOfMonth != null && !nameOfMonth.isEmpty()) {
@@ -343,17 +344,17 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         return monthNames;
     }
 
-    public List<String> setUpEnglishDaysMonth() {
+    public List<String> getEnglishDaysMonth() {
         ArrayList<String> daysMonths = new ArrayList<>();
-        daysMonths.addAll(setUpEnglishDaysWeek());
-        daysMonths.addAll(setUpEnglishMonths());
+        daysMonths.addAll(getEnglishDaysWeek());
+        daysMonths.addAll(getEnglishMonths());
         return daysMonths;
     }
 
-    public Map<String, String> setUpTranslationMap() {
-        Map<String, String> myWelshTranslationMap = new HashMap<>();
-        for (int i = 0; i < setUpWelshMonthDays().size(); i++) {
-            myWelshTranslationMap.put(setUpEnglishDaysMonth().get(i), setUpWelshMonthDays().get(i));
+    public Map<String, String> getTranslationMap() {
+        Map<String, String> myWelshTranslationMap = new ConcurrentHashMap<>();
+        for (int i = 0; i < getWelshMonthDays().size(); i++) {
+            myWelshTranslationMap.put(getEnglishDaysMonth().get(i), getWelshMonthDays().get(i));
         }
         return myWelshTranslationMap;
     }

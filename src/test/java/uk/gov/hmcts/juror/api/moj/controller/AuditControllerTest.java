@@ -40,10 +40,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
-@DisplayName("Controller: " + AuthenticationControllerTest.BASE_URL)
-public class AuditControllerTest {
 
-    public static final String BASE_URL = "/api/v1/moj/audit";
+@DisplayName("Controller: " + AuthenticationControllerTest.BASE_URL)
+class AuditControllerTest {
+
+    static final String BASE_URL = "/api/v1/moj/audit";
     @Autowired
     private MockMvc mockMvc;
 
@@ -59,7 +60,7 @@ public class AuditControllerTest {
     @Nested
     @DisplayName("GET " + AuditControllerTest.GetAllPoolAuditsForDay.URL)
     class GetAllPoolAuditsForDay {
-        public static final String URL = BASE_URL + "/{date}/pool";
+        static final String URL = BASE_URL + "/{date}/pool";
 
         private String toUrl(LocalDate date) {
             return URL.replace("{date}", DateTimeFormatter.ISO_DATE.format(date));

@@ -28,11 +28,11 @@ public class UserCourtDto {
     public UserCourtDto(List<CourtLocation> courts) {
         this.primaryCourt = new CourtDto(
             courts.stream()
-                .filter(courtLocation -> CourtType.MAIN.equals(courtLocation.getType()))
+                .filter(courtLocation -> courtLocation.getType() == CourtType.MAIN)
                 .toList().get(0));
 
         this.satelliteCourts = courts.stream()
-            .filter(courtLocation -> CourtType.SATELLITE.equals(courtLocation.getType()))
+            .filter(courtLocation -> courtLocation.getType() == CourtType.SATELLITE)
             .map(CourtDto::new)
             .sorted(Comparator.comparing(CourtDto::getLocCode))
             .toList();

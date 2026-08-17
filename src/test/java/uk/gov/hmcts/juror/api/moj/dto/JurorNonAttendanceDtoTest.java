@@ -18,21 +18,21 @@ import java.util.Set;
 import static java.time.LocalDate.now;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith(SpringExtension.class)
 @SuppressWarnings("PMD.TooManyMethods")
+@ExtendWith(SpringExtension.class)
 class JurorNonAttendanceDtoTest {
 
     private static ValidatorFactory validatorFactory;
     private static Validator validator;
 
     @BeforeAll
-    public static void createValidator() {
+    static void createValidator() {
         validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
     }
 
     @AfterAll
-    public static void close() {
+    static void close() {
         validatorFactory.close();
     }
 

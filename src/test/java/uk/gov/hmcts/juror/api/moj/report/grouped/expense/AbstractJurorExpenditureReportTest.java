@@ -92,7 +92,7 @@ class AbstractJurorExpenditureReportTest {
 
     static class TestAbstractJurorExpenditureReportTest extends AbstractJurorExpenditureReport {
 
-        public TestAbstractJurorExpenditureReportTest() {
+        TestAbstractJurorExpenditureReportTest() {
             super(new IDataType() {
                 @Override
                 public String getId() {

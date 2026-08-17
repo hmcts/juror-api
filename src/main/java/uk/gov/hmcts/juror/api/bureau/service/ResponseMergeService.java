@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 /**
  * Operations for merging juror responses back into the legacy juror database.
  */
+@FunctionalInterface
 public interface ResponseMergeService {
     /**
      * Save a juror digital response back into the existing juror system.

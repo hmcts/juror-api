@@ -4,6 +4,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterLis
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.letter.CourtLetterSearchCriteria;
 
+@FunctionalInterface
 public interface CourtLetterService {
 
     // String constants for response headings

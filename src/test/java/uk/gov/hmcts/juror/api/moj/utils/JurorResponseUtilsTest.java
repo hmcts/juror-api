@@ -72,7 +72,7 @@ public class JurorResponseUtilsTest {
         assertThat(actualPaperResponse.getAddressLine5()).isEqualTo(mockPaperResponse.getAddressLine5());
         assertThat(actualPaperResponse.getPostcode()).isEqualTo(mockPaperResponse.getPostcode());
         assertThat(actualPaperResponse.getThirdPartyReason()).isEqualTo(mockPaperResponse.getThirdPartyReason());
-        assertThat(actualPaperResponse.getProcessingComplete()).isEqualTo(mockPaperResponse.getProcessingComplete());
+        assertThat(actualPaperResponse.isProcessingComplete()).isEqualTo(mockPaperResponse.isProcessingComplete());
         assertThat(actualPaperResponse.getCompletedAt()).isCloseTo(mockPaperResponse.getCompletedAt(),
             within(10, ChronoUnit.SECONDS));
     }
@@ -99,7 +99,7 @@ public class JurorResponseUtilsTest {
         JurorPaperResponseDetailDto responseDto = new JurorPaperResponseDetailDto();
         responseDto.setJurorNumber(JUROR_NUMBER_123456789);
 
-        Mockito.doReturn(new ArrayList<JurorPool>()).when(jurorPoolRepository)
+        Mockito.doReturn(new ArrayList<>()).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(JUROR_NUMBER_123456789, true);
 
         Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
@@ -149,7 +149,7 @@ public class JurorResponseUtilsTest {
 
     private Juror createMockJuror() {
         Juror juror = new Juror();
-        juror.setJurorNumber(JurorResponseUtilsTest.JUROR_NUMBER_123456789);
+        juror.setJurorNumber(JUROR_NUMBER_123456789);
         juror.setTitle(null);
         juror.setFirstName("FNAMEONE");
         juror.setLastName("LNAMEONE");

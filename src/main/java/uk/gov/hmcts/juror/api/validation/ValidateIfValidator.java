@@ -37,7 +37,6 @@ public class ValidateIfValidator implements ConstraintValidator<ValidateIfTrigge
         }
     }
 
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")//Done once at startup so no issue
     private void processValidIfAnnotations(Class<?> classToValidate, Method method, ValidateIf... validateIfs) {
         for (ValidateIf requiredIf : validateIfs) {
             this.fieldsToValidate.add(new FieldIf(
@@ -62,6 +61,7 @@ public class ValidateIfValidator implements ConstraintValidator<ValidateIfTrigge
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @AllArgsConstructor
     @Data
     static class FieldIf {

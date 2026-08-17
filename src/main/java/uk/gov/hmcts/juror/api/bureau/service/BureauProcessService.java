@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * Service to process either via batch or the bureau application.
  */
+@FunctionalInterface
 public interface BureauProcessService extends ScheduledService {
 
     DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

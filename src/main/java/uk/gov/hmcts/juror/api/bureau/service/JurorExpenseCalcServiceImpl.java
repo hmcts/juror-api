@@ -41,6 +41,7 @@ public class JurorExpenseCalcServiceImpl implements JurorExpenseCalcService {
         this.expensesRatesRepository = expensesRatesRepository;
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     @Override
     public JurorExpensesCalcResults getExpensesCalcResults(JurorExpensesCalcRequestDto jurorExpensesCalcRequestDto) {
         log.debug("Called Service : JurorExpenseCalcServiceImpl.getExpensesCalcResults() ");
@@ -131,7 +132,7 @@ public class JurorExpenseCalcServiceImpl implements JurorExpenseCalcService {
     private Float calculateLossOfEarnings(JurorExpensesCalcRequestDto jurorExpensesCalcRequestDto,
                                           Float loeTenDaysFourHrsMoreRate) {
 
-        Float dailyLossOfEarningTotal = 0f;
+        Float dailyLossOfEarningTotal = 0F;
         if (jurorExpensesCalcRequestDto.getLooseIncome()) {
             if (jurorExpensesCalcRequestDto.getIncomeExceedsThreshold()) {
                 dailyLossOfEarningTotal += loeTenDaysFourHrsMoreRate;
@@ -184,7 +185,7 @@ public class JurorExpenseCalcServiceImpl implements JurorExpenseCalcService {
 
     private Float calculateTravelCostsTotal(List<JurorExpensesCalcTravelModeData> travelModes) {
 
-        Float travelTotal = 0f;
+        Float travelTotal = 0F;
         for (JurorExpensesCalcTravelModeData travelMode : travelModes) {
             log.trace("     {} : dailyCost {} ", travelMode.getModeOfTravel(), travelMode.getDailyCost());
             travelTotal += travelMode.getDailyCost();

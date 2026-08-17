@@ -22,7 +22,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,20 +66,23 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
     }
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public StandardReportResponse getStandardReportResponse(StandardReportRequest request) {
         log.info("Generating Expense Payments Using Adjusted Limits Report");
 
         // Validate required parameters
         Long revisionNumber = request.getRevisionNumber();
-        String locCode = request.getLocCode();
-        String transportType = request.getTransportType();
 
         if (revisionNumber == null) {
             throw new MojException.BadRequest("Revision number is required", null);
         }
+
+        String locCode = request.getLocCode();
         if (locCode == null || locCode.isEmpty()) {
             throw new MojException.BadRequest("Location code is required", null);
         }
+
+        String transportType = request.getTransportType();
         if (transportType == null || transportType.isEmpty()) {
             throw new MojException.BadRequest("Transport type is required", null);
         }
@@ -141,7 +143,7 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
                 String lastName = parts.get(2);
                 String poolNumber = parts.get(3);
                 String trialNumber = parts.get(4);
-                BigDecimal totalPaid = new BigDecimal(parts.get(5));
+                BigDecimal totalPaid = getTotalPaid(parts);
 
                 ExpensePaymentRecord record = ExpensePaymentRecord.builder()
                         .jurorNumber(jurorNumber)
@@ -162,6 +164,10 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
         return records;
     }
 
+    private static BigDecimal getTotalPaid(List<String> parts) {
+        return new BigDecimal(parts.get(5));
+    }
+
     /**
      * Build table data from expense payment records.
      */
@@ -169,18 +175,22 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
         StandardTableData tableData = new StandardTableData();
 
         for (ExpensePaymentRecord record : records) {
-            LinkedHashMap<String, Object> row = new LinkedHashMap<>();
-            row.put("juror_number", record.getJurorNumber());
-            row.put("first_name", record.getFirstName());
-            row.put("last_name", record.getLastName());
-            row.put("pool_number", record.getPoolNumber());
-            row.put("trial_number", record.getTrialNumber());
-            row.put("total_paid", String.format("£%.2f", record.getTotalPaid()));
-
+            LinkedHashMap<String, Object> row = getStringObjectLinkedHashMap(record);
             tableData.add(row);
         }
 
         return tableData;
+    }
+
+    private static LinkedHashMap<String, Object> getStringObjectLinkedHashMap(ExpensePaymentRecord record) {
+        LinkedHashMap<String, Object> row = new LinkedHashMap<>();
+        row.put("juror_number", record.getJurorNumber());
+        row.put("first_name", record.getFirstName());
+        row.put("last_name", record.getLastName());
+        row.put("pool_number", record.getPoolNumber());
+        row.put("trial_number", record.getTrialNumber());
+        row.put("total_paid", String.format("£%.2f", record.getTotalPaid()));
+        return row;
     }
 
     /**
@@ -299,10 +309,11 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
     /**
      * Get old and new limits for the specified revision and transport type.
      */
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.CognitiveComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     private Map<String, BigDecimal> getOldAndNewLimits(String locCode,
                                                        Long revisionNumber,
                                                        String transportType) {
-        Map<String, BigDecimal> limits = new HashMap<>();
+        Map<String, BigDecimal> limits = new ConcurrentHashMap<>();
 
         try {
             // Query to get old and new limits from court_location_audit
@@ -344,7 +355,7 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
      */
     @lombok.Builder
     @lombok.Getter
-    private static class ExpensePaymentRecord {
+    private static final class ExpensePaymentRecord {
         private String jurorNumber;
         private String firstName;
         private String lastName;

@@ -73,7 +73,8 @@ import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIn
 @SuppressWarnings({
     "unchecked",
     "PMD.ExcessiveImports",
-    "PMD.CouplingBetweenObjects"
+    "PMD.CouplingBetweenObjects",
+    "PMD.TooManyMethods"
 })
 class AbstractReportTest {
 
@@ -81,7 +82,7 @@ class AbstractReportTest {
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     @BeforeEach
-    void beforeEach() {
+    protected void beforeEach() {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
 
@@ -109,7 +110,6 @@ class AbstractReportTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void jurorToJurorPool() {
             assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJuror.juror)).isTrue();
             Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJuror.juror);
@@ -121,7 +121,6 @@ class AbstractReportTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void jurorToPendingJuror() {
             assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJuror.juror)).isTrue();
             Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJuror.juror);
@@ -133,7 +132,6 @@ class AbstractReportTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void jurorToAppearance() {
             assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJuror.juror)).isTrue();
             Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN.get(QJuror.juror);
@@ -145,7 +143,6 @@ class AbstractReportTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void jurorToLowLevelFinancialAuditDetailsIncludingApprovedAmounts() {
             assertThat(AbstractReport.CLASS_TO_JOIN.containsKey(QJuror.juror)).isTrue();
             Map<EntityPath<?>, Predicate[]> map = AbstractReport.CLASS_TO_JOIN
@@ -271,7 +268,6 @@ class AbstractReportTest {
 
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructorTest() {
         AbstractReport<?> report = new AbstractReportTestImpl(
             poolRequestRepository, QJuror.juror, DataType.JUROR_NUMBER, DataType.FIRST_NAME,
@@ -300,7 +296,6 @@ class AbstractReportTest {
     @DisplayName("public StandardReportResponse getStandardReportResponse(StandardReportRequest request)")
     class GetStandardReportResponse {
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypical() {
             AbstractReport<Object> report = createReport();
             StandardReportRequest request = mock(StandardReportRequest.class);
@@ -722,6 +717,7 @@ class AbstractReportTest {
 
     @Nested
     @DisplayName("void addJoins(JPAQuery<Tuple> query)")
+    @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
     class AddJoins {
         @Test
         void positiveTypical() {
@@ -891,6 +887,7 @@ class AbstractReportTest {
     @Nested
     @DisplayName("HashMap<String, AbstractReportResponse.DataTypeValue> loadStandardPoolHeaders("
         + "        StandardReportRequest request, boolean ownerMustMatch, boolean allowBureau)")
+
     class LoadStandardPoolHeaders {
         @Test
         void positiveTypical() {
@@ -1018,6 +1015,7 @@ class AbstractReportTest {
     @Nested
     @DisplayName("HashMap<String, AbstractReportResponse.DataTypeValue> loadTrialHeaders("
         + "        StandardReportRequest request)")
+
     class LoadTrialHeaders {
         @Test
         void positiveTypical() {
@@ -1247,7 +1245,7 @@ class AbstractReportTest {
 
     private static class AbstractReportTestImpl extends AbstractReport<Object> {
 
-        public AbstractReportTestImpl(PoolRequestRepository poolRequestRepository,
+        AbstractReportTestImpl(PoolRequestRepository poolRequestRepository,
                                       EntityPath<?> from, DataType... dataType) {
             super(poolRequestRepository, from, dataType);
         }

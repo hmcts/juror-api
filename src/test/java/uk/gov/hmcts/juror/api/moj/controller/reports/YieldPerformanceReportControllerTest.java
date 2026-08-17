@@ -47,9 +47,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
+
 @DisplayName("Controller: " + YieldPerformanceReportControllerTest.BASE_URL)
 class YieldPerformanceReportControllerTest {
-    public static final String BASE_URL = "/api/v1/moj/reports";
+    static final String BASE_URL = "/api/v1/moj/reports";
 
     @Autowired
     private MockMvc mockMvc;
@@ -81,7 +82,7 @@ class YieldPerformanceReportControllerTest {
     @Nested
     @DisplayName("POST (GET) " + ViewYieldReportHappy.URL)
     class ViewYieldReportHappy {
-        public static final String URL = "/yield-performance";
+        static final String URL = "/yield-performance";
 
         private CourtsAndDatesReportRequest getValidPayload() {
             return CourtsAndDatesReportRequest.builder()

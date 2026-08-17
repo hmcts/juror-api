@@ -31,7 +31,7 @@ public class LetterTypeTest {
         @Getter
         private final LetterType letterType;
 
-        public LetterTypeTestBase(LetterType letterType, List<FormCode> formCodes,
+        protected LetterTypeTestBase(LetterType letterType, List<FormCode> formCodes,
                                   List<ReissueLetterService.DataType> dataTypes) {
             this.letterType = letterType;
             this.formCodes = formCodes;

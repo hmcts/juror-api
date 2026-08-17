@@ -23,6 +23,7 @@ public class AppearanceId implements Serializable {
 
     private CourtLocation courtLocation;
 
+    @SuppressWarnings({"PMD.ShortMethodName"})
     public static AppearanceId of(Appearance appearance) {
         return new AppearanceId(appearance.getJurorNumber(),
             appearance.getAttendanceDate(),

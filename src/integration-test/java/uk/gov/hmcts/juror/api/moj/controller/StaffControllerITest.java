@@ -38,9 +38,8 @@ import static org.springframework.http.HttpMethod.POST;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + StaffControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql(scripts = "/db/mod/truncate.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_CLASS)
-@SuppressWarnings("PMD.TooManyMethods")
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class StaffControllerITest extends AbstractIntegrationTest {
     static final String BASE_URL = "/api/v1/moj/staff";
 
@@ -55,6 +54,7 @@ public class StaffControllerITest extends AbstractIntegrationTest {
     private JurorDigitalResponseRepositoryMod digitalResponseRepositoryMod;
 
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
         initHeadersTeamLeader();

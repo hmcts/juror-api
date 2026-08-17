@@ -49,8 +49,13 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
 
 
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods",
+    "PMD.CouplingBetweenObjects"
+})
+
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PanelControllerITest extends AbstractIntegrationTest {
 
@@ -74,8 +79,9 @@ class PanelControllerITest extends AbstractIntegrationTest {
     @Autowired
     private AppearanceRepository appearanceRepository;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwt(COURT_USER_NAME, CHESTER_LOC_CODE,

@@ -696,15 +696,14 @@ public class LetterControllerTest {
         Mockito.doReturn(Collections.singletonList(dto)).when(exemptionCertificateService)
             .getTrialExemptionList(courtOwner);
 
-        Assertions.assertThrows(ServletException.class, () -> {
+        Assertions.assertThrows(ServletException.class, () ->
             mockMvc.perform(get("/api/v1/moj/letter/jurors"
                     + "-exemption"
                     + "-list"
                     + "?case_number=c&court_location=a")
                     .principal(
                         SecurityUtil.getActiveUsersBureauJwtAuthentication()))
-                .andExpect(status().isBadRequest());
-        });
+                .andExpect(status().isBadRequest()));
         Mockito.verify(exemptionCertificateService, Mockito.times(0))
             .getTrialExemptionList(courtOwner);
     }
@@ -756,13 +755,12 @@ public class LetterControllerTest {
         Mockito.doReturn(Collections.singletonList(dto)).when(exemptionCertificateService)
             .getTrialExemptionList(courtOwner);
 
-        Assertions.assertThrows(ServletException.class, () -> {
+        Assertions.assertThrows(ServletException.class, () ->
             mockMvc.perform(get("/api/v1/moj/letter/trials"
                     + "-exemption-list?court_location"
                     + "={court_location}", "a")
                     .principal(
-                        SecurityUtil.getActiveUsersBureauJwtAuthentication()).contentType(MediaType.APPLICATION_JSON));
-        });
+                        SecurityUtil.getActiveUsersBureauJwtAuthentication()).contentType(MediaType.APPLICATION_JSON)));
 
         Mockito.verify(exemptionCertificateService, Mockito.times(0))
             .getTrialExemptionList(courtOwner);

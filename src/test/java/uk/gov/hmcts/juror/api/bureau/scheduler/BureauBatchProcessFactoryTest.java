@@ -55,7 +55,7 @@ class BureauBatchProcessFactoryTest {
         assertThat(batchProcessService).isNull();
     }
 
-    public static Stream<Arguments> retrieveValidProcessServiceArguments() {
+    static Stream<Arguments> retrieveValidProcessServiceArguments() {
         return Stream.of(
             arguments("letterComms", JurorCommsLetterServiceImpl.class),
             arguments("weeklyComms", JurorCommsWeeklyInfoServiceImpl.class),

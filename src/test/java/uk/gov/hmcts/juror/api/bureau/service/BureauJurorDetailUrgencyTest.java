@@ -107,7 +107,7 @@ public class BureauJurorDetailUrgencyTest {
     @Test
     public void testUrgentFlagUrgentThresholdJdb810() throws Exception {
         //given
-        final LocalDate urgentHearingDate = (hearingDateUrgent.plusDays(1L).plusHours(1L).toLocalDate());
+        final LocalDate urgentHearingDate = hearingDateUrgent.plusDays(1L).plusHours(1L).toLocalDate();
         testDetail.setHearingDate(urgentHearingDate);
         poolDetails.setNextDate(urgentHearingDate);
         poolDetails.setOwner(OWNER_IS_BUREAU);
@@ -162,7 +162,7 @@ public class BureauJurorDetailUrgencyTest {
     public void testSchedulerFlag_urgent() throws Exception {
 
         //given
-        final LocalDate hearingDateUrgent2 = (hearingDateUrgent.plusDays(1).plusHours(1L)).toLocalDate();
+        final LocalDate hearingDateUrgent2 = hearingDateUrgent.plusDays(1).plusHours(1L).toLocalDate();
         poolDetails.setOwner(OWNER_IS_BUREAU);
         poolDetails.setNextDate(hearingDateUrgent2);
 

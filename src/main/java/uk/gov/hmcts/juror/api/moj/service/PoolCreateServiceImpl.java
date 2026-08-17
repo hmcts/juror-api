@@ -77,10 +77,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @SuppressWarnings({"PMD.TooManyMethods",
-    "PMD.PossibleGodClass",
+    "PMD.GodClass",
     "PMD.ExcessiveImports",
-    "PMD.TooManyFields",
-    "PMD.CyclomaticComplexity"})
+    "PMD.CyclomaticComplexity",
+    "PMD.CouplingBetweenObjects"})
 public class PoolCreateServiceImpl implements PoolCreateService {
 
     private static final String AGE_DISQ_CODE = "A";
@@ -391,7 +391,8 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         });
         jurorHistoryRepository.saveAll(historyList);
     }
-
+    
+    @SuppressWarnings("PMD.ExceptionAsFlowControl")
     private List<JurorPool> getJurorPools(String login, String owner, PoolCreateRequestDto poolCreateRequestDto,
                                           boolean isDigitalByDefault) {
 
@@ -496,7 +497,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
             throw businessRuleViolation;
         } catch (Exception e) {
             log.error("Exception occurred when adding members to pool - {}", e.getMessage());
-            throw new PoolCreateException.UnableToCreatePool();
+            throw new PoolCreateException.UnableToCreatePool(e);
         } finally {
             //make sure to unlock the voters lock
             unlockVoters(locCode);
@@ -996,7 +997,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 throw businessRuleViolation;
             } catch (Exception e) {
                 log.error("Exception occurred when adding members to coroner pool - {}", e.getMessage());
-                throw new PoolCreateException.UnableToCreatePool();
+                throw new PoolCreateException.UnableToCreatePool(e);
             } finally {
                 //make sure to unlock the voters lock
                 unlockVoters(locCode);

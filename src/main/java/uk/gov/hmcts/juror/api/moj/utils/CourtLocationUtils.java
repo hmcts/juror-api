@@ -10,9 +10,6 @@ import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 
 import java.time.LocalDate;
 
-import static java.time.DayOfWeek.SATURDAY;
-
-
 public final class CourtLocationUtils {
     private CourtLocationUtils() {
 

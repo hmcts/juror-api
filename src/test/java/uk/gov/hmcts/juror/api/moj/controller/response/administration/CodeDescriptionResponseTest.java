@@ -28,7 +28,7 @@ class CodeDescriptionResponseTest {
         HasCodeAndDescriptionAndActiveTest testClass = mock(HasCodeAndDescriptionAndActiveTest.class);
         when(testClass.getCode()).thenReturn("SOME_CODE");
         when(testClass.getDescription()).thenReturn("SOME_DESCRIPTION");
-        when(testClass.getActive()).thenReturn(true);
+        when(testClass.isActive()).thenReturn(true);
 
         CodeDescriptionResponse codeDescriptionResponse = new CodeDescriptionResponse(testClass);
         assertThat(codeDescriptionResponse.getCode()).isEqualTo("SOME_CODE");

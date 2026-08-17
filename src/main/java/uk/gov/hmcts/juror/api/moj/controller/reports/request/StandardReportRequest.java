@@ -27,6 +27,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@SuppressWarnings({"PMD.TooManyFields"})
 public class StandardReportRequest {
 
     @NotBlank(groups = AbstractReport.Validators.AbstractRequestValidator.class)

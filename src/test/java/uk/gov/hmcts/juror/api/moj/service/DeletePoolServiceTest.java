@@ -201,7 +201,7 @@ public class DeletePoolServiceTest {
         JurorPool jurorPool = createJurorPool();
 
         Mockito.doReturn(Optional.of(poolRequest)).when(poolRequestRepository).findByPoolNumber(poolNumber);
-        Mockito.doReturn(new ArrayList<JurorPool>()).when(jurorPoolRepository)
+        Mockito.doReturn(new ArrayList<>()).when(jurorPoolRepository)
             .findByPoolPoolNumberAndIsActive(poolNumber, true);
         Mockito.doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
             .findByPoolPoolNumberAndIsActive(poolNumber, false);

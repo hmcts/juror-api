@@ -49,6 +49,7 @@ import java.time.LocalDate;
 @RequestMapping(value = "/api/v1/moj/pool-request", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Pool Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class RequestPoolController {
 
     @NonNull

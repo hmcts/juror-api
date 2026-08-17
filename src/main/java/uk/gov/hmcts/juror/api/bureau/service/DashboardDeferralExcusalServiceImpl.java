@@ -81,22 +81,22 @@ public class DashboardDeferralExcusalServiceImpl implements DashboardDeferralExc
         }
 
 
-        if (excusalSelection.equals("Y")) {
+        if ("Y".equals(excusalSelection)) {
             //Gets all records from juror.digital.STATS_EXCUSALS
             final List<StatsExcusals> statsExcusals = new ArrayList<>();
 
-            if (excusalBureauSelection.equals("Y") & excusalCourtSelection.equals("Y")) {
+            if ("Y".equals(excusalBureauSelection) & "Y".equals(excusalCourtSelection)) {
                 statsExcusals.addAll(dashboardDeferralExcusalDataService.getStatsExcusals(startYearWeek, endYearWeek));
                 deferralExcusalValues.setExcusalStats(statsExcusals);
                 //Gets all COURT records from juror.digital.STATS_EXCUSALS
-            } else if (courtSelection.equals("Y")) {
+            } else if ("Y".equals(courtSelection)) {
                 statsExcusals.addAll(dashboardDeferralExcusalDataService.getStatsCourtExcusals(
                     startYearWeek,
                     endYearWeek
                 ));
                 deferralExcusalValues.setExcusalStats(statsExcusals);
                 //Gets all BUREAU records from juror.digital.STATS_EXCUSALS
-            } else if (bureauSelection.equals("Y")) {
+            } else if ("Y".equals(bureauSelection)) {
                 statsExcusals.addAll(dashboardDeferralExcusalDataService.getStatsBureauExcusals(
                     startYearWeek,
                     endYearWeek

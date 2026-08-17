@@ -21,11 +21,10 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/JuryListITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JuryListReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public JuryListReportITest(TestRestTemplate template) {
+    JuryListReportITest(TestRestTemplate template) {
         super(template, JuryListReport.class);
     }
 
@@ -37,9 +36,9 @@ class JuryListReportITest extends AbstractStandardReportControllerITest {
     @Override
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
-                                 .trialNumber("T100000001")
-                                 .locCode(TestConstants.VALID_COURT_LOCATION)
-                                 .build());
+            .trialNumber("T100000001")
+            .locCode(TestConstants.VALID_COURT_LOCATION)
+            .build());
     }
 
     @Test

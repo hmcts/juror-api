@@ -18,9 +18,9 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class PoolAttendanceAuditReport extends AbstractStandardReport {
@@ -60,7 +60,7 @@ public class PoolAttendanceAuditReport extends AbstractStandardReport {
             throw new MojException.NotFound("Audit Number not found", null);
         }
 
-        Map<String, AbstractReportResponse.DataTypeValue> headings = new HashMap<>(Map.of(
+        Map<String, AbstractReportResponse.DataTypeValue> headings = new ConcurrentHashMap<>(Map.of(
             "attendance_date", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Attendance date")
                 .dataType(LocalDate.class.getSimpleName())

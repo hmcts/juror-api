@@ -34,16 +34,14 @@ import static org.assertj.core.api.BDDAssertions.within;
     "/db/mod/truncate.sql",
     "/db/mod/reports/YieldPerformanceReportITest_typical.sql",
 })
-@SuppressWarnings({"PMD.TooManyMethods",
-    "PMD.JUnitTestsShouldIncludeAssert"}//False positive
-)
+@SuppressWarnings("PMD.TooManyMethods")
 class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<CourtsAndDatesReportRequest,
     YieldPerformanceReportResponse> {
-    public static final String URL = "/api/v1/moj/reports/yield-performance";
-    public static final String LOCAL_DATE = "LocalDate";
+    static final String URL = "/api/v1/moj/reports/yield-performance";
+    private static final String LOCAL_DATE = "LocalDate";
 
     @Autowired
-    public YieldPerformanceReportITest(TestRestTemplate template) {
+    YieldPerformanceReportITest(TestRestTemplate template) {
         super(HttpMethod.POST, template, HttpStatus.OK);
     }
 
@@ -74,6 +72,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Cour
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewByCourtNegativeBalance() {
 
         testBuilder()
@@ -90,6 +89,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Cour
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewByCourtPositiveBalance() {
 
         testBuilder()
@@ -106,6 +106,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Cour
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewByCourts() {
 
         testBuilder()
@@ -116,6 +117,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Cour
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewByAllCourts() {
 
         testBuilder()
@@ -150,7 +152,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Cour
     }
 
 
-    public void assertHeadingsCourt(YieldPerformanceReportResponse response) {
+    private void assertHeadingsCourt(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
         Assertions.assertThat(response.getHeadings()).isNotNull();
 
@@ -222,7 +224,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Cour
 
     }
 
-    public void verifyHeadingsAllCourts(YieldPerformanceReportResponse response) {
+    private void verifyHeadingsAllCourts(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
         Assertions.assertThat(response.getHeadings()).isNotNull();
 
@@ -246,7 +248,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Cour
     }
 
     @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
-    public void verifyCourtPayloadNegativeBalance(YieldPerformanceReportResponse response) {
+    private void verifyCourtPayloadNegativeBalance(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
 
         Assertions.assertThat(response.getTableData()).isNotNull();
@@ -264,7 +266,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Cour
             + System.lineSeparator() + "415240802 - This is a test comment 2");
     }
 
-    public void verifyCourtPayloadPositiveBalance(YieldPerformanceReportResponse response) {
+    private void verifyCourtPayloadPositiveBalance(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
 
         Assertions.assertThat(response.getTableData()).isNotNull();
@@ -282,7 +284,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Cour
     }
 
     @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
-    public void verifyCourtsPayload(YieldPerformanceReportResponse response) {
+    private void verifyCourtsPayload(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
 
         Assertions.assertThat(response.getTableData()).isNotNull();
@@ -307,11 +309,10 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Cour
         Assertions.assertThat(data.getBalance()).isEqualTo(-10);
         Assertions.assertThat(data.getDifference()).isEqualTo(-90.90909);
         Assertions.assertThat(data.getComments()).isEqualTo("");
-
     }
 
     @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
-    public void verifyAllCourtsPayload(YieldPerformanceReportResponse response) {
+    private void verifyAllCourtsPayload(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
 
         Assertions.assertThat(response.getTableData()).isNotNull();

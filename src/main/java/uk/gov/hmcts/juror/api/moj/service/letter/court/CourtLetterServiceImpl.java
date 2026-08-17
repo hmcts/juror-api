@@ -44,6 +44,7 @@ import java.util.Optional;
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @Slf4j
 @Primary
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class CourtLetterServiceImpl implements CourtLetterService {
 
     private final CertificateOfAttendanceListRepository certificateOfAttendanceListRepository;
@@ -68,6 +69,7 @@ public class CourtLetterServiceImpl implements CourtLetterService {
 
     @Override
     @Transactional(readOnly = true)
+    @SuppressWarnings("PMD.CyclomaticComplexity")
     public LetterListResponseDto getEligibleList(CourtLetterListRequestDto request) {
 
         CourtLetterType letterType = request.getLetterType();

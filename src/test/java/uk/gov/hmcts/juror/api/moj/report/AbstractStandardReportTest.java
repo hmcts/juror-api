@@ -28,12 +28,11 @@ class AbstractStandardReportTest {
     private PoolRequestRepository poolRequestRepository;
 
     @BeforeEach
-    void beforeEach() {
+    protected void beforeEach() {
         this.poolRequestRepository = mock(PoolRequestRepository.class);
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructor() {
         AbstractStandardReport report = new AbstractStandardReportTestImpl(
             poolRequestRepository,
@@ -85,7 +84,7 @@ class AbstractStandardReportTest {
     private static class AbstractStandardReportTestImpl extends AbstractStandardReport {
 
 
-        public AbstractStandardReportTestImpl(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
+        AbstractStandardReportTestImpl(PoolRequestRepository poolRequestRepository, EntityPath<?> from,
                                               DataType... dataType) {
             super(poolRequestRepository, from, dataType);
         }

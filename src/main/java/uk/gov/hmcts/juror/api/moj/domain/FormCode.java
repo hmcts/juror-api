@@ -48,7 +48,7 @@ public enum FormCode {
     }
 
     public static FormCode getFormCode(String code) {
-        for (FormCode formCode : FormCode.values()) {
+        for (FormCode formCode : values()) {
             if (formCode.getCode().equals(code)) {
                 return formCode;
             }
@@ -57,4 +57,3 @@ public enum FormCode {
     }
 
 }
-

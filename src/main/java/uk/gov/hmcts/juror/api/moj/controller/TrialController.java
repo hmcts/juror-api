@@ -45,6 +45,7 @@ import java.util.List;
 @RequestMapping(value = "/api/v1/moj/trial", produces = MediaType.APPLICATION_JSON_VALUE)
 @Validated
 @Tag(name = "Trial Management")
+@SuppressWarnings({"PMD.ExcessiveImports"})
 public class TrialController {
     private final TrialService trialService;
 

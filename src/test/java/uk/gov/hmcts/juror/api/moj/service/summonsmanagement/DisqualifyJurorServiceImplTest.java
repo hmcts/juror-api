@@ -79,7 +79,7 @@ public class DisqualifyJurorServiceImplTest {
 
     // Tests related to service method: getDisqualifyReasons()
     @Test
-    public void getDisqualifyReasons_court_happy() {
+    public void returnDisqualifyReasons_court_happy() {
         BureauJwtPayload courtPayload = buildBureauPayload();
         courtPayload.setOwner("411");
         DisqualifyReasonsDto disqualifyReasonsExpect = getDisqualifyReasons();
@@ -100,7 +100,7 @@ public class DisqualifyJurorServiceImplTest {
     }
 
     @Test
-    public void getDisqualifyReasons_bureau_happy() {
+    public void returnDisqualifyReasons_bureau_happy() {
         BureauJwtPayload courtPayload = buildBureauPayload();
         DisqualifyReasonsDto disqualifyReasonsExpect = getDisqualifyReasons();
 
@@ -120,7 +120,7 @@ public class DisqualifyJurorServiceImplTest {
     }
 
     @Test
-    public void getDisqualifyReasons_manualVerification_happy() {
+    public void returnDisqualifyReasons_manualVerification_happy() {
         BureauJwtPayload courtPayload = buildBureauPayload();
         courtPayload.setOwner("411");
 
@@ -207,7 +207,7 @@ public class DisqualifyJurorServiceImplTest {
     public void disqualifyJuror_bureau_paper_happy() {
         String jurorNumber = JUROR_123456789;
         final ArgumentCaptor<String> jurorNumberCaptor = ArgumentCaptor.forClass(String.class);
-        final ArgumentCaptor<Boolean> isActiveCaptor = ArgumentCaptor.forClass(Boolean.class);
+        final ArgumentCaptor<Boolean> activeCaptor = ArgumentCaptor.forClass(Boolean.class);
         final ArgumentCaptor<PaperResponse> jurorPaperResponseEntityCaptor =
             ArgumentCaptor.forClass(PaperResponse.class);
         final ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
@@ -231,9 +231,9 @@ public class DisqualifyJurorServiceImplTest {
 
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumberCaptor.capture(),
-                isActiveCaptor.capture());
+                                                                        activeCaptor.capture());
         assertThat(jurorNumberCaptor.getValue()).isEqualTo(jurorNumber);
-        assertThat(isActiveCaptor.getValue()).isEqualTo(Boolean.TRUE);
+        assertThat(activeCaptor.getValue()).isEqualTo(Boolean.TRUE);
 
         verify(jurorPaperResponseRepository, times(1)).findByJurorNumber(jurorNumberCaptor.capture());
         assertThat(jurorNumberCaptor.getValue()).isEqualTo(jurorNumber);
@@ -269,7 +269,7 @@ public class DisqualifyJurorServiceImplTest {
         String jurorNumber = JUROR_123456789;
         final ArgumentCaptor<String> jurorNumberCaptor = ArgumentCaptor.forClass(String.class);
         final ArgumentCaptor<String> userCaptor = ArgumentCaptor.forClass(String.class);
-        final ArgumentCaptor<Boolean> isActiveCaptor = ArgumentCaptor.forClass(Boolean.class);
+        final ArgumentCaptor<Boolean> activeCaptor = ArgumentCaptor.forClass(Boolean.class);
         final ArgumentCaptor<DigitalResponse> jurorDigitalResponseEntityCaptor =
             ArgumentCaptor.forClass(DigitalResponse.class);
         final ArgumentCaptor<JurorPool> jurorPoolEntityCaptor = ArgumentCaptor.forClass(JurorPool.class);
@@ -296,9 +296,9 @@ public class DisqualifyJurorServiceImplTest {
 
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumberCaptor.capture(),
-                isActiveCaptor.capture());
+                activeCaptor.capture());
         assertThat(jurorNumberCaptor.getValue()).isEqualTo(jurorNumber);
-        assertThat(isActiveCaptor.getValue()).isEqualTo(Boolean.TRUE);
+        assertThat(activeCaptor.getValue()).isEqualTo(Boolean.TRUE);
 
         verify(jurorDigitalResponseRepository, times(1))
             .findByJurorNumber(jurorNumberCaptor.capture());
@@ -336,7 +336,7 @@ public class DisqualifyJurorServiceImplTest {
         BureauJwtPayload courtPayload = buildBureauPayload();
         DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDtoDigitalN();
 
-        doReturn(new ArrayList<JurorPool>()).when(jurorPoolRepository)
+        doReturn(new ArrayList<>()).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(anyString(), anyBoolean());
 
         Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->

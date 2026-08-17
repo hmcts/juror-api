@@ -36,10 +36,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings({
-    "PMD.AssertionsShouldIncludeMessage",
-    "PMD.UnnecessaryFullyQualifiedName"
-})
 class JurySummoningMonitorReportServiceImplTest {
 
     private final CourtLocationRepository courtLocationRepository;
@@ -48,7 +44,7 @@ class JurySummoningMonitorReportServiceImplTest {
     private final CourtQueriesRepository courtQueriesRepository;
     private final JurySummoningMonitorReportService jurySummoningMonitorReportService;
 
-    public JurySummoningMonitorReportServiceImplTest() {
+    private JurySummoningMonitorReportServiceImplTest() {
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         this.poolRequestRepository = mock(PoolRequestRepository.class);
         this.jurorPoolRepository = mock(JurorPoolRepository.class);
@@ -66,7 +62,6 @@ class JurySummoningMonitorReportServiceImplTest {
 
     @Nested
     @DisplayName("Jury summoning monitor report by Pool tests")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //false positive
     class JurySummoningMonitorByPoolTests {
 
         @Test
@@ -174,7 +169,6 @@ class JurySummoningMonitorReportServiceImplTest {
 
     @Nested
     @DisplayName("Jury summoning monitor report by Court tests")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //false positive
     class JurySummoningMonitorByCourtTests {
 
         @Test

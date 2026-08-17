@@ -39,7 +39,7 @@ class NameDetailsTest extends AbstractValidatorTest<NameDetails> {
         verifyNoMoreInteractions(juror);
     }
 
-    public static NameDetails createValidNameDetailsDto() {
+    static NameDetails createValidNameDetailsDto() {
         return NameDetails.builder()
             .title("Mr")
             .firstName("FNAME")

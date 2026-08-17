@@ -17,8 +17,8 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class PaymentStatusReport extends AbstractGroupedReport {
@@ -56,7 +56,7 @@ public class PaymentStatusReport extends AbstractGroupedReport {
     public Map<String, AbstractReportResponse.DataTypeValue> getHeadings(
         StandardReportRequest request,
         AbstractReportResponse.TableData<GroupedTableData> tableData) {
-        Map<String, AbstractReportResponse.DataTypeValue> headers = new HashMap<>();
+        Map<String, AbstractReportResponse.DataTypeValue> headers = new ConcurrentHashMap<>();
         addCourtNameHeader(headers, courtLocationService.getCourtLocation(SecurityUtil.getLocCode()));
         return headers;
     }

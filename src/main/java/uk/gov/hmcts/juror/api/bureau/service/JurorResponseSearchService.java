@@ -6,6 +6,7 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.JurorResponseSearchResu
 /**
  * Service to search for juror responses.
  */
+@FunctionalInterface
 public interface JurorResponseSearchService { //NOSONAR
 
     /**

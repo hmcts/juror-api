@@ -15,16 +15,14 @@ import java.util.List;
  *
  * @since JDB-283
  */
-public class JurorResponseQueries {
-
+@SuppressWarnings({"PMD.TooManyMethods"})
+public final class JurorResponseQueries {
+    private static final QDigitalResponse JUROR_RESPONSE = QDigitalResponse.digitalResponse;
+    private static final QPaperResponse PAPER_JUROR_RESPONSE = QPaperResponse.paperResponse;
+    private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
 
     private JurorResponseQueries() {
     }
-
-    private static final QDigitalResponse jurorResponse = QDigitalResponse.digitalResponse;
-    private static final QPaperResponse paperJurorResponse = QPaperResponse.paperResponse;
-
-    private static final QJurorPool jurorPool = QJurorPool.jurorPool;
 
     /**
      * Query to match 'urgent' / 'super-urgent' responses which are assigned to any staff member.
@@ -32,16 +30,16 @@ public class JurorResponseQueries {
      * @return QueryDSL filter
      */
     public static BooleanExpression assignedUrgents(User staffMember) {
-        return jurorResponse.staff.isNotNull().and(notClosed()).and(urgent()).and(assignedTo(staffMember));
+        return JUROR_RESPONSE.staff.isNotNull().and(notClosed()).and(urgent()).and(assignedTo(staffMember));
     }
 
     public static BooleanExpression assignedTo(User staffMember) {
-        return jurorResponse.staff.eq(staffMember);
+        return JUROR_RESPONSE.staff.eq(staffMember);
     }
 
 
     private static BooleanExpression urgent() {
-        return jurorResponse.urgent.isTrue();
+        return JUROR_RESPONSE.urgent.isTrue();
     }
 
 
@@ -51,45 +49,45 @@ public class JurorResponseQueries {
 
 
     private static BooleanExpression notClosed() {
-        return jurorResponse.processingStatus.ne(ProcessingStatus.CLOSED);
+        return JUROR_RESPONSE.processingStatus.ne(ProcessingStatus.CLOSED);
     }
 
     public static BooleanExpression assignedIncompletes(User staffMember) {
-        return jurorResponse.staff.isNotNull().and(notClosed()).and(assignedTo(staffMember));
+        return JUROR_RESPONSE.staff.isNotNull().and(notClosed()).and(assignedTo(staffMember));
     }
 
     public static OrderSpecifier oldestFirst() {
-        return jurorResponse.dateReceived.asc();
+        return JUROR_RESPONSE.dateReceived.asc();
     }
 
     public static BooleanExpression byMemberOfStaffAssigned(String staffLogin) {
-        return jurorResponse.staff.username.equalsIgnoreCase(staffLogin);
+        return JUROR_RESPONSE.staff.username.equalsIgnoreCase(staffLogin);
     }
 
     public static BooleanExpression byStatus(List<ProcessingStatus> statuses) {
-        return jurorResponse.processingStatus.in(statuses);
+        return JUROR_RESPONSE.processingStatus.in(statuses);
     }
 
 
     public static BooleanExpression byStatusNotClosed(List<ProcessingStatus> statuses) {
-        return jurorResponse.processingStatus.notIn(statuses);
+        return JUROR_RESPONSE.processingStatus.notIn(statuses);
     }
 
     public static BooleanExpression byStatusNotClosedPaper(List<ProcessingStatus> statuses) {
-        return paperJurorResponse.processingStatus.notIn(statuses);
+        return PAPER_JUROR_RESPONSE.processingStatus.notIn(statuses);
     }
 
     public static BooleanExpression byStatusAwaitingContact() {
-        return jurorResponse.processingStatus.eq(ProcessingStatus.AWAITING_CONTACT);
+        return JUROR_RESPONSE.processingStatus.eq(ProcessingStatus.AWAITING_CONTACT);
 
     }
 
     public static BooleanExpression byStatusAwaitingCourtReply() {
-        return jurorResponse.processingStatus.eq(ProcessingStatus.AWAITING_COURT_REPLY);
+        return JUROR_RESPONSE.processingStatus.eq(ProcessingStatus.AWAITING_COURT_REPLY);
     }
 
     public static BooleanExpression byStatusAwaitingTranslation() {
-        return jurorResponse.processingStatus.eq(ProcessingStatus.AWAITING_TRANSLATION);
+        return JUROR_RESPONSE.processingStatus.eq(ProcessingStatus.AWAITING_TRANSLATION);
     }
 
     public static BooleanExpression byAllAwaitingInfo() {
@@ -118,8 +116,8 @@ public class JurorResponseQueries {
     }
 
     public static BooleanExpression byOwnerAndJurorTransferredCourt(String owner) {
-        return jurorPool.owner.eq(owner).and(poolStatusIsActive())
-            .and(jurorTransferredCourt()).and(jurorResponse.processingStatus.ne(ProcessingStatus.CLOSED));
+        return JUROR_POOL.owner.eq(owner).and(poolStatusIsActive())
+            .and(jurorTransferredCourt()).and(JUROR_RESPONSE.processingStatus.ne(ProcessingStatus.CLOSED));
 
     }
 
@@ -129,7 +127,7 @@ public class JurorResponseQueries {
      * @return all  responses
      */
     public static BooleanExpression byUnassignedTodo() {
-        return jurorResponse.staff.isNull()
+        return JUROR_RESPONSE.staff.isNull()
             .and(byStatus(List.of(ProcessingStatus.TODO)));
     }
 
@@ -155,33 +153,34 @@ public class JurorResponseQueries {
     }
 
     public static Predicate jurorIsNotTransferred() {
-        return jurorResponse.juror.bureauTransferDate.isNull();
+        return JUROR_RESPONSE.juror.bureauTransferDate.isNull();
     }
 
     public static Predicate jurorIsNotTransferredPaper() {
-        return paperJurorResponse.juror.bureauTransferDate.isNull();
+        return PAPER_JUROR_RESPONSE.juror.bureauTransferDate.isNull();
     }
 
     public static BooleanExpression jurorTransferredCourt() {
-        return jurorResponse.juror.bureauTransferDate.isNotNull();
+        return JUROR_RESPONSE.juror.bureauTransferDate.isNotNull();
     }
 
     public static Predicate jurorTransferredCourtPaper() {
-        return paperJurorResponse.juror.bureauTransferDate.isNotNull();
+        return PAPER_JUROR_RESPONSE.juror.bureauTransferDate.isNotNull();
     }
 
     public static  BooleanExpression poolStatusIsActive() {
-        return jurorPool.isActive.isTrue();
+        return JUROR_POOL.isActive.isTrue();
     }
 
 
 
-
+    @SuppressWarnings({"PMD.LinguisticNaming"})
     public static Predicate isDigital() {
-        return jurorResponse.replyType.type.eq("Digital");
+        return JUROR_RESPONSE.replyType.type.eq("Digital");
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"})
     public static Predicate isPaper() {
-        return paperJurorResponse.replyType.type.eq("Paper");
+        return PAPER_JUROR_RESPONSE.replyType.type.eq("Paper");
     }
 }

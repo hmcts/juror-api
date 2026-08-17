@@ -31,6 +31,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POOL_NUMBER;
 @AllArgsConstructor
 @Immutable
 @IdClass(ReportsJurorPaymentsKey.class)
+@SuppressWarnings({"PMD.TooManyFields"})
 public class ReportsJurorPayments extends Address implements Serializable {
 
     @Column(name = "trial_number")

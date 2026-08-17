@@ -93,9 +93,9 @@ public class YieldPerformanceReportResponse {
         DIFFERENCE("difference", "Difference", Double.class.getSimpleName()),
         COMMENTS("comments", "Comments", String.class.getSimpleName());
 
-        private String id;
-        private String displayName;
-        private String dataType;
+        private final String id;
+        private final String displayName;
+        private final String dataType;
 
         TableHeading(String id, String displayName, String dataType) {
             this.id = id;

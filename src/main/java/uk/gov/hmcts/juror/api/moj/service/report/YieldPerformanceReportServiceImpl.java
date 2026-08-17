@@ -19,9 +19,9 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepositoryImpl.getYieldPerformanceData;
 
@@ -57,7 +57,7 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
             courtsAndDatesReportRequest.getFromDate(),
             courtsAndDatesReportRequest.getToDate());
 
-        Map<String, StringBuilder> poolCommentsMap = new HashMap<>();
+        Map<String, StringBuilder> poolCommentsMap = new ConcurrentHashMap<>();
         if (poolComments != null) {
             poolCommentsMap = getPoolsCommentsMap(poolComments);
         }
@@ -66,9 +66,10 @@ public class YieldPerformanceReportServiceImpl implements YieldPerformanceReport
         return response;
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private static Map<String, StringBuilder> getPoolsCommentsMap(
         List<IPoolCommentRepositoryImpl.PoolComment> poolComments) {
-        Map<String, StringBuilder> poolCommentsMap = new HashMap<>();
+        Map<String, StringBuilder> poolCommentsMap = new ConcurrentHashMap<>();
 
         for (IPoolCommentRepositoryImpl.PoolComment poolComment : poolComments) {
             poolCommentsMap.computeIfPresent(poolComment.getLocCode(),
