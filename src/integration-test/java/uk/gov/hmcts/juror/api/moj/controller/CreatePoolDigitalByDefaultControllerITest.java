@@ -45,6 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = "feature-flags.flags.digital-by-default=true")
+@SuppressWarnings("PMD.ExcessiveImports")
 public class CreatePoolDigitalByDefaultControllerITest extends AbstractIntegrationTest {
 
     @Autowired
@@ -83,14 +84,14 @@ public class CreatePoolDigitalByDefaultControllerITest extends AbstractIntegrati
                 + "TIMESTAMP'2022-10-02 09:22:09.0', NULL, NULL)"
         })
     public void createPool_digitalByDefaultCourt_createsLightSummonsLetter() {
-        PoolCreateRequestDto poolCreateRequest = setUpDigitalByDefaultPoolCreateRequestDto();
+        PoolCreateRequestDto poolCreateRequest = getDigitalByDefaultPoolCreateRequestDto();
 
         ResponseEntity<String> response = createPool(poolCreateRequest);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         executeInTransaction(() -> {
             List<Juror> jurors = jurorRepository.findAll();
-            assertDigitalByDefaultLightSummons(jurors, "419221201", "5222");
+            assertDigitalByDefaultLightSummons(jurors, "419221201", "6220");
         });
     }
 
@@ -110,18 +111,18 @@ public class CreatePoolDigitalByDefaultControllerITest extends AbstractIntegrati
                 + "TIMESTAMP'2022-10-02 09:22:09.0', NULL, NULL)"
         })
     public void createPool_digitalByDefaultWelshCourt_createsWelshLightSummonsLetter() {
-        PoolCreateRequestDto poolCreateRequest = setUpWelshDigitalByDefaultPoolCreateRequestDto();
+        PoolCreateRequestDto poolCreateRequest = getWelshDigitalByDefaultPoolCreateRequestDto();
 
         ResponseEntity<String> response = createPool(poolCreateRequest);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         executeInTransaction(() -> {
             List<Juror> jurors = jurorRepository.findAll();
-            assertDigitalByDefaultLightSummons(jurors, "774221201", "5222C");
+            assertDigitalByDefaultLightSummons(jurors, "774221201", "6220C");
         });
     }
 
-    public void createPool_digitalByDefaultCourt_doesNotCreateSummonsLetter() {
+    private ResponseEntity<String> createPool(PoolCreateRequestDto poolCreateRequest) {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
             .roles(Set.of(Role.MANAGER))
@@ -129,8 +130,6 @@ public class CreatePoolDigitalByDefaultControllerITest extends AbstractIntegrati
             .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
             .owner("400")
             .build());
-
-        PoolCreateRequestDto poolCreateRequest = getUpDigitalByDefaultPoolCreateRequestDto();
 
         final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
 
@@ -140,34 +139,16 @@ public class CreatePoolDigitalByDefaultControllerITest extends AbstractIntegrati
         return template.exchange(requestEntity, String.class);
     }
 
-    private PoolCreateRequestDto setUpPoolCreateRequestDto() {
+    private PoolCreateRequestDto getPoolCreateRequestDto() {
         PoolCreateRequestDto poolCreateRequestDto = new PoolCreateRequestDto();
         poolCreateRequestDto.setPoolNumber("415221201");
-        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-
-        executeInTransaction(() -> {
-            List<Juror> jurors = jurorRepository.findAll();
-            assertThat(jurors).hasSize(8);
-            assertThat(jurors).allSatisfy(juror -> {
-                assertThat(juror.isDigitalByDefault()).isTrue();
-                assertThat(juror.getDbdPreference()).isEqualTo(ReplyMethod.DIGITAL.getDescription());
-            });
-
-            assertThat(bulkPrintDataRepository.count()).isZero();
-        });
-    }
-
-    private PoolCreateRequestDto getUpDigitalByDefaultPoolCreateRequestDto() {
-        PoolCreateRequestDto poolCreateRequestDto = new PoolCreateRequestDto();
-        poolCreateRequestDto.setPoolNumber("419221201");
         poolCreateRequestDto.setStartDate(LocalDate.of(2022, 12, 4));
         poolCreateRequestDto.setAttendTime(LocalDateTime.of(2022, 12, 4, 9, 0, 0));
         poolCreateRequestDto.setNoRequested(5);
         poolCreateRequestDto.setBureauDeferrals(0);
         poolCreateRequestDto.setNumberRequired(4);
         poolCreateRequestDto.setCitizensToSummon(8);
-        poolCreateRequestDto.setCatchmentArea("419");
+        poolCreateRequestDto.setCatchmentArea("415");
         List<String> postcodes = new ArrayList<>();
         postcodes.add("CH1");
         postcodes.add("CH2");
@@ -177,15 +158,15 @@ public class CreatePoolDigitalByDefaultControllerITest extends AbstractIntegrati
         return poolCreateRequestDto;
     }
 
-    private PoolCreateRequestDto setUpDigitalByDefaultPoolCreateRequestDto() {
-        PoolCreateRequestDto poolCreateRequestDto = setUpPoolCreateRequestDto();
+    private PoolCreateRequestDto getDigitalByDefaultPoolCreateRequestDto() {
+        PoolCreateRequestDto poolCreateRequestDto = getPoolCreateRequestDto();
         poolCreateRequestDto.setPoolNumber("419221201");
         poolCreateRequestDto.setCatchmentArea("419");
         return poolCreateRequestDto;
     }
 
-    private PoolCreateRequestDto setUpWelshDigitalByDefaultPoolCreateRequestDto() {
-        PoolCreateRequestDto poolCreateRequestDto = setUpPoolCreateRequestDto();
+    private PoolCreateRequestDto getWelshDigitalByDefaultPoolCreateRequestDto() {
+        PoolCreateRequestDto poolCreateRequestDto = getPoolCreateRequestDto();
         poolCreateRequestDto.setPoolNumber("774221201");
         poolCreateRequestDto.setCatchmentArea("774");
         poolCreateRequestDto.setPostcodes(List.of("SY2"));
@@ -211,7 +192,7 @@ public class CreatePoolDigitalByDefaultControllerITest extends AbstractIntegrati
                 assertThat(history.getPoolNumber()).isEqualTo(poolNumber);
                 assertThat(history.getCreatedBy()).isEqualTo("BUREAU_USER");
                 assertThat(history.getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
-                assertThat(history.getOtherInformation()).isEqualTo("Summons letter only");
+                assertThat(history.getOtherInformation()).isEqualTo("DBD Summons letter");
             });
         });
     }

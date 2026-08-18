@@ -383,7 +383,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 historyList.add(jurorHistBuilder.build());
             } else if (isDigitalByDefault) {
                 jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
-                jurorHistBuilder.otherInformation("Summons letter only");
+                jurorHistBuilder.otherInformation("DBD Summons letter");
                 historyList.add(jurorHistBuilder.build());
             } else {
                 jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
@@ -484,7 +484,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
             if (!summonedJurors.isEmpty()) {
                 if (isDigitalByDefault) {
-                    printDataService.bulkPrintSummonsLetterLight(summonedJurors);
+                    printDataService.bulkPrintDbdSummonsLetter(summonedJurors);
                 } else {
                     printDataService.bulkPrintSummonsLetter(summonedJurors);
                 }
