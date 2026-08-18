@@ -66,7 +66,6 @@ public class DbdSummonsLetter extends LetterBase {
     protected void setupEnglish() {
         setFormCode(FormCode.ENG_DBD_SUMMONS);
         sharedJurorSetupDbd();
-        addData(LetterDataType.JUROR_NUMBER, 9);
         addData(LetterDataType.DATE_OF_LETTER, 18);
         addData(LetterDataType.DATE_OF_ATTENDANCE, 32);
         addData(LetterDataType.TIME_OF_ATTENDANCE, 8);
