@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationDataDto;
@@ -28,7 +31,9 @@ import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
+import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -84,5 +89,21 @@ public class CourtLocationController {
         @Size(min = 3, max = 3) @PathVariable("loc_code") @Valid String locCode) {
 
         return ResponseEntity.ok().body(courtLocationService.getCourtRates(locCode));
+    }
+
+    @GetMapping("/is-working-day/{loc_code}")
+    @Operation(summary = "Check if a given date is a working day for a court location")
+    @PreAuthorize((SecurityUtil.LOC_CODE_AUTH_OR_BUREAU))
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Boolean> checkingWorkingDay(
+        @P("loc_code")
+        @PathVariable("loc_code")
+        @CourtLocationCode
+        @Parameter(description = "locCode", required = true)
+        @Valid String locCode,
+        @RequestParam(name = "date")
+        @Valid @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date
+    ) {
+        return ResponseEntity.ok(courtLocationService.checkWorkingDay(locCode, date));
     }
 }

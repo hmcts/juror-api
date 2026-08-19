@@ -16,9 +16,11 @@ import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtQueriesRepository;
+import uk.gov.hmcts.juror.api.moj.service.administration.AdministrationHolidaysService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +36,9 @@ public class CourtLocationServiceImpl implements CourtLocationService {
 
     @NonNull
     private final CourtQueriesRepository courtQueriesRepository;
+
+    @NonNull
+    private final AdministrationHolidaysService holidaysService;
 
     private final JurorExpenseService expenseService;
 
@@ -148,6 +153,16 @@ public class CourtLocationServiceImpl implements CourtLocationService {
             }
         }
         return true;
+    }
+
+    @Override
+    public Boolean checkWorkingDay(String locCode, LocalDate date) {
+
+        courtLocationRepository.findByLocCode(locCode)
+            .orElseThrow(() -> new MojException.NotFound("Court location not found", null));
+
+        // check if the date provided is a non-working day for the court
+        return holidaysService.isWorkingDay(locCode, date);
     }
 
     private List<CourtLocationDataDto> mapCourtLocationsToDto(

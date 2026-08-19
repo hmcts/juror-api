@@ -23,6 +23,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationDataDto;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -262,6 +263,73 @@ class CourtLocationControllerTest {
         @Test
         void negativeInvalidLocCode() throws Exception {
             send(null, HttpStatus.BAD_REQUEST, "INVALID");
+            verifyNoInteractions(courtLocationService);
+        }
+    }
+
+    @Nested
+    class CheckWorkingDay {
+        private static final String URL = BASE_URL + "/is-working-day/{loc_code}";
+
+        private BureauJwtAuthentication mockPrincipal;
+
+        @BeforeEach
+        void beforeEach() {
+            BureauJwtPayload bureauJwtPayload = TestUtils.createJwt("415", "COURT_USER");
+            mockPrincipal = mock(BureauJwtAuthentication.class);
+            when(mockPrincipal.getPrincipal()).thenReturn(bureauJwtPayload);
+        }
+
+        @Test
+        void positiveWorkingDay() throws Exception {
+            doReturn(true).when(courtLocationService)
+                .checkWorkingDay("415", LocalDate.of(2023, 9, 27));
+
+            mockMvc.perform(get(URL, "415")
+                    .principal(mockPrincipal)
+                    .queryParam("date", "2023-09-27")
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(true));
+
+            verify(courtLocationService, times(1))
+                .checkWorkingDay("415", LocalDate.of(2023, 9, 27));
+        }
+
+        @Test
+        void positiveNonWorkingDay() throws Exception {
+            doReturn(false).when(courtLocationService)
+                .checkWorkingDay("415", LocalDate.of(2023, 9, 30));
+
+            mockMvc.perform(get(URL, "415")
+                    .principal(mockPrincipal)
+                    .queryParam("date", "2023-09-30")
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(false));
+
+            verify(courtLocationService, times(1))
+                .checkWorkingDay("415", LocalDate.of(2023, 9, 30));
+        }
+
+        @Test
+        void negativeInvalidLocCode() throws Exception {
+            mockMvc.perform(get(URL, "INVALID")
+                    .principal(mockPrincipal)
+                    .queryParam("date", "2023-09-27")
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
+            verifyNoInteractions(courtLocationService);
+        }
+
+        @Test
+        void negativeMissingDate() throws Exception {
+            mockMvc.perform(get(URL, "415")
+                    .principal(mockPrincipal)
+                    .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+
             verifyNoInteractions(courtLocationService);
         }
     }

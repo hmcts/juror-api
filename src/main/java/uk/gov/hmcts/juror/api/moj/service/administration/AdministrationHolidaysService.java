@@ -20,4 +20,6 @@ public interface AdministrationHolidaysService {
 
     List<LocalDate> getSaturdayDates(LocalDate fromDate, LocalDate toDate);
 
+    boolean isWorkingDay(String locCode, LocalDate date);
+
 }

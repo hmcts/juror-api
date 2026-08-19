@@ -257,4 +257,84 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("GET " + CheckWorkingDay.URL)
+    @Sql({"/db/mod/truncate.sql", "/db/Holiday.sql"})
+    class CheckWorkingDay {
+        static final String URL = BASE_URL + "/is-working-day/{loc_code}?date={date}";
+
+        private String toUrl(String locCode, String date) {
+            return URL
+                .replace("{loc_code}", locCode)
+                .replace("{date}", date);
+        }
+
+        @SuppressWarnings("PMD.SignatureDeclareThrowsException")
+        private ResponseEntity<Boolean> triggerValid(String locCode, String date) throws Exception {
+            final String jwt = createBureauJwt(COURT_USER, "415", locCode);
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+            return restTemplate.exchange(
+                new RequestEntity<>(null, httpHeaders, GET, URI.create(toUrl(locCode, date))),
+                Boolean.class);
+        }
+
+        @SuppressWarnings("PMD.SignatureDeclareThrowsException")
+        private ResponseEntity<String> triggerInvalid(String locCode, String date, String... courts) throws Exception {
+            final String jwt = createBureauJwt(COURT_USER, "415", courts);
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);
+            return restTemplate.exchange(
+                new RequestEntity<>(null, httpHeaders, GET, URI.create(toUrl(locCode, date))),
+                String.class);
+        }
+
+        @Test
+        void weekdayReturnsTrue() throws Exception {
+            ResponseEntity<Boolean> response = triggerValid("415", "2023-09-27");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isTrue();
+        }
+
+        @Test
+        void weekendReturnsFalse() throws Exception {
+            ResponseEntity<Boolean> response = triggerValid("415", "2023-09-30");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isFalse();
+        }
+
+        @Test
+        void courtHolidayReturnsFalse() throws Exception {
+            ResponseEntity<Boolean> response = triggerValid("415", "2023-09-20");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isFalse();
+        }
+
+        @Test
+        void publicHolidayReturnsFalse() throws Exception {
+            ResponseEntity<Boolean> response = triggerValid("415", "2023-09-29");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isFalse();
+        }
+
+        @Test
+        void courtNotFoundReturnsNotFound() throws Exception {
+            assertNotFound(
+                triggerInvalid("999", "2023-09-27", "999"),
+                toUrl("999", "2023-09-27"),
+                "Court location not found");
+        }
+
+        @Test
+        void unauthorisedNotPartOfCourt() throws Exception {
+            String url = toUrl("415", "2023-09-27");
+
+            assertForbiddenResponse(
+                triggerInvalid("415", "2023-09-27", "416"),
+                url);
+        }
+    }
 }

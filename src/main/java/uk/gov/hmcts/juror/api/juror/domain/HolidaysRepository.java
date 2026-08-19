@@ -21,4 +21,8 @@ public interface HolidaysRepository extends CrudRepository<Holidays, LocalDate>,
                                                                                              String locCode);
 
     Optional<Holidays> findByCourtLocationLocCodeAndHolidayAndPublicHolidayIsFalse(String locCode, LocalDate date);
+
+    Optional<Holidays> findByCourtLocationLocCodeAndHoliday(String locCode, LocalDate date);
+
+    Optional<Holidays> findByHolidayAndCourtLocationIsNull(LocalDate date);
 }

@@ -18,14 +18,17 @@ import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CourtQueriesRepository;
+import uk.gov.hmcts.juror.api.moj.service.administration.AdministrationHolidaysService;
 import uk.gov.hmcts.juror.api.moj.service.expense.JurorExpenseService;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,6 +38,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static uk.gov.hmcts.juror.api.moj.domain.CourtLocationQueries.filterByLocCodes;
 
 @ExtendWith(SpringExtension.class)
@@ -52,6 +56,9 @@ class CourtLocationServiceTest {
 
     @Mock
     private JurorExpenseService expenseService;
+
+    @Mock
+    private AdministrationHolidaysService holidaysService;
 
 
     @InjectMocks
@@ -241,5 +248,37 @@ class CourtLocationServiceTest {
             "Expected getCourtRates to throw MojException.NotFound");
         assertThat(exception.getMessage()).isEqualTo("Court location not found");
         assertThat(exception.getCause()).isNull();
+    }
+
+    @Test
+    void positiveCheckWorkingDayReturnsHolidayServiceResult() {
+        LocalDate date = LocalDate.of(2023, 9, 27);
+
+        doReturn(Optional.of(new CourtLocation())).when(courtLocationRepository)
+            .findByLocCode("415");
+        doReturn(true).when(holidaysService)
+            .isWorkingDay("415", date);
+
+        assertThat(courtLocationService.checkWorkingDay("415", date)).isTrue();
+
+        verify(courtLocationRepository, times(1)).findByLocCode("415");
+        verify(holidaysService, times(1)).isWorkingDay("415", date);
+    }
+
+    @Test
+    void negativeCheckWorkingDayCourtNotFound() {
+        LocalDate date = LocalDate.of(2023, 9, 27);
+
+        doReturn(Optional.empty()).when(courtLocationRepository)
+            .findByLocCode("999");
+
+        MojException.NotFound exception = assertThrows(MojException.NotFound.class,
+            () -> courtLocationService.checkWorkingDay("999", date),
+            "Expected checkWorkingDay to throw MojException.NotFound");
+
+        assertThat(exception.getMessage()).isEqualTo("Court location not found");
+        assertThat(exception.getCause()).isNull();
+        verify(courtLocationRepository, times(1)).findByLocCode("999");
+        verifyNoInteractions(holidaysService);
     }
 }

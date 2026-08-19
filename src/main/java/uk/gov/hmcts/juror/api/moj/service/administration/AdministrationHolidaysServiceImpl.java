@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.groupingBy;
 
@@ -83,6 +84,23 @@ public class AdministrationHolidaysServiceImpl implements AdministrationHolidays
             .toList();
     }
 
+    @Override
+    public boolean isWorkingDay(String locCode, LocalDate date) {
+
+        // check if the date provided is a weekend
+        if (date.getDayOfWeek().getValue() == 6 || date.getDayOfWeek().getValue() == 7) {
+            return false;
+        }
+
+        Optional<Holidays> holiday = holidaysRepository.findByCourtLocationLocCodeAndHoliday(locCode, date);
+
+        if (holiday.isPresent()) {
+            return false;
+        }
+
+        return !isPublicHoliday(date);
+    }
+
     List<Holidays> findAllPublicHolidays() {
         return holidaysRepository.findAllByPublicHolidayAndHolidayIsGreaterThanEqual(
             true, LocalDate.now().with(TemporalAdjusters.firstDayOfYear()));
@@ -92,4 +110,10 @@ public class AdministrationHolidaysServiceImpl implements AdministrationHolidays
         return holidaysRepository.findAllByPublicHolidayAndHolidayIsGreaterThanEqualAndCourtLocationLocCode(
             false, LocalDate.now().with(TemporalAdjusters.firstDayOfYear()), locCode);
     }
+
+    boolean isPublicHoliday(LocalDate date) {
+        Optional<Holidays> holiday = holidaysRepository.findByHolidayAndCourtLocationIsNull(date);
+        return holiday.isPresent();
+    }
+
 }

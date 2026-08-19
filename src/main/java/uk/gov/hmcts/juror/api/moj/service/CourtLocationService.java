@@ -8,6 +8,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.CourtLocationListDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.CourtRates;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface CourtLocationService {
@@ -30,4 +31,6 @@ public interface CourtLocationService {
         @Length(max = 4) String postcode);
 
     CourtRates getCourtRates(String locCode);
+
+    Boolean checkWorkingDay(String locCode, LocalDate date);
 }
