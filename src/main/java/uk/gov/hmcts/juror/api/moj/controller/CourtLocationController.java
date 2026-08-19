@@ -93,7 +93,7 @@ public class CourtLocationController {
 
     @GetMapping("/is-working-day/{loc_code}")
     @Operation(summary = "Check if a given date is a working day for a court location")
-    @PreAuthorize((SecurityUtil.LOC_CODE_AUTH_OR_BUREAU))
+    @PreAuthorize(SecurityUtil.LOC_CODE_AUTH_OR_BUREAU)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Boolean> checkingWorkingDay(
         @P("loc_code")

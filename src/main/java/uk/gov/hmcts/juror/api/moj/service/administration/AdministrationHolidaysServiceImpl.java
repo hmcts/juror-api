@@ -94,11 +94,7 @@ public class AdministrationHolidaysServiceImpl implements AdministrationHolidays
 
         Optional<Holidays> holiday = holidaysRepository.findByCourtLocationLocCodeAndHoliday(locCode, date);
 
-        if (holiday.isPresent()) {
-            return false;
-        }
-
-        return !isPublicHoliday(date);
+        return holiday.isEmpty() && !isPublicHoliday(date);
     }
 
     List<Holidays> findAllPublicHolidays() {
