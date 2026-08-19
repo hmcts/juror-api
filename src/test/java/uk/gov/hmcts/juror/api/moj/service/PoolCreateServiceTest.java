@@ -282,7 +282,7 @@ class PoolCreateServiceTest {
         Mockito.verify(jurorHistoryRepository).saveAll(jurorHistoryCaptor.capture());
         JurorHistory jurorHistory = jurorHistoryCaptor.getValue().get(0);
         assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
-        assertThat(jurorHistory.getOtherInformation()).isEqualTo("Summons letter only");
+        assertThat(jurorHistory.getOtherInformation()).isEqualTo("DBD Summons letter");
     }
 
     @Test
