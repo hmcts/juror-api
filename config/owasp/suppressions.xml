@@ -92,6 +92,7 @@
   ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents\.client5/httpclient5@5\.4\.4$</packageUrl>
     <cve>CVE-2026-64607</cve>
+    <cve>CVE-2026-71290</cve>
   </suppress>
 
   <suppress>
