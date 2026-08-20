@@ -80,7 +80,7 @@ public class JurorCommsEmailServiceImplTest {
 
         SchedulerServiceClient.Result result = service.process();
 
-        verify(bulkPrintDataRepository).deletePrintfiles();
+        verify(bulkPrintDataRepository).deleteDbdEmails();
         verify(jurorCommsNotificationService).sendJurorEmailComms(jurorPool, DIGITAL_DEFERRAL_TEMPLATE);
 
         verify(bulkPrintDataRepository).saveAll(List.of(pendingEmail));

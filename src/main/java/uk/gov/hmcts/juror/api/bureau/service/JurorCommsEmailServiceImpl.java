@@ -48,7 +48,7 @@ public class JurorCommsEmailServiceImpl implements BureauProcessService {
         log.info("Email Comms Processing : Started - {}", dateFormat.format(new Date()));
 
         // remove any unwanted records from the bulk_print_data table based on the business rules
-        bulkPrintDataRepository.deletePrintfiles();
+        bulkPrintDataRepository.deleteDbdEmails();
 
         // find the emails that need to be sent out from bulk_print_data table
         List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository.findByCommunicationChannelAndEmailStatus(
