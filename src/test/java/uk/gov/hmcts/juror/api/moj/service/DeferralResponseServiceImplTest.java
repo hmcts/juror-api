@@ -234,6 +234,7 @@ public class DeferralResponseServiceImplTest {
             List.of(FormCode.ENG_DEFERRALDENIED, FormCode.BI_DEFERRALDENIED));
         inOrder.verify(emailDataService).emailDeferralDeniedLetter(jurorPool);
         verify(printDataService, never()).printDeferralDeniedLetter(any());
+        verify(jurorHistoryRepository, times(1)).save(any());
     }
 
     @Test
