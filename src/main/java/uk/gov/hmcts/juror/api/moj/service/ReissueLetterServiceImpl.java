@@ -38,7 +38,7 @@ import java.util.function.BiConsumer;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.TooManyMethods", "PMD.CognitiveComplexity"})
 public class ReissueLetterServiceImpl implements ReissueLetterService {
 
     private final JurorPoolRepository jurorPoolRepository;
