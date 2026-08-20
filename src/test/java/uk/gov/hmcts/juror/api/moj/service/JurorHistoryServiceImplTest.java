@@ -329,6 +329,30 @@ class JurorHistoryServiceImplTest {
     }
 
     @Test
+    void typicalCreateDeferredDeniedLetterHistory() {
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.setDeferralCode("A");
+
+        mockCurrentUser("someNewUser");
+        jurorHistoryService.createDeferredDeniedLetterHistory(jurorPool, CommunicationChannel.LETTER);
+        assertValuesAdditional(jurorPool, "someNewUser", null, jurorPool.getDeferralCode(),
+            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.NON_DEFERRED_LETTER,
+                "Deferral Denied Letter Printed"));
+    }
+
+    @Test
+    void typicalCreateDeferredDeniedEmailHistory() {
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.setDeferralCode("A");
+
+        mockCurrentUser("someNewUser");
+        jurorHistoryService.createDeferredDeniedLetterHistory(jurorPool, CommunicationChannel.EMAIL);
+        assertValuesAdditional(jurorPool, "someNewUser", null, jurorPool.getDeferralCode(),
+            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.NON_DEFERRED_LETTER,
+                "Deferral Denied Email Sent"));
+    }
+
+    @Test
     void negativeCreateDeferredLetterHistoryNoDeferredToDate() {
         JurorPool jurorPool = createJurorPool();
         jurorPool.setDeferralCode("A");
