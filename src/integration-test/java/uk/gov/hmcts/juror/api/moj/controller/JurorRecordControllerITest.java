@@ -4049,7 +4049,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber));
             jurorHistoryList.sort(Comparator.comparing(JurorHistory::getHistoryCode));
             verifyStandardJurorHistory(jurorPool, jurorHistoryList,
-                                       new JurorHistoryExpectedValues("RRES", "Confirmation Letter Auto", null, null),
+                                       new JurorHistoryExpectedValues("RRES", "Confirmation Letter Auto Printed",
+                                                                     null, null),
                                        new JurorHistoryExpectedValues("POLG", "Passed", null, null)
             );
             verifyBulkPrintData(jurorNumber, FormCode.ENG_CONFIRMATION.getCode());
@@ -4104,7 +4105,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                                        jurorHistoryList,
                                        new JurorHistoryExpectedValues("POLF", "Failed", null, null),
                                        new JurorHistoryExpectedValues("PDIS", null, null, "E"),
-                                       new JurorHistoryExpectedValues("RDIS", "Withdrawal Letter Auto", null, "E")
+                                       new JurorHistoryExpectedValues("RDIS", "Withdrawal Letter Auto Printed",
+                                                                     null, "E")
             );
             verifyBulkPrintData(jurorNumber, FormCode.ENG_WITHDRAWAL.getCode());
         }

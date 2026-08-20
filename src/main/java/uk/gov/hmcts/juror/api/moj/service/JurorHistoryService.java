@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -43,7 +44,7 @@ public interface JurorHistoryService {
 
     void createUncompleteServiceHistory(JurorPool jurorPool);
 
-    void createDeferredLetterHistory(JurorPool jurorPool);
+    void createDeferredLetterHistory(JurorPool jurorPool, CommunicationChannel communicationChannel);
 
     void createEditBankSortCodeHistory(String jurorNumber);
 
@@ -60,13 +61,17 @@ public interface JurorHistoryService {
 
     void createSummonsReminderLetterHistory(JurorPool jurorPool);
 
-    void createConfirmationLetterHistory(JurorPool jurorPool, String otherInfo);
+    void createConfirmationLetterHistory(JurorPool jurorPool, String otherInfo,
+                                         CommunicationChannel communicationChannel);
 
-    void createWithdrawHistory(JurorPool jurorPool, String otherInfo, String code);
+    void createWithdrawHistory(JurorPool jurorPool, String otherInfo, String code,
+                               CommunicationChannel communicationChannel);
 
-    void createPostponementLetterHistory(JurorPool jurorPool, String otherInfo);
+    void createPostponementLetterHistory(JurorPool jurorPool, String otherInfo,
+                                         CommunicationChannel communicationChannel);
 
-    void createWithdrawHistoryUser(JurorPool jurorPool, String otherInfo, String code);
+    void createWithdrawHistoryUser(JurorPool jurorPool, String otherInfo, String code,
+                                   CommunicationChannel communicationChannel);
 
     void createIdentityConfirmedHistory(JurorPool jurorPool);
 
@@ -89,9 +94,10 @@ public interface JurorHistoryService {
     void createReassignPoolMemberHistory(JurorPool sourceJurorPool, String targetPoolNumber,
                                          CourtLocation receivingCourtLocation);
 
-    void createNonExcusedLetterHistory(JurorPool jurorPool, String refusedExcusal);
+    void createNonExcusedLetterHistory(JurorPool jurorPool, String refusedExcusal,
+                                       CommunicationChannel communicationChannel);
 
-    void createExcusedLetter(JurorPool jurorPool);
+    void createExcusedLetter(JurorPool jurorPool, CommunicationChannel communicationChannel);
 
     void createPoolEditHistory(JurorPool updatedPool);
 

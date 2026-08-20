@@ -1749,7 +1749,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(10);
+            assertThat(data.get(0).size()).isEqualTo(13);
             assertThat(data.get(0).get(0)).isEqualTo("555555561");
             assertThat(data.get(0).get(1)).isEqualTo("FNAMEFIVEFOURZERO");
             assertThat(data.get(0).get(2)).isEqualTo("LNAMEFIVEFOURZERO");
@@ -1760,6 +1760,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.get(0).get(7)).isEqualTo(LocalDate.now().minusDays(1).toString());
             assertThat(data.get(0).get(8)).isEqualTo(true);
             assertThat(data.get(0).get(9)).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
+            assertThat(data.get(0).get(10)).isEqualTo("LETTER");
+            assertThat(data.get(0).get(11)).isEqualTo("LETTER");
+            assertThat(data.get(0).get(12)).isNull();
         }
 
         @Test
@@ -1794,7 +1797,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(2);  // deferred twice
-            assertThat(data.get(0).size()).isEqualTo(10);
+            assertThat(data.get(0).size()).isEqualTo(13);
             assertThat(data.get(0).get(0)).isEqualTo("555555567");
             assertThat(data.get(0).get(1)).isEqualTo("FNAMEFIVEFOURZERO");
             assertThat(data.get(0).get(2)).isEqualTo("LNAMEFIVEFOURZERO");
@@ -1805,6 +1808,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.get(0).get(7)).isEqualTo(LocalDate.now().minusDays(1).toString());
             assertThat(data.get(0).get(8)).isEqualTo(true);
             assertThat(data.get(0).get(9)).isEqualTo(FormCode.BI_DEFERRAL.getCode());
+            assertThat(data.get(0).get(10)).isEqualTo("LETTER");
+            assertThat(data.get(0).get(11)).isEqualTo("LETTER");
+            assertThat(data.get(0).get(12)).isNull();
         }
 
         @Test
@@ -1842,13 +1848,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             // verify the order of the rows - pending should be first, then sorted by date printed descending
             assertThat(data.get(0).get(7)).isEqualTo(LocalDate.now().toString());
-            assertThat(data.get(0).get(8)).as("Expect extracted flag to be false").isEqualTo(false);
             assertThat(data.get(1).get(7)).isEqualTo(LocalDate.now().toString());
-            assertThat(data.get(1).get(8)).as("Expect extracted flag to be false").isEqualTo(false);
             assertThat(data.get(2).get(7)).isEqualTo(LocalDate.now().minusDays(1).toString());
             assertThat(data.get(2).get(8)).as("Expect extracted flag to be true").isEqualTo(true);
             assertThat(data.get(3).get(7)).isEqualTo(LocalDate.now().minusDays(4).toString());
             assertThat(data.get(4).get(7)).isEqualTo(LocalDate.now().minusDays(8).toString());
+
+            assertThat(data.get(0).get(8)).as("Expect extracted flag to be false").isEqualTo(false);
+            assertThat(data.get(1).get(8)).as("Expect extracted flag to be false").isEqualTo(false);
         }
 
         @Test
@@ -1885,7 +1892,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             int pendingCount = data.stream().map(row -> row.get(8)).filter(flag -> flag.equals(false))
                 .toArray().length;
-            assertThat(pendingCount).as("Expect there to be 3 pending rows").isEqualTo(3);
+            assertThat(pendingCount).as("Expect there to be 3 pending print rows").isEqualTo(3);
         }
 
         @Test
@@ -2603,7 +2610,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(reissueLetterListResponseDto).isNotNull();
             List<String> headings = reissueLetterListResponseDto.getHeadings();
             assertThat(headings).isNotNull();
-            assertThat(headings.size()).as("Expect there to be 10 headings").isEqualTo(10);
+            assertThat(headings.size()).as("Expect there to be 13 headings").isEqualTo(13);
             assertThat(headings.get(0)).isEqualTo("Juror number");
             assertThat(headings.get(1)).isEqualTo("First name");
             assertThat(headings.get(2)).isEqualTo("Last name");
@@ -2614,10 +2621,13 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(headings.get(7)).isEqualTo("Date printed");
             assertThat(headings.get(8)).isEqualTo("hidden_extracted_flag");
             assertThat(headings.get(9)).isEqualTo("hidden_form_code");
+            assertThat(headings.get(10)).isEqualTo("Original sent by");
+            assertThat(headings.get(11)).isEqualTo("Current preference");
+            assertThat(headings.get(12)).isEqualTo("hidden_email_status");
 
             List<String> dataTypes = reissueLetterListResponseDto.getDataTypes();
             assertThat(dataTypes).isNotNull();
-            assertThat(dataTypes.size()).as("Expect there to be 10 data types").isEqualTo(10);
+            assertThat(dataTypes.size()).as("Expect there to be 13 data types").isEqualTo(13);
             assertThat(dataTypes.get(0)).isEqualTo("string");
             assertThat(dataTypes.get(1)).isEqualTo("string");
             assertThat(dataTypes.get(2)).isEqualTo("string");
@@ -2628,6 +2638,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(dataTypes.get(7)).isEqualTo("date");
             assertThat(dataTypes.get(8)).isEqualTo("boolean");
             assertThat(dataTypes.get(9)).isEqualTo("string");
+            assertThat(dataTypes.get(10)).isEqualTo("string");
+            assertThat(dataTypes.get(11)).isEqualTo("string");
+            assertThat(dataTypes.get(12)).isEqualTo("string");
         }
 
         private void verifyHeadingsAndTypesConfirmation(ReissueLetterListResponseDto reissueLetterListResponseDto) {

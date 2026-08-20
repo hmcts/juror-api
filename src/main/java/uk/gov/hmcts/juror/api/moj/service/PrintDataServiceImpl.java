@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.repository.FormAttributeRepository;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ConfirmLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.DbdSummonsLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralDeniedLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalDeniedLetter;
@@ -67,8 +68,33 @@ public class PrintDataServiceImpl implements PrintDataService {
     }
 
     @Override
+    public void bulkPrintDbdSummonsLetter(List<JurorPool> jurorPools) {
+        if (jurorPools == null || jurorPools.isEmpty()) {
+            throw new MojException.InternalServerError(
+                "Attempted to print DBD summons letters for empty jurorPool list", null);
+        }
+
+        jurorPools.forEach(jurorPool -> {
+            //queue a letter if juror is not disqualified
+            if (!Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
+                commitData(new DbdSummonsLetter(jurorPool,
+                                        jurorPool.getCourt(),
+                                        courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
+                                        welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+                ));
+            }
+        });
+    }
+
+    @Override
     public void reprintSummonsLetter(JurorPool jurorPool) {
         bulkPrintSummonsLetter(List.of(jurorPool));
+        jurorHistoryService.createSummonLetterReprintedHistory(jurorPool);
+    }
+
+    @Override
+    public void reprintDbdSummonsLetter(JurorPool jurorPool) {
+        bulkPrintDbdSummonsLetter(List.of(jurorPool));
         jurorHistoryService.createSummonLetterReprintedHistory(jurorPool);
     }
 

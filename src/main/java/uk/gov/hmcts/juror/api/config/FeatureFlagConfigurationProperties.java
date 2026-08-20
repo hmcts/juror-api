@@ -20,6 +20,8 @@ import java.util.Map;
 @Setter
 @ToString
 public class FeatureFlagConfigurationProperties {
+    public static final String DIGITAL_BY_DEFAULT_FEATURE_FLAG = "digital-by-default";
+
     private Map<String, Boolean> flags = new HashMap<>();
 
     public boolean isEnabled(String featureName) {

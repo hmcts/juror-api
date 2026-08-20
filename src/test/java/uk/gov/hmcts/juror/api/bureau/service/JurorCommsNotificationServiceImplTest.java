@@ -6,10 +6,12 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
 import uk.gov.hmcts.juror.api.bureau.notify.JurorCommsNotifyTemplateType;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.notify.EmailNotification;
+import uk.gov.hmcts.juror.api.juror.notify.EmailNotificationReceipt;
 import uk.gov.hmcts.juror.api.juror.notify.NotifyAdapter;
 import uk.gov.hmcts.juror.api.juror.notify.SmsNotification;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -26,10 +28,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -141,8 +145,39 @@ public class JurorCommsNotificationServiceImplTest {
         given(notifyTemplateMappingRepository.findByTemplateName(anyString())).willReturn(notifyCommsTemplateMapping);
         given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), any(JurorPool.class)))
             .willReturn(payLoad);
+        given(mockNotifyAdapter.sendCommsEmail(any(EmailNotification.class)))
+            .willReturn(mock(EmailNotificationReceipt.class));
         service.sendJurorComms(pool, JurorCommsNotifyTemplateType.COMMS, null, null, false);
         verify(mockNotifyAdapter).sendCommsEmail(any());
+    }
+
+    @Test
+    public void sendJurorEmailComms_digitalDeferralTemplate_sendsEmailWithoutDetailRec() {
+        String digitalDeferralTemplate = "DIGITAL_DEF_GRANTED_ENG";
+        given(notifyTemplateMappingRepository.findByTemplateName(digitalDeferralTemplate))
+            .willReturn(notifyCommsTemplateMapping);
+        given(jurorCommsNotifyPayLoadService.generatePayLoadData(notifyTemplateId.toString(), pool))
+            .willReturn(payLoad);
+        given(mockNotifyAdapter.sendCommsEmail(any(EmailNotification.class)))
+            .willReturn(mock(EmailNotificationReceipt.class));
+
+        service.sendJurorEmailComms(pool, digitalDeferralTemplate);
+
+        verify(notifyTemplateMappingRepository).findByTemplateName(digitalDeferralTemplate);
+        verify(jurorCommsNotifyPayLoadService).generatePayLoadData(notifyTemplateId.toString(), pool);
+        verify(mockNotifyAdapter).sendCommsEmail(any(EmailNotification.class));
+    }
+
+    @Test
+    public void sendJurorEmailComms_notifyReturnsNull_throwsException() {
+        String digitalDeferralTemplate = "DIGITAL_DEF_GRANTED_ENG";
+        given(notifyTemplateMappingRepository.findByTemplateName(digitalDeferralTemplate))
+            .willReturn(notifyCommsTemplateMapping);
+        given(jurorCommsNotifyPayLoadService.generatePayLoadData(notifyTemplateId.toString(), pool))
+            .willReturn(payLoad);
+
+        assertThatThrownBy(() -> service.sendJurorEmailComms(pool, digitalDeferralTemplate))
+            .isInstanceOf(JurorCommsNotificationServiceException.class);
     }
 
     @Test
@@ -154,6 +189,8 @@ public class JurorCommsNotificationServiceImplTest {
 
         given(jurorCommsNotifyPayLoadService.generatePayLoadData(anyString(), any(JurorPool.class)))
             .willReturn(payLoad);
+        given(mockNotifyAdapter.sendCommsEmail(any(EmailNotification.class)))
+            .willReturn(mock(EmailNotificationReceipt.class));
         service.sendJurorComms(pool, JurorCommsNotifyTemplateType.SENT_TO_COURT, null, null, false);
         verify(mockNotifyAdapter).sendCommsEmail(any());
     }

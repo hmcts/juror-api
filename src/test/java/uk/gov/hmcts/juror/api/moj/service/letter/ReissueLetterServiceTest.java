@@ -25,6 +25,9 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
@@ -109,7 +112,43 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(10);
+            assertThat(data.get(0)).hasSize(13);
+            assertThat(data.get(0).get(9)).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
+            assertThat(data.get(0).get(10)).isEqualTo("LETTER");
+            assertThat(data.get(0).get(11)).isEqualTo("LETTER");
+            assertThat(data.get(0).get(12)).isNull();
+
+            verify(bulkPrintDataRepository, times(1))
+                .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_GRANTED.getLetterQueryConsumer());
+        }
+
+        @Test
+        void reissueDeferralLetterListSentByEmailHappyPath() {
+            String owner = "400";
+            String jurorNumber = "123456789";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            final ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+                .jurorNumber(jurorNumber)
+                .letterType(LetterType.DEFERRAL_GRANTED)
+                .build();
+
+            final List<Tuple> deferralGrantedLetters = getDeferralGrantedEmailLetters(jurorNumber);
+
+            doReturn(deferralGrantedLetters).when(bulkPrintDataRepository)
+                .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_GRANTED.getLetterQueryConsumer());
+
+            final ReissueLetterListResponseDto responseDto =
+                reissueLetterService.reissueLetterList(reissueLetterListRequestDto);
+
+            List<List<Object>> data = responseDto.getData();
+            assertThat(data).isNotNull().hasSize(1);
+            assertThat(data.get(0)).hasSize(13);
+            assertThat(data.get(0).get(9)).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
+            assertThat(data.get(0).get(10)).isEqualTo("EMAIL");
+            assertThat(data.get(0).get(11)).isEqualTo("EMAIL");
+            assertThat(data.get(0).get(12)).isEqualTo("PENDING");
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_GRANTED.getLetterQueryConsumer());
@@ -129,7 +168,21 @@ public class ReissueLetterServiceTest {
             doReturn(LocalDate.now().minusDays(2)).when(tuple)
                 .get(ReissueLetterService.DataType.DATE_PRINTED.getExpression());
             doReturn("5229A").when(tuple).get(ReissueLetterService.DataType.FORM_CODE.getExpression());
+            doReturn(CommunicationChannel.LETTER).when(tuple)
+                .get(ReissueLetterService.DataType.COMMUNICATION_CHANNEL.getExpression());
             deferralGrantedLetters.add(tuple);
+            return deferralGrantedLetters;
+        }
+
+        private List<Tuple> getDeferralGrantedEmailLetters(String jurorNumber) {
+            final List<Tuple> deferralGrantedLetters = getDeferralGrantedLetters(jurorNumber);
+            Tuple tuple = deferralGrantedLetters.get(0);
+            doReturn(CommunicationChannel.EMAIL).when(tuple)
+                .get(ReissueLetterService.DataType.COMMUNICATION_CHANNEL.getExpression());
+            doReturn(ReplyMethod.DIGITAL.getDescription()).when(tuple)
+                .get(ReissueLetterService.DataType.JUROR_PREFERENCE.getExpression());
+            doReturn(EmailStatus.PENDING).when(tuple)
+                .get(ReissueLetterService.DataType.EMAIL_STATUS.getExpression());
             return deferralGrantedLetters;
         }
 

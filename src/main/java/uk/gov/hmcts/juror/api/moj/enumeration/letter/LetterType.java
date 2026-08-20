@@ -19,7 +19,8 @@ import java.util.function.Consumer;
 @Getter
 public enum LetterType {
 
-    SUMMONS(List.of(FormCode.ENG_SUMMONS, FormCode.BI_SUMMONS), List.of(
+    SUMMONS(List.of(FormCode.ENG_SUMMONS, FormCode.BI_SUMMONS, FormCode.ENG_DBD_SUMMONS, FormCode.BI_DBD_SUMMONS),
+            List.of(
         ReissueLetterService.DataType.JUROR_NUMBER,
         ReissueLetterService.DataType.SUMMONS_POOL_NUMBER,
         ReissueLetterService.DataType.SUMMONS_DATE,
@@ -67,7 +68,10 @@ public enum LetterType {
         ReissueLetterService.DataType.JUROR_DEFERRED_TO_REASON,
         ReissueLetterService.DataType.DATE_PRINTED,
         ReissueLetterService.DataType.EXTRACTED_FLAG,
-        ReissueLetterService.DataType.FORM_CODE),
+        ReissueLetterService.DataType.FORM_CODE,
+        ReissueLetterService.DataType.COMMUNICATION_CHANNEL,
+        ReissueLetterService.DataType.JUROR_PREFERENCE,
+        ReissueLetterService.DataType.EMAIL_STATUS),
         tupleJPAQuery -> tupleJPAQuery
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED)
                 .and(QJurorPool.jurorPool.deferralCode.ne(ExcusalCodeEnum.P.getCode()))),

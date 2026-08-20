@@ -7,16 +7,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.AgeDisqualifiedJurorDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -40,6 +43,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_REFUSE_FIRST_DEFERRAL;
 
 @Slf4j
@@ -64,6 +68,8 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
     private final JurorAppearanceService jurorAppearanceService;
     private final JurorDigitalResponseRepositoryMod digitalResponseRepository;
     private final JurorPaperResponseRepositoryMod paperResponseRepository;
+    private final EmailDataService emailDataService;
+    private final FeatureFlagConfigurationProperties featureFlags;
 
     @Override
     @Transactional
@@ -181,17 +187,25 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         jurorHistoryRepository.save(jurorHistory);
 
         if (SecurityUtil.isBureau()) {
-            printDataService.printDeferralDeniedLetter(jurorPool);
+            printDataService.removeQueuedLetterForJuror(jurorPool,
+                            List.of(FormCode.ENG_DEFERRALDENIED, FormCode.BI_DEFERRALDENIED));
+
+            if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+                emailDataService.emailDeferralDeniedLetter(jurorPool);
+            } else {
+                printDataService.printDeferralDeniedLetter(jurorPool);
+            }
 
             jurorHistoryRepository.save(JurorHistory.builder()
-                .jurorNumber(jurorPool.getJurorNumber())
-                .dateCreated(LocalDateTime.now())
-                .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
-                .createdBy(payload.getLogin())
-                .poolNumber(jurorPool.getPoolNumber())
-                .otherInformation("Deferral Denied")
-                .otherInformationRef(deferralRequestDto.getDeferralReason())
-                .build());
+                                            .jurorNumber(jurorPool.getJurorNumber())
+                                            .dateCreated(LocalDateTime.now())
+                                            .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
+                                            .createdBy(payload.getLogin())
+                                            .poolNumber(jurorPool.getPoolNumber())
+                                            .otherInformation("Deferral Denied")
+                                            .otherInformationRef(deferralRequestDto.getDeferralReason())
+                                            .build());
         }
     }
 
@@ -234,8 +248,16 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         jurorHistoryRepository.save(jurorHistory);
 
         if (JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(payload.getOwner())) {
-            printDataService.printDeferralLetter(jurorPool);
-            jurorHistoryService.createDeferredLetterHistory(jurorPool);
+            printDataService.removeQueuedLetterForJuror(jurorPool,
+                                                        List.of(FormCode.ENG_DEFERRAL, FormCode.BI_DEFERRAL));
+
+            if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+                emailDataService.emailDeferralLetter(jurorPool);
+            } else {
+                printDataService.printDeferralLetter(jurorPool);
+                jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.LETTER);
+            }
         }
     }
 
