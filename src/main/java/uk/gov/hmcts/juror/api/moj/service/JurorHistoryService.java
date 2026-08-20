@@ -46,6 +46,8 @@ public interface JurorHistoryService {
 
     void createDeferredLetterHistory(JurorPool jurorPool, CommunicationChannel communicationChannel);
 
+    void createDeferredDeniedLetterHistory(JurorPool jurorPool, CommunicationChannel communicationChannel);
+
     void createEditBankSortCodeHistory(String jurorNumber);
 
     void createEditBankAccountNumberHistory(String jurorNumber);

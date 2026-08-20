@@ -79,6 +79,9 @@ public class EmailDataServiceImpl implements EmailDataService {
 
         BulkPrintData bulkPrintData = createPendingEmail(jurorPool, formCode, template);
         bulkPrintDataRepository.save(bulkPrintData);
+
+        jurorHistoryService.createDeferredDeniedLetterHistory(jurorPool, CommunicationChannel.EMAIL);
+
     }
 
     @Override

@@ -146,6 +146,20 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
+    public void createDeferredDeniedLetterHistory(JurorPool jurorPool, CommunicationChannel communicationChannel) {
+
+        String otherInfo = communicationChannel == CommunicationChannel.EMAIL
+            ? "Deferral Denied Email Sent"
+            : "Deferral Denied Letter Printed";
+
+        registerHistoryLoginUserAdditionalInfo(
+            jurorPool, HistoryCodeMod.NON_DEFERRED_LETTER,
+            otherInfo, null,
+            jurorPool.getDeferralCode()
+        );
+    }
+
+    @Override
     public void createEditBankSortCodeHistory(String jurorNumber) {
         registerHistory(jurorNumber, null, HistoryCodeMod.CHANGE_PERSONAL_DETAILS, "Bank Sort Code Changed",
                         SecurityUtil.getActiveLogin());
