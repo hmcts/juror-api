@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -165,7 +166,9 @@ public class DeferralResponseServiceImplTest {
             .getJurorPoolFromUser(any());
 
         verify(jurorPoolRepository, times(1)).save(any());
-        verify(jurorHistoryRepository, times(2)).save(any());
+        verify(jurorHistoryRepository, times(1)).save(any());
+        verify(jurorHistoryService, times(1))
+            .createDeferredDeniedLetterHistory(any(), eq(CommunicationChannel.LETTER));
         verify(printDataService, times(1)).printDeferralDeniedLetter(any());
         verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(jurorNumber);
     }
@@ -234,6 +237,7 @@ public class DeferralResponseServiceImplTest {
             List.of(FormCode.ENG_DEFERRALDENIED, FormCode.BI_DEFERRALDENIED));
         inOrder.verify(emailDataService).emailDeferralDeniedLetter(jurorPool);
         verify(printDataService, never()).printDeferralDeniedLetter(any());
+        verify(jurorHistoryRepository, times(1)).save(any());
     }
 
     @Test

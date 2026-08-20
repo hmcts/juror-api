@@ -147,10 +147,85 @@ class EmailDataServiceImplTest {
     }
 
     @Test
+    void emailDeferralDeniedLetter_englishJuror_queuesPendingEmailAndCreatesHistory() {
+        JurorPool jurorPool = createJurorPool(false);
+        FormAttribute formAttribute = FormAttribute.builder()
+            .formType(FormCode.ENG_DEFERRALDENIED.getCode())
+            .directoryName("DIR")
+            .maxRecLen(100)
+            .build();
+
+        when(formAttributeRepository.findById(FormCode.ENG_DEFERRALDENIED.getCode()))
+            .thenReturn(Optional.of(formAttribute));
+
+        emailDataService.emailDeferralDeniedLetter(jurorPool);
+
+        ArgumentCaptor<BulkPrintData> captor = ArgumentCaptor.forClass(BulkPrintData.class);
+        verify(bulkPrintDataRepository).save(captor.capture());
+
+        BulkPrintData emailData = captor.getValue();
+        assertThat(emailData.getJurorNo()).isEqualTo("123456789");
+        assertThat(emailData.getFormAttribute()).isEqualTo(formAttribute);
+        assertThat(emailData.getNotifyTemplateName()).isEqualTo(
+            DigitalByDefaultEmailTemplate.DEFERRAL_DENIED_ENGLISH.getTemplateName());
+        assertThat(emailData.isExtractedFlag()).isTrue();
+        assertThat(emailData.isDigitalComms()).isTrue();
+        assertThat(emailData.getDetailRec()).isEqualTo("N/A");
+        assertThat(emailData.getCommunicationChannel()).isEqualTo(CommunicationChannel.EMAIL);
+        assertThat(emailData.getEmailStatus()).isEqualTo(EmailStatus.PENDING);
+        assertThat(emailData.getCreationDate()).isEqualTo(LocalDate.now());
+
+        verify(jurorHistoryService).createDeferredDeniedLetterHistory(jurorPool, CommunicationChannel.EMAIL);
+    }
+
+    @Test
+    void emailDeferralDeniedLetter_welshJuror_queuesPendingEmailAndCreatesHistory() {
+        JurorPool jurorPool = createJurorPool(true);
+        FormAttribute formAttribute = FormAttribute.builder()
+            .formType(FormCode.BI_DEFERRALDENIED.getCode())
+            .directoryName("DIR")
+            .maxRecLen(100)
+            .build();
+
+        when(formAttributeRepository.findById(FormCode.BI_DEFERRALDENIED.getCode()))
+            .thenReturn(Optional.of(formAttribute));
+
+        emailDataService.emailDeferralDeniedLetter(jurorPool);
+
+        ArgumentCaptor<BulkPrintData> captor = ArgumentCaptor.forClass(BulkPrintData.class);
+        verify(bulkPrintDataRepository).save(captor.capture());
+
+        BulkPrintData emailData = captor.getValue();
+        assertThat(emailData.getJurorNo()).isEqualTo("123456789");
+        assertThat(emailData.getFormAttribute()).isEqualTo(formAttribute);
+        assertThat(emailData.getNotifyTemplateName()).isEqualTo(
+            DigitalByDefaultEmailTemplate.DEFERRAL_DENIED_WELSH.getTemplateName());
+        assertThat(emailData.isExtractedFlag()).isTrue();
+        assertThat(emailData.isDigitalComms()).isTrue();
+        assertThat(emailData.getDetailRec()).isEqualTo("N/A");
+        assertThat(emailData.getCommunicationChannel()).isEqualTo(CommunicationChannel.EMAIL);
+        assertThat(emailData.getEmailStatus()).isEqualTo(EmailStatus.PENDING);
+        assertThat(emailData.getCreationDate()).isEqualTo(LocalDate.now());
+
+        verify(jurorHistoryService).createDeferredDeniedLetterHistory(jurorPool, CommunicationChannel.EMAIL);
+    }
+
+    @Test
     void emailExcusalGrantedLetter_nullJurorPool_throwsInternalServerError() {
         assertThatThrownBy(() -> emailDataService.emailExcusalGrantedLetter(null))
             .isInstanceOf(MojException.InternalServerError.class)
             .hasMessage("Attempted to email excusal granted letter for null jurorPool");
+
+        verifyNoInteractions(bulkPrintDataRepository);
+        verifyNoInteractions(formAttributeRepository);
+        verifyNoInteractions(jurorHistoryService);
+    }
+
+    @Test
+    void emailDeferralDeniedLetter_nullJurorPool_throwsInternalServerError() {
+        assertThatThrownBy(() -> emailDataService.emailDeferralDeniedLetter(null))
+            .isInstanceOf(MojException.InternalServerError.class)
+            .hasMessage("Attempted to email deferral denied letter for null jurorPool");
 
         verifyNoInteractions(bulkPrintDataRepository);
         verifyNoInteractions(formAttributeRepository);

@@ -195,17 +195,8 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
                 emailDataService.emailDeferralDeniedLetter(jurorPool);
             } else {
                 printDataService.printDeferralDeniedLetter(jurorPool);
+                jurorHistoryService.createDeferredDeniedLetterHistory(jurorPool, CommunicationChannel.LETTER);
             }
-
-            jurorHistoryRepository.save(JurorHistory.builder()
-                                            .jurorNumber(jurorPool.getJurorNumber())
-                                            .dateCreated(LocalDateTime.now())
-                                            .historyCode(HistoryCodeMod.NON_DEFERRED_LETTER)
-                                            .createdBy(payload.getLogin())
-                                            .poolNumber(jurorPool.getPoolNumber())
-                                            .otherInformation("Deferral Denied")
-                                            .otherInformationRef(deferralRequestDto.getDeferralReason())
-                                            .build());
         }
     }
 
