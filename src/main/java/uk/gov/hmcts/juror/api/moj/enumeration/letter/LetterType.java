@@ -19,7 +19,8 @@ import java.util.function.Consumer;
 @Getter
 public enum LetterType {
 
-    SUMMONS(List.of(FormCode.ENG_SUMMONS, FormCode.BI_SUMMONS), List.of(
+    SUMMONS(List.of(FormCode.ENG_SUMMONS, FormCode.BI_SUMMONS, FormCode.ENG_DBD_SUMMONS, FormCode.BI_DBD_SUMMONS),
+            List.of(
         ReissueLetterService.DataType.JUROR_NUMBER,
         ReissueLetterService.DataType.SUMMONS_POOL_NUMBER,
         ReissueLetterService.DataType.SUMMONS_DATE,
