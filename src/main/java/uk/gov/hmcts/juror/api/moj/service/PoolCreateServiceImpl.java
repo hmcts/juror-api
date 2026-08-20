@@ -382,7 +382,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 jurorHistBuilder.otherInformationRef(HistoryCodeMod.DISQUALIFY_POOL_MEMBER.getCode());
                 historyList.add(jurorHistBuilder.build());
             } else if (isDigitalByDefault) {
-                log.info("To be implemented - Will update juror history for the new light summons letter");
+                jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
+                jurorHistBuilder.otherInformation("DBD Summons letter");
+                historyList.add(jurorHistBuilder.build());
             } else {
                 jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
                 historyList.add(jurorHistBuilder.build());
@@ -480,10 +482,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 .filter(jurorPool -> !Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED))
                 .toList();
 
-            // ToDo need to implement the new light summons letter when we have the specs
             if (!summonedJurors.isEmpty()) {
                 if (isDigitalByDefault) {
-                    log.info("To be implemented - Will send out the new light summons letter");
+                    printDataService.bulkPrintDbdSummonsLetter(summonedJurors);
                 } else {
                     printDataService.bulkPrintSummonsLetter(summonedJurors);
                 }

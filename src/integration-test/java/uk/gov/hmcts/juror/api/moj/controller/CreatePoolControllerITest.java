@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
@@ -76,9 +75,6 @@ import static org.assertj.core.api.Assertions.assertThat;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = "feature-flags.flags.digital-by-default=false")
 public class CreatePoolControllerITest extends AbstractIntegrationTest {
-
-    @Value("${jwt.secret.bureau}")
-    private String bureauSecret;
 
     @Autowired
     private TestRestTemplate template;
