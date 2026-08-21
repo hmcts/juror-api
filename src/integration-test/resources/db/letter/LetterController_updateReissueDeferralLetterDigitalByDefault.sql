@@ -43,6 +43,8 @@ ON CONFLICT (template_name) DO NOTHING;
 UPDATE juror_mod.bulk_print_data
 SET communication_channel = 'EMAIL',
     email_status = 'PENDING',
+    notify_template_name = 'DBD_DEF_GRANTED_ENG',
+    detail_rec = 'N/A',
     extracted_flag = true,
     digital_comms = true
 WHERE juror_no = '555555565'

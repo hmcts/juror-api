@@ -594,6 +594,87 @@ public class ReissueLetterServiceTest {
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
         }
 
+        @Test
+        void reissueLetterOnlyExceptionQueuesLetterForDigitalByDefaultJuror() {
+            String owner = "400";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            final ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                getReissueLetterRequestData(FormCode.ENG_REQUESTINFO.getCode());
+            final ReissueLetterRequestDto reissueLetterRequestDto =
+                getReissueLetterRequestDto(reissueLetterRequestData);
+            final BulkPrintData bulkPrintData = getBulkPrintData(reissueLetterRequestData);
+
+            doReturn(Optional.of(bulkPrintData)).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+            doReturn(Optional.empty()).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
+
+            JurorStatus summonedStatus = new JurorStatus();
+            summonedStatus.setStatus(IJurorStatus.SUMMONED);
+            when(jurorStatusRepository.findById(IJurorStatus.SUMMONED))
+                .thenReturn(Optional.of(summonedStatus));
+
+            JurorPool jurorPool = getJurorPool(summonedStatus);
+            jurorPool.setPool(getDigitalByDefaultPoolRequest());
+            jurorPool.getJuror().setDigitalByDefault(true);
+            jurorPool.getJuror().setDbdPreference(ReplyMethod.DIGITAL.getDescription());
+
+            when(jurorPoolService.getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber()))
+                .thenReturn(jurorPool);
+            when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(true);
+            when(emailDataService.emailReissueLetter(jurorPool, FormCode.ENG_REQUESTINFO)).thenReturn(false);
+
+            reissueLetterService.reissueLetter(reissueLetterRequestDto);
+
+            verify(emailDataService, times(1)).emailReissueLetter(jurorPool, FormCode.ENG_REQUESTINFO);
+            verify(printDataService, times(1)).reprintRequestInfoLetter(jurorPool);
+        }
+
+        @Test
+        void reissueUnsupportedEmailForDigitalByDefaultJurorThrowsException() {
+            String owner = "400";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            final ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                getReissueLetterRequestData(FormCode.ENG_EXCUSAL.getCode());
+            final ReissueLetterRequestDto reissueLetterRequestDto =
+                getReissueLetterRequestDto(reissueLetterRequestData);
+            final BulkPrintData bulkPrintData = getBulkPrintData(reissueLetterRequestData);
+
+            doReturn(Optional.of(bulkPrintData)).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+            doReturn(Optional.empty()).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
+
+            JurorStatus excusedStatus = new JurorStatus();
+            excusedStatus.setStatus(IJurorStatus.EXCUSED);
+            when(jurorStatusRepository.findById(IJurorStatus.EXCUSED))
+                .thenReturn(Optional.of(excusedStatus));
+
+            JurorPool jurorPool = getJurorPool(excusedStatus);
+            jurorPool.setPool(getDigitalByDefaultPoolRequest());
+            jurorPool.getJuror().setDigitalByDefault(true);
+            jurorPool.getJuror().setDbdPreference(ReplyMethod.DIGITAL.getDescription());
+
+            when(jurorPoolService.getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber()))
+                .thenReturn(jurorPool);
+            when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(true);
+            when(emailDataService.emailReissueLetter(jurorPool, FormCode.ENG_EXCUSAL)).thenReturn(false);
+
+            assertThatExceptionOfType(MojException.NotImplemented.class).isThrownBy(() ->
+                reissueLetterService.reissueLetter(reissueLetterRequestDto));
+
+            verify(emailDataService, times(1)).emailReissueLetter(jurorPool, FormCode.ENG_EXCUSAL);
+            verify(printDataService, never()).printExcusalLetter(jurorPool);
+        }
+
         @ParameterizedTest
         @ValueSource(strings = {"5224", "5224C"})
         void reissueWithdrawalLetterHappyPath(String formCode) {

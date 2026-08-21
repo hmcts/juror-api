@@ -57,7 +57,20 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private static final List<String> CREATE_LETTER_IF_NOT_EXIST_CODES = List.of(
         FormCode.ENG_SUMMONS_REMINDER.getCode(),
         FormCode.BI_SUMMONS_REMINDER.getCode());
+    // this list will include the new summons response and reminder letters that are only to be sent via letters
+    // for digital by default eligible jurors
+    private static final Set<FormCode> DIGITAL_BY_DEFAULT_LETTER_ONLY_REISSUE_CODES = Set.of(
+        FormCode.ENG_DBD_SUMMONS,
+        FormCode.BI_DBD_SUMMONS
+    );
 
+    // This list will include the summons and reminder letters that are ineligible for digital by default jurors
+    private static final Set<FormCode> INELIGIBLE_DIGITAL_BY_DEFAULT_LETTER_REISSUE_CODES = Set.of(
+        FormCode.ENG_SUMMONS,
+        FormCode.BI_SUMMONS,
+        FormCode.ENG_SUMMONS_REMINDER,
+        FormCode.BI_SUMMONS_REMINDER
+    );
 
     @Transactional
     @Override
@@ -171,9 +184,9 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         // if no jurors with a modified status are found, print the requested letters
         if (response.getJurors().isEmpty()) {
             request.getLetters().forEach(letter -> {
-                reissueLetterOrEmail(letter, true);
                 // get the pool number for the juror
                 JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
+                reissueLetterOrEmail(letter, jurorPool, true);
                 poolLetterCount.merge(jurorPool.getPoolNumber(), 1, Integer::sum);
                 }
             );
@@ -213,15 +226,22 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     }
 
     private void reissueLetterOrEmail(ReissueLetterRequestDto.@NotNull ReissueLetterRequestData letter,
+                                      JurorPool jurorPool,
                                       boolean requirePrintedLetter) {
         validateRequestedLetter(letter, requirePrintedLetter);
         final String jurorNumber = letter.getJurorNumber();
         final FormCode formCode = FormCode.getFormCode(letter.getFormCode());
-        JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
 
         if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
             && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)
-            && emailDataService.emailReissueLetter(jurorPool, formCode)) {
+            && !DIGITAL_BY_DEFAULT_LETTER_ONLY_REISSUE_CODES.contains(formCode)
+            && !emailDataService.emailReissueLetter(jurorPool, formCode)) {
+            // something went wrong with sending out email, it could be a letter
+            // that no longer is allowed for digital by default jurors
+            log.info("Email not resent for juror number {} with form code {}", jurorNumber, formCode);
+            if (INELIGIBLE_DIGITAL_BY_DEFAULT_LETTER_REISSUE_CODES.contains(formCode)) {
+                throw new MojException.BadRequest("Letter type not allowed for digital by default jurors", null);
+            }
             return;
         }
 
@@ -392,6 +412,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                                                               letter.getJurorNumber()), null);
             }
         }
+
         // verify the same letter is not already pending a reprint
         bulkPrintDataRepository.findByJurorNumberFormCodeAndPending(
                 letter.getJurorNumber(), letter.getFormCode())

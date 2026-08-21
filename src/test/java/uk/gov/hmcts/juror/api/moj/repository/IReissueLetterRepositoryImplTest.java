@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -244,7 +245,8 @@ class IReissueLetterRepositoryImplTest {
 
         assertThat(bulkPrintData).isNotNull();
         postverifyFindOne(jpaQuery, JUROR_NUMBER, FORM_CODE, BULK_PRINT_DATA.extractedFlag.isNull()
-            .or(BULK_PRINT_DATA.extractedFlag.eq(false)));
+            .or(BULK_PRINT_DATA.extractedFlag.eq(false))
+            .or(BULK_PRINT_DATA.emailStatus.eq(EmailStatus.PENDING)));
     }
 
     @Test
@@ -261,7 +263,8 @@ class IReissueLetterRepositoryImplTest {
 
         assertThat(bulkPrintData).isEmpty();
         postverifyFindOne(jpaQuery, JUROR_NUMBER, FORM_CODE, BULK_PRINT_DATA.extractedFlag.isNull()
-            .or(BULK_PRINT_DATA.extractedFlag.eq(false)));
+            .or(BULK_PRINT_DATA.extractedFlag.eq(false))
+            .or(BULK_PRINT_DATA.emailStatus.eq(EmailStatus.PENDING)));
     }
 
     private void postverifyFindOne(JPAQuery<BulkPrintData> jpaQuery, String jurorNumber, String formCode,
