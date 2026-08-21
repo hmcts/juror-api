@@ -189,9 +189,9 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
             .isEqualTo("555");
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history WHERE "
                 + "juror_number='644892530' AND HISTORY_CODE='RDIS' "
-                + "AND other_information='Withdrawal Letter Printed' AND other_info_reference='B'",
+                + "AND other_information='Withdrawal Letter' AND other_info_reference='B'",
             Integer.class))
-            .as("Juror's PART_HIST entry should record the printed withdrawal letter")
+            .as("Juror's PART_HIST entry should record the queued withdrawal letter")
             .isEqualTo(1);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.bulk_print_data WHERE "
                 + "juror_no='644892530' and form_type in ('5224','5224C')", Integer.class))
@@ -247,9 +247,9 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
             .isEqualTo(1);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history WHERE "
                 + "juror_number='644892530' AND HISTORY_CODE='RDIS' "
-                + "AND other_information='Withdrawal Letter Email Sent' AND other_info_reference='B'",
+                + "AND other_information='Withdrawal Email' AND other_info_reference='B'",
             Integer.class))
-            .as("Juror history should record the emailed withdrawal letter")
+            .as("Juror history should record the queued withdrawal email")
             .isEqualTo(1);
         softly.assertAll();
     }
