@@ -235,7 +235,8 @@ class ManageDeferralsServiceTest {
             verify(jurorPoolRepository, times(2)).saveAndFlush(any());
             verify(jurorPoolRepository, times(2)).save(any());
             verify(jurorHistoryRepository, times(2)).save(any());
-            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "");
+            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "",
+                                                                        CommunicationChannel.LETTER);
             verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111111);
             verify(poolRequestRepository, times(2)).findByPoolNumber(POOL_111111112);
             verify(poolMemberSequenceService, times(1))
@@ -245,8 +246,54 @@ class ManageDeferralsServiceTest {
             verify(poolMemberSequenceService, times(1)).leftPadInteger(any(int.class));
             verify(printDataService, times(1)).printConfirmationLetter(any());
             verify(printDataService, times(1)).printPostponeLetter(any());
-            verify(jurorHistoryService, times(1)).createConfirmationLetterHistory(any(), anyString());
+            verify(jurorHistoryService, times(1)).createConfirmationLetterHistory(any(), anyString(),
+                                                                                  eq(CommunicationChannel.LETTER));
             verify(currentlyDeferredRepository, times(0)).save(any());
+        }
+
+        @Test
+        void processJurorPostponementDigitalByDefaultEmailsConfirmationAndPostponementLetters() {
+            TestUtils.mockBureauUser();
+            LocalDate newAttendanceDate = LocalDate.now();
+            LocalDate oldAttendanceDate = LocalDate.of(2023, 6, 6);
+
+            final BureauJwtPayload bureauPayload = TestUtils.createJwt(BUREAU_OWNER, BUREAU_USER,
+                UserType.BUREAU, Collections.singletonList(Role.MANAGER));
+
+            final PoolRequest oldPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111111, LOC_CODE_415,
+                oldAttendanceDate);
+
+            final PoolRequest newPoolRequest = createPoolRequest(BUREAU_OWNER, POOL_111111112, LOC_CODE_415,
+                newAttendanceDate);
+            newPoolRequest.getCourtLocation().setDigitalByDefault(true);
+
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(IJurorStatus.RESPONDED);
+
+            JurorPool jurorPool = createJurorPool(JUROR_123456789);
+            setDigitalByDefaultJuror(jurorPool, ReplyMethod.DIGITAL);
+
+            doReturn(true).when(featureFlags).isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG);
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(JUROR_123456789);
+
+            doReturn(Optional.of(oldPoolRequest)).when(poolRequestRepository).findByPoolNumber(POOL_111111111);
+            doReturn(Optional.of(jurorStatus)).when(jurorStatusRepository).findById(anyInt());
+            doReturn(1).when(poolMemberSequenceService).getPoolMemberSequenceNumber(any());
+            doReturn(Optional.of(newPoolRequest)).when(poolRequestRepository).findByPoolNumber(anyString());
+
+            DeferralAgeDisqualificationResponseDto response =
+                manageDeferralsService.processJurorPostponement(bureauPayload, createProcessJurorRequestDto());
+
+            assertThat(response.getEligible()).isEqualTo(1);
+
+            verify(emailDataService, times(1)).emailConfirmationLetter(any(JurorPool.class));
+            verify(emailDataService, times(1)).emailPostponementLetter(jurorPool);
+            verify(printDataService, never()).printConfirmationLetter(any());
+            verify(printDataService, never()).printPostponeLetter(any());
+            verify(jurorHistoryService, never()).createConfirmationLetterHistory(any(), anyString(), any());
+            verify(jurorHistoryService, never()).createPostponementLetterHistory(jurorPool, "Postponed Letter",
+                                                                                 CommunicationChannel.LETTER);
         }
 
         @Test
@@ -287,7 +334,8 @@ class ManageDeferralsServiceTest {
             verify(jurorPoolRepository, times(2)).saveAndFlush(any());
             verify(jurorPoolRepository, times(2)).save(any());
             verify(jurorHistoryRepository, times(2)).save(any());
-            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "");
+            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "",
+                                                                        CommunicationChannel.LETTER);
             verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111111);
             verify(poolRequestRepository, times(2)).findByPoolNumber(POOL_111111112);
             verify(poolMemberSequenceService, times(1))
@@ -297,7 +345,7 @@ class ManageDeferralsServiceTest {
             verify(poolMemberSequenceService, times(1)).leftPadInteger(any(int.class));
             verify(printDataService, times(1)).printPostponeLetter(any());
             verify(printDataService, never()).printConfirmationLetter(any());
-            verify(jurorHistoryService, never()).createConfirmationLetterHistory(any(), anyString());
+            verify(jurorHistoryService, never()).createConfirmationLetterHistory(any(), anyString(), any());
             verify(currentlyDeferredRepository, never()).save(any());
         }
 
@@ -349,8 +397,10 @@ class ManageDeferralsServiceTest {
             verify(jurorPoolRepository, times(4)).saveAndFlush(any());
             verify(jurorPoolRepository, times(4)).save(any());
             verify(jurorHistoryRepository, times(4)).save(any());
-            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool1, "");
-            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool2, "");
+            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool1, "",
+                                                                        CommunicationChannel.LETTER);
+            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool2, "",
+                                                                        CommunicationChannel.LETTER);
             verify(poolRequestRepository, times(6)).findByPoolNumber(anyString());
             verify(poolMemberSequenceService, times(2))
                 .getPoolMemberSequenceNumber(any(String.class));
@@ -408,7 +458,7 @@ class ManageDeferralsServiceTest {
             verify(jurorPoolRepository, never()).saveAndFlush(any());
             verify(jurorPoolRepository, never()).save(any());
             verify(jurorHistoryRepository, never()).save(any());
-            verify(jurorHistoryService, never()).createPostponementLetterHistory(any(), anyString());
+            verify(jurorHistoryService, never()).createPostponementLetterHistory(any(), anyString(), any());
             verify(poolRequestRepository, times(1)).findByPoolNumber(anyString());
             verify(poolMemberSequenceService, never()).getPoolMemberSequenceNumber(any(String.class));
             verify(poolRequestRepository, never()).save(any());
@@ -508,7 +558,8 @@ class ManageDeferralsServiceTest {
             verify(jurorPoolRepository, times(0)).saveAndFlush(any());
             verify(jurorPoolRepository, times(2)).save(any());
             verify(jurorHistoryRepository, times(1)).save(any());
-            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "");
+            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "",
+                                                                        CommunicationChannel.LETTER);
             verify(poolRequestRepository, times(0)).findByPoolNumber(anyString());
             verify(poolMemberSequenceService, times(0))
                 .getPoolMemberSequenceNumber(any(String.class));
@@ -3086,6 +3137,41 @@ class ManageDeferralsServiceTest {
             assertThat(response.getFailedToDisqualify()).isEmpty();
 
             verify(printDataService, times(1)).printWithdrawalLetter(jurorPool);
+        }
+
+        @Test
+        void bulkDisqualifyForAgeDigitalByDefaultQueuesEmailWithdrawalLetter() {
+            TestUtils.mockBureauUser();
+            final BureauJwtPayload bureauPayload =
+                TestUtils.createJwt(JurorDigitalApplication.JUROR_OWNER, BUREAU_USER);
+
+            JurorPool jurorPool = createJurorPool(JUROR_123456789);
+            jurorPool.setOwner(JurorDigitalApplication.JUROR_OWNER);
+            setDigitalByDefaultJuror(jurorPool, ReplyMethod.DIGITAL);
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_123456789);
+
+            JurorStatus disqualifiedStatus = new JurorStatus();
+            disqualifiedStatus.setStatus(IJurorStatus.DISQUALIFIED);
+            doReturn(Optional.of(disqualifiedStatus))
+                .when(jurorStatusRepository)
+                .findById(IJurorStatus.DISQUALIFIED);
+
+            doReturn(true).when(featureFlags).isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG);
+            doReturn(null).when(digitalResponseRepository).findByJurorNumber(JUROR_123456789);
+            doReturn(null).when(paperResponseRepository).findByJurorNumber(JUROR_123456789);
+
+            BulkDisqualifyRequestDto requestDto =
+                new BulkDisqualifyRequestDto(Collections.singletonList(JUROR_123456789));
+
+            BulkDisqualifyResponseDto response =
+                manageDeferralsService.bulkDisqualifyForAge(bureauPayload, requestDto);
+
+            assertThat(response.getDisqualifiedCount()).isEqualTo(1);
+            assertThat(response.getDisqualified()).hasSize(1);
+            assertThat(response.getFailedToDisqualify()).isEmpty();
+
+            verify(emailDataService, times(1)).emailWithdrawalLetter(jurorPool, DisqualifyCode.A.getCode());
+            verify(printDataService, never()).printWithdrawalLetter(any());
         }
 
         @Test

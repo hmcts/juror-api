@@ -392,6 +392,17 @@ public class LetterBase {
         );
     }
 
+    protected void addJurorAddressDbd() {
+        addData(LetterDataType.JUROR_ADDRESS1, 35);
+        addDataShuffle(
+            new DataShuffle(LetterDataType.JUROR_ADDRESS2, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS3, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS4, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS5, 35),
+            new DataShuffle(LetterDataType.JUROR_POSTCODE, 10)
+        );
+    }
+
     protected void addWelshCourtAddress() {
         addDataShuffle(
             new DataShuffle(LetterDataType.WELSH_COURT_ADDRESS1, 35),

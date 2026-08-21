@@ -47,4 +47,7 @@ public interface BulkPrintDataRepository extends IReissueLetterRepository, JpaRe
     @Procedure(procedureName = "juror_mod.delete_printfiles")
     void deletePrintfiles();
 
+    @Procedure(procedureName = "juror_mod.delete_dbd_emails")
+    void deleteDbdEmails();
+
 }

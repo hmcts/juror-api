@@ -22,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -47,6 +48,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 
 @RunWith(SpringRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
@@ -154,7 +156,7 @@ public class DeferralResponseServiceImplTest {
     @Test
     public void test_denyDeferralRequest_happyPath_bureauUser_bureauOwner() {
         String jurorNumber = "123456789";
-        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
 
@@ -164,7 +166,9 @@ public class DeferralResponseServiceImplTest {
             .getJurorPoolFromUser(any());
 
         verify(jurorPoolRepository, times(1)).save(any());
-        verify(jurorHistoryRepository, times(2)).save(any());
+        verify(jurorHistoryRepository, times(1)).save(any());
+        verify(jurorHistoryService, times(1))
+            .createDeferredDeniedLetterHistory(any(), eq(CommunicationChannel.LETTER));
         verify(printDataService, times(1)).printDeferralDeniedLetter(any());
         verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(jurorNumber);
     }
@@ -172,7 +176,7 @@ public class DeferralResponseServiceImplTest {
     @Test
     public void test_grantDeferralRequest_removesPendingDeferralLettersBeforeQueuingNewLetter() {
         String jurorNumber = "123456789";
-        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
         deferralRequestDto.setDeferralDecision(DeferralDecision.GRANT);
@@ -185,6 +189,55 @@ public class DeferralResponseServiceImplTest {
             eq(List.of(FormCode.ENG_DEFERRAL, FormCode.BI_DEFERRAL)));
         inOrder.verify(printDataService).printDeferralLetter(any());
         verify(jurorHistoryService, times(1)).createDeferredLetterHistory(any(), any());
+    }
+
+    @Test
+    public void test_grantDeferralRequest_digitalByDefault_queuesEmailDeferralLetter() {
+        String jurorNumber = "123456789";
+
+        JurorPool jurorPool = createTestJurorPool("400", jurorNumber);
+        setDigitalByDefaultJuror(jurorPool);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+
+        DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
+        deferralRequestDto.setDeferralDecision(DeferralDecision.GRANT);
+        deferralRequestDto.setDeferralDate(LocalDate.now().plusWeeks(1));
+
+        doReturn(true).when(featureFlags).isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG);
+
+        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto);
+
+        InOrder inOrder = inOrder(printDataService, emailDataService);
+        inOrder.verify(printDataService).removeQueuedLetterForJuror(jurorPool,
+            List.of(FormCode.ENG_DEFERRAL, FormCode.BI_DEFERRAL));
+        inOrder.verify(emailDataService).emailDeferralLetter(jurorPool);
+        verify(printDataService, never()).printDeferralLetter(any());
+        verify(jurorHistoryService, never()).createDeferredLetterHistory(any(), any());
+    }
+
+    @Test
+    public void test_denyDeferralRequest_digitalByDefault_queuesEmailDeferralDeniedLetter() {
+        TestUtils.mockBureauUser();
+        String jurorNumber = "123456789";
+
+        JurorPool jurorPool = createTestJurorPool("400", jurorNumber);
+        setDigitalByDefaultJuror(jurorPool);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+
+        DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
+
+        doReturn(true).when(featureFlags).isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG);
+
+        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto);
+
+        InOrder inOrder = inOrder(printDataService, emailDataService);
+        inOrder.verify(printDataService).removeQueuedLetterForJuror(jurorPool,
+            List.of(FormCode.ENG_DEFERRALDENIED, FormCode.BI_DEFERRALDENIED));
+        inOrder.verify(emailDataService).emailDeferralDeniedLetter(jurorPool);
+        verify(printDataService, never()).printDeferralDeniedLetter(any());
+        verify(jurorHistoryRepository, times(1)).save(any());
     }
 
     @Test
@@ -292,6 +345,12 @@ public class DeferralResponseServiceImplTest {
         jurorPool.setJuror(juror);
 
         return jurorPool;
+    }
+
+    private void setDigitalByDefaultJuror(JurorPool jurorPool) {
+        jurorPool.getJuror().setDigitalByDefault(true);
+        jurorPool.getJuror().setDbdPreference("Digital");
+        jurorPool.getCourt().setDigitalByDefault(true);
     }
 
     private JurorStatus createJurorStatus(int statusCode) {

@@ -3677,7 +3677,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(index.getHistoryCode()).isEqualTo(HistoryCodeMod.NON_RESPONDED_LETTER);
                 assertThat(index.getCreatedBy()).isEqualTo("BUREAU_USER");
                 assertThat(index.getDateCreated().isEqual(LocalDate.now().atStartOfDay()));
-                assertThat(index.getOtherInformation()).isEqualTo("Reminder letter printed");
+                assertThat(index.getOtherInformation()).isEqualTo("Reminder letter");
                 assertThat(index.getOtherInformationDate()).isNull();
                 assertThat(index.getOtherInformationRef()).isNull();
             }
