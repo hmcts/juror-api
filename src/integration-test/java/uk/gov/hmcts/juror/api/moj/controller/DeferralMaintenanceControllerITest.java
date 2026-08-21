@@ -976,7 +976,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
                 Integer historyEventCount = jdbcTemplate.queryForObject(
                     "SELECT count(*) FROM juror_mod.juror_history WHERE juror_number = ? AND history_code = ? "
-                        + "AND other_information = 'Deferral Email Sent'",
+                        + "AND other_information = 'Deferral Email'",
                     Integer.class,
                     JUROR_555555570,
                     HistoryCodeMod.DEFERRED_LETTER.getCode()
