@@ -56,7 +56,7 @@ class EmailDataServiceImplTest {
         when(formAttributeRepository.findById(expectedFormCode.getCode()))
             .thenReturn(Optional.of(formAttribute(expectedFormCode)));
 
-        boolean result = emailDataService.emailReissueLetter(jurorPool(welsh), requestedFormCode);
+        boolean result = emailDataService.emailReissueLetter(createJurorPool(welsh), requestedFormCode);
 
         assertThat(result).isTrue();
         verify(formAttributeRepository).findById(expectedFormCode.getCode());
@@ -78,7 +78,7 @@ class EmailDataServiceImplTest {
 
     @Test
     void emailReissueLetterReturnsFalseForUnsupportedTemplate() {
-        boolean result = emailDataService.emailReissueLetter(jurorPool(false), FormCode.ENG_REQUESTINFO);
+        boolean result = emailDataService.emailReissueLetter(createJurorPool(false), FormCode.ENG_REQUESTINFO);
 
         assertThat(result).isFalse();
         verifyNoInteractions(formAttributeRepository, bulkPrintDataRepository);
@@ -119,7 +119,7 @@ class EmailDataServiceImplTest {
 
     private JurorPool createJurorPool(boolean welsh) {
         Juror juror = new Juror();
-        juror.setJurorNumber("123456789");
+        juror.setJurorNumber(JUROR_NUMBER);
         juror.setWelsh(welsh);
 
         JurorPool jurorPool = new JurorPool();
@@ -132,8 +132,6 @@ class EmailDataServiceImplTest {
             .formType(formCode.getCode())
             .directoryName(formCode.name())
             .build();
-
-        return jurorPool;
     }
 
     @Test
@@ -154,7 +152,7 @@ class EmailDataServiceImplTest {
         verify(bulkPrintDataRepository).save(captor.capture());
 
         BulkPrintData emailData = captor.getValue();
-        assertThat(emailData.getJurorNo()).isEqualTo("123456789");
+        assertThat(emailData.getJurorNo()).isEqualTo(JUROR_NUMBER);
         assertThat(emailData.getFormAttribute()).isEqualTo(formAttribute);
         assertThat(emailData.getNotifyTemplateName()).isEqualTo(
             DigitalByDefaultEmailTemplate.EXCUSAL_GRANTED_ENGLISH.getTemplateName());
@@ -186,7 +184,7 @@ class EmailDataServiceImplTest {
         verify(bulkPrintDataRepository).save(captor.capture());
 
         BulkPrintData emailData = captor.getValue();
-        assertThat(emailData.getJurorNo()).isEqualTo("123456789");
+        assertThat(emailData.getJurorNo()).isEqualTo(JUROR_NUMBER);
         assertThat(emailData.getFormAttribute()).isEqualTo(formAttribute);
         assertThat(emailData.getNotifyTemplateName()).isEqualTo(
             DigitalByDefaultEmailTemplate.EXCUSAL_GRANTED_WELSH.getTemplateName());
@@ -218,7 +216,7 @@ class EmailDataServiceImplTest {
         verify(bulkPrintDataRepository).save(captor.capture());
 
         BulkPrintData emailData = captor.getValue();
-        assertThat(emailData.getJurorNo()).isEqualTo("123456789");
+        assertThat(emailData.getJurorNo()).isEqualTo(JUROR_NUMBER);
         assertThat(emailData.getFormAttribute()).isEqualTo(formAttribute);
         assertThat(emailData.getNotifyTemplateName()).isEqualTo(
             DigitalByDefaultEmailTemplate.WITHDRAWAL_ENGLISH.getTemplateName());
@@ -247,7 +245,7 @@ class EmailDataServiceImplTest {
         verify(bulkPrintDataRepository).save(captor.capture());
 
         BulkPrintData emailData = captor.getValue();
-        assertThat(emailData.getJurorNo()).isEqualTo("123456789");
+        assertThat(emailData.getJurorNo()).isEqualTo(JUROR_NUMBER);
         assertThat(emailData.getFormAttribute()).isEqualTo(formAttribute);
         assertThat(emailData.getNotifyTemplateName()).isEqualTo(
             DigitalByDefaultEmailTemplate.DEFERRAL_DENIED_ENGLISH.getTemplateName());
@@ -279,7 +277,7 @@ class EmailDataServiceImplTest {
         verify(bulkPrintDataRepository).save(captor.capture());
 
         BulkPrintData emailData = captor.getValue();
-        assertThat(emailData.getJurorNo()).isEqualTo("123456789");
+        assertThat(emailData.getJurorNo()).isEqualTo(JUROR_NUMBER);
         assertThat(emailData.getFormAttribute()).isEqualTo(formAttribute);
         assertThat(emailData.getNotifyTemplateName()).isEqualTo(
             DigitalByDefaultEmailTemplate.DEFERRAL_DENIED_WELSH.getTemplateName());
