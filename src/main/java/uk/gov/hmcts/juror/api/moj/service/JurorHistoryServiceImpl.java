@@ -135,8 +135,8 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         }
 
         String otherInfo = communicationChannel == CommunicationChannel.EMAIL
-            ? "Deferral Email Sent"
-            : "Deferral Letter Printed";
+            ? "Deferral Email"
+            : "Deferral Letter";
 
         registerHistoryLoginUserAdditionalInfo(
             jurorPool, HistoryCodeMod.DEFERRED_LETTER,
@@ -149,8 +149,8 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     public void createDeferredDeniedLetterHistory(JurorPool jurorPool, CommunicationChannel communicationChannel) {
 
         String otherInfo = communicationChannel == CommunicationChannel.EMAIL
-            ? "Deferral Denied Email Sent"
-            : "Deferral Denied Letter Printed";
+            ? "Deferral Denied Email"
+            : "Deferral Denied Letter";
 
         registerHistoryLoginUserAdditionalInfo(
             jurorPool, HistoryCodeMod.NON_DEFERRED_LETTER,
@@ -280,7 +280,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     public void createSummonsReminderLetterHistory(JurorPool jurorPool) {
         registerHistoryLoginUser(jurorPool, HistoryCodeMod.NON_RESPONDED_LETTER,
-                                 "Reminder letter printed");
+                                 "Reminder letter");
     }
 
     @Override
@@ -460,18 +460,19 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     /**
-     * Builds an otherInformation string that reflects which channel the letter went out on, mirroring the
+     * Builds an otherInformation string that reflects which channel the letter was queued on, mirroring the
      * pattern originally established by {@link #createDeferredLetterHistory}.
      *
      * @param label   the base description of the letter/comm, e.g. "Confirmation Letter"
-     * @param channel the channel it was sent on
-     * @return "{label} Printed" for {@link CommunicationChannel#LETTER}, otherwise "{label} Email Sent"
+     * @param channel the channel it was queued on
+     * @return "{label}" for {@link CommunicationChannel#LETTER}, otherwise "{label}" with "Letter" replaced by
+     *     "Email"
      */
     private String channelInfo(String label, CommunicationChannel channel) {
         String base = label == null ? "" : label;
-        return channel == CommunicationChannel.LETTER
-            ? (base + " Printed").trim()
-            : (base + " Email Sent").trim();
+        return channel == CommunicationChannel.EMAIL
+            ? base.replace("Letter", "Email").trim()
+            : base.trim();
     }
 
     private void registerHistoryLoginUser(JurorPool jurorPool, HistoryCodeMod historyCode, String info) {

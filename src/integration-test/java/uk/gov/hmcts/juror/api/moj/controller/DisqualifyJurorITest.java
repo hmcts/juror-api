@@ -333,11 +333,11 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         executeInTransaction(() -> {
             assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history WHERE "
                     + "juror_number = ? AND history_code = 'RDIS' "
-                    + "AND other_information = 'Withdrawal Letter Email Sent' AND other_info_reference = ?",
+                    + "AND other_information = 'Withdrawal Email' AND other_info_reference = ?",
                 Integer.class,
                 jurorNumber,
                 disqualifyCode))
-                .as("Juror history should record the emailed withdrawal letter")
+                .as("Juror history should record the queued withdrawal email")
                 .isEqualTo(1);
         });
     }
