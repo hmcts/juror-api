@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.enumeration.letter;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import lombok.Getter;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
@@ -123,7 +125,8 @@ public enum LetterType {
             .where(QJuror.juror.excusalRejected.eq("Y")),
         datePrintedComparator()),
 
-    SUMMONED_REMINDER(List.of(FormCode.ENG_SUMMONS_REMINDER, FormCode.BI_SUMMONS_REMINDER),
+    SUMMONED_REMINDER(List.of(FormCode.ENG_SUMMONS_REMINDER, FormCode.BI_SUMMONS_REMINDER,
+                              FormCode.ENG_DBD_SUMMONS_REM, FormCode.BI_DBD_SUMMONS_REM),
         List.of(
             ReissueLetterService.DataType.JUROR_NUMBER,
             ReissueLetterService.DataType.JUROR_FIRST_NAME,
@@ -135,6 +138,7 @@ public enum LetterType {
         ),
         tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)
             .and(QJuror.juror.responded.eq(false))
+            .and(QJuror.juror.digitalByDefault.isFalse().or(hasReceivedSummonsLetter()))
         ),
         datePrintedComparator()),
     POSTPONED(List.of(FormCode.ENG_POSTPONE, FormCode.BI_POSTPONE), List.of(
@@ -184,6 +188,19 @@ public enum LetterType {
             }
             return o1Date.compareTo(o2Date);
         };
+    }
+
+    private static BooleanExpression hasReceivedSummonsLetter() {
+        QBulkPrintData summons = new QBulkPrintData("summons");
+        return JPAExpressions.selectOne()
+            .from(summons)
+            .where(summons.jurorNo.eq(QJuror.juror.jurorNumber)
+                .and(summons.formAttribute.formType.in(
+                    FormCode.ENG_SUMMONS.getCode(),
+                    FormCode.BI_SUMMONS.getCode(),
+                    FormCode.ENG_DBD_SUMMONS.getCode(),
+                    FormCode.BI_DBD_SUMMONS.getCode())))
+            .exists();
     }
 
     LetterType(List<FormCode> formCodes,
