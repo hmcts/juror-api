@@ -198,6 +198,65 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
     }
 
     @Test
+    public void generatePayLoadData_jurorOrResponseEmail_usesJurorEmailWhenPresent() {
+        templateFields.clear();
+        templateFields.add(NotifyTemplateFieldMod.builder()
+            .id(8L)
+            .templateId(TEMPLATE_ID)
+            .templateField(EMAIL_ADDRESS)
+            .mapperObject(NotifyTemplateMapperMod.JUROR_OR_RESPONSE_EMAIL)
+            .build());
+
+        getCourt(true);
+        PoolRequest poolRequest = new PoolRequest();
+        pool.setPool(poolRequest);
+        poolRequest.setCourtLocation(court);
+
+        given(commonResponseRepositoryMod.findByJurorNumber(JUROR_NUMBER)).willReturn(jurorResponse);
+        given(notifyTemplateFieldRepository.findByTemplateId(TEMPLATE_ID)).willReturn(templateFields);
+
+        payLoad = service.generatePayLoadData(TEMPLATE_ID, pool);
+
+        assertThat(payLoad)
+            .as("Juror email should take priority when populated")
+            .containsEntry(EMAIL_ADDRESS, EMAIL_1);
+
+        verify(notifyTemplateFieldRepository).findByTemplateId(TEMPLATE_ID);
+        verify(commonResponseRepositoryMod).findByJurorNumber(JUROR_NUMBER);
+    }
+
+    @Test
+    public void generatePayLoadData_jurorOrResponseEmail_usesThirdPartyEmailWhenJurorAndResponseEmailMissing() {
+        templateFields.clear();
+        templateFields.add(NotifyTemplateFieldMod.builder()
+            .id(8L)
+            .templateId(TEMPLATE_ID)
+            .templateField(EMAIL_ADDRESS)
+            .mapperObject(NotifyTemplateMapperMod.JUROR_OR_RESPONSE_EMAIL)
+            .build());
+        pool.getJuror().setEmail(null);
+        when(jurorResponse.getEmail()).thenReturn(null);
+        when(jurorResponse.getEmailAddress()).thenReturn("third-party@response.com");
+
+        getCourt(true);
+        PoolRequest poolRequest = new PoolRequest();
+        pool.setPool(poolRequest);
+        poolRequest.setCourtLocation(court);
+
+        given(commonResponseRepositoryMod.findByJurorNumber(JUROR_NUMBER)).willReturn(jurorResponse);
+        given(notifyTemplateFieldRepository.findByTemplateId(TEMPLATE_ID)).willReturn(templateFields);
+
+        payLoad = service.generatePayLoadData(TEMPLATE_ID, pool);
+
+        assertThat(payLoad)
+            .as("Third-party email should be used when juror and response email are missing")
+            .containsEntry(EMAIL_ADDRESS, "third-party@response.com");
+
+        verify(notifyTemplateFieldRepository).findByTemplateId(TEMPLATE_ID);
+        verify(commonResponseRepositoryMod).findByJurorNumber(JUROR_NUMBER);
+    }
+
+    @Test
     public void generatePayLoadData_superUrgentSentToCourt_HappyPath() {
 
         NotifyTemplateFieldMod templateField = NotifyTemplateFieldMod.builder()

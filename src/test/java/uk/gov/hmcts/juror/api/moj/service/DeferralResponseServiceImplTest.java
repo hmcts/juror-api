@@ -5,20 +5,24 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.DeferralRequestDto;
 import uk.gov.hmcts.juror.api.moj.domain.DeferralDecision;
 import uk.gov.hmcts.juror.api.moj.domain.ExcusalCode;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -27,7 +31,9 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 
+import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -36,10 +42,13 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 
 @RunWith(SpringRunner.class)
 @SuppressWarnings("PMD.TooManyMethods")
@@ -58,11 +67,17 @@ public class DeferralResponseServiceImplTest {
     @Mock
     private PrintDataService printDataService;
     @Mock
+    private JurorHistoryService jurorHistoryService;
+    @Mock
     private JurorPoolService jurorPoolService;
     @Mock
     private JurorResponseService jurorResponseService;
     @Mock
     private JurorAppearanceService jurorAppearanceService;
+    @Mock
+    private EmailDataService emailDataService;
+    @Mock
+    private FeatureFlagConfigurationProperties featureFlags;
 
     @InjectMocks
     private DeferralResponseServiceImpl deferralResponseService;
@@ -141,7 +156,7 @@ public class DeferralResponseServiceImplTest {
     @Test
     public void test_denyDeferralRequest_happyPath_bureauUser_bureauOwner() {
         String jurorNumber = "123456789";
-        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
 
         DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
 
@@ -151,9 +166,78 @@ public class DeferralResponseServiceImplTest {
             .getJurorPoolFromUser(any());
 
         verify(jurorPoolRepository, times(1)).save(any());
-        verify(jurorHistoryRepository, times(2)).save(any());
+        verify(jurorHistoryRepository, times(1)).save(any());
+        verify(jurorHistoryService, times(1))
+            .createDeferredDeniedLetterHistory(any(), eq(CommunicationChannel.LETTER));
         verify(printDataService, times(1)).printDeferralDeniedLetter(any());
         verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(jurorNumber);
+    }
+
+    @Test
+    public void test_grantDeferralRequest_removesPendingDeferralLettersBeforeQueuingNewLetter() {
+        String jurorNumber = "123456789";
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+
+        DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
+        deferralRequestDto.setDeferralDecision(DeferralDecision.GRANT);
+        deferralRequestDto.setDeferralDate(LocalDate.now().plusWeeks(1));
+
+        deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto);
+
+        InOrder inOrder = inOrder(printDataService);
+        inOrder.verify(printDataService).removeQueuedLetterForJuror(any(),
+            eq(List.of(FormCode.ENG_DEFERRAL, FormCode.BI_DEFERRAL)));
+        inOrder.verify(printDataService).printDeferralLetter(any());
+        verify(jurorHistoryService, times(1)).createDeferredLetterHistory(any(), any());
+    }
+
+    @Test
+    public void test_grantDeferralRequest_digitalByDefault_queuesEmailDeferralLetter() {
+        String jurorNumber = "123456789";
+
+        JurorPool jurorPool = createTestJurorPool("400", jurorNumber);
+        setDigitalByDefaultJuror(jurorPool);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+
+        DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
+        deferralRequestDto.setDeferralDecision(DeferralDecision.GRANT);
+        deferralRequestDto.setDeferralDate(LocalDate.now().plusWeeks(1));
+
+        doReturn(true).when(featureFlags).isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG);
+
+        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto);
+
+        InOrder inOrder = inOrder(printDataService, emailDataService);
+        inOrder.verify(printDataService).removeQueuedLetterForJuror(jurorPool,
+            List.of(FormCode.ENG_DEFERRAL, FormCode.BI_DEFERRAL));
+        inOrder.verify(emailDataService).emailDeferralLetter(jurorPool);
+        verify(printDataService, never()).printDeferralLetter(any());
+        verify(jurorHistoryService, never()).createDeferredLetterHistory(any(), any());
+    }
+
+    @Test
+    public void test_denyDeferralRequest_digitalByDefault_queuesEmailDeferralDeniedLetter() {
+        TestUtils.mockBureauUser();
+        String jurorNumber = "123456789";
+
+        JurorPool jurorPool = createTestJurorPool("400", jurorNumber);
+        setDigitalByDefaultJuror(jurorPool);
+        doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+
+        DeferralRequestDto deferralRequestDto = createTestDeferralRequestDto(jurorNumber);
+
+        doReturn(true).when(featureFlags).isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG);
+
+        BureauJwtPayload payload = TestUtils.createJwt("400", "BUREAU_USER");
+        deferralResponseService.respondToDeferralRequest(payload, deferralRequestDto);
+
+        InOrder inOrder = inOrder(printDataService, emailDataService);
+        inOrder.verify(printDataService).removeQueuedLetterForJuror(jurorPool,
+            List.of(FormCode.ENG_DEFERRALDENIED, FormCode.BI_DEFERRALDENIED));
+        inOrder.verify(emailDataService).emailDeferralDeniedLetter(jurorPool);
+        verify(printDataService, never()).printDeferralDeniedLetter(any());
+        verify(jurorHistoryRepository, times(1)).save(any());
     }
 
     @Test
@@ -244,6 +328,7 @@ public class DeferralResponseServiceImplTest {
         juror.setFirstName("jurorPool1");
         juror.setLastName("jurorPool1L");
         juror.setPostcode("M24 4GT");
+        juror.setDateOfBirth(LocalDate.of(1990, 1, 1));
         juror.setNoDefPos(1);
 
         JurorStatus jurorStatus = new JurorStatus();
@@ -260,6 +345,12 @@ public class DeferralResponseServiceImplTest {
         jurorPool.setJuror(juror);
 
         return jurorPool;
+    }
+
+    private void setDigitalByDefaultJuror(JurorPool jurorPool) {
+        jurorPool.getJuror().setDigitalByDefault(true);
+        jurorPool.getJuror().setDbdPreference("Digital");
+        jurorPool.getCourt().setDigitalByDefault(true);
     }
 
     private JurorStatus createJurorStatus(int statusCode) {

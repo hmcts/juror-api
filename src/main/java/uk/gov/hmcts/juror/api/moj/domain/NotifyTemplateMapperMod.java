@@ -26,6 +26,32 @@ public enum NotifyTemplateMapperMod {
 
     JUROR_POOL_NEXT_DATE(Type.JUROR, context -> context.getJurorPool().getNextDate()),
     JUROR_POOL_LOC_CODE(Type.JUROR, context -> context.getJurorPool().getCourt().getLocCode()),
+    JUROR_POOL_SERVICE_START_DATE(
+        Type.JUROR,
+            context -> context.getJurorPool().getNextDate() != null
+                ? context.getJurorPool().getNextDate()
+                : context.getJurorPool().getDeferralDate()
+    ),
+    JUROR_OR_RESPONSE_EMAIL(
+        Type.JUROR,
+            context -> {
+                String jurorEmail = context.getJuror().getEmail();
+                if (jurorEmail != null && !jurorEmail.isBlank()) {
+                    return jurorEmail;
+                }
+
+                if (context.getAbstractResponse() == null) {
+                    return null;
+                }
+
+                String responseEmail = context.getAbstractResponse().getEmail();
+                if (responseEmail != null && !responseEmail.isBlank()) {
+                    return responseEmail;
+                }
+
+                return context.getAbstractResponse().getEmailAddress();
+            }
+    ),
 
     POOL_ATTEND_TIME(Type.JUROR, context -> context.getPoolRequest().getAttendTime()),
     POOL_RETURN_DATE(Type.JUROR, context -> context.getPoolRequest().getReturnDate()),
