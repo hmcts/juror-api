@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.repository.FormAttributeRepository;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ConfirmLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.DbdResponseLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DbdSummonsLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralDeniedLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralLetter;
@@ -96,6 +97,20 @@ public class PrintDataServiceImpl implements PrintDataService {
     public void reprintDbdSummonsLetter(JurorPool jurorPool) {
         bulkPrintDbdSummonsLetter(List.of(jurorPool));
         jurorHistoryService.createSummonLetterReprintedHistory(jurorPool);
+    }
+
+    @Override
+    public void printDbdResponseLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to print digital by default response letter for null jurorPool", null);
+        }
+
+        commitData(new DbdResponseLetter(
+            jurorPool, jurorPool.getCourt(),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
+            welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+        ));
     }
 
     @Override

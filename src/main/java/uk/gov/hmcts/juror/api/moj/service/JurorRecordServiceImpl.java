@@ -1724,8 +1724,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    public void sendPaperSummonsPack(String jurorNumber) {
-        log.info("Sending paper summons pack for juror {} requested by user {}",
+    public void sendPaperResponsePack(String jurorNumber) {
+        log.info("Sending paper response pack for juror {} requested by user {}",
             jurorNumber, SecurityUtil.getActiveLogin());
 
         final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
@@ -1738,14 +1738,14 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
         if (jurorPool.getStatus().getStatus() != IJurorStatus.SUMMONED) {
             throw new MojException.BusinessRuleViolation(
-                "Juror must be in Summoned status to send a paper summons pack", null);
+                "Juror must be in Summoned status to send a paper response pack", null);
         }
         if (!"Paper".equals(juror.getDbdPreference())) {
             throw new MojException.BusinessRuleViolation(
                 "Juror's communication preference must be Paper", null);
         }
 
-        printDataService.reprintSummonsLetter(jurorPool);
+        printDataService.printDbdResponseLetter(jurorPool);
     }
 
     @Override
