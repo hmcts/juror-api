@@ -40,7 +40,10 @@ public enum LetterType {
         ReissueLetterService.DataType.JUROR_POSTCODE,
         ReissueLetterService.DataType.DATE_PRINTED,
         ReissueLetterService.DataType.EXTRACTED_FLAG,
-        ReissueLetterService.DataType.FORM_CODE),
+        ReissueLetterService.DataType.FORM_CODE,
+        ReissueLetterService.DataType.COMMUNICATION_CHANNEL,
+        ReissueLetterService.DataType.JUROR_PREFERENCE,
+        ReissueLetterService.DataType.EMAIL_STATUS),
         tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED)),
         datePrintedComparator()),
 
@@ -54,7 +57,10 @@ public enum LetterType {
         ReissueLetterService.DataType.JUROR_WITHDRAWAL_REASON,
         ReissueLetterService.DataType.DATE_PRINTED,
         ReissueLetterService.DataType.EXTRACTED_FLAG,
-        ReissueLetterService.DataType.FORM_CODE),
+        ReissueLetterService.DataType.FORM_CODE,
+        ReissueLetterService.DataType.COMMUNICATION_CHANNEL,
+        ReissueLetterService.DataType.JUROR_PREFERENCE,
+        ReissueLetterService.DataType.EMAIL_STATUS),
         tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DISQUALIFIED)),
         datePrintedComparator()),
 
@@ -87,7 +93,10 @@ public enum LetterType {
         ReissueLetterService.DataType.JUROR_DEFERRAL_REJECTED_REASON,
         ReissueLetterService.DataType.DATE_PRINTED,
         ReissueLetterService.DataType.EXTRACTED_FLAG,
-        ReissueLetterService.DataType.FORM_CODE),
+        ReissueLetterService.DataType.FORM_CODE,
+        ReissueLetterService.DataType.COMMUNICATION_CHANNEL,
+        ReissueLetterService.DataType.JUROR_PREFERENCE,
+        ReissueLetterService.DataType.EMAIL_STATUS),
         tupleJPAQuery -> tupleJPAQuery
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED)
                 .and(QJurorPool.jurorPool.deferralCode.ne(ExcusalCodeEnum.P.getCode()))),
@@ -103,7 +112,10 @@ public enum LetterType {
         ReissueLetterService.DataType.JUROR_EXCUSAL_REASON,
         ReissueLetterService.DataType.DATE_PRINTED,
         ReissueLetterService.DataType.EXTRACTED_FLAG,
-        ReissueLetterService.DataType.FORM_CODE),
+        ReissueLetterService.DataType.FORM_CODE,
+        ReissueLetterService.DataType.COMMUNICATION_CHANNEL,
+        ReissueLetterService.DataType.JUROR_PREFERENCE,
+        ReissueLetterService.DataType.EMAIL_STATUS),
         tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.EXCUSED)),
         datePrintedComparator()),
 
@@ -117,7 +129,10 @@ public enum LetterType {
         ReissueLetterService.DataType.JUROR_EXCUSAL_REASON,
         ReissueLetterService.DataType.DATE_PRINTED,
         ReissueLetterService.DataType.EXTRACTED_FLAG,
-        ReissueLetterService.DataType.FORM_CODE),
+        ReissueLetterService.DataType.FORM_CODE,
+        ReissueLetterService.DataType.COMMUNICATION_CHANNEL,
+        ReissueLetterService.DataType.JUROR_PREFERENCE,
+        ReissueLetterService.DataType.EMAIL_STATUS),
         tupleJPAQuery -> tupleJPAQuery
             .where(QJurorPool.jurorPool.status.status.in(IJurorStatus.SUMMONED, IJurorStatus.RESPONDED))
             .where(QJuror.juror.excusalRejected.eq("Y")),
@@ -147,7 +162,10 @@ public enum LetterType {
         ReissueLetterService.DataType.JUROR_DEFERRED_TO_REASON,
         ReissueLetterService.DataType.DATE_PRINTED,
         ReissueLetterService.DataType.EXTRACTED_FLAG,
-        ReissueLetterService.DataType.FORM_CODE),
+        ReissueLetterService.DataType.FORM_CODE,
+        ReissueLetterService.DataType.COMMUNICATION_CHANNEL,
+        ReissueLetterService.DataType.JUROR_PREFERENCE,
+        ReissueLetterService.DataType.EMAIL_STATUS),
         tupleJPAQuery -> tupleJPAQuery
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED)
                 .and(QJurorPool.jurorPool.deferralCode.eq("P"))),
