@@ -100,7 +100,10 @@ class IReissueLetterRepositoryImplTest {
                 JUROR.excusalCode.as("excusal_code"),
                 BULK_PRINT_DATA.creationDate.as("date_printed"),
                 BULK_PRINT_DATA.extractedFlag.as("extracted_flag"),
-                BULK_PRINT_DATA.formAttribute.formType.as("form_code")
+                BULK_PRINT_DATA.formAttribute.formType.as("form_code"),
+                BULK_PRINT_DATA.communicationChannel.as("original_sent_by"),
+                JUROR.dbdPreference.as("current_preference"),
+                BULK_PRINT_DATA.emailStatus.as("email_status")
             );
 
         verify(jpaQuery, times(1)).from(JUROR);
@@ -164,7 +167,10 @@ class IReissueLetterRepositoryImplTest {
                 JUROR_POOL.deferralCode.as("deferral_code"),
                 BULK_PRINT_DATA.creationDate.as("date_printed"),
                 BULK_PRINT_DATA.extractedFlag.as("extracted_flag"),
-                BULK_PRINT_DATA.formAttribute.formType.as("form_code")
+                BULK_PRINT_DATA.formAttribute.formType.as("form_code"),
+                BULK_PRINT_DATA.communicationChannel.as("original_sent_by"),
+                JUROR.dbdPreference.as("current_preference"),
+                BULK_PRINT_DATA.emailStatus.as("email_status")
             );
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);

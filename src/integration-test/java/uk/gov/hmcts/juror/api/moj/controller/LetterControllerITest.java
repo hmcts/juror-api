@@ -1959,7 +1959,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         LocalDate.now().minusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
                     case "hidden_extracted_flag" -> assertThat(value).isEqualTo(true);
                     case "hidden_form_code" -> assertThat(value).isEqualTo("5229");
-                    case "Original sent by" -> assertThat(value).isNull();
+                    case "Original sent by" -> assertThat(value).isEqualTo("LETTER");
                     case "Current preference" -> assertThat(value).isEqualTo("LETTER");
                     case "hidden_email_status" -> assertThat(value).isNull();
                     default -> fail("Unexpected heading: " + response.getBody().getHeadings().get(i));
@@ -2028,7 +2028,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.get(0).get(4)).isEqualTo(LocalDate.now().minusDays(1).toString());
             assertThat(data.get(0).get(5)).isEqualTo(true);
             assertThat(data.get(0).get(6)).isEqualTo(FormCode.ENG_CONFIRMATION.getCode());
-            assertThat(data.get(0).get(7)).isNull();
+            assertThat(data.get(0).get(7)).isEqualTo("LETTER");
             assertThat(data.get(0).get(8)).isEqualTo("LETTER");
             assertThat(data.get(0).get(9)).isNull();
         }
@@ -2071,7 +2071,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.get(0).get(4)).isEqualTo(LocalDate.now().minusDays(1).toString());
             assertThat(data.get(0).get(5)).isEqualTo(true);
             assertThat(data.get(0).get(6)).isEqualTo(FormCode.BI_CONFIRMATION.getCode());
-            assertThat(data.get(0).get(7)).isNull();
+            assertThat(data.get(0).get(7)).isEqualTo("LETTER");
             assertThat(data.get(0).get(8)).isEqualTo("LETTER");
             assertThat(data.get(0).get(9)).isNull();
         }
@@ -2145,7 +2145,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.get(0).get(4)).isEqualTo(LocalDate.now().toString());
             assertThat(data.get(0).get(5)).isEqualTo(false);
             assertThat(data.get(0).get(6)).isEqualTo(FormCode.BI_CONFIRMATION.getCode());
-            assertThat(data.get(0).get(7)).isNull();
+            assertThat(data.get(0).get(7)).isEqualTo("LETTER");
             assertThat(data.get(0).get(8)).isEqualTo("LETTER");
             assertThat(data.get(0).get(9)).isNull();
         }
@@ -4109,8 +4109,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 .as(String.format("Expect form code hidden flag for array index %s to be %s", arrayIndex, formCode))
                 .isEqualTo(formCode);
             assertThat(data.get(arrayIndex).get(10))
-                .as(String.format("Expect communication channel for array index %s to be null", arrayIndex))
-                .isNull();
+                .as(String.format("Expect communication channel for array index %s to be LETTER", arrayIndex))
+                .isEqualTo("LETTER");
             assertThat(data.get(arrayIndex).get(11))
                 .as(String.format("Expect juror preference for array index %s to be LETTER", arrayIndex))
                 .isEqualTo("LETTER");
