@@ -18,6 +18,7 @@ import java.util.Map;
 
 @Service
 @Slf4j
+@SuppressWarnings("PMD")
 public class JurorCommsNotificationServiceImpl implements JurorCommsNotificationService {
 
     private final NotifyAdapter notifyAdapter;
@@ -94,7 +95,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
                 throw new JurorCommsNotificationServiceException(
                     "Failed to Send Comms to Notify : " + jurorDetails.getJurorNumber());
             }
-
+            log.info("Sent Juror Notify Email Comms for juror {}", jurorDetails.getJurorNumber());
         } catch (NotifyApiException nae) {
             log.warn("Failed to send to Notify service: {}", nae.getMessage());
             throw new JurorCommsNotificationServiceException("notifyApiAdapter failed to send", nae);
@@ -102,7 +103,6 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
             log.error("Error sending notification! {}", e.getMessage());
         }
 
-        log.info("Sent Juror Notify Comms.");
         if (log.isDebugEnabled()) {
             log.debug("Sent {}", emailNotification);
         }
@@ -148,7 +148,7 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
                 throw new JurorCommsNotificationServiceException(
                     "Failed to Send SMS Comms to Notify : " + jurorDetails.getJurorNumber());
             }
-
+            log.info("Sent Juror Notify SMS Comms for juror {}", jurorDetails.getJurorNumber());
         } catch (NotifyApiException nae) {
             log.warn("Failed to send SMS to Notify service: {}", nae.getMessage());
             throw new JurorCommsNotificationServiceException("notifyApiAdapter failed to send SMS", nae);
@@ -156,9 +156,55 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
             log.error("Error sending SMS notification! {}", e.getMessage());
         }
 
-        log.info("Sent Juror Notify SMS nComms.");
         if (log.isDebugEnabled()) {
             log.debug("Sent SMS {}", smsNotification);
+        }
+    }
+
+
+    @Override
+    public void sendJurorEmailComms(JurorPool jurorDetails, String templateName) {
+
+        NotifyTemplateMappingMod template = getTemplate(templateName);
+        if (template == null) {
+            log.error("Missing Template. Cannot determine the template to use for this notification.");
+            throw new IllegalStateException("Cannot find template");
+        }
+        final String templateId = template.getTemplateId();
+        log.debug("Inside sendJurorComms: templateId obtained as : {}", templateId);
+        //Deal with payload.
+        final Map<String, String> payLoad = jurorCommsNotifyPayLoadService.generatePayLoadData(
+            templateId,
+            jurorDetails
+        );
+
+        log.trace("sendJurorEmailComms- calling createEmailNotification");
+        final EmailNotification emailNotification = createEmailNotification(
+            jurorDetails,
+            JurorCommsNotifyTemplateType.LETTER_COMMS,
+            templateId,
+            payLoad
+        );
+
+        try {
+            if (notifyAdapter.sendCommsEmail(emailNotification) == null) {
+                throw new JurorCommsNotificationServiceException(
+                    "Failed to Send Comms to Notify : " + jurorDetails.getJurorNumber());
+            }
+
+        } catch (NotifyApiException nae) {
+            log.warn("Failed to send to Notify service: {}", nae.getMessage());
+            throw new JurorCommsNotificationServiceException("notifyApiAdapter failed to send", nae.getCause());
+        } catch (JurorCommsNotificationServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error sending notification! {}", e.getMessage());
+            throw new JurorCommsNotificationServiceException(e.getMessage(), e);
+        }
+
+        log.info("Sent Digital by Default Email Comms for juror {}", jurorDetails.getJurorNumber());
+        if (log.isDebugEnabled()) {
+            log.debug("Sent {}", emailNotification);
         }
     }
 
@@ -233,12 +279,13 @@ public class JurorCommsNotificationServiceImpl implements JurorCommsNotification
                                                      final JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
                                                      final String templateId, final Map<String, String> payLoad) {
         try {
-            log.debug("Creating 9wks juror comms email");
+            log.debug("Creating juror comms email");
             final EmailNotification emailNotification = new EmailNotification(
                 templateId,
                 payLoad.get("email address"),
                 payLoad
             );
+
             emailNotification.setReferenceNumber(jurorDetails.getJurorNumber());
             return emailNotification;
 

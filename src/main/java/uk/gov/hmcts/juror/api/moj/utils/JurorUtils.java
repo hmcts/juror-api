@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsService.AGE_DISQUALIFICATION_THRESHOLD;
 
 @Slf4j
+@SuppressWarnings("PMD")
 public final class JurorUtils {
 
     private JurorUtils() {
@@ -210,6 +211,10 @@ public final class JurorUtils {
             return paper.getDateOfBirth();
         }
         return null;
+    }
+
+    public static boolean isDigitalPreference(Juror juror) {
+        return ReplyMethod.DIGITAL.getDescription().equalsIgnoreCase(juror.getDbdPreference());
     }
 
 }
