@@ -66,7 +66,7 @@ public class GenerateCoronerPoolNumberServiceImpl implements GenerateCoronerPool
             newPoolNumber = generateNewSequenceNumber();
         }
 
-        log.info(String.format("New Coroner Pool number generated: %s", newPoolNumber));
+        log.info("New Coroner Pool number generated: {}", newPoolNumber);
         return newPoolNumber;
     }
 

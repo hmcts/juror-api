@@ -179,9 +179,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             filterByCourtAndDate(courtLocation.getOwner(), courtLocation.getLocCode(), attendanceDate)).iterator();
 
         int deferralsUsed = processDeferredJurors(deferralsRequested, courtDeferralsIterator, newPool, userId);
-        log.info(String.format("%d deferred juror(s) have been added to Pool: %s", deferralsUsed,
-                               newPool.getPoolNumber()
-        ));
+        log.info("{} deferred juror(s) have been added to Pool: {}", deferralsUsed, newPool.getPoolNumber());
         return deferralsUsed;
     }
 
@@ -885,9 +883,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             .findAll(filterByCourtAndDate(owner, courtLocation, attendanceDate)).iterator();
 
         int deferralsUsed = processBureauDeferredJurors(bureauDeferrals, bureauDeferralsIterator, newPool, userId);
-        log.info(String.format("%d deferred juror(s) have been added to Pool: %s", deferralsUsed,
-                               newPool.getPoolNumber()
-        ));
+        log.info("{} deferred juror(s) have been added to Pool: {}", deferralsUsed, newPool.getPoolNumber());
         return deferralsUsed;
     }
 
@@ -1171,8 +1167,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
         jurorPoolRepository.saveAndFlush(deferredPoolMember);
 
-        log.info(String.format("Deferred Juror: %s is no longer active in Pool: %s",
-                               deferredPoolMember.getJurorNumber(), deferredPoolMember.getPoolNumber()));
+        log.info("Deferred Juror: {} is no longer active in Pool: {}", deferredPoolMember.getJurorNumber(),
+            deferredPoolMember.getPoolNumber());
     }
 
     private PoolRequest getPoolRequest(String poolNumber) {

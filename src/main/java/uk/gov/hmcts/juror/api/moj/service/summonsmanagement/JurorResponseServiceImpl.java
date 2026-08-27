@@ -58,8 +58,8 @@ public class JurorResponseServiceImpl implements JurorResponseService {
     @Transactional
     public void updateJurorPersonalDetails(BureauJwtPayload payload, JurorPersonalDetailsDto jurorPersonalDetailsDto,
                                            String jurorNumber) {
-        log.info(String.format("Juror: %s. Start updating %s response personal details by user %s", jurorNumber,
-            jurorPersonalDetailsDto.getReplyMethod().getDescription(), payload.getLogin()));
+        log.info("Juror: {}. Start updating {} response personal details by user {}", jurorNumber,
+            jurorPersonalDetailsDto.getReplyMethod().getDescription(), payload.getLogin());
 
         //Check if the current user has access to the Juror record
         JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
@@ -370,10 +370,10 @@ public class JurorResponseServiceImpl implements JurorResponseService {
         }
         jurorResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
         if (jurorResponse.getStaff() == null) {
-            log.info(String.format("No staff assigned to response for Juror %s", jurorResponse.getJurorNumber()));
+            log.info("No staff assigned to response for Juror {}", jurorResponse.getJurorNumber());
             User staff = userRepository.findByUsername(SecurityUtil.getActiveLogin());
             jurorResponse.setStaff(staff);
-            log.info(String.format("Assigned current user to response for Juror %s", jurorResponse.getJurorNumber()));
+            log.info("Assigned current user to response for Juror {}", jurorResponse.getJurorNumber());
         }
         if (jurorResponse instanceof PaperResponse paperResponse) {
             mergeService.mergePaperResponse(paperResponse, SecurityUtil.getActiveLogin());

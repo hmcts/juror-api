@@ -513,7 +513,7 @@ public class TrialServiceImpl implements TrialService {
 
         List<Panel> juryMembersToBeReturned = getPanelMembersToReturn(returnJuryDto.getJurors(), panelList);
 
-        log.info(String.format("found %d jury members to be returned", juryMembersToBeReturned.size()));
+        log.info("found {} jury members to be returned", juryMembersToBeReturned.size());
 
         // see if there is an attendance record for the date to get the audit number
         List<Appearance> appearances = appearanceRepository.findByLocCodeAndAttendanceDateAndTrialNumber(locationCode,

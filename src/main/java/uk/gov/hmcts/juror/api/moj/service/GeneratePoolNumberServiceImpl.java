@@ -67,7 +67,7 @@ public class GeneratePoolNumberServiceImpl implements GeneratePoolNumberService 
                 newPoolNumber = poolNumberPrefix + SEQUENCE_START_POSITION;
             }
 
-            log.info(String.format("New Pool number generated: %s", newPoolNumber));
+            log.info("New Pool number generated: {}", newPoolNumber);
             return newPoolNumber;
         } catch (IllegalArgumentException ex) {
             log.error(String.format(
