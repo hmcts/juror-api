@@ -1114,7 +1114,7 @@ class ManageDeferralsServiceTest {
                 + "actually be used")
             .isEqualTo(1);
         assertThat(listAppender.list)
-            .extracting(ILoggingEvent::getMessage, ILoggingEvent::getLevel)
+            .extracting(ILoggingEvent::getFormattedMessage, ILoggingEvent::getLevel)
             .contains(org.assertj.core.groups.Tuple.tuple(
                 "An error occurred trying to add a deferred juror to the new Pool: "
                     + "123456789 - Unable to find an associated Pool Member for the deferred juror: 222222222",
@@ -1162,7 +1162,7 @@ class ManageDeferralsServiceTest {
             .isEqualTo(0);
         assertThat(listAppender.list)
             .as("Verify error occurred when trying to add a deferred juror to the new pool")
-            .extracting(ILoggingEvent::getMessage, ILoggingEvent::getLevel)
+            .extracting(ILoggingEvent::getFormattedMessage, ILoggingEvent::getLevel)
             .contains(
                 org.assertj.core.groups.Tuple.tuple("An error occurred trying to add a deferred juror to "
                     + "the new Pool: 123456789 - Unable to find an active pool for 987654321", Level.ERROR),
@@ -1324,7 +1324,7 @@ class ManageDeferralsServiceTest {
 
         assertThat(listAppender.list)
             .as("Verify number of jurors added to the Pool")
-            .extracting(ILoggingEvent::getMessage, ILoggingEvent::getLevel)
+            .extracting(ILoggingEvent::getFormattedMessage, ILoggingEvent::getLevel)
             .contains(org.assertj.core.groups.Tuple.tuple("1 deferred juror(s) have been added to Pool: "
                 + "123456789", Level.INFO));
     }
@@ -1365,7 +1365,7 @@ class ManageDeferralsServiceTest {
 
         assertThat(listAppender.list)
             .as("Verify number of jurors added to the pool")
-            .extracting(ILoggingEvent::getMessage, ILoggingEvent::getLevel)
+            .extracting(ILoggingEvent::getFormattedMessage, ILoggingEvent::getLevel)
             .contains(org.assertj.core.groups.Tuple.tuple("0 deferred juror(s) have been added to Pool: "
                 + "123456789", Level.INFO));
     }
