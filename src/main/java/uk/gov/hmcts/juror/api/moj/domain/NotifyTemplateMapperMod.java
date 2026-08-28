@@ -37,7 +37,7 @@ public enum NotifyTemplateMapperMod {
         Type.JUROR,
             context -> {
                 String jurorEmail = context.getJuror().getEmail();
-                if (jurorEmail != null && !jurorEmail.trim().isEmpty()) {
+                if (jurorEmail != null && !jurorEmail.isBlank()) {
                     return jurorEmail;
                 }
 
@@ -45,7 +45,12 @@ public enum NotifyTemplateMapperMod {
                     return null;
                 }
 
-                return context.getAbstractResponse().getEmail();
+                String responseEmail = context.getAbstractResponse().getEmail();
+                if (responseEmail != null && !responseEmail.isBlank()) {
+                    return responseEmail;
+                }
+
+                return context.getAbstractResponse().getEmailAddress();
             }
     ),
 
