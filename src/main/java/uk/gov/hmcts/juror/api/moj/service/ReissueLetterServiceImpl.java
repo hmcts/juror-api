@@ -234,15 +234,17 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
         if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
             && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)
-            && !DIGITAL_BY_DEFAULT_LETTER_ONLY_REISSUE_CODES.contains(formCode)
-            && !emailDataService.emailReissueLetter(jurorPool, formCode)) {
+            && !DIGITAL_BY_DEFAULT_LETTER_ONLY_REISSUE_CODES.contains(formCode)) {
+            if (emailDataService.emailReissueLetter(jurorPool, formCode)) {
+                log.info("Email resent for juror number {} with form code {}", jurorNumber, formCode);
+                return;
+            }
             // something went wrong with sending out email, it could be a letter
             // that no longer is allowed for digital by default jurors
             log.info("Email not resent for juror number {} with form code {}", jurorNumber, formCode);
             if (INELIGIBLE_DIGITAL_BY_DEFAULT_LETTER_REISSUE_CODES.contains(formCode)) {
                 throw new MojException.BadRequest("Letter type not allowed for digital by default jurors", null);
             }
-            return;
         }
 
         printLetter(jurorNumber, jurorPool, formCode);

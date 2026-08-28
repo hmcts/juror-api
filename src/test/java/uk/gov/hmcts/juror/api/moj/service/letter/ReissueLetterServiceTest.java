@@ -548,7 +548,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.DEFERRED);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
         }
 
@@ -590,7 +590,7 @@ public class ReissueLetterServiceTest {
 
             verify(emailDataService, times(1)).emailReissueLetter(jurorPool, FormCode.ENG_DEFERRAL);
             verify(printDataService, never()).printDeferralLetter(jurorPool);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
         }
 
@@ -641,7 +641,7 @@ public class ReissueLetterServiceTest {
             TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
 
             final ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
-                getReissueLetterRequestData(FormCode.ENG_EXCUSAL.getCode());
+                getReissueLetterRequestData(FormCode.ENG_SUMMONS.getCode());
             final ReissueLetterRequestDto reissueLetterRequestDto =
                 getReissueLetterRequestDto(reissueLetterRequestData);
             final BulkPrintData bulkPrintData = getBulkPrintData(reissueLetterRequestData);
@@ -653,12 +653,12 @@ public class ReissueLetterServiceTest {
                 .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode());
 
-            JurorStatus excusedStatus = new JurorStatus();
-            excusedStatus.setStatus(IJurorStatus.EXCUSED);
-            when(jurorStatusRepository.findById(IJurorStatus.EXCUSED))
-                .thenReturn(Optional.of(excusedStatus));
+            JurorStatus summonedStatus = new JurorStatus();
+            summonedStatus.setStatus(IJurorStatus.SUMMONED);
+            when(jurorStatusRepository.findById(IJurorStatus.SUMMONED))
+                .thenReturn(Optional.of(summonedStatus));
 
-            JurorPool jurorPool = getJurorPool(excusedStatus);
+            JurorPool jurorPool = getJurorPool(summonedStatus);
             jurorPool.setPool(getDigitalByDefaultPoolRequest());
             jurorPool.getJuror().setDigitalByDefault(true);
             jurorPool.getJuror().setDbdPreference(ReplyMethod.DIGITAL.getDescription());
@@ -666,13 +666,13 @@ public class ReissueLetterServiceTest {
             when(jurorPoolService.getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber()))
                 .thenReturn(jurorPool);
             when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(true);
-            when(emailDataService.emailReissueLetter(jurorPool, FormCode.ENG_EXCUSAL)).thenReturn(false);
+            when(emailDataService.emailReissueLetter(jurorPool, FormCode.ENG_SUMMONS)).thenReturn(false);
 
-            assertThatExceptionOfType(MojException.NotImplemented.class).isThrownBy(() ->
+            assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
                 reissueLetterService.reissueLetter(reissueLetterRequestDto));
 
-            verify(emailDataService, times(1)).emailReissueLetter(jurorPool, FormCode.ENG_EXCUSAL);
-            verify(printDataService, never()).printExcusalLetter(jurorPool);
+            verify(emailDataService, times(1)).emailReissueLetter(jurorPool, FormCode.ENG_SUMMONS);
+            verify(printDataService, never()).reprintSummonsLetter(jurorPool);
         }
 
         @ParameterizedTest
@@ -721,7 +721,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.DISQUALIFIED);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
         }
 
@@ -773,7 +773,7 @@ public class ReissueLetterServiceTest {
                 .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode());
             verify(jurorStatusRepository, times(1)).findById(Mockito.anyInt());
-            verify(jurorPoolService, times(1))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(Mockito.anyString());
         }
 
@@ -916,7 +916,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.DEFERRED);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
         }
 
@@ -967,7 +967,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
         }
 
@@ -1012,7 +1012,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
-            verify(jurorPoolService, times(4))
+            verify(jurorPoolService, times(3))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
             verify(jurorHistoryService, times(1))
                 .createSummonsReminderLetterHistory(jurorPool);
@@ -1070,7 +1070,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
         }
 
@@ -1163,7 +1163,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
             verifyNoMoreInteractions(jurorHistoryService);
         }
