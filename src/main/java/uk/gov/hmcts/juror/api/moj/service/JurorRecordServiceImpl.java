@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.service.BureauService;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -81,6 +82,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -137,6 +139,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.springframework.transaction.annotation.Propagation.REQUIRED;
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_ATTENDANCE_RECORD;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.FAILED_TO_ATTEND_HAS_COMPLETION_DATE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.JUROR_DATE_OF_BIRTH_REQUIRED;
@@ -200,6 +203,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private final JurorResponseAuditRepositoryMod jurorResponseAuditRepository;
     private final JurorPoolService jurorPoolService;
     private final JurorThirdPartyService jurorThirdPartyService;
+    private final FeatureFlagConfigurationProperties featureFlags;
+    private final EmailDataService emailDataService;
 
     @Override
     @Transactional
@@ -1416,8 +1421,14 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
             jurorHistoryService.createPoliceCheckQualifyHistory(jurorPool, newPoliceCheckValue.isChecked());
             if (SecurityUtil.BUREAU_OWNER.equals(jurorPool.getOwner())) {
-                printDataService.printConfirmationLetter(jurorPool);
-                jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter Auto");
+                if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                    && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+                    emailDataService.emailConfirmationLetter(jurorPool);
+                } else {
+                    printDataService.printConfirmationLetter(jurorPool);
+                    jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter Auto",
+                                                                        CommunicationChannel.LETTER);
+                }
             } else {
                 processCourtConfirmationLetter(jurorNumber, jurorPool);
             }
@@ -1430,8 +1441,14 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
             jurorHistoryService.createPoliceCheckDisqualifyHistory(jurorPool);
             if (SecurityUtil.BUREAU_OWNER.equals(jurorPool.getOwner())) {
-                printDataService.printWithdrawalLetter(jurorPool);
-                jurorHistoryService.createWithdrawHistory(jurorPool, "Withdrawal Letter Auto", "E");
+                if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                    && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+                    emailDataService.emailWithdrawalLetter(jurorPool, "E");
+                } else {
+                    printDataService.printWithdrawalLetter(jurorPool);
+                    jurorHistoryService.createWithdrawHistory(jurorPool, "Withdrawal Letter Auto", "E",
+                                                              CommunicationChannel.LETTER);
+                }
             }
         } else if (newPoliceCheckValue == PoliceCheck.IN_PROGRESS) {
             log.debug("Juror {} police check is in progress adding part history", jurorNumber);
@@ -1472,7 +1489,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             if (dueInCourtDate.isAfter(LocalDate.now(clock))) {
                 log.debug("Juror {} is due in court after today, printing confirmation letter", jurorNumber);
                 printDataService.printConfirmationLetter(jurorPool);
-                jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter Auto");
+                jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter Auto",
+                                                                    CommunicationChannel.LETTER);
             } else {
                 // if the juror is due in court already, then don't print confirmation letter
                 log.debug("Juror {} is due in court already, skipping confirmation letter", jurorNumber);

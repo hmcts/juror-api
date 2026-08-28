@@ -120,6 +120,13 @@ public class JurorServiceImpl implements JurorService {
         return DbdInformationResponseDto.builder()
             .courtName(jurorDetails.getCourt().getLocCourtName())
             .serviceStartDate(jurorDetails.getReturnDate())
+            .courtAttendTime(DateUtils.TIME_FORMAT.format(getAttendTime(jurorDetails)))
+            .courtAddress1(jurorDetails.getCourt().getAddress1())
+            .courtAddress2(jurorDetails.getCourt().getAddress2())
+            .courtAddress3(jurorDetails.getCourt().getAddress3())
+            .courtAddress4(jurorDetails.getCourt().getAddress4())
+            .courtAddress5(jurorDetails.getCourt().getAddress5())
+            .courtPostcode(jurorDetails.getCourt().getPostcode())
             .build();
     }
 

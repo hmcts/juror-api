@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
@@ -253,7 +254,7 @@ public class StraightThroughProcessorImplTest {
         verify(poolRepository).save(any(JurorPool.class));
 
         verify(partHistRepository, times(1)).save(any(JurorHistory.class));
-        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A");
+        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A", CommunicationChannel.LETTER);
 
         verify(printDataService).printWithdrawalLetter(any(JurorPool.class));
 
@@ -299,7 +300,7 @@ public class StraightThroughProcessorImplTest {
         verify(poolRepository).save(any(JurorPool.class));
 
         verify(partHistRepository, times(1)).save(any(JurorHistory.class));
-        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A");
+        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A",CommunicationChannel.LETTER);
 
         verify(printDataService).printWithdrawalLetter(jurorPool);
 

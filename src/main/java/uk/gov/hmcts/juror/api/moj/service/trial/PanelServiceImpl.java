@@ -43,6 +43,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NO_PANEL_EXIST;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_AVAILABLE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.PANEL_MEMBER_ALREADY_PROCESSED;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.TRIAL_HAS_ENDED;
 
 @Slf4j
@@ -262,6 +263,7 @@ public class PanelServiceImpl implements PanelService {
                     .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
                         dto.getTrialNumber(), locCode, detail.getJurorNumber());
 
+            validatePanelMemberCanBeProcessed(panelMember, detail.getJurorNumber());
             panelMember.setResult(detail.getResult());
             setJurorStatus(panelMember);
 
@@ -297,6 +299,18 @@ public class PanelServiceImpl implements PanelService {
         }
 
         return getJurySummary(dto.getTrialNumber(), dto.getCourtLocationCode());
+    }
+
+    private void validatePanelMemberCanBeProcessed(Panel panelMember, String jurorNumber) {
+        if (panelMember == null) {
+            throw new MojException.NotFound("Juror %s not found on the trial".formatted(jurorNumber), null);
+        }
+
+        if (panelMember.isCompleted() || panelMember.getResult() != null) {
+            throw new MojException.BusinessRuleViolation(
+                "Cannot process juror %s - panel member has already been processed".formatted(jurorNumber),
+                PANEL_MEMBER_ALREADY_PROCESSED);
+        }
     }
 
     private void setJurorStatus(Panel panelMember) {

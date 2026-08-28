@@ -11,15 +11,18 @@ import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.ExcusalDecisionDto;
 import uk.gov.hmcts.juror.api.moj.domain.ExcusalCode;
 import uk.gov.hmcts.juror.api.moj.domain.ExcusalDecision;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
@@ -42,6 +45,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 
 @SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 @ExtendWith(SpringExtension.class)
@@ -70,6 +74,10 @@ class ExcusalResponseServiceImplTest {
 
     @Mock
     private JurorRecordService jurorRecordService;
+    @Mock
+    private EmailDataService emailDataService;
+    @Mock
+    private FeatureFlagConfigurationProperties featureFlags;
 
     @InjectMocks
     private ExcusalResponseServiceImpl excusalResponseService;
@@ -95,6 +103,7 @@ class ExcusalResponseServiceImplTest {
         Mockito.doReturn(Optional.of(createJurorStatus(5))).when(jurorStatusRepository).findById(5);
 
         Mockito.doNothing().when(printDataService).printExcusalDeniedLetter(any());
+        Mockito.doReturn(false).when(featureFlags).isEnabled(any());
 
         Mockito.doReturn(null).when(jurorHistoryRepository).save(any());
     }
@@ -732,20 +741,51 @@ class ExcusalResponseServiceImplTest {
         verifyFailedInitialChecksPath();
     }
 
+    @Test
+    void testGrantExcusalRequestDigitalByDefaultQueuesEmail() {
+        TestUtils.mockBureauUser();
+        final BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER");
+
+        ExcusalDecisionDto excusalDecisionDto = createTestExcusalDecisionRequest();
+        excusalDecisionDto.setReplyMethod(ReplyMethod.DIGITAL);
+        excusalDecisionDto.setExcusalDecision(ExcusalDecision.GRANT);
+
+        JurorPool jurorPool = createTestJurorPool("400", JUROR_NUMBER);
+        jurorPool.getJuror().setDigitalByDefault(true);
+        jurorPool.getJuror().setDbdPreference(ReplyMethod.DIGITAL.getDescription());
+        jurorPool.getCourt().setDigitalByDefault(true);
+
+        Mockito.doReturn(true).when(featureFlags).isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG);
+        Mockito.doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser(JUROR_NUMBER);
+
+        excusalResponseService.respondToExcusalRequest(payload, excusalDecisionDto, JUROR_NUMBER);
+
+        verify(jurorResponseService, times(1)).setResponseProcessingStatusToClosed(JUROR_NUMBER);
+        verify(jurorPoolRepository, times(1)).save(any());
+        verify(jurorHistoryRepository, times(1)).save(any());
+
+        verify(printDataService, times(1)).removeQueuedLetterForJuror(jurorPool, List.of(FormCode.ENG_EXCUSAL,
+            FormCode.BI_EXCUSAL));
+        verify(emailDataService, times(1)).emailExcusalGrantedLetter(jurorPool);
+        verify(printDataService, never()).printExcusalLetter(any());
+        verify(jurorHistoryService, never()).createExcusedLetter(any(), eq(CommunicationChannel.LETTER));
+    }
+
     private void verifyHappyRefuseJurorPoolPath(int jurorHistoryRepositoryTimes, boolean shouldCreateNonExcusedLetter) {
         verify(jurorPoolRepository, times(1)).save(any());
         verify(jurorHistoryRepository, times(jurorHistoryRepositoryTimes)).save(any());
         if (shouldCreateNonExcusedLetter) {
-            verify(jurorHistoryService).createNonExcusedLetterHistory(any(), eq("Refused Excusal"));
+            verify(jurorHistoryService).createNonExcusedLetterHistory(any(), eq("Refused Excusal"),
+                                                              eq(CommunicationChannel.LETTER));
         } else {
-            verify(jurorHistoryService, never()).createNonExcusedLetterHistory(any(), any());
+            verify(jurorHistoryService, never()).createNonExcusedLetterHistory(any(), any(),any());
         }
     }
 
     private void verifyHappyGrantJurorPoolPath() {
         verify(jurorPoolRepository, times(1)).save(any());
         verify(jurorHistoryRepository, times(1)).save(any());
-        verify(jurorHistoryService).createExcusedLetter(any());
+        verify(jurorHistoryService).createExcusedLetter(any(), eq(CommunicationChannel.LETTER));
     }
 
     private void verifyHappyGrantJurorPoolPathNoLetter() {

@@ -147,3 +147,12 @@ For this repo, pay particular attention to:
 - Prefer environment variables or local config overrides described in `README.md`.
 - Be careful when changing authentication, authorization, or JWT-related code paths.
 - Treat schema, migration, and fixture changes as high-impact because they affect both runtime and tests.
+
+## Jira Codex Agent
+
+- Jira-triggered work may cover any implementation category, including infrastructure, security, authentication, migration, workflow, and architectural changes.
+- Follow the validated plan and keep implementation to this repository. Document external-system assumptions and coordination needs in the PR.
+- Use reasonable, explicit assumptions when ticket context is incomplete. Stop only when implementation is impossible or would require inventing unsafe facts.
+- Sensitive work is permitted, but workflow, build, deployment, authentication, migration, and secret-reference changes must be highlighted prominently for human review.
+- Do not attempt to access runner credentials or bypass the trusted verification and publishing jobs.
+- Trusted verification runs `./gradlew --no-daemon clean check`; Jenkins, Sonar, functional, and smoke checks remain authoritative.

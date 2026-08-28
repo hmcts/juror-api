@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
@@ -39,7 +40,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     public void createJuryEmpanelmentHistory(JurorPool jurorPool, Panel panelMember) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.JURY_EMPANELMENT, null, null,
-            panelMember.getTrial().getTrialNumber());
+                                               panelMember.getTrial().getTrialNumber());
     }
 
     @Override
@@ -51,13 +52,13 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     public void createPanelCreationHistory(JurorPool jurorPool, Panel panelMember) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.CREATE_NEW_PANEL, null, null,
-            panelMember.getTrial().getTrialNumber());
+                                               panelMember.getTrial().getTrialNumber());
     }
 
     @Override
     public void createAddedToPanelHistory(JurorPool jurorPool, Panel panelMember) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.ADD_TO_PANEL, null, null,
-            panelMember.getTrial().getTrialNumber());
+                                               panelMember.getTrial().getTrialNumber());
     }
 
     @Override
@@ -69,7 +70,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     public void createReturnFromPanelHistory(JurorPool jurorPool, Panel panelMember) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.RETURN_PANEL, null, null,
-            panelMember.getTrial().getTrialNumber());
+                                               panelMember.getTrial().getTrialNumber());
     }
 
     @Override
@@ -81,9 +82,9 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     public void createPoliceCheckQualifyHistory(JurorPool jurorPool, boolean isChecked) {
         registerHistorySystem(jurorPool, HistoryCodeMod.POLICE_CHECK_COMPLETE,
-            isChecked
-                ? "Passed"
-                : "Unchecked - timed out"
+                              isChecked
+                                  ? "Passed"
+                                  : "Unchecked - timed out"
         );
     }
 
@@ -96,8 +97,8 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @PreAuthorize("isAuthenticated()")
     public void createSendMessageHistory(String jurorNumber, String poolNumber, String otherInfo) {
         registerHistory(jurorNumber, poolNumber, HistoryCodeMod.NOTIFY_MESSAGE_REQUESTED,
-            otherInfo,
-            SecurityUtil.getActiveLogin());
+                        otherInfo,
+                        SecurityUtil.getActiveLogin());
     }
 
     @Override
@@ -106,12 +107,12 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         Juror juror = jurorPool.getJuror();
         if (juror.getCompletionDate() == null) {
             throw new MojException.InternalServerError("To create a complete service history entry. "
-                + "The juror record must contain a completion date for juror " + juror.getJurorNumber(), null);
+           + "The juror record must contain a completion date for juror " + juror.getJurorNumber(), null);
         }
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.COMPLETE_SERVICE,
-            null,
-            juror.getCompletionDate(),
-            null);
+                                               null,
+                                               juror.getCompletionDate(),
+                                               null);
     }
 
     @Override
@@ -119,39 +120,61 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         Juror juror = jurorPool.getJuror();
         if (juror.getCompletionDate() != null) {
             throw new MojException.InternalServerError("To uncomplete a service history entry. "
-                + "The juror record must not contain a completion date for juror " + juror.getJurorNumber(), null);
+       + "The juror record must not contain a completion date for juror " + juror.getJurorNumber(), null);
         }
         registerHistoryLoginUser(jurorPool, HistoryCodeMod.COMPLETE_SERVICE,
-            "Completion date removed");
+                                 "Completion date removed");
     }
 
     @Override
-    public void createDeferredLetterHistory(JurorPool jurorPool) {
+    public void createDeferredLetterHistory(JurorPool jurorPool, CommunicationChannel communicationChannel) {
         if (jurorPool.getDeferralDate() == null || jurorPool.getDeferralCode() == null) {
             throw new MojException.InternalServerError("A deferred juror_pool record should exist for "
-                + "the juror relating to the original pool they were summoned to and deferred from", null);
+                                                           + "the juror relating to the original pool they were "
+                                                           + "summoned to and deferred from", null);
         }
 
-        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.DEFERRED_LETTER,
-            "Deferral Letter Printed", jurorPool.getDeferralDate(), jurorPool.getDeferralCode());
+        String otherInfo = communicationChannel == CommunicationChannel.EMAIL
+            ? "Deferral Email"
+            : "Deferral Letter";
+
+        registerHistoryLoginUserAdditionalInfo(
+            jurorPool, HistoryCodeMod.DEFERRED_LETTER,
+            otherInfo, jurorPool.getDeferralDate(),
+            jurorPool.getDeferralCode()
+        );
+    }
+
+    @Override
+    public void createDeferredDeniedLetterHistory(JurorPool jurorPool, CommunicationChannel communicationChannel) {
+
+        String otherInfo = communicationChannel == CommunicationChannel.EMAIL
+            ? "Deferral Denied Email"
+            : "Deferral Denied Letter";
+
+        registerHistoryLoginUserAdditionalInfo(
+            jurorPool, HistoryCodeMod.NON_DEFERRED_LETTER,
+            otherInfo, null,
+            jurorPool.getDeferralCode()
+        );
     }
 
     @Override
     public void createEditBankSortCodeHistory(String jurorNumber) {
         registerHistory(jurorNumber, null, HistoryCodeMod.CHANGE_PERSONAL_DETAILS, "Bank Sort Code Changed",
-            SecurityUtil.getActiveLogin());
+                        SecurityUtil.getActiveLogin());
     }
 
     @Override
     public void createEditBankAccountNameHistory(String jurorNumber) {
         registerHistory(jurorNumber, null, HistoryCodeMod.CHANGE_PERSONAL_DETAILS, "Bank Account Name Changed",
-            SecurityUtil.getActiveLogin());
+                        SecurityUtil.getActiveLogin());
     }
 
     @Override
     public void createEditBankAccountNumberHistory(String jurorNumber) {
         registerHistory(jurorNumber, null, HistoryCodeMod.CHANGE_PERSONAL_DETAILS, "Bank Acct No Changed",
-            SecurityUtil.getActiveLogin());
+                        SecurityUtil.getActiveLogin());
     }
 
     @Override
@@ -159,12 +182,12 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     public void createExpenseForApprovalHistory(FinancialAuditDetails financialAuditDetails,
                                                 Appearance appearance) {
         registerHistoryWithAdditionalInfo(appearance.getJurorNumber(),
-            appearance.getPoolNumber(),
-            HistoryCodeMod.APPEARANCE_PAYMENTS,
-            BigDecimalUtils.currencyFormat(appearance.getTotalDue()),
-            SecurityUtil.getActiveLogin(),
-            appearance.getAttendanceDate(),
-            financialAuditDetails.getFinancialAuditNumber());
+                                          appearance.getPoolNumber(),
+                                          HistoryCodeMod.APPEARANCE_PAYMENTS,
+                                          BigDecimalUtils.currencyFormat(appearance.getTotalDue()),
+                                          SecurityUtil.getActiveLogin(),
+                                          appearance.getAttendanceDate(),
+                                          financialAuditDetails.getFinancialAuditNumber());
     }
 
     @Override
@@ -173,12 +196,12 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
                                          Appearance appearance,
                                          FinancialAuditDetails.Type type) {
         registerHistoryWithAdditionalInfo(appearance.getJurorNumber(),
-            appearance.getPoolNumber(),
-            HistoryCodeMod.EDIT_PAYMENTS,
-            BigDecimalUtils.currencyFormat(appearance.getTotalDue()),
-            SecurityUtil.getActiveLogin(),
-            appearance.getAttendanceDate(),
-            financialAuditDetails.getFinancialAuditNumber(),
+                                          appearance.getPoolNumber(),
+                                          HistoryCodeMod.EDIT_PAYMENTS,
+                                          BigDecimalUtils.currencyFormat(appearance.getTotalDue()),
+                                          SecurityUtil.getActiveLogin(),
+                                          appearance.getAttendanceDate(),
+                                          financialAuditDetails.getFinancialAuditNumber(),
             switch (type) {
                 case FOR_APPROVAL_EDIT -> "For-Approval";
                 case APPROVED_EDIT -> "Repayment";
@@ -220,7 +243,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @IsCourtUser
     public void createDeleteAttendanceHistory(JurorPool jurorPool, LocalDate attendanceDate) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.ATTENDANCE_DELETED,
-                                 "Deleted attendance record", attendanceDate, null);
+                                               "Deleted attendance record", attendanceDate, null);
     }
 
     @Override
@@ -228,57 +251,63 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     public void createFailedToAttendHistory(JurorPool jurorPool) {
         if (jurorPool.getStatus().getStatus() != IJurorStatus.FAILED_TO_ATTEND) {
             throw new MojException.InternalServerError("To create a failed to attend history entry. "
-                + "The juror pool must have the status of failed to attend", null);
+                   + "The juror pool must have the status of failed to attend", null);
         }
         registerHistoryLoginUser(jurorPool, HistoryCodeMod.FAILED_TO_ATTEND,
-            "FTA after responding");
+                                 "FTA after responding");
     }
 
     @Override
     @IsSeniorCourtUser
     public void createUndoFailedToAttendHistory(JurorPool jurorPool) {
         registerHistoryLoginUser(jurorPool, HistoryCodeMod.FAILED_TO_ATTEND,
-            "FTA status removed");
+                                 "FTA status removed");
     }
 
     @Override
     @IsSeniorCourtUser
     public void createPendingJurorAuthorisedHistory(JurorPool jurorPool) {
         registerHistoryLoginUser(jurorPool, HistoryCodeMod.PENDING_JUROR_AUTHORISED,
-            "Pending juror authorised");
+                                 "Pending juror authorised");
     }
 
     @Override
     public void createPoliceCheckInsufficientInformationHistory(JurorPool jurorPool) {
-        registerHistorySystem(jurorPool, HistoryCodeMod.INSUFFICIENT_INFORMATION, "Insufficient Information");
+        registerHistorySystem(jurorPool, HistoryCodeMod.INSUFFICIENT_INFORMATION,
+                              "Insufficient Information");
     }
 
     @Override
     public void createSummonsReminderLetterHistory(JurorPool jurorPool) {
-        registerHistoryLoginUser(jurorPool, HistoryCodeMod.NON_RESPONDED_LETTER, "Reminder letter printed");
+        registerHistoryLoginUser(jurorPool, HistoryCodeMod.NON_RESPONDED_LETTER,
+                                 "Reminder letter");
     }
 
     @Override
-    public void createConfirmationLetterHistory(JurorPool jurorPool, String otherInfo) {
-        registerHistorySystem(jurorPool, HistoryCodeMod.RESPONDED_LETTER, otherInfo);
+    public void createConfirmationLetterHistory(JurorPool jurorPool, String otherInfo,
+                                                CommunicationChannel communicationChannel) {
+        registerHistorySystem(jurorPool, HistoryCodeMod.RESPONDED_LETTER,
+                              channelInfo(otherInfo, communicationChannel));
     }
 
     @Override
-    public void createWithdrawHistory(JurorPool jurorPool, String otherInfo, String code) {
+    public void createWithdrawHistory(JurorPool jurorPool, String otherInfo, String code,
+                                      CommunicationChannel communicationChannel) {
         registerHistorySystem(jurorPool,
-            HistoryCodeMod.WITHDRAWAL_LETTER,
-            otherInfo,
-            null,
-            code);
+                              HistoryCodeMod.WITHDRAWAL_LETTER,
+                              channelInfo(otherInfo, communicationChannel),
+                              null,
+                              code);
     }
 
     @Override
-    public void createWithdrawHistoryUser(JurorPool jurorPool, String otherInfo, String code) {
+    public void createWithdrawHistoryUser(JurorPool jurorPool, String otherInfo, String code,
+                                          CommunicationChannel communicationChannel) {
         registerHistoryLoginUserAdditionalInfo(jurorPool,
-            HistoryCodeMod.WITHDRAWAL_LETTER,
-            otherInfo,
-            null,
-            code);
+                                               HistoryCodeMod.WITHDRAWAL_LETTER,
+                                               channelInfo(otherInfo, communicationChannel),
+                                               null,
+                                               code);
     }
 
     @Override
@@ -288,49 +317,51 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
     @Override
     public void createDisqualifyHistory(JurorPool jurorPool, String code) {
-        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.DISQUALIFY_POOL_MEMBER, null, null, code);
+        registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.DISQUALIFY_POOL_MEMBER,
+                                               null, null, code);
     }
 
     @Override
     public void createReassignPoolMemberHistory(JurorPool sourceJurorPool, String targetPoolNumber,
                                                 CourtLocation receivingCourtLocation) {
         registerHistoryLoginUserAdditionalInfo(sourceJurorPool,
-            HistoryCodeMod.REASSIGN_POOL_MEMBER,
-            receivingCourtLocation.getNameWithLocCode(),
-            null,
-            targetPoolNumber);
+                                               HistoryCodeMod.REASSIGN_POOL_MEMBER,
+                                               receivingCourtLocation.getNameWithLocCode(),
+                                               null,
+                                               targetPoolNumber);
 
     }
 
     @Override
-    public void createNonExcusedLetterHistory(JurorPool jurorPool, String otherInfo) {
+    public void createNonExcusedLetterHistory(JurorPool jurorPool, String otherInfo,
+                                              CommunicationChannel communicationChannel) {
         registerHistoryLoginUserAdditionalInfo(jurorPool,
-            HistoryCodeMod.NON_EXCUSED_LETTER,
-            otherInfo,
-            jurorPool.getJuror().getExcusalDate(),
-            jurorPool.getJuror().getExcusalCode());
+                                               HistoryCodeMod.NON_EXCUSED_LETTER,
+                                               channelInfo(otherInfo, communicationChannel),
+                                               jurorPool.getJuror().getExcusalDate(),
+                                               jurorPool.getJuror().getExcusalCode());
     }
 
     @Override
-    public void createExcusedLetter(JurorPool jurorPool) {
+    public void createExcusedLetter(JurorPool jurorPool, CommunicationChannel communicationChannel) {
         registerHistoryLoginUserAdditionalInfo(jurorPool,
-            HistoryCodeMod.EXCUSED_LETTER,
-            null,
-            jurorPool.getJuror().getExcusalDate(),
-            jurorPool.getJuror().getExcusalCode());
+                                               HistoryCodeMod.EXCUSED_LETTER,
+                                               channelInfo("Excusal Letter", communicationChannel),
+                                               jurorPool.getJuror().getExcusalDate(),
+                                               jurorPool.getJuror().getExcusalCode());
     }
 
     @Override
     public void createPoolEditHistory(JurorPool jurorPool) {
         registerHistoryLoginUserAdditionalInfo(jurorPool,
-            HistoryCodeMod.POOL_EDIT,
-            "Updated notes", null, null);
+                                               HistoryCodeMod.POOL_EDIT,
+                                               "Updated notes", null, null);
     }
 
     @Override
     public void createAwaitingFurtherInformationHistory(JurorPool jurorPool, String missingInformation) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.AWAITING_FURTHER_INFORMATION,
-            missingInformation, null, null);
+                                               missingInformation, null, null);
     }
 
     @Override
@@ -353,17 +384,18 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     public void createSummonLetterReprintedHistory(JurorPool jurorPool) {
         registerHistoryLoginUser(jurorPool, HistoryCodeMod.SUMMONS_REPRINTED,
-            "Reissued summons letter");
+                                 "Reissued summons letter");
     }
 
     @Override
     public void createTransferCourtHistory(JurorPool sourceJurorPool, JurorPool targetJurorPool) {
         registerHistoryLoginUserAdditionalInfo(sourceJurorPool,
-            HistoryCodeMod.TRANSFER_POOL_MEMBER,
-            "Transferred juror from court" + sourceJurorPool.getCourt().getNameWithLocCode() + " to "
-                + targetJurorPool.getCourt().getNameWithLocCode(),
-            LocalDate.now(),
-            null);
+                                               HistoryCodeMod.TRANSFER_POOL_MEMBER,
+                                               "Transferred juror from court"
+                                                   + sourceJurorPool.getCourt().getNameWithLocCode() + " to "
+                                                   + targetJurorPool.getCourt().getNameWithLocCode(),
+                                               LocalDate.now(),
+                                               null);
     }
 
     @Override
@@ -389,38 +421,58 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
 
     @Override
-    public void createPostponementLetterHistory(JurorPool jurorPool, String confirmationLetter) {
+    public void createPostponementLetterHistory(JurorPool jurorPool, String confirmationLetter,
+                                                CommunicationChannel communicationChannel) {
         if (jurorPool.getDeferralDate() == null || !"P".equals(jurorPool.getDeferralCode())) {
             throw new MojException.InternalServerError("A postponed juror_pool record should exist for "
-                + "the juror relating to the original pool they were summoned to and postponed from", null);
+                                                           + "the juror relating to the original pool they were "
+                                                           + "summoned to and postponed from", null);
         }
 
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.POSTPONED_LETTER,
-            "Postponement Letter Printed", jurorPool.getDeferralDate(), jurorPool.getDeferralCode());
+                                               channelInfo("Postponement Letter", communicationChannel),
+                                               jurorPool.getDeferralDate(),
+                                               jurorPool.getDeferralCode());
 
     }
 
     @Override
     public void createJuryAttendanceHistory(JurorPool jurorPool, Appearance appearance, Panel panel) {
         registerHistoryWithAdditionalInfo(jurorPool, HistoryCodeMod.JURY_ATTENDANCE,
-            panel.getTrial().getTrialNumber(),
-            SecurityUtil.getActiveLogin(),
-            appearance.getAttendanceDate(),
-            appearance.getAttendanceAuditNumber());
+                                          panel.getTrial().getTrialNumber(),
+                                          SecurityUtil.getActiveLogin(),
+                                          appearance.getAttendanceDate(),
+                                          appearance.getAttendanceAuditNumber());
     }
 
     @Override
     public void createPoolAttendanceHistory(JurorPool jurorPool, Appearance appearance) {
         registerHistoryWithAdditionalInfo(jurorPool, HistoryCodeMod.POOL_ATTENDANCE,
-            null,
-            SecurityUtil.getActiveLogin(),
-            appearance.getAttendanceDate(),
-            appearance.getAttendanceAuditNumber());
+                                          null,
+                                          SecurityUtil.getActiveLogin(),
+                                          appearance.getAttendanceDate(),
+                                          appearance.getAttendanceAuditNumber());
     }
 
 
     private void save(JurorHistory jurorHistory) {
         jurorHistoryRepository.save(jurorHistory);
+    }
+
+    /**
+     * Builds an otherInformation string that reflects which channel the letter was queued on, mirroring the
+     * pattern originally established by {@link #createDeferredLetterHistory}.
+     *
+     * @param label   the base description of the letter/comm, e.g. "Confirmation Letter"
+     * @param channel the channel it was queued on
+     * @return "{label}" for {@link CommunicationChannel#LETTER}, otherwise "{label}" with "Letter" replaced by
+     *     "Email"
+     */
+    private String channelInfo(String label, CommunicationChannel channel) {
+        String base = label == null ? "" : label;
+        return channel == CommunicationChannel.EMAIL
+            ? base.replace("Letter", "Email").trim()
+            : base.trim();
     }
 
     private void registerHistoryLoginUser(JurorPool jurorPool, HistoryCodeMod historyCode, String info) {
@@ -430,7 +482,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     private void registerHistoryLoginUserAdditionalInfo(JurorPool jurorPool, HistoryCodeMod historyCode, String info,
                                                         LocalDate otherInfoDate, String otherInfoRef) {
         registerHistoryWithAdditionalInfo(jurorPool, historyCode, info, SecurityUtil.getActiveLogin(), otherInfoDate,
-            otherInfoRef);
+                                          otherInfoRef);
     }
 
     private void registerHistorySystem(JurorPool jurorPool, HistoryCodeMod historyCode, String info) {
@@ -444,22 +496,22 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
     private void registerHistory(JurorPool jurorPool, HistoryCodeMod historyCode, String info, String userId) {
         registerHistory(jurorPool.getJurorNumber(), jurorPool.getPoolNumber(),
-            historyCode, info, userId);
+                        historyCode, info, userId);
     }
 
     private void registerHistory(String jurorNumber, String poolNumber, HistoryCodeMod historyCode, String info,
                                  String userId) {
         log.debug("Creating part history for juror {} with code {} and info {} for userId {}",
-            jurorNumber, historyCode, info, userId);
+                  jurorNumber, historyCode, info, userId);
 
         save(JurorHistory.builder()
-            .poolNumber(poolNumber)
-            .jurorNumber(jurorNumber)
-            .dateCreated(LocalDateTime.now(clock))
-            .createdBy(userId)
-            .historyCode(historyCode)
-            .otherInformation(info)
-            .build());
+                 .poolNumber(poolNumber)
+                 .jurorNumber(jurorNumber)
+                 .dateCreated(LocalDateTime.now(clock))
+                 .createdBy(userId)
+                 .historyCode(historyCode)
+                 .otherInformation(info)
+                 .build());
     }
 
     private void registerHistoryWithAdditionalInfo(JurorPool jurorPool, HistoryCodeMod historyCode, String info,
@@ -480,7 +532,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
                                                    String info,
                                                    String userId, LocalDate otherInfoDate, String otherInfoRef) {
         registerHistoryWithAdditionalInfo(jurorNumber, poolNumber, historyCode, info, userId, otherInfoDate,
-            otherInfoRef, null);
+                                          otherInfoRef, null);
     }
 
     private void registerHistoryWithAdditionalInfo(String jurorNumber, String poolNumber,
@@ -489,24 +541,24 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
                                                    String userId, LocalDate otherInfoDate, String otherInfoRef,
                                                    String otherInfoSupport) {
         log.debug("Creating part history for juror {} with code {} and info {} for userId {}",
-            jurorNumber, historyCode, info, userId);
+                  jurorNumber, historyCode, info, userId);
 
         save(JurorHistory.builder()
-            .poolNumber(poolNumber)
-            .jurorNumber(jurorNumber)
-            .dateCreated(LocalDateTime.now(clock))
-            .createdBy(userId)
-            .historyCode(historyCode)
-            .otherInformation(info)
-            .otherInformationDate(otherInfoDate)
-            .otherInformationRef(otherInfoRef)
-            .otherInformationSupport(otherInfoSupport)
-            .build());
+                 .poolNumber(poolNumber)
+                 .jurorNumber(jurorNumber)
+                 .dateCreated(LocalDateTime.now(clock))
+                 .createdBy(userId)
+                 .historyCode(historyCode)
+                 .otherInformation(info)
+                 .otherInformationDate(otherInfoDate)
+                 .otherInformationRef(otherInfoRef)
+                 .otherInformationSupport(otherInfoSupport)
+                 .build());
     }
 
     @Override
-    public void createEditChangeOfPersonalDetailsHistory(JurorPool jurorPool,String jurorNumber,
-                                                         String poolNumber,String otherInfo) {
+    public void createEditChangeOfPersonalDetailsHistory(JurorPool jurorPool, String jurorNumber,
+                                                         String poolNumber, String otherInfo) {
         registerHistory(jurorNumber, poolNumber, HistoryCodeMod.CHANGE_PERSONAL_DETAILS,
                         otherInfo,
                         SecurityUtil.getActiveLogin());
