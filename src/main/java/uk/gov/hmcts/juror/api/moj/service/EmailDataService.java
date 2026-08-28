@@ -10,7 +10,7 @@ public interface EmailDataService {
     void emailDeferralLetter(JurorPool jurorPool);
 
     boolean emailReissueLetter(JurorPool jurorPool, FormCode requestedFormCode);
-    
+
     void emailDeferralDeniedLetter(JurorPool jurorPool);
 
     void emailExcusalGrantedLetter(JurorPool jurorPool);
