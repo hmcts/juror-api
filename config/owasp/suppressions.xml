@@ -71,6 +71,16 @@
    Jenkins PR-1197 dependency-check findings for tomcat-embed-core-10.1.57.jar and tomcat-embed-websocket-10.1.57.jar.
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-(core|websocket)@10\.1\.57$</packageUrl>
+    <cve>CVE-2026-65637</cve>
+    <cve>CVE-2026-65905</cve>
+    <cve>CVE-2026-65182</cve>
+    <cve>CVE-2026-68525</cve>
+    <cve>CVE-2026-65183</cve>
+    <cve>CVE-2026-66422</cve>
+    <cve>CVE-2026-68569</cve>
+    <cve>CVE-2026-65927</cve>
+    <cve>CVE-2026-68763</cve>
+    <cve>CVE-2026-73180</cve>
     <cve>CVE-2026-66299</cve>
   </suppress>
 
