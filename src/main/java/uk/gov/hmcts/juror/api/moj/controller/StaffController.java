@@ -58,7 +58,7 @@ public class StaffController {
             return ResponseEntity.ok()
                 .body(responseDto);
         } catch (OptimisticLockingFailureException olfe) {
-            log.warn("Failed to change assignment: {}.  Updated by another user!", olfe.getMessage());
+            log.info("Failed to change assignment: {}.  Updated by another user!", olfe.getMessage());
             throw new BureauOptimisticLockingException(olfe);
         }
     }
