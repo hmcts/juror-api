@@ -749,7 +749,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     private void applyOptimisticLocking(final DigitalResponse domain, final Integer uiVersion) {
         log.debug("Version: DB={}, UI={}", domain.getVersion(), uiVersion);
         if (domain.getVersion().compareTo(uiVersion) != 0) {
-            log.warn("Version does not match!");
+            log.info("Version does not match!");
             throw new BureauOptimisticLockingException(new ObjectOptimisticLockingFailureException(
                 DigitalResponse.class,
                 null
