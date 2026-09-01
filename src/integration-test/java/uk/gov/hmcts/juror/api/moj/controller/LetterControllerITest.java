@@ -3519,7 +3519,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
                     assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "578", "405", "Reminder Email");
+                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "578", "405", "Reminder letter");
 
                     verifyPoolHistoryCreated();
                 });

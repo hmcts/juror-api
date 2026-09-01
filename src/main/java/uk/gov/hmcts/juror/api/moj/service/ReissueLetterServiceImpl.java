@@ -18,7 +18,6 @@ import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
-import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
@@ -467,12 +466,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
             jurorPool.setReminderSent(true);
 
-            if (letter.getFormCode().equals(FormCode.ENG_DBD_SUMMONS_REM.getCode())
-                || letter.getFormCode().equals(FormCode.BI_DBD_SUMMONS_REM.getCode())) {
-                jurorHistoryService.createSummonsReminderLetterHistory(jurorPool, CommunicationChannel.EMAIL);
-            } else {
-                jurorHistoryService.createSummonsReminderLetterHistory(jurorPool, CommunicationChannel.LETTER);
-            }
+            jurorHistoryService.createSummonsReminderLetterHistory(jurorPool);
         }
     }
 
