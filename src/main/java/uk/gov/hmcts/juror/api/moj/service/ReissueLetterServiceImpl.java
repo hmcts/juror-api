@@ -211,7 +211,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
         request.getLetters().forEach(letter -> {
             FormCode formCode = FormCode.getFormCode(letter.getFormCode());
-            if (!SUMMONS_REMINDER_FORM_CODES.contains(formCode)) {
+            if (!SUMMONS_REMINDER_CODES.contains(formCode.getCode())) {
                 throw new MojException.BadRequest("Only summons reminder letters can be validated", null);
             }
 

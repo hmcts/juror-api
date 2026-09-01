@@ -87,9 +87,6 @@ public class ReissueLetterServiceTest {
     private JurorPoolService jurorPoolService;
 
     @Mock
-    private JurorRepository jurorRepository;
-
-    @Mock
     private JurorCommonResponseRepositoryMod jurorResponseRepository;
 
     @Mock
