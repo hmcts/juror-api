@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
@@ -38,7 +39,7 @@ import java.util.function.BiConsumer;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.TooManyMethods", "PMD.CognitiveComplexity"})
+@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.TooManyMethods", "PMD.CognitiveComplexity", "PMD.GodClass"})
 public class ReissueLetterServiceImpl implements ReissueLetterService {
 
     private final JurorPoolRepository jurorPoolRepository;
@@ -353,12 +354,12 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                 String jurorNumber = datum.get(jurorNumberIndex).toString();
                 Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
 
-                if (isDbdSummonsReminderEligible(juror)) {
-                    if (juror.isWelsh()) {
-                        newData.add(formCodeIndex, FormCode.BI_DBD_SUMMONS_REM.getCode());
-                    } else {
-                        newData.add(formCodeIndex, FormCode.ENG_DBD_SUMMONS_REM.getCode());
-                    }
+                final boolean isDbd = isDbdSummonsReminderEligible(juror);
+
+                if (isDbd && juror.isWelsh()) {
+                    newData.add(formCodeIndex, FormCode.BI_DBD_SUMMONS_REM.getCode());
+                } else if (isDbd && !juror.isWelsh()) {
+                    newData.add(formCodeIndex, FormCode.ENG_DBD_SUMMONS_REM.getCode());
                 } else if (juror.isWelsh()) {
                     newData.add(formCodeIndex, FormCode.BI_SUMMONS_REMINDER.getCode());
                 } else {
@@ -407,7 +408,13 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
 
             jurorPool.setReminderSent(true);
-            jurorHistoryService.createSummonsReminderLetterHistory(jurorPool);
+
+            if (letter.getFormCode().equals(FormCode.ENG_DBD_SUMMONS_REM.getCode())
+                || letter.getFormCode().equals(FormCode.BI_DBD_SUMMONS_REM.getCode())) {
+                jurorHistoryService.createSummonsReminderLetterHistory(jurorPool, CommunicationChannel.EMAIL);
+            } else {
+                jurorHistoryService.createSummonsReminderLetterHistory(jurorPool, CommunicationChannel.LETTER);
+            }
         }
     }
 

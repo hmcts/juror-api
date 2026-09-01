@@ -500,7 +500,7 @@ class JurorHistoryServiceImplTest {
     }
 
     @Test
-    void createSummonsReminderLetterHistory() {
+    void createSummonsReminderLetterHistoryForLetter() {
         JurorPool jurorPool = createJurorPool();
         jurorPool.setIsActive(true);
 
@@ -509,10 +509,26 @@ class JurorHistoryServiceImplTest {
         jurorPool.setStatus(jurorStatus);
         TestUtils.setUpMockAuthentication("415", "COURT_USER", "1", List.of("415"));
 
-        jurorHistoryService.createSummonsReminderLetterHistory(jurorPool);
+        jurorHistoryService.createSummonsReminderLetterHistory(jurorPool, CommunicationChannel.LETTER);
         assertValuesAdditional(jurorPool, "COURT_USER", null, null,
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.NON_RESPONDED_LETTER,
                 "Reminder letter"));
+    }
+
+    @Test
+    void createSummonsReminderLetterHistoryForEmail() {
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.setIsActive(true);
+
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.RESPONDED);
+        jurorPool.setStatus(jurorStatus);
+        TestUtils.setUpMockAuthentication("415", "COURT_USER", "1", List.of("415"));
+
+        jurorHistoryService.createSummonsReminderLetterHistory(jurorPool, CommunicationChannel.EMAIL);
+        assertValuesAdditional(jurorPool, "COURT_USER", null, null,
+            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.NON_RESPONDED_LETTER,
+                "Reminder Email"));
     }
 
     @Test

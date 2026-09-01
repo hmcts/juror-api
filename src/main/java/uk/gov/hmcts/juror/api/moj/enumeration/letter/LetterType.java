@@ -138,7 +138,7 @@ public enum LetterType {
         ),
         tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)
             .and(QJuror.juror.responded.eq(false))
-            .and(QJuror.juror.digitalByDefault.isFalse().or(hasReceivedSummonsLetter()))
+            .and(QJuror.juror.digitalByDefault.isFalse().or(receivedSummonsLetter()))
         ),
         datePrintedComparator()),
     POSTPONED(List.of(FormCode.ENG_POSTPONE, FormCode.BI_POSTPONE), List.of(
@@ -190,7 +190,7 @@ public enum LetterType {
         };
     }
 
-    private static BooleanExpression hasReceivedSummonsLetter() {
+    private static BooleanExpression receivedSummonsLetter() {
         QBulkPrintData summons = new QBulkPrintData("summons");
         return JPAExpressions.selectOne()
             .from(summons)

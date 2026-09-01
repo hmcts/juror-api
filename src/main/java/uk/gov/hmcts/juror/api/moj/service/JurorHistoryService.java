@@ -61,7 +61,8 @@ public interface JurorHistoryService {
                                   Appearance appearance,
                                   FinancialAuditDetails.Type type);
 
-    void createSummonsReminderLetterHistory(JurorPool jurorPool);
+    void createSummonsReminderLetterHistory(JurorPool jurorPool,
+                                            CommunicationChannel communicationChannel);
 
     void createConfirmationLetterHistory(JurorPool jurorPool, String otherInfo,
                                          CommunicationChannel communicationChannel);

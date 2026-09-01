@@ -278,7 +278,14 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
-    public void createSummonsReminderLetterHistory(JurorPool jurorPool) {
+    public void createSummonsReminderLetterHistory(JurorPool jurorPool,
+                                                   CommunicationChannel communicationChannel) {
+
+        if (communicationChannel == CommunicationChannel.EMAIL) {
+            registerHistoryLoginUser(jurorPool, HistoryCodeMod.NON_RESPONDED_LETTER,
+                                     "Reminder Email");
+            return;
+        }
         registerHistoryLoginUser(jurorPool, HistoryCodeMod.NON_RESPONDED_LETTER,
                                  "Reminder letter");
     }

@@ -3460,7 +3460,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
                     assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "578", "405");
+                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "578", "405", "Reminder Email");
 
                     verifyPoolHistoryCreated();
                 });
@@ -3711,12 +3711,17 @@ class LetterControllerITest extends AbstractIntegrationTest {
             }
 
             private void verifyHistoryResponse(JurorHistory index, String jurorPostfix, String poolNumberPostfix) {
+                verifyHistoryResponse(index, jurorPostfix, poolNumberPostfix, "Reminder letter");
+            }
+
+            private void verifyHistoryResponse(JurorHistory index, String jurorPostfix, String poolNumberPostfix,
+                                               String otherInformation) {
                 assertThat(index.getJurorNumber()).isEqualTo("555555" + jurorPostfix);
                 assertThat(index.getPoolNumber()).isEqualTo("415220" + poolNumberPostfix);
                 assertThat(index.getHistoryCode()).isEqualTo(HistoryCodeMod.NON_RESPONDED_LETTER);
                 assertThat(index.getCreatedBy()).isEqualTo("BUREAU_USER");
                 assertThat(index.getDateCreated().isEqual(LocalDate.now().atStartOfDay()));
-                assertThat(index.getOtherInformation()).isEqualTo("Reminder letter");
+                assertThat(index.getOtherInformation()).isEqualTo(otherInformation);
                 assertThat(index.getOtherInformationDate()).isNull();
                 assertThat(index.getOtherInformationRef()).isNull();
             }

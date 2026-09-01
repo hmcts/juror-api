@@ -943,7 +943,8 @@ public class ReissueLetterServiceTest {
 
             doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser("555555561");
 
-            doNothing().when(jurorHistoryService).createSummonsReminderLetterHistory(jurorPool);
+            doNothing().when(jurorHistoryService)
+                .createSummonsReminderLetterHistory(jurorPool, CommunicationChannel.LETTER);
 
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
@@ -959,7 +960,7 @@ public class ReissueLetterServiceTest {
             verify(jurorPoolService, times(4))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
             verify(jurorHistoryService, times(1))
-                .createSummonsReminderLetterHistory(jurorPool);
+                .createSummonsReminderLetterHistory(jurorPool, CommunicationChannel.LETTER);
         }
 
         @ParameterizedTest
@@ -1002,7 +1003,8 @@ public class ReissueLetterServiceTest {
             doReturn(List.of(dbdSummons)).when(bulkPrintDataRepository)
                 .findByJurorNoAndFormAttributeFormTypeInOrderByCreationDateDesc("555555561",
                     List.of(FormCode.ENG_DBD_SUMMONS.getCode(), FormCode.BI_DBD_SUMMONS.getCode()));
-            doNothing().when(jurorHistoryService).createSummonsReminderLetterHistory(jurorPool);
+            doNothing().when(jurorHistoryService)
+                .createSummonsReminderLetterHistory(jurorPool, CommunicationChannel.EMAIL);
 
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
@@ -1011,7 +1013,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
             verify(printDataService, times(1)).printDbdSummonsReminderLetter(jurorPool);
             verify(jurorHistoryService, times(1))
-                .createSummonsReminderLetterHistory(jurorPool);
+                .createSummonsReminderLetterHistory(jurorPool, CommunicationChannel.EMAIL);
         }
 
 
@@ -1135,7 +1137,8 @@ public class ReissueLetterServiceTest {
             doReturn(jurorPool).when(jurorPoolService)
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
 
-            doNothing().when(jurorHistoryService).createSummonsReminderLetterHistory(jurorPool);
+            doNothing().when(jurorHistoryService)
+                .createSummonsReminderLetterHistory(jurorPool, CommunicationChannel.LETTER);
 
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
