@@ -37,7 +37,10 @@ public class AbaccusReport extends AbstractStandardReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QBulkPrintData.bulkPrintData.creationDate.between(request.getFromDate(), request.getToDate()))
-            .orderBy(QBulkPrintData.bulkPrintData.formAttribute.formType.asc());
+            .orderBy(
+                QBulkPrintData.bulkPrintData.formAttribute.formType.asc(),
+                QBulkPrintData.bulkPrintData.creationDate.desc()
+            );
         addGroupBy(query, DataType.DOCUMENT_CODE, DataType.DATE_SENT);
 
     }
