@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ValidateReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -39,7 +41,11 @@ import java.util.function.BiConsumer;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.TooManyMethods", "PMD.CognitiveComplexity", "PMD.GodClass"})
+@SuppressWarnings({"PMD.CouplingBetweenObjects",
+                   "PMD.TooManyMethods",
+                   "PMD.CognitiveComplexity",
+                   "PMD.ExcessiveImports",
+                   "PMD.GodClass"})
 public class ReissueLetterServiceImpl implements ReissueLetterService {
 
     private final JurorPoolRepository jurorPoolRepository;
@@ -49,6 +55,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private final JurorHistoryService jurorHistoryService;
     private final JurorPoolService jurorPoolService;
     private final JurorRepository jurorRepository;
+    private final JurorCommonResponseRepositoryMod jurorResponseRepository;
     private final PoolHistoryService poolHistoryService;
     private static final List<String> CREATE_LETTER_IF_NOT_EXIST_CODES = List.of(
         FormCode.ENG_SUMMONS_REMINDER.getCode(),
@@ -186,6 +193,57 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         }
 
         createPoolHistory(request, poolLetterCount);
+
+        return response;
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public ValidateReissueLetterListResponseDto validateReissueLetterRequest(ReissueLetterRequestDto request) {
+        if (request.getLetters().isEmpty()) {
+            throw new MojException.BadRequest("No letters provided for validation", null);
+        }
+
+        ValidateReissueLetterListResponseDto response = new ValidateReissueLetterListResponseDto();
+        response.setValidSummonedJurors(new ArrayList<>());
+        response.setInvalidSummonedJurors(new ArrayList<>());
+
+        request.getLetters().forEach(letter -> {
+            FormCode formCode = FormCode.getFormCode(letter.getFormCode());
+            if (!SUMMONS_REMINDER_FORM_CODES.contains(formCode)) {
+                throw new MojException.BadRequest("Only summons reminder letters can be validated", null);
+            }
+
+            String jurorNumber = letter.getJurorNumber();
+            jurorPoolService.getJurorPoolFromUser(jurorNumber);
+            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+            if (juror == null) {
+                throw new MojException.NotFound("Juror not found: " + jurorNumber, null);
+            }
+
+            if (jurorResponseRepository.findByJurorNumber(jurorNumber) != null) {
+                response.getInvalidSummonedJurors().add(
+                    ValidateReissueLetterListResponseDto.InvalidSummonedJurors.builder()
+                        .jurorNumber(jurorNumber)
+                        .firstName(juror.getFirstName())
+                        .lastName(juror.getLastName())
+                        .postcode(juror.getPostcode())
+                        .errorMessage("Juror has responded")
+                        .build()
+                );
+                return;
+            }
+
+            response.getValidSummonedJurors().add(
+                ValidateReissueLetterListResponseDto.ValidSummonedJurors.builder()
+                    .jurorNumber(jurorNumber)
+                    .firstName(juror.getFirstName())
+                    .lastName(juror.getLastName())
+                    .postcode(juror.getPostcode())
+                    .build()
+            );
+        });
 
         return response;
     }
