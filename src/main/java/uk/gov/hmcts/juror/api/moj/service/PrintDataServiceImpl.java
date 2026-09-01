@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ConfirmLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DbdSummonsLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.DbdSummonsReminderLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralDeniedLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalDeniedLetter;
@@ -96,6 +97,20 @@ public class PrintDataServiceImpl implements PrintDataService {
     public void reprintDbdSummonsLetter(JurorPool jurorPool) {
         bulkPrintDbdSummonsLetter(List.of(jurorPool));
         jurorHistoryService.createSummonLetterReprintedHistory(jurorPool);
+    }
+
+    @Override
+    public void printDbdSummonsReminderLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to print summons reminder letter for null jurorPool", null);
+        }
+
+        commitData(new DbdSummonsReminderLetter(
+            jurorPool, jurorPool.getCourt(),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
+            welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+        ));
     }
 
     @Override

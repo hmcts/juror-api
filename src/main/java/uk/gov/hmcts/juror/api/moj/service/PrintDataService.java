@@ -24,6 +24,8 @@ public interface PrintDataService {
 
     void printSummonsReminderLetter(JurorPool jurorPool);
 
+    void printDbdSummonsReminderLetter(JurorPool jurorPool);
+
     void printDeferralLetter(JurorPool jurorPool);
 
     void printDeferralDeniedLetter(JurorPool jurorPool);

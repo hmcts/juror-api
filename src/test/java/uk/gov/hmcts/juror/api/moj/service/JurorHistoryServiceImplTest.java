@@ -500,7 +500,7 @@ class JurorHistoryServiceImplTest {
     }
 
     @Test
-    void createSummonsReminderLetterHistory() {
+    void createSummonsReminderLetterHistoryForLetter() {
         JurorPool jurorPool = createJurorPool();
         jurorPool.setIsActive(true);
 
