@@ -34,7 +34,9 @@ public enum FormCode {
     ENG_WITHDRAWAL("5224", PrintDataService::printWithdrawalLetter, List.of(IJurorStatus.DISQUALIFIED)),
     BI_WITHDRAWAL("5224C", PrintDataService::printWithdrawalLetter, List.of(IJurorStatus.DISQUALIFIED)),
     ENG_DBD_SUMMONS("6220", PrintDataService::reprintDbdSummonsLetter, List.of(IJurorStatus.SUMMONED)),
-    BI_DBD_SUMMONS("6220C", PrintDataService::reprintDbdSummonsLetter, List.of(IJurorStatus.SUMMONED));
+    BI_DBD_SUMMONS("6220C", PrintDataService::reprintDbdSummonsLetter, List.of(IJurorStatus.SUMMONED)),
+    ENG_DBD_SUMMONS_REM("6228", PrintDataService::printDbdSummonsReminderLetter, List.of(IJurorStatus.SUMMONED)),
+    BI_DBD_SUMMONS_REM("6228C", PrintDataService::printDbdSummonsReminderLetter, List.of(IJurorStatus.SUMMONED));
     private final String code;
 
     private final List<Integer> jurorStatus;
