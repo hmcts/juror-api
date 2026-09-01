@@ -15,9 +15,15 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
+import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -26,18 +32,24 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 import static uk.gov.hmcts.juror.api.TestUtils.OBJECT_MAPPER;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = "feature-flags.flags.digital-by-default=true")
 @DisplayName("Digital by default letter controller")
 class LetterDigitalByDefaultControllerITest extends AbstractIntegrationTest {
 
+    private static final URI REISSUE_LETTER_URI = URI.create("/api/v1/moj/letter/reissue-letter");
     private static final URI REISSUE_LETTER_LIST_URI = URI.create("/api/v1/moj/letter/reissue-letter-list");
 
     @Autowired
     private TestRestTemplate template;
+
+    @Autowired
+    private BulkPrintDataRepository bulkPrintDataRepository;
 
     private HttpHeaders httpHeaders;
 
@@ -117,5 +129,110 @@ class LetterDigitalByDefaultControllerITest extends AbstractIntegrationTest {
         assertThat(data.get(0).get(10)).isEqualTo("EMAIL");
         assertThat(data.get(0).get(11)).isEqualTo("EMAIL");
         assertThat(data.get(0).get(12)).isEqualTo("PENDING");
+    }
+
+    @Test
+    @Sql({
+        "/db/mod/truncate.sql",
+        "/db/letter/LetterController_initPoolReissueDeferralLetter.sql",
+        "/db/letter/LetterController_updateReissueDeferralLetterDigitalByDefault.sql"
+    })
+    void reissueDeferralGrantedLetterDoesNotQueueEmailWhenAlreadyPending() {
+        final String jurorNumber = "555555565";
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau("BUREAU_USER"));
+
+        ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+            ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                .jurorNumber(jurorNumber)
+                .formCode(FormCode.ENG_DEFERRAL.getCode())
+                .datePrinted(LocalDate.now())
+                .build();
+        ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+            .letters(List.of(reissueLetterRequestData))
+            .build();
+
+        RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(
+            reissueLetterRequestDto, httpHeaders, POST, REISSUE_LETTER_URI);
+        ResponseEntity<String> response = template.exchange(request, String.class);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode())
+            .as("Expect HTTP Response to be BAD_REQUEST")
+            .isEqualTo(BAD_REQUEST);
+
+        executeInTransaction(() -> {
+            List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
+            assertThat(bulkPrintData).hasSize(1);
+
+            BulkPrintData emailData = bulkPrintData.stream()
+                .filter(data -> DigitalByDefaultEmailTemplate.DEFERRAL_GRANTED_ENGLISH.getTemplateName()
+                    .equals(data.getNotifyTemplateName()))
+                .findFirst()
+                .orElseThrow();
+
+            assertThat(emailData.getFormAttribute().getFormType()).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
+            assertThat(emailData.isExtractedFlag()).isTrue();
+            assertThat(emailData.isDigitalComms()).isTrue();
+            assertThat(emailData.getDetailRec()).isEqualTo("N/A");
+            assertThat(emailData.getCommunicationChannel()).isEqualTo(CommunicationChannel.EMAIL);
+            assertThat(emailData.getEmailStatus()).isEqualTo(EmailStatus.PENDING);
+        });
+    }
+
+    @Test
+    @Sql({
+        "/db/mod/truncate.sql",
+        "/db/letter/LetterController_initPoolReissueDeferralLetter.sql",
+        "/db/letter/LetterController_updateReissueDeferralLetterDigitalByDefault.sql"
+    })
+    @Sql(statements = "UPDATE juror_mod.bulk_print_data "
+        + "SET email_status = 'SENT', notify_template_name = 'DBD_DEF_GRANTED_ENG' "
+        + "WHERE juror_no = '555555565' AND form_type = '5229A'")
+    void reissueDeferralGrantedLetterQueuesEmailWhenPreviousEmailSent() {
+        final String jurorNumber = "555555565";
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau("BUREAU_USER"));
+
+        ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+            ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                .jurorNumber(jurorNumber)
+                .formCode(FormCode.ENG_DEFERRAL.getCode())
+                .datePrinted(LocalDate.now())
+                .build();
+        ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+            .letters(List.of(reissueLetterRequestData))
+            .build();
+
+        RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(
+            reissueLetterRequestDto, httpHeaders, POST, REISSUE_LETTER_URI);
+        ResponseEntity<String> response = template.exchange(request, String.class);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode())
+            .as("Expect HTTP Response to be OK")
+            .isEqualTo(OK);
+
+        executeInTransaction(() -> {
+            List<BulkPrintData> emailData = bulkPrintDataRepository.findByJurorNo(jurorNumber).stream()
+                .filter(data -> CommunicationChannel.EMAIL == data.getCommunicationChannel())
+                .filter(data -> DigitalByDefaultEmailTemplate.DEFERRAL_GRANTED_ENGLISH.getTemplateName()
+                    .equals(data.getNotifyTemplateName()))
+                .toList();
+
+            assertThat(emailData).hasSize(2);
+            assertThat(emailData)
+                .extracting(BulkPrintData::getEmailStatus)
+                .containsExactlyInAnyOrder(EmailStatus.SENT, EmailStatus.PENDING);
+
+            BulkPrintData pendingEmailData = emailData.stream()
+                .filter(data -> EmailStatus.PENDING == data.getEmailStatus())
+                .findFirst()
+                .orElseThrow();
+
+            assertThat(pendingEmailData.getFormAttribute().getFormType()).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
+            assertThat(pendingEmailData.isExtractedFlag()).isTrue();
+            assertThat(pendingEmailData.isDigitalComms()).isTrue();
+            assertThat(pendingEmailData.getDetailRec()).isEqualTo("N/A");
+            assertThat(pendingEmailData.getCommunicationChannel()).isEqualTo(CommunicationChannel.EMAIL);
+        });
     }
 }
