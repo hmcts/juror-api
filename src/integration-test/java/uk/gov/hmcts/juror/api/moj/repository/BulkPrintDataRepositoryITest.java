@@ -62,20 +62,24 @@ class BulkPrintDataRepositoryITest extends AbstractIntegrationTest {
     @Test
     @Sql({
         "/db/mod/truncate.sql",
-        "/db/BulkPrintDataRepository_deletePrintfilesDbdSummonsReminders.sql"
+        "/db/BulkPrintDataRepository_deletePrintfilesDbdSummons.sql"
     })
     @SuppressWarnings("PMD.UnitTestShouldIncludeAssert") // false positive
-    void deletePrintfilesAppliesDbdSummonsReminderStatusRules() {
+    void deletePrintfilesAppliesDbdSummonsStatusRules() {
         bulkPrintDataRepository.deletePrintfiles();
 
         List.of(
             "333333333",
-            "333333334"
+            "333333334",
+            "333333335",
+            "333333336"
         ).forEach(this::assertBulkPrintDataRetained);
 
         List.of(
             "444444444",
-            "444444445"
+            "444444445",
+            "444444446",
+            "444444447"
         ).forEach(this::assertBulkPrintDataDeleted);
     }
 

@@ -15,7 +15,7 @@ BEGIN
                     AND (
                              (bpd.form_type IN ('5224','5224C') AND jp.status <> 6) -- withdrawal letters
                          OR
-                         (bpd.form_type IN ('5221','5221C') AND jp.status <> 1) -- summons letters
+                         (bpd.form_type IN ('5221','5221C','6220','6220C') AND jp.status <> 1) -- summons letters
                          OR
                          (bpd.form_type IN ('5228','5228C','6228','6228C') AND jp.status <> 1) -- summons reminder letters
                          OR
