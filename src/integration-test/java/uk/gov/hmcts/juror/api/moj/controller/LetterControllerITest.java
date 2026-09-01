@@ -32,6 +32,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterLis
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ValidateReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.DeferralLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.ExcusalLetterData;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.FailedToAttendLetterData;
@@ -3428,6 +3429,103 @@ class LetterControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            @Sql({
+                "/db/mod/truncate.sql",
+                "/db/letter/LetterController_initSummonsReminderLetter.sql",
+                "/db/letter/LetterController_initValidateReissueSummonsReminderLetter.sql"
+            })
+            void validateSummonsReminderLetterReturnsValidAndInvalidJurors() throws Exception {
+                final URI uri = URI.create("/api/v1/moj/letter/validate-reissue-letter");
+                final String bureauJwt = createJwtBureau("BUREAU_USER");
+
+                httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+
+                ReissueLetterRequestDto requestDto = ReissueLetterRequestDto.builder()
+                    .letters(List.of(
+                        ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                            .jurorNumber("555555570")
+                            .formCode(FormCode.ENG_SUMMONS_REMINDER.getCode())
+                            .datePrinted(LocalDate.of(2024, 1, 31))
+                            .build(),
+                        ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                            .jurorNumber("555555571")
+                            .formCode(FormCode.ENG_SUMMONS_REMINDER.getCode())
+                            .datePrinted(LocalDate.of(2024, 1, 31))
+                            .build()
+                    ))
+                    .build();
+
+                RequestEntity<ReissueLetterRequestDto> request = new RequestEntity<>(requestDto,
+                    httpHeaders, POST, uri);
+                ResponseEntity<String> response = template.exchange(request, String.class);
+
+                assertThat(response).isNotNull();
+                assertThat(response.getStatusCode()).isEqualTo(OK);
+
+                ValidateReissueLetterListResponseDto responseDto = OBJECT_MAPPER.readValue(response.getBody(),
+                    ValidateReissueLetterListResponseDto.class);
+
+                assertThat(responseDto.getValidSummonedJurors()).hasSize(1);
+                ValidateReissueLetterListResponseDto.ValidSummonedJurors validJuror =
+                    responseDto.getValidSummonedJurors().get(0);
+                assertThat(validJuror.getJurorNumber()).isEqualTo("555555570");
+                assertThat(validJuror.getFirstName()).isEqualTo("Juror570");
+                assertThat(validJuror.getLastName()).isEqualTo("Juror570Surname");
+                assertThat(validJuror.getPostcode()).isEqualTo("CH1 2AN");
+
+                assertThat(responseDto.getInvalidSummonedJurors()).hasSize(1);
+                ValidateReissueLetterListResponseDto.InvalidSummonedJurors invalidJuror =
+                    responseDto.getInvalidSummonedJurors().get(0);
+                assertThat(invalidJuror.getJurorNumber()).isEqualTo("555555571");
+                assertThat(invalidJuror.getFirstName()).isEqualTo("Juror571");
+                assertThat(invalidJuror.getLastName()).isEqualTo("Juror571Surname");
+                assertThat(invalidJuror.getPostcode()).isEqualTo("CH1 2AN");
+                assertThat(invalidJuror.getErrorMessage()).isEqualTo("Juror has responded");
+
+                assertThat(bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted("555555570",
+                    FormCode.ENG_SUMMONS_REMINDER.getCode(), LocalDate.now())).isEmpty();
+            }
+
+            @Test
+            @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
+            void dbdSummonsReminderLetterDoesNotExistCreateNewLetter() {
+                final String jurorNumber = "555555578";
+
+                assertThat(bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
+                    FormCode.ENG_DBD_SUMMONS_REM.getCode(), LocalDate.now()))
+                    .as("Existing letter should not exist for today's date").isEmpty();
+
+                triggerValidBureau(
+                    ReissueLetterRequestDto.ReissueLetterRequestData.builder()
+                        .jurorNumber(jurorNumber)
+                        .formCode(FormCode.ENG_DBD_SUMMONS_REM.getCode())
+                        .datePrinted(LocalDate.now())
+                        .build()
+                );
+                executeInTransaction(() -> {
+                    BulkPrintData bulkPrintData =
+                        bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
+                                FormCode.ENG_DBD_SUMMONS_REM.getCode(), LocalDate.now())
+                            .orElseThrow(
+                                () -> Failures.instance()
+                                    .failure("Expected record to be found in bulk print data table"));
+
+                    assertThat(bulkPrintData.getFormAttribute().getDirectoryName()).isEqualTo("ENG_DBD_SUMMONS_REM");
+                    assertThat(bulkPrintData.getFormAttribute().getMaxRecLen()).isEqualTo(326);
+                    assertThat(bulkPrintData.getFormAttribute().getFormType())
+                        .isEqualTo(FormCode.ENG_DBD_SUMMONS_REM.getCode());
+
+                    List<JurorHistory> updatedJurorHistoryList = jurorHistoryRepository
+                        .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
+                    assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
+                    assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
+                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "578", "405", "Reminder letter");
+
+                    verifyPoolHistoryCreated();
+                });
+            }
+
+            @Test
             @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initSummonsReminderLetter.sql"})
             void summonsReminderReprintAfterLetterIsCreatedAndIsPending() {
                 final String jurorNumber = "555555570";
@@ -3672,12 +3770,17 @@ class LetterControllerITest extends AbstractIntegrationTest {
             }
 
             private void verifyHistoryResponse(JurorHistory index, String jurorPostfix, String poolNumberPostfix) {
+                verifyHistoryResponse(index, jurorPostfix, poolNumberPostfix, "Reminder letter");
+            }
+
+            private void verifyHistoryResponse(JurorHistory index, String jurorPostfix, String poolNumberPostfix,
+                                               String otherInformation) {
                 assertThat(index.getJurorNumber()).isEqualTo("555555" + jurorPostfix);
                 assertThat(index.getPoolNumber()).isEqualTo("415220" + poolNumberPostfix);
                 assertThat(index.getHistoryCode()).isEqualTo(HistoryCodeMod.NON_RESPONDED_LETTER);
                 assertThat(index.getCreatedBy()).isEqualTo("BUREAU_USER");
                 assertThat(index.getDateCreated().isEqual(LocalDate.now().atStartOfDay()));
-                assertThat(index.getOtherInformation()).isEqualTo("Reminder letter");
+                assertThat(index.getOtherInformation()).isEqualTo(otherInformation);
                 assertThat(index.getOtherInformationDate()).isNull();
                 assertThat(index.getOtherInformationRef()).isNull();
             }
@@ -4211,6 +4314,40 @@ class LetterControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
+        @DisplayName("Reissue Letter List - Summons Reminder - DBD summons received")
+        void reissueSummonsReminderListByJurorNumberDbdSummonsReceived() throws Exception {
+            ReissueLetterListResponseDto response = triggerValid(ReissueLetterListRequestDto.builder()
+                .letterType(LetterType.SUMMONED_REMINDER)
+                .jurorNumber("555555578")
+                .build());
+            verifyHeadingsAndTypes(response);
+
+            List<List<Object>> data = response.getData();
+            assertThat(data).isNotNull();
+            assertThat(data.size()).isEqualTo(1);
+
+            List<Object> dataIndex0 = data.get(0);
+            verifyResponse(dataIndex0, "578", null, false, "6228");
+        }
+
+        @Test
+        @DisplayName("Reissue Letter List - Summons Reminder - DBD juror with normal summons received")
+        void reissueSummonsReminderListByJurorNumberDbdJurorNormalSummonsReceived() throws Exception {
+            ReissueLetterListResponseDto response = triggerValid(ReissueLetterListRequestDto.builder()
+                .letterType(LetterType.SUMMONED_REMINDER)
+                .jurorNumber("555555579")
+                .build());
+            verifyHeadingsAndTypes(response);
+
+            List<List<Object>> data = response.getData();
+            assertThat(data).isNotNull();
+            assertThat(data.size()).isEqualTo(1);
+
+            List<Object> dataIndex0 = data.get(0);
+            verifyResponse(dataIndex0, "579", null, false, "5228");
+        }
+
+        @Test
         @DisplayName("Reissue Letter List - Summons Reminder - pool number")
         void reissueSummonsReminderListByPoolNumber() throws Exception {
             ReissueLetterListResponseDto response = triggerValid(ReissueLetterListRequestDto.builder()
@@ -4251,7 +4388,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             List<List<Object>> data = response.getData();
             assertThat(data).isNotNull();
-            assertThat(data.size()).isEqualTo(8);
+            assertThat(data.size()).isEqualTo(10);
 
             List<Object> dataIndex0 = data.get(0);
             verifyResponse(dataIndex0, "570", null, false, "5228");
@@ -4260,22 +4397,28 @@ class LetterControllerITest extends AbstractIntegrationTest {
             verifyResponse(dataIndex1, "572", null, false, "5228C");
 
             List<Object> dataIndex2 = data.get(2);
-            verifyResponse(dataIndex2, "571", "2024-01-31", true, "5228C");
+            verifyResponse(dataIndex2, "578", null, false, "6228");
 
             List<Object> dataIndex3 = data.get(3);
-            verifyResponse(dataIndex3, "573", "2024-01-31", true, "5228C");
+            verifyResponse(dataIndex3, "579", null, false, "5228");
 
             List<Object> dataIndex4 = data.get(4);
-            verifyResponse(dataIndex4, "574", "2024-01-31", true, "5228");
+            verifyResponse(dataIndex4, "571", "2024-01-31", true, "5228C");
 
             List<Object> dataIndex5 = data.get(5);
-            verifyResponse(dataIndex5, "575", "2024-01-31", true, "5228");
+            verifyResponse(dataIndex5, "573", "2024-01-31", true, "5228C");
 
             List<Object> dataIndex6 = data.get(6);
-            verifyResponse(dataIndex6, "576", "2024-01-31", true, "5228C");
+            verifyResponse(dataIndex6, "574", "2024-01-31", true, "5228");
 
             List<Object> dataIndex7 = data.get(7);
-            verifyResponse(dataIndex7, "577", "2024-01-31", false, "5228");
+            verifyResponse(dataIndex7, "575", "2024-01-31", true, "5228");
+
+            List<Object> dataIndex8 = data.get(8);
+            verifyResponse(dataIndex8, "576", "2024-01-31", true, "5228C");
+
+            List<Object> dataIndex9 = data.get(9);
+            verifyResponse(dataIndex9, "577", "2024-01-31", false, "5228");
         }
 
         @Test

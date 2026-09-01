@@ -12,6 +12,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ValidateReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -41,7 +43,11 @@ import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.D
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@SuppressWarnings({"PMD.CouplingBetweenObjects", "PMD.TooManyMethods", "PMD.CognitiveComplexity"})
+@SuppressWarnings({"PMD.CouplingBetweenObjects",
+                   "PMD.TooManyMethods",
+                   "PMD.CognitiveComplexity",
+                   "PMD.ExcessiveImports",
+                   "PMD.GodClass"})
 public class ReissueLetterServiceImpl implements ReissueLetterService {
 
     private final JurorPoolRepository jurorPoolRepository;
@@ -54,15 +60,29 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private final EmailDataService emailDataService;
     private final FeatureFlagConfigurationProperties featureFlags;
     private final PoolHistoryService poolHistoryService;
-    private static final List<String> CREATE_LETTER_IF_NOT_EXIST_CODES = List.of(
-        FormCode.ENG_SUMMONS_REMINDER.getCode(),
-        FormCode.BI_SUMMONS_REMINDER.getCode());
+    private final JurorCommonResponseRepositoryMod jurorResponseRepository;
+ 
     // this list will include the new summons response and reminder letters that are only to be sent via letters
     // for digital by default eligible jurors
     private static final Set<FormCode> DIGITAL_BY_DEFAULT_LETTER_ONLY_REISSUE_CODES = Set.of(
         FormCode.ENG_DBD_SUMMONS,
-        FormCode.BI_DBD_SUMMONS
+        FormCode.BI_DBD_SUMMONS,
+        FormCode.ENG_DBD_SUMMONS_REM,
+        FormCode.BI_DBD_SUMMONS_REM
     );
+    private static final List<String> CREATE_LETTER_IF_NOT_EXIST_CODES = List.of(
+        FormCode.ENG_SUMMONS_REMINDER.getCode(),
+        FormCode.BI_SUMMONS_REMINDER.getCode(),
+        FormCode.ENG_DBD_SUMMONS_REM.getCode(),
+        FormCode.BI_DBD_SUMMONS_REM.getCode());
+    private static final List<String> DBD_SUMMONS_CODES = List.of(
+        FormCode.ENG_DBD_SUMMONS.getCode(),
+        FormCode.BI_DBD_SUMMONS.getCode());
+    private static final Set<String> SUMMONS_REMINDER_CODES = Set.of(
+        FormCode.ENG_SUMMONS_REMINDER.getCode(),
+        FormCode.BI_SUMMONS_REMINDER.getCode(),
+        FormCode.ENG_DBD_SUMMONS_REM.getCode(),
+        FormCode.BI_DBD_SUMMONS_REM.getCode());
 
     // This list will include the summons and reminder letters that are ineligible for digital by default jurors
     private static final Set<FormCode> INELIGIBLE_DIGITAL_BY_DEFAULT_LETTER_REISSUE_CODES = Set.of(
@@ -197,8 +217,59 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         return response;
     }
 
+
+    @Override
+    @Transactional(readOnly = true)
+    public ValidateReissueLetterListResponseDto validateReissueLetterRequest(ReissueLetterRequestDto request) {
+        if (request.getLetters().isEmpty()) {
+            throw new MojException.BadRequest("No letters provided for validation", null);
+        }
+
+        ValidateReissueLetterListResponseDto response = new ValidateReissueLetterListResponseDto();
+        response.setValidSummonedJurors(new ArrayList<>());
+        response.setInvalidSummonedJurors(new ArrayList<>());
+
+        request.getLetters().forEach(letter -> {
+            FormCode formCode = FormCode.getFormCode(letter.getFormCode());
+            if (!SUMMONS_REMINDER_CODES.contains(formCode.getCode())) {
+                throw new MojException.BadRequest("Only summons reminder letters can be validated", null);
+            }
+
+            String jurorNumber = letter.getJurorNumber();
+            jurorPoolService.getJurorPoolFromUser(jurorNumber);
+            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+            if (juror == null) {
+                throw new MojException.NotFound("Juror not found: " + jurorNumber, null);
+            }
+
+            if (jurorResponseRepository.findByJurorNumber(jurorNumber) != null) {
+                response.getInvalidSummonedJurors().add(
+                    ValidateReissueLetterListResponseDto.InvalidSummonedJurors.builder()
+                        .jurorNumber(jurorNumber)
+                        .firstName(juror.getFirstName())
+                        .lastName(juror.getLastName())
+                        .postcode(juror.getPostcode())
+                        .errorMessage("Juror has responded")
+                        .build()
+                );
+                return;
+            }
+
+            response.getValidSummonedJurors().add(
+                ValidateReissueLetterListResponseDto.ValidSummonedJurors.builder()
+                    .jurorNumber(jurorNumber)
+                    .firstName(juror.getFirstName())
+                    .lastName(juror.getLastName())
+                    .postcode(juror.getPostcode())
+                    .build()
+            );
+        });
+
+        return response;
+    }
+
     private void createPoolHistory(ReissueLetterRequestDto request, Map<String, Integer> poolLetterCount) {
-        if (Set.of("5228", "5228C").contains(request.getLetters().get(0).getFormCode())) {
+        if (SUMMONS_REMINDER_CODES.contains(request.getLetters().get(0).getFormCode())) {
 
             poolLetterCount.keySet().forEach(poolNumber -> {
                 // create pool history
@@ -390,7 +461,13 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                 String jurorNumber = datum.get(jurorNumberIndex).toString();
                 Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
 
-                if (juror.isWelsh()) {
+                final boolean isDbd = isDbdSummonsReminderEligible(juror);
+
+                if (isDbd && juror.isWelsh()) {
+                    newData.add(formCodeIndex, FormCode.BI_DBD_SUMMONS_REM.getCode());
+                } else if (isDbd && !juror.isWelsh()) {
+                    newData.add(formCodeIndex, FormCode.ENG_DBD_SUMMONS_REM.getCode());
+                } else if (juror.isWelsh()) {
                     newData.add(formCodeIndex, FormCode.BI_SUMMONS_REMINDER.getCode());
                 } else {
                     newData.add(formCodeIndex, FormCode.ENG_SUMMONS_REMINDER.getCode());
@@ -422,20 +499,34 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                 throw new MojException.BadRequest(String.format("Letter already pending reprint for juror %s",
                                                                 letter.getJurorNumber()), null);
             });
+
+        if (Set.of(FormCode.ENG_DBD_SUMMONS_REM.getCode(), FormCode.BI_DBD_SUMMONS_REM.getCode())
+            .contains(letter.getFormCode())) {
+            Juror juror = jurorRepository.findByJurorNumber(letter.getJurorNumber());
+            if (!isDbdSummonsReminderEligible(juror)) {
+                throw new MojException.BadRequest(String.format(
+                    "DBD summons reminder not valid for juror %s", letter.getJurorNumber()), null);
+            }
+        }
     }
 
     private void createLetterHistory(ReissueLetterRequestDto.ReissueLetterRequestData letter) {
-        if (FormCode.ENG_SUMMONS_REMINDER.getCode().equals(letter.getFormCode())
-            || FormCode.BI_SUMMONS_REMINDER.getCode().equals(letter.getFormCode())) {
+        if (SUMMONS_REMINDER_CODES.contains(letter.getFormCode())) {
 
             JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
 
             jurorPool.setReminderSent(true);
-            if (Set.of("5228", "5228C").contains(letter.getFormCode())) {
-                jurorHistoryService.createSummonsReminderLetterHistory(jurorPool);
-            } else {
-                throw new MojException.NotImplemented("Letter type not implemented", null);
-            }
+
+            jurorHistoryService.createSummonsReminderLetterHistory(jurorPool);
         }
+    }
+
+    private boolean isDbdSummonsReminderEligible(Juror juror) {
+        return juror.isDigitalByDefault()
+            && bulkPrintDataRepository.findByJurorNoAndFormAttributeFormTypeInOrderByCreationDateDesc(
+                juror.getJurorNumber(), DBD_SUMMONS_CODES)
+            .stream()
+            .findAny()
+            .isPresent();
     }
 }

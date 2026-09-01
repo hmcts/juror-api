@@ -367,7 +367,7 @@ class IReissueLetterRepositoryImplTest {
         verify(jpaQuery, times(1)).leftJoin(BULK_PRINT_DATA);
         verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo)
             .and(BULK_PRINT_DATA.formAttribute.formType
-                .in(List.of("5228", "5228C"))));
+                .in(List.of("5228", "5228C", "6228", "6228C"))));
         verify(jpaQuery, times(1))
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)
             .and(QJuror.juror.responded.eq(false)));
@@ -431,7 +431,7 @@ class IReissueLetterRepositoryImplTest {
         verify(jpaQuery, times(1)).leftJoin(BULK_PRINT_DATA);
         verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo)
             .and(BULK_PRINT_DATA.formAttribute.formType
-                .in(List.of("5228", "5228C"))));
+                .in(List.of("5228", "5228C", "6228", "6228C"))));
         verify(jpaQuery, times(1)).where(QJurorPool.jurorPool.status.status
             .eq(IJurorStatus.SUMMONED)
             .and(QJuror.juror.responded.eq(false)));
