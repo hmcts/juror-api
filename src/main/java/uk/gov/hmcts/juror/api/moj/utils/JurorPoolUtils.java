@@ -256,4 +256,9 @@ public final class JurorPoolUtils {
             && jurorPool.getCourt().isDigitalByDefault();
     }
 
+    public static boolean isEligibleForDigitalByDefaultEmail(JurorPool jurorPool) {
+        return isDigitalByDefault(jurorPool)
+            && JurorUtils.isDigitalPreference(jurorPool.getJuror());
+    }
+
 }

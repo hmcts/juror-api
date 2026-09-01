@@ -265,7 +265,7 @@ public class ResponseUpdateController {
                 updateResponseDto.getVersion(), jwtPayload.getLogin()
             );
         } catch (OptimisticLockingFailureException olfe) {
-            log.warn("Juror {} response was updated by another user!", jurorId);
+            log.info("Juror {} response was updated by another user!", jurorId);
             throw new BureauOptimisticLockingException(olfe);
         }
 

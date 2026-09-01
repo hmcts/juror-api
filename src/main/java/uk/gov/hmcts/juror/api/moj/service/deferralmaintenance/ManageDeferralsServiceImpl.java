@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.service.JurorResponseAlreadyCompletedException;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -40,6 +41,7 @@ import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription;
@@ -58,6 +60,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
+import uk.gov.hmcts.juror.api.moj.service.EmailDataService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
@@ -81,6 +84,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 import static uk.gov.hmcts.juror.api.moj.domain.CurrentlyDeferredQueries.filterByCourtAndDate;
 import static uk.gov.hmcts.juror.api.moj.utils.NumberUtils.unboxIntegerValues;
 
@@ -127,6 +131,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     private final JurorPoolService jurorPoolService;
     private final JurorAppearanceService jurorAppearanceService;
     private final JurorResponseService jurorResponseService;
+    private final EmailDataService emailDataService;
+    private final FeatureFlagConfigurationProperties featureFlags;
 
     /**
      * When Jurors defer their service to a future date, a record gets added to the currently_deferred table.
@@ -228,7 +234,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         if (StringUtils.isEmpty(deferralReasonDto.getPoolNumber())) {
             // this is for the deferral journey to move them to deferred state
             setupDeferralEntry(deferralReasonDto, auditorUsername, jurorPool);
-            printDeferralLetter(payload.getOwner(), jurorPool);
+            sendDeferralComms(payload, jurorPool);
         } else {
 
             // only check the DOB if there is no reply method as the DOB may not be present yet
@@ -259,7 +265,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             updateJurorHistory(newJurorPool, newJurorPool.getPoolNumber(), auditorUsername,
                                JurorHistory.ADDED, HistoryCodeMod.DEFERRED_POOL_MEMBER);
 
-            printDeferralLetter(payload.getOwner(), jurorPool);
+            sendDeferralComms(payload, jurorPool);
             printConfirmationLetter(payload.getOwner(), newJurorPool);
         }
 
@@ -267,6 +273,16 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             .eligible(1)
             .ageDisqualified(List.of())
             .build();
+    }
+
+    private void sendDeferralComms(BureauJwtPayload payload, JurorPool jurorPool) {
+
+        if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+            && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+            emailDeferralLetter(payload.getOwner(), jurorPool);
+        } else {
+            printDeferralLetter(payload.getOwner(), jurorPool);
+        }
     }
 
     @Override
@@ -299,7 +315,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         }
 
         LocalDate dob = JurorUtils.resolveDateOfBirth(
-            jurorPool.getJuror(), digitalResponseRepository, paperResponseRepository,null);
+            jurorPool.getJuror(), digitalResponseRepository, paperResponseRepository, null);
         if (JurorUtils.isAgeDisqualified(dob, newDate)) {
             return DeferralAgeDisqualificationResponseDto.builder()
                 .eligible(0)
@@ -328,7 +344,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername, JurorHistory.ADDED,
                                HistoryCodeMod.DEFERRED_POOL_MEMBER);
 
-            printDeferralLetter(payload.getOwner(), jurorPool);
+            sendDeferralComms(payload, jurorPool);
         } else {
 
             checkDobPresent(jurorNumber, jurorPool);
@@ -357,7 +373,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                                HistoryCodeMod.DEFERRED_POOL_MEMBER);
 
             printConfirmationLetter(payload.getOwner(), newJurorPool);
-            printDeferralLetter(payload.getOwner(), jurorPool);
+            sendDeferralComms(payload, jurorPool);
 
         }
 
@@ -392,7 +408,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
 
             LocalDate dob = JurorUtils.resolveDateOfBirth(
-                jurorPool.getJuror(), digitalResponseRepository, paperResponseRepository,null);
+                jurorPool.getJuror(), digitalResponseRepository, paperResponseRepository, null);
             if (JurorUtils.isAgeDisqualified(dob, serviceStartDate)) {
                 ageDisqualified.add(
                     AgeDisqualifiedJurorDto.builder()
@@ -462,7 +478,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             }
 
             LocalDate dob = JurorUtils.resolveDateOfBirth(
-                jurorPool.getJuror(), digitalResponseRepository, paperResponseRepository,null);
+                jurorPool.getJuror(), digitalResponseRepository, paperResponseRepository, null);
             if (JurorUtils.isAgeDisqualified(dob, newDate)) {
                 ageDisqualified.add(
                     AgeDisqualifiedJurorDto.builder()
@@ -513,7 +529,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 }
             }
 
-            jurorHistoryService.createPostponementLetterHistory(jurorPool, "");
+            jurorHistoryService.createPostponementLetterHistory(jurorPool, "", CommunicationChannel.LETTER);
 
             if (payload.getUserType() == UserType.BUREAU) {
                 printPostponementLetter(payload.getOwner(), jurorPool);
@@ -561,7 +577,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             validateJurorPool(newPool.getPoolNumber(), currentJurorPool);
 
             LocalDate dob = JurorUtils.resolveDateOfBirth(
-                currentJurorPool.getJuror(), digitalResponseRepository, paperResponseRepository,null);
+                currentJurorPool.getJuror(), digitalResponseRepository, paperResponseRepository, null);
             if (JurorUtils.isAgeDisqualified(dob, serviceStartDate)) {
                 ageDisqualified.add(
                     AgeDisqualifiedJurorDto.builder()
@@ -636,7 +652,12 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 jurorHistoryService.createDisqualifyHistory(jurorPool, DisqualifyCode.A.getCode());
 
                 if (JurorDigitalApplication.JUROR_OWNER.equals(jurorPool.getOwner())) {
-                    printDataService.printWithdrawalLetter(jurorPool);
+                    if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                        && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+                        emailDataService.emailWithdrawalLetter(jurorPool, DisqualifyCode.A.getCode());
+                    } else {
+                        printDataService.printWithdrawalLetter(jurorPool);
+                    }
                 }
 
                 disqualified.add(BulkDisqualifyResponseDto.DisqualifiedJurorDto.builder()
@@ -935,7 +956,15 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             printDataService.removeQueuedLetterForJuror(jurorPool, List.of(FormCode.ENG_DEFERRAL,
                                                                            FormCode.BI_DEFERRAL));
             printDataService.printDeferralLetter(jurorPool);
-            jurorHistoryService.createDeferredLetterHistory(jurorPool);
+            jurorHistoryService.createDeferredLetterHistory(jurorPool, CommunicationChannel.LETTER);
+        }
+    }
+
+    private void emailDeferralLetter(String owner, JurorPool jurorPool) {
+        if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
+            printDataService.removeQueuedLetterForJuror(jurorPool, List.of(FormCode.ENG_DEFERRAL,
+                                                                           FormCode.BI_DEFERRAL));
+            emailDataService.emailDeferralLetter(jurorPool);
         }
     }
 
@@ -945,16 +974,28 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                                                                            FormCode.BI_CONFIRMATION));
             Juror juror = jurorPool.getJuror();
             if (juror.getPoliceCheck() != null && juror.getPoliceCheck().isChecked()) {
-                printDataService.printConfirmationLetter(jurorPool);
-                jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter");
+                if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                    && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+                    emailDataService.emailConfirmationLetter(jurorPool);
+                } else {
+                    printDataService.printConfirmationLetter(jurorPool);
+                    jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter",
+                                                                        CommunicationChannel.LETTER);
+                }
             }
         }
     }
 
     private void printPostponementLetter(String owner, JurorPool jurorPool) {
         if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
-            printDataService.printPostponeLetter(jurorPool);
-            jurorHistoryService.createPostponementLetterHistory(jurorPool, "Postponed Letter");
+            if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+                emailDataService.emailPostponementLetter(jurorPool);
+            } else {
+                printDataService.printPostponeLetter(jurorPool);
+                jurorHistoryService.createPostponementLetterHistory(jurorPool, "Postponed Letter",
+                                                                    CommunicationChannel.LETTER);
+            }
         }
     }
 
