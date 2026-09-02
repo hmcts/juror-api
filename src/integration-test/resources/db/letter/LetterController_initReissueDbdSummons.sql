@@ -45,4 +45,6 @@ VALUES ('555555561', '415241001', '400', 'BUREAU_USER', true, 1, NULL, NULL, NUL
 
 INSERT INTO juror_mod.bulk_print_data (juror_no, creation_date, form_type, detail_rec, extracted_flag, digital_comms)
 VALUES ('555555561', CURRENT_DATE - 1, '6220', RPAD('415241001', 610, ' '), true, true),
-       ('555555562', CURRENT_DATE - 1, '6220C', RPAD('774241001', 873, ' '), true, true);
+       ('555555562', CURRENT_DATE - 1, '6220C', RPAD('774241001', 873, ' '), true, true),
+       ('555555561', CURRENT_DATE - 1, '6221', RPAD('415241001', 610, ' '), true, true),
+       ('555555562', CURRENT_DATE - 1, '6221C', RPAD('774241001', 873, ' '), true, true);

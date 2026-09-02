@@ -35,6 +35,19 @@ public enum LetterType {
         tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)),
         datePrintedComparator()),
 
+    RESPONSE(List.of(FormCode.ENG_DBD_RESPONSE, FormCode.BI_DBD_RESPONSE), List.of(
+        ReissueLetterService.DataType.JUROR_NUMBER,
+        ReissueLetterService.DataType.SUMMONS_POOL_NUMBER,
+        ReissueLetterService.DataType.SUMMONS_DATE,
+        ReissueLetterService.DataType.JUROR_FIRST_NAME,
+        ReissueLetterService.DataType.JUROR_LAST_NAME,
+        ReissueLetterService.DataType.JUROR_POSTCODE,
+        ReissueLetterService.DataType.DATE_PRINTED,
+        ReissueLetterService.DataType.EXTRACTED_FLAG,
+        ReissueLetterService.DataType.FORM_CODE),
+        tupleJPAQuery -> tupleJPAQuery.where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)),
+        datePrintedComparator()),
+
     CONFIRMATION(List.of(FormCode.ENG_CONFIRMATION, FormCode.BI_CONFIRMATION), List.of(
         ReissueLetterService.DataType.JUROR_NUMBER,
         ReissueLetterService.DataType.JUROR_FIRST_NAME,

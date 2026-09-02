@@ -126,4 +126,6 @@ public interface JurorHistoryService {
 
     void createOnCallHistory(JurorPool jurorPool);
 
+    void createResponsePackPrintedHistory(JurorPool jurorPool);
+
 }
