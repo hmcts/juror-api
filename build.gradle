@@ -228,7 +228,7 @@ flyway {
   def dbUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/juror"
   def dbUserName = System.getenv("DB_USERNAME") ?: "system"
   def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
-  def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: "db/**/*.sql"
+  def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: "classpath:db/**/*.sql"
 
   url = "$dbUrl"
   user = "$dbUserName"
@@ -241,6 +241,7 @@ flyway {
 }
 
 task migratePostgresDatabase(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
+  dependsOn processResources
   if (project.hasProperty("dburl")) {
     url = "jdbc:postgresql://${dburl}"
   }
