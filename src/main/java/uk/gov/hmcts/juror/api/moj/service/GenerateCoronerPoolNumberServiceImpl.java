@@ -91,10 +91,9 @@ public class GenerateCoronerPoolNumberServiceImpl implements GenerateCoronerPool
             // Increment the previous sequence number by one to get the new sequence number
             int newSequenceNumber = Integer.parseInt(latestSequenceNumber) + 1;
 
-            String newPoolNumber = CORONER_POOL_STARTING_DIGIT + latestYear
+            return CORONER_POOL_STARTING_DIGIT + latestYear
                 + latestMonth
                 + leftPadInteger(newSequenceNumber);
-            return newPoolNumber;
         }
 
         log.debug("Latest Coroner Pool number Year/Month is in the past, generating a new pool number");
@@ -106,11 +105,10 @@ public class GenerateCoronerPoolNumberServiceImpl implements GenerateCoronerPool
         StringBuilder poolNumber = new StringBuilder();
         LocalDate currentDate = LocalDate.now();
 
-        poolNumber.append(CORONER_POOL_STARTING_DIGIT);
-        // only want last two digits of year
-        poolNumber.append(String.valueOf(currentDate.getYear()).substring(2));
-        poolNumber.append(leftPadIntegerMonth(currentDate.getMonthValue()));
-        poolNumber.append(SEQUENCE_START_POSITION);
+        poolNumber.append(CORONER_POOL_STARTING_DIGIT)
+            .append(String.valueOf(currentDate.getYear()).substring(2)) // only want last two digits of year
+            .append(leftPadIntegerMonth(currentDate.getMonthValue()))
+            .append(SEQUENCE_START_POSITION);
 
         return poolNumber.toString();
     }
