@@ -2,4 +2,4 @@
 
 
 INSERT INTO juror_mod.t_history_code (history_code, description)
-VALUES ('RPCK', 'Response Pack Printed');
+VALUES ('RPCK', 'Response Pack');

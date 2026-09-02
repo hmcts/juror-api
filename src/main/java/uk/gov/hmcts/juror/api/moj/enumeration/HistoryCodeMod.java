@@ -76,7 +76,7 @@ public enum HistoryCodeMod {
     CHANGE_POOL_REQUEST_DETAILS("PREQ", "Change Pool Request Details"),
     PENDING_JUROR_AUTHORISED("AUTH", "Pending Juror Authorised"),
     ON_CALL("PONC","Juror On Call"),
-    RESPONSE_PACK_PRINTED("RPCK", "Response Pack Printed");
+    RESPONSE_PACK_PRINTED("RPCK", "Response Pack");
 
     private final String code;
     private final String description;
