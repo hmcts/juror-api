@@ -1040,6 +1040,27 @@ class JurorAppearanceServiceTest {
     }
 
     @Test
+    @DisplayName("updateAttendance() - status CHECK_OUT_PANELLED - already confirmed")
+    void updateAttendanceCheckOutPanelledAlreadyConfirmed() {
+        final UpdateAttendanceDto request = buildUpdateAttendanceDto(List.of(JUROR3));
+        request.getCommonData().setStatus(UpdateAttendanceStatus.CHECK_OUT_PANELLED);
+
+        updateAttendanceCheckOutMockSetup();
+
+        Appearance confirmedAppearance = buildAppearance(JUROR3, LocalTime.of(9, 30), null, CHECKED_IN);
+        confirmedAppearance.setAppearanceConfirmed(true);
+        confirmedAppearance.setAttendanceAuditNumber("J10000000");
+        doReturn(Optional.of(confirmedAppearance)).when(appearanceRepository).findById(any(AppearanceId.class));
+
+        assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
+            .isThrownBy(() -> jurorAppearanceService.updateAttendance(buildPayload(OWNER_415, List.of(LOC_415)),
+                request))
+            .withMessageContaining("Cannot update confirmed juror " + JUROR3);
+
+        verify(appearanceRepository, never()).saveAllAndFlush(any());
+    }
+
+    @Test
     @DisplayName("updateAttendance() - status CHECK_IN")
     void updateAttendanceCheckIn() {
         // mock request and dependencies
