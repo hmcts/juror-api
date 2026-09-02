@@ -35,6 +35,8 @@ public enum FormCode {
     BI_WITHDRAWAL("5224C", PrintDataService::printWithdrawalLetter, List.of(IJurorStatus.DISQUALIFIED)),
     ENG_DBD_SUMMONS("6220", PrintDataService::reprintDbdSummonsLetter, List.of(IJurorStatus.SUMMONED)),
     BI_DBD_SUMMONS("6220C", PrintDataService::reprintDbdSummonsLetter, List.of(IJurorStatus.SUMMONED)),
+    ENG_DBD_RESPONSE("6221", PrintDataService::printDbdResponseLetter, List.of(IJurorStatus.SUMMONED)),
+    BI_DBD_RESPONSE("6221C", PrintDataService::printDbdResponseLetter, List.of(IJurorStatus.SUMMONED)),
     ENG_DBD_SUMMONS_REM("6228", PrintDataService::printDbdSummonsReminderLetter, List.of(IJurorStatus.SUMMONED)),
     BI_DBD_SUMMONS_REM("6228C", PrintDataService::printDbdSummonsReminderLetter, List.of(IJurorStatus.SUMMONED));
     private final String code;
