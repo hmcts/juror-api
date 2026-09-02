@@ -943,6 +943,74 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
         }
 
         @Test
+        @DisplayName("PATCH Update attendance - cannot check out confirmed panelled juror")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
+        void updateAttendanceCheckOutPanelledAlreadyConfirmed() {
+            Appearance appearance = appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR3,
+                    now().minusDays(2))
+                .orElseThrow();
+            appearance.setAppearanceStage(EXPENSE_ENTERED);
+            appearance.setAppearanceConfirmed(true);
+            appearance.setAttendanceAuditNumber("J10000000");
+            appearanceRepository.saveAndFlush(appearance);
+
+            List<String> jurors = new ArrayList<>();
+            jurors.add(JUROR3);
+            UpdateAttendanceDto request = buildUpdateAttendanceDto(jurors);
+            request.getCommonData().setStatus(UpdateAttendanceStatus.CHECK_OUT_PANELLED);
+
+            ResponseEntity<AttendanceDetailsResponse> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
+
+            assertThat(response.getStatusCode()).as("Unprocessable Entity").isEqualTo(UNPROCESSABLE_ENTITY);
+
+            Appearance unchangedAppearance = appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415",
+                    JUROR3, now().minusDays(2))
+                .orElseThrow();
+            assertThat(unchangedAppearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+            assertThat(unchangedAppearance.getTimeOut()).isNull();
+            assertThat(unchangedAppearance.isAppearanceConfirmed()).isTrue();
+            assertThat(unchangedAppearance.getAttendanceAuditNumber()).isEqualTo("J10000000");
+        }
+
+        @Test
+        @DisplayName("PATCH Update attendance - cannot check out all panelled when one is confirmed")
+        @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetails.sql"})
+        void updateAttendanceCheckOutAllPanelledOneAlreadyConfirmed() {
+            Appearance appearance = appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415", JUROR3,
+                    now().minusDays(2))
+                .orElseThrow();
+            appearance.setAppearanceStage(EXPENSE_ENTERED);
+            appearance.setAppearanceConfirmed(true);
+            appearance.setAttendanceAuditNumber("J10000000");
+            appearanceRepository.saveAndFlush(appearance);
+
+            UpdateAttendanceDto request = buildUpdateAttendanceDto(null);
+            request.getCommonData().setStatus(UpdateAttendanceStatus.CHECK_OUT_PANELLED);
+
+            ResponseEntity<AttendanceDetailsResponse> response =
+                restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
+                    URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
+
+            assertThat(response.getStatusCode()).as("Unprocessable Entity").isEqualTo(UNPROCESSABLE_ENTITY);
+
+            Appearance confirmedAppearance = appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415",
+                    JUROR3, now().minusDays(2))
+                .orElseThrow();
+            assertThat(confirmedAppearance.getAppearanceStage()).isEqualTo(EXPENSE_ENTERED);
+            assertThat(confirmedAppearance.getTimeOut()).isNull();
+            assertThat(confirmedAppearance.isAppearanceConfirmed()).isTrue();
+            assertThat(confirmedAppearance.getAttendanceAuditNumber()).isEqualTo("J10000000");
+
+            Appearance checkedOutAppearance = appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415",
+                    JUROR2, now().minusDays(2))
+                .orElseThrow();
+            assertThat(checkedOutAppearance.getAppearanceStage()).isEqualTo(CHECKED_IN);
+            assertThat(checkedOutAppearance.getTimeOut()).isNull();
+        }
+
+        @Test
         @DisplayName("PATCH Update attendance - check in all jurors updated ")
         @Sql({"/db/mod/truncate.sql", "/db/jurormanagement/UpdateAttendanceDetailsCheckInAll.sql"})
         void updateAttendanceCheckIn() {
