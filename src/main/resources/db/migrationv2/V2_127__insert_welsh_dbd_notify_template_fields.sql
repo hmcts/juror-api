@@ -1,4 +1,3 @@
-@ -0,0 +1,88 @@
 -- CONFIRMATION SERVICE WELSH
 
 INSERT INTO juror_mod.notify_template_field
