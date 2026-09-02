@@ -112,6 +112,62 @@ class LetterControllerDigitalByDefaultITest extends AbstractIntegrationTest {
                             "LNAMEFIVEFOURONE", "CF10 1AA", FormCode.BI_DBD_SUMMONS);
     }
 
+    @Test
+    @Sql(
+        scripts = {
+            "/db/mod/truncate.sql",
+            "/db/letter/LetterController_initReissueDbdSummons.sql"
+        })
+    @Sql(
+        statements = "UPDATE juror_mod.court_location SET digital_by_default = false WHERE loc_code IN ('415', '774')",
+        executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+    void reissueDbdResponseLetterListShowAllQueued() {
+        ReissueLetterRequestDto reissueLetterRequestDto = ReissueLetterRequestDto.builder()
+            .letters(List.of(
+                reissueLetterRequestData("555555561", FormCode.ENG_DBD_RESPONSE),
+                reissueLetterRequestData("555555562", FormCode.BI_DBD_RESPONSE)
+            ))
+            .build();
+
+        RequestEntity<ReissueLetterRequestDto> reissueRequest = new RequestEntity<>(
+            reissueLetterRequestDto, httpHeaders, POST, REISSUE_LETTER_URI);
+        ResponseEntity<ReissueLetterReponseDto> reissueResponse =
+            template.exchange(reissueRequest, ReissueLetterReponseDto.class);
+
+        assertThat(reissueResponse).isNotNull();
+        assertThat(reissueResponse.getStatusCode()).isEqualTo(OK);
+        assertThat(reissueResponse.getBody()).isNotNull();
+        assertThat(reissueResponse.getBody().getJurors()).isEmpty();
+
+        ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+            .showAllQueued(true)
+            .letterType(LetterType.RESPONSE)
+            .build();
+
+        RequestEntity<ReissueLetterListRequestDto> listRequest = new RequestEntity<>(
+            reissueLetterListRequestDto, httpHeaders, POST, REISSUE_LETTER_LIST_URI);
+        ResponseEntity<ReissueLetterListResponseDto> listResponse =
+            template.exchange(listRequest, ReissueLetterListResponseDto.class);
+
+        assertThat(listResponse).isNotNull();
+        assertThat(listResponse.getStatusCode()).isEqualTo(OK);
+        assertThat(listResponse.getBody()).isNotNull();
+
+        ReissueLetterListResponseDto responseBody = listResponse.getBody();
+        assertHeadingsAndTypes(responseBody);
+
+        List<List<Object>> data = responseBody.getData();
+        assertThat(data).hasSize(2);
+
+        Map<String, List<Object>> rowsByJurorNumber = data.stream()
+            .collect(Collectors.toMap(row -> row.get(0).toString(), Function.identity()));
+
+        assertDbdSummonsRow(rowsByJurorNumber.get("555555561"), "415241001", "FNAMEFIVEFOURZERO",
+                            "LNAMEFIVEFOURZERO", "CH1 2AN", FormCode.ENG_DBD_RESPONSE);
+        assertDbdSummonsRow(rowsByJurorNumber.get("555555562"), "774241001", "FNAMEFIVEFOURONE",
+                            "LNAMEFIVEFOURONE", "CF10 1AA", FormCode.BI_DBD_RESPONSE);
+    }
+
     private ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData(String jurorNumber,
                                                                                       FormCode formCode) {
         return ReissueLetterRequestDto.ReissueLetterRequestData.builder()
