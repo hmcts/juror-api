@@ -1746,8 +1746,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
 
         printDataService.printDbdResponseLetter(jurorPool);
-
-        //Todo: add a new history event for this new response pack
+        jurorHistoryService.createResponsePackPrintedHistory(jurorPool);
     }
 
     @Override

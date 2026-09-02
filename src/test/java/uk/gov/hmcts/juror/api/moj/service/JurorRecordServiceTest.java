@@ -322,6 +322,7 @@ class JurorRecordServiceTest {
             jurorRecordService.sendPaperResponsePack(VALID_JUROR_NUMBER);
 
             verify(printDataService, times(1)).printDbdResponseLetter(jurorPool);
+            verify(jurorHistoryService, times(1)).createResponsePackPrintedHistory(jurorPool);
             verifyNoMoreInteractions(printDataService);
         }
 
@@ -338,6 +339,7 @@ class JurorRecordServiceTest {
                 .withMessage("Juror's court is not part of the DBD pilot");
 
             verifyNoInteractions(printDataService);
+            verify(jurorHistoryService, never()).createResponsePackPrintedHistory(jurorPool);
         }
 
         @Test
@@ -353,6 +355,7 @@ class JurorRecordServiceTest {
                 .withMessage("Juror must be in Summoned status to send a paper response pack");
 
             verifyNoInteractions(printDataService);
+            verify(jurorHistoryService, never()).createResponsePackPrintedHistory(jurorPool);
         }
 
         @Test
@@ -368,6 +371,7 @@ class JurorRecordServiceTest {
                 .withMessage("Juror's communication preference must be Paper");
 
             verifyNoInteractions(printDataService);
+            verify(jurorHistoryService, never()).createResponsePackPrintedHistory(jurorPool);
         }
     }
 
