@@ -1,9 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.domain.authentication;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.moj.AbstractValidatorTest;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
@@ -21,13 +19,6 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 class UserDetailsDtoTest extends AbstractValidatorTest<UserDetailsDto> {
-
-    private static MockedStatic<SecurityUtil> securityUtilMockedStatic;
-
-    @AfterAll
-    static void afterAll() {
-        securityUtilMockedStatic.close();
-    }
 
     @Override
     protected UserDetailsDto createValidObject() {
@@ -83,26 +74,26 @@ class UserDetailsDtoTest extends AbstractValidatorTest<UserDetailsDto> {
         when(user.getUserType()).thenReturn(UserType.COURT);
         when(user.getRoles()).thenReturn(Set.of(Role.MANAGER, Role.SENIOR_JUROR_OFFICER));
 
-        securityUtilMockedStatic = mockStatic(SecurityUtil.class);
-        securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(true);
-
         List<UserCourtDto> courts = List.of(
             UserCourtDtoTest.getValidObject(),
             UserCourtDtoTest.getValidObject()
         );
-        assertThat(new UserDetailsDto(user, courts))
-            .isEqualTo(
-                UserDetailsDto.builder()
-                    .username("username")
-                    .email("email")
-                    .name("name")
-                    .isActive(true)
-                    .lastSignIn(lastLoggedIn)
-                    .userType(UserType.COURT)
-                    .roles(Set.of(Role.MANAGER, Role.SENIOR_JUROR_OFFICER))
-                    .courts(courts)
-                    .build()
-            );
+        try (var securityUtilMockedStatic = mockStatic(SecurityUtil.class)) {
+            securityUtilMockedStatic.when(SecurityUtil::canEditApprovalLimit).thenReturn(true);
+            assertThat(new UserDetailsDto(user, courts))
+                .isEqualTo(
+                    UserDetailsDto.builder()
+                        .username("username")
+                        .email("email")
+                        .name("name")
+                        .isActive(true)
+                        .lastSignIn(lastLoggedIn)
+                        .userType(UserType.COURT)
+                        .roles(Set.of(Role.MANAGER, Role.SENIOR_JUROR_OFFICER))
+                        .courts(courts)
+                        .build()
+                );
+        }
 
 
     }

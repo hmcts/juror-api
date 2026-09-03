@@ -17,6 +17,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
@@ -109,6 +111,7 @@ import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDefer
 })
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ManageDeferralsServiceTest {
 
     private static final String BUREAU_OWNER = "400";

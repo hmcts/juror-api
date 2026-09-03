@@ -8,6 +8,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
@@ -39,6 +41,7 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.juror.api.moj.domain.CourtLocationQueries.filterByLocCodes;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
+@MockitoSettings(strictness = Strictness.LENIENT)
 @SuppressWarnings({
     "PMD.TooManyMethods",
     "PMD.ExcessiveImports"

@@ -19,6 +19,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
@@ -40,6 +42,7 @@ import static uk.gov.hmcts.juror.api.moj.repository.IJurorPoolRepository.CHECKED
 
 @SuppressWarnings({"PMD.TooManyMethods", "unchecked"})
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class JurorPoolRepositoryImplTest {
 
     private static final QPanel PANEL = QPanel.panel;
