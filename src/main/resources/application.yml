@@ -234,8 +234,8 @@ uk:
         remote:
           pnc-check-service:
             security:
-              secret: ${PNC_CHECK_SERVICE_SECRET}
-              subject: ${PNC_CHECK_SERVICE_SUBJECT}
+              secret: ${PNC_CHECK_SERVICE_SECRET:dGVzdC1wdWJsaWMtc2VjcmV0LWtleS1mb3ItaW50ZWdyYXRpb24tdGVzdHMtbWluaW11bS0yNTYtYml0cy1yZXF1aXJlZC1mb3ItaHMyNTY=}
+              subject: ${PNC_CHECK_SERVICE_SUBJECT:test-pnc-check-service}
             host: localhost
             port: 8090
             scheme: http

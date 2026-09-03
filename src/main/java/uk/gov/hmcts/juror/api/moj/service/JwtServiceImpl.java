@@ -69,7 +69,7 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public SecretKey getSigningKey(String jwtSecret) {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+        return Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(jwtSecret));
     }
 
     @Override

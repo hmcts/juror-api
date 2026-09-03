@@ -43,12 +43,19 @@ public interface PoolRequestRepository extends IPoolRequestRepository, JpaReposi
      * @param locCode 3-digit numeric string to uniquely identify a court location
      * @return List of pools at a court location.
      */
-    @Query(value = "SELECT * from juror_mod.get_active_pools_at_court_location(:LocCode)", nativeQuery = true)
+    @Query(value = "SELECT CONCAT(pool_number, ',', total_possibly_in_attendance, ',', "
+        + "COALESCE(in_attendance::text, 'null'), ',', on_call, ',', "
+        + "COALESCE(total_possibly_on_trial::text, 'null'), ',', COALESCE(jurors_on_trial::text, 'null'), ',', "
+        + "pool_type, ',', service_start_date) "
+        + "from juror_mod.get_active_pools_at_court_location(:LocCode)", nativeQuery = true)
     List<String> findPoolsByCourtLocation(@Param("LocCode") String locCode) throws SQLException;
 
     // As findPoolsByCourtLocation but also includes pools with return date in future
-    @Query(value = "SELECT * from juror_mod.get_all_active_pools_at_court_location(:LocCode)", nativeQuery = true)
+    @Query(value = "SELECT CONCAT(pool_number, ',', total_possibly_in_attendance, ',', "
+        + "COALESCE(in_attendance::text, 'null'), ',', on_call, ',', "
+        + "COALESCE(total_possibly_on_trial::text, 'null'), ',', COALESCE(jurors_on_trial::text, 'null'), ',', "
+        + "pool_type, ',', service_start_date) "
+        + "from juror_mod.get_all_active_pools_at_court_location(:LocCode)", nativeQuery = true)
     List<String> findAllPoolsByCourtLocation(@Param("LocCode") String locCode) throws SQLException;
 
 }
-

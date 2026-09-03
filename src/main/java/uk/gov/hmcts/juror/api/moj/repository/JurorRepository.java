@@ -26,8 +26,9 @@ public interface JurorRepository extends RevisionRepository<Juror, String, Long>
     /**
      * Function to return daily utilisation stats for jurors.
      */
-    @Query(nativeQuery = true, value = "SELECT * from juror_mod.util_report_daily_summary( :LocCode, :fromDate, "
-        + ":toDate)")
+    @Query(nativeQuery = true, value = "SELECT CONCAT(report_date, ',', working, ',', sitting, ',', attended, ',', "
+        + "non_attendance, ',', utilisation) "
+        + "from juror_mod.util_report_daily_summary( :LocCode, :fromDate, :toDate)")
     List<String> callDailyUtilStats(@Param("LocCode") String locCode,
                                    @Param("fromDate") LocalDate fromDate,
                                    @Param("toDate") LocalDate toDate) throws SQLException;
@@ -36,7 +37,9 @@ public interface JurorRepository extends RevisionRepository<Juror, String, Long>
     /**
      * Function to return utilisation stats for jurors on a given date.
      */
-    @Query(nativeQuery = true, value = "SELECT * from juror_mod.util_report_jurors( :LocCode, :reportDate)")
+    @Query(nativeQuery = true, value = "SELECT CONCAT(report_date, ',', COALESCE(juror_number, 'null'), ',', "
+        + "working, ',', sitting, ',', attended, ',', non_attendance) "
+        + "from juror_mod.util_report_jurors( :LocCode, :reportDate)")
     List<String> callDailyUtilJurorsStats(@Param("LocCode") String locCode,
                                     @Param("reportDate") LocalDate reportDate) throws SQLException;
 

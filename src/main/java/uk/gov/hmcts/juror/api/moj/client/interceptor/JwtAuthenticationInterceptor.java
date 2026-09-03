@@ -1,7 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.client.interceptor;
 
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
@@ -44,7 +42,7 @@ public class JwtAuthenticationInterceptor implements ClientHttpRequestIntercepto
     }
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(this.config.getSecret()));
+        return jwtService.getSigningKey(this.config.getSecret());
     }
 
 }
