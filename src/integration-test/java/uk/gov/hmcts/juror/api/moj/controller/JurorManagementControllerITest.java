@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -75,7 +75,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT;
 import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.CHECKED_IN;
 import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.CHECKED_OUT;
 import static uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage.EXPENSE_ENTERED;
@@ -748,7 +748,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
                                                           URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
 
-            assertThat(response.getStatusCode()).as("Unprocessable Entity").isEqualTo(UNPROCESSABLE_ENTITY);
+            assertThat(response.getStatusCode()).as("Unprocessable Entity").isEqualTo(UNPROCESSABLE_CONTENT);
 
         }
 
@@ -1015,7 +1015,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
                                                           URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
 
-            assertThat(response.getStatusCode()).as("Unprocessable entity").isEqualTo(UNPROCESSABLE_ENTITY);
+            assertThat(response.getStatusCode()).as("Unprocessable entity").isEqualTo(UNPROCESSABLE_CONTENT);
 
         }
 
@@ -1087,7 +1087,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
                                                           URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
 
-            assertThat(response.getStatusCode()).as("Unprocessable entity").isEqualTo(UNPROCESSABLE_ENTITY);
+            assertThat(response.getStatusCode()).as("Unprocessable entity").isEqualTo(UNPROCESSABLE_CONTENT);
 
         }
 
@@ -1876,7 +1876,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                     URI.create("/api/v1/moj/juror-management/non-attendance")), String.class);
 
             assertThat(response.getStatusCode()).as("HTTP status unprocessable entity expected")
-                .isEqualTo(UNPROCESSABLE_ENTITY);
+                .isEqualTo(UNPROCESSABLE_CONTENT);
 
             assertBusinessRuleViolation(response, "Juror 222222222 already has an attendance "
                 + "record for the date " + now().minusDays(1), ATTENDANCE_RECORD_ALREADY_EXISTS);
@@ -1953,7 +1953,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                     URI.create("/api/v1/moj/juror-management/non-attendance")), String.class);
 
             assertThat(response.getStatusCode()).as("HTTP status unprocessable entity expected")
-                .isEqualTo(UNPROCESSABLE_ENTITY);
+                .isEqualTo(UNPROCESSABLE_CONTENT);
 
             JSONObject exceptionDetails = getExceptionDetails(response);
             assertThat(exceptionDetails.getString("message")).isEqualTo("Non-attendance date is "
@@ -2195,7 +2195,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(new RequestEntity<>(confirmAttendanceDto, httpHeaders, PATCH,
                     URI.create(urlBase)), Void.class);
 
-            assertThat(response.getStatusCode()).as("Unprocessable entity response").isEqualTo(UNPROCESSABLE_ENTITY);
+            assertThat(response.getStatusCode()).as("Unprocessable entity response").isEqualTo(UNPROCESSABLE_CONTENT);
 
         }
 

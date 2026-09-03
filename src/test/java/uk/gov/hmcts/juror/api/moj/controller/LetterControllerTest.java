@@ -10,9 +10,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -71,18 +71,18 @@ public class LetterControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private RequestInformationLetterService requestInformationLetterService;
-    @MockBean
+    @MockitoBean
     private CourtLetterService courtLetterService;
-    @MockBean
+    @MockitoBean
     private CourtLetterPrintService courtLetterPrintService;
-    @MockBean
+    @MockitoBean
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;
-    @MockBean
+    @MockitoBean
     private ReissueLetterService reissueLetterService;
 
-    @MockBean
+    @MockitoBean
     private ExemptionCertificateService exemptionCertificateService;
 
     @AfterEach

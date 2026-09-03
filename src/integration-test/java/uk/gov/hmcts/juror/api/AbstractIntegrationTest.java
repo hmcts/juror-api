@@ -231,7 +231,7 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
                                                MojException.BusinessRuleViolation.ErrorCode code) {
 
         assertThat(response).isNotNull();
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
         JSONAssert
             .assertEquals("Json Should match",
                 TestUtil.parseToJsonString(Map.of(

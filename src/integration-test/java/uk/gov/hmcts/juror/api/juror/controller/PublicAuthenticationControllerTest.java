@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -37,12 +37,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class PublicAuthenticationControllerTest extends AbstractIntegrationTest {
-    private static final String HMAC_HEADER_VALID = "eyJhbGciOiJIUzI1NiJ9"
-        + ".eyJleHAiOjM0NTIwMTk4MzM1MCwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
-    private static final String HMAC_HEADER_INVALID = "eyJhbGciOiJIUzI1NiJ9"
-        + ".eyJleHAiOjM0NTIwMTk4MzM1MSwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
-    //payload (second section) has been modified
-
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -67,7 +61,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         final String lastName = "Castillo";
         final String postcode = "AB3 9RY";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createHmacJwt());
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
@@ -100,7 +94,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         final String lastName = "Castillo";
         final String postcode = "AB39RY";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createHmacJwt());
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
@@ -207,7 +201,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
             .postcode(postcode)
             .build();
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_INVALID);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createHmacJwt() + "invalid");
         RequestEntity<PublicAuthenticationRequestDto> requestEntity = new RequestEntity<>(requestDto,
             httpHeaders, HttpMethod.POST, uri);
 
@@ -234,7 +228,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         final String lastName = "Castilloo";// invalid, should be "Castillo"
         final String postcode = "AB3 9RY";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createHmacJwt());
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
@@ -272,7 +266,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         final String lastName = "Castilloo";// invalid, should be "Castillo"
         final String postcode = "AB3 9RY";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createHmacJwt());
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
@@ -387,7 +381,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         final String lastName = "Castillo";
         final String postcode = "AB3 9RY";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createHmacJwt());
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()
@@ -426,7 +420,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
         final String lastName = "Castillo";
         final String postcode = "AB3 9RY";
 
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createHmacJwt());
         URI uri = URI.create("/api/v1/auth/juror");
 
         PublicAuthenticationRequestDto requestDto = PublicAuthenticationRequestDto.builder()

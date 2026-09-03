@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -121,7 +121,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         ResponseEntity<BureauJurorDetailDto> responseEntity = template.exchange(new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/bureau/juror/209092530")), BureauJurorDetailDto.class);
         assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
+        assertThat(responseEntity.getStatusCode().value()).isEqualTo(200);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody()).isInstanceOf(BureauJurorDetailDto.class);
         assertThat(responseEntity.getBody()).extracting(
@@ -152,7 +152,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         ResponseEntity<BureauResponseSummaryWrapper> response = template.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create("/api/v1/bureau/responses?filterBy=todo")),
             BureauResponseSummaryWrapper.class);
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
         assertThat(response.getBody().getResponses()).hasSize(3);
         assertThat(response.getBody().getTodoCount()).isEqualTo(3);
         assertThat(response.getBody().getRepliesPendingCount()).isEqualTo(4);

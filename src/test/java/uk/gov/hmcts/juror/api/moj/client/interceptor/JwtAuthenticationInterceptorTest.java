@@ -5,7 +5,7 @@ import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
@@ -31,16 +31,16 @@ class JwtAuthenticationInterceptorTest {
 
     private JwtAuthenticationInterceptor jwtAuthenticationInterceptor;
 
-    @MockBean
+    @MockitoBean
     private ClientHttpRequestExecution clientHttpRequestExecution;
-    @MockBean
+    @MockitoBean
     private HttpRequest request;
-    @MockBean
+    @MockitoBean
     private HttpHeaders httpHeaders;
-    @MockBean
+    @MockitoBean
     private ClientHttpResponse clientHttpResponse;
 
-    @MockBean
+    @MockitoBean
     private JwtService jwtService;
 
     private JwtSecurityConfig securityConfig;
@@ -72,7 +72,7 @@ class JwtAuthenticationInterceptorTest {
 
     @Test
     void positiveInterceptValid() throws IOException {
-        when(httpHeaders.containsKey("Authorization")).thenReturn(false);
+        when(httpHeaders.containsHeader("Authorization")).thenReturn(false);
 
         assertEquals(clientHttpResponse,
             jwtAuthenticationInterceptor.intercept(request, body, clientHttpRequestExecution),
@@ -95,7 +95,7 @@ class JwtAuthenticationInterceptorTest {
 
     @Test
     void negativeInterceptAlreadyHasHeader() throws IOException {
-        when(httpHeaders.containsKey("Authorization")).thenReturn(true);
+        when(httpHeaders.containsHeader("Authorization")).thenReturn(true);
 
         assertEquals(clientHttpResponse,
             jwtAuthenticationInterceptor.intercept(request, body, clientHttpRequestExecution),

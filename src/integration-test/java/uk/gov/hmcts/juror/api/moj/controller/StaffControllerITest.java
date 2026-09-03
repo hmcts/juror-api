@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -270,7 +270,7 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
                 assertThat(response.getStatusCode())
                     .as("Http Status")
-                    .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+                    .isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
 
                 PaperResponse paperResponse = paperResponseRepositoryMod.findByJurorNumber(jurorNumber);
                 assertThat(paperResponse.getStaff().getUsername()).as("Username").isEqualTo("smcbob");
@@ -292,7 +292,7 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
                 assertThat(response.getStatusCode())
                     .as("Http Status")
-                    .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+                    .isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
 
                 PaperResponse paperResponse = paperResponseRepositoryMod.findByJurorNumber(jurorNumber);
                 assertThat(paperResponse.getStaff().getUsername()).as("Username").isEqualTo("smcbob");
@@ -316,7 +316,7 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
                 assertThat(response.getStatusCode())
                     .as("Http Status")
-                    .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+                    .isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
 
                 PaperResponse paperResponse = paperResponseRepositoryMod.findByJurorNumber(jurorNumber);
                 assertThat(paperResponse.getStaff().getUsername()).as("Username").isEqualTo("smcbob");
@@ -338,7 +338,7 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
                 assertThat(response.getStatusCode())
                     .as("Http Status")
-                    .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+                    .isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
 
                 PaperResponse paperResponse = paperResponseRepositoryMod.findByJurorNumber(jurorNumber);
                 assertThat(paperResponse.getStaff().getUsername()).as("Username").isEqualTo("smcbob");
@@ -361,7 +361,7 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
                 assertThat(response.getStatusCode())
                     .as("Http Status")
-                    .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+                    .isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
 
                 PaperResponse paperResponse = paperResponseRepositoryMod.findByJurorNumber(jurorNumber);
                 assertThat(paperResponse.getStaff().getUsername()).as("Username").isEqualTo("smcbob");
@@ -549,7 +549,7 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
                 assertThat(response.getStatusCode())
                     .as("Http Status")
-                    .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+                    .isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
 
                 DigitalResponse digitalResponse = digitalResponseRepositoryMod.findByJurorNumber(jurorNumber);
                 assertThat(digitalResponse.getStaff().getUsername()).as("Username").isEqualTo("smcbob");
@@ -571,7 +571,7 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
                 assertThat(response.getStatusCode())
                     .as("Http Status")
-                    .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+                    .isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
 
                 DigitalResponse digitalResponse = digitalResponseRepositoryMod.findByJurorNumber(jurorNumber);
                 assertThat(digitalResponse.getStaff().getUsername()).as("Username").isEqualTo("smcbob");
@@ -595,7 +595,7 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
                 assertThat(response.getStatusCode())
                     .as("Http Status")
-                    .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+                    .isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
 
                 DigitalResponse digitalResponse = digitalResponseRepositoryMod.findByJurorNumber(jurorNumber);
                 assertThat(digitalResponse.getStaff().getUsername()).as("Username").isEqualTo("smcbob");
@@ -617,7 +617,7 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
                 assertThat(response.getStatusCode())
                     .as("Http Status")
-                    .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+                    .isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
 
                 DigitalResponse digitalResponse = digitalResponseRepositoryMod.findByJurorNumber(jurorNumber);
                 assertThat(digitalResponse.getStaff().getUsername()).as("Username").isEqualTo("smcbob");
@@ -640,7 +640,7 @@ public class StaffControllerITest extends AbstractIntegrationTest {
 
                 assertThat(response.getStatusCode())
                     .as("Http Status")
-                    .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+                    .isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
 
                 DigitalResponse digitalResponse = digitalResponseRepositoryMod.findByJurorNumber(jurorNumber);
                 assertThat(digitalResponse.getStaff().getUsername()).as("Username").isEqualTo("smcbob");

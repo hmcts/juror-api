@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -62,7 +62,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
             HttpMethod.GET, URI.create("/api/v1/bureau/juror/excuse")), ExcusalReasonsDto.class);
 
         assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.OK.value());
+        assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.OK.value());
         assertThat(responseEntity.getBody()).isNotNull();
 
         List<ExcusalCodeDto> data = responseEntity.getBody().getData();
@@ -103,7 +103,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
         // response assertions
         softly.assertThat(responseEntity).isNotNull();
-        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.OK.value());
+        softly.assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.OK.value());
         softly.assertThat(responseEntity.getBody()).isNull();
 
         // assert differences were merged from JUROR_RESPONSE to POOL
@@ -221,7 +221,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         // response assertions
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(responseEntity).isNotNull();
-        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.OK.value());
+        softly.assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.OK.value());
         softly.assertThat(responseEntity.getBody()).isNull();
 
         // assert differences were merged from JUROR_RESPONSE to POOL
@@ -339,7 +339,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         // response assertions
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(responseEntity).isNotNull();
-        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        softly.assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         softly.assertThat(responseEntity.getBody()).isNotNull();
 
         // database assertions
@@ -422,7 +422,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         // response assertions
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(responseEntity).isNotNull();
-        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        softly.assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.NOT_FOUND.value());
         softly.assertThat(responseEntity.getBody()).isNotNull();
 
         // database assertions
@@ -473,7 +473,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         // response assertions
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(responseEntity).isNotNull();
-        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.CONFLICT.value());
+        softly.assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.CONFLICT.value());
         softly.assertThat(responseEntity.getBody()).isNotNull();
 
         // database assertions
@@ -552,7 +552,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         // response assertions
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(responseEntity).isNotNull();
-        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        softly.assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         softly.assertThat(responseEntity.getBody()).isNotNull();
 
         // database assertions
@@ -636,7 +636,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
         // response assertions
         softly.assertThat(responseEntity).isNotNull();
-        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.OK.value());
+        softly.assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.OK.value());
         softly.assertThat(responseEntity.getBody()).isNull();
 
         // assert differences were merged from JUROR_RESPONSE to POOL
@@ -761,7 +761,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         // response assertions
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(responseEntity).isNotNull();
-        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        softly.assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         softly.assertThat(responseEntity.getBody()).isNotNull();
 
         // database assertions
@@ -827,7 +827,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         // response assertions
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(responseEntity).isNotNull();
-        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        softly.assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.NOT_FOUND.value());
         softly.assertThat(responseEntity.getBody()).isNotNull();
 
         // database assertions

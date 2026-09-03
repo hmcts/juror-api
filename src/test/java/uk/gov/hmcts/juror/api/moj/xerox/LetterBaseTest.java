@@ -8,6 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 
@@ -30,7 +31,7 @@ import static org.mockito.Mockito.verify;
 @SuppressWarnings({
     "PMD.GodClass"
 })
-@ExtendWith(SpringExtension.class)
+@ExtendWith({SpringExtension.class, MockitoExtension.class})
 class LetterBaseTest {
     private MockedStatic<Calendar> mockStaticCalendar;
     @Mock

@@ -17,6 +17,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.slf4j.LoggerFactory;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.TestUtils;
@@ -107,7 +108,7 @@ import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDefer
     "PMD.TooManyMethods"
 })
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith({SpringExtension.class, MockitoExtension.class})
 class ManageDeferralsServiceTest {
 
     private static final String BUREAU_OWNER = "400";

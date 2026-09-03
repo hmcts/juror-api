@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -54,28 +54,28 @@ class ReportControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private ReportService reportService;
 
-    @MockBean
+    @MockitoBean
     private FinancialAuditReportService financialAuditReportService;
 
-    @MockBean
+    @MockitoBean
     private UtilisationReportService utilisationReportService;
 
-    @MockBean
+    @MockitoBean
     JurySummoningMonitorReportService jurySummoningMonitorReportService;
 
-    @MockBean
+    @MockitoBean
     private YieldPerformanceReportService yieldPerformanceReportService;
 
-    @MockBean
+    @MockitoBean
     private SummonsRepliesReportService summonsRepliesReportService;
 
-    @MockBean
+    @MockitoBean
     private AttendanceReportService attendanceReportService;
 
-    @MockBean
+    @MockitoBean
     private SittingDaysReportService sittingDaysReportService;
 
     @Nested

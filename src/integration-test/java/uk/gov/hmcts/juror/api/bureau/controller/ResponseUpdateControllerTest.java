@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -71,7 +71,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/bureau/juror/209092530/notes")),
             ResponseUpdateController.JurorNoteDto.class);
         assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.OK.value());
+        assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.OK.value());
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getNotes()).as("Notes column is expected")
             .isEqualTo("Juror 209092530 notes");
@@ -92,7 +92,7 @@ public class ResponseUpdateControllerTest extends AbstractIntegrationTest {
             new RequestEntity<>(httpHeaders, HttpMethod.GET,
                 URI.create("/api/v1/bureau/juror/111222333/notes")), SpringBootErrorResponse.class);
         assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().getException()).as("Error is correct")
             .isEqualTo(MojException.NotFound.class.getTypeName());

@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.history.Revision;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.SerializationUtils;
 import uk.gov.hmcts.juror.api.TestConstants;
@@ -148,7 +149,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith({SpringExtension.class, MockitoExtension.class})
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects",
     "PMD.TooManyMethods", "PMD.TooManyFields", "PMD.NcssCount"})
 class JurorRecordServiceTest {

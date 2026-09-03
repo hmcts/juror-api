@@ -29,7 +29,7 @@ public class JwtAuthenticationInterceptor implements ClientHttpRequestIntercepto
                                         ClientHttpRequestExecution execution) throws IOException {
 
         HttpHeaders headers = request.getHeaders();
-        if (!headers.containsKey(HttpHeaders.AUTHORIZATION)) {
+        if (!headers.containsHeader(HttpHeaders.AUTHORIZATION)) {
             headers.setBearerAuth(generateJwt());
         }
         return execution.execute(request, body);

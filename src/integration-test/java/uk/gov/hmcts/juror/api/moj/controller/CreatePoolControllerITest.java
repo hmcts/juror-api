@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -391,7 +391,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
                                                                                 HttpMethod.POST, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
 
         // unable to create pool as some selected jurors are deceased
     }
@@ -488,7 +488,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
                                                                                 HttpMethod.POST, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
 
         // unable to create pool as there are excluded jurors in the available list
     }
@@ -799,7 +799,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         RequestEntity<PoolAdditionalSummonsDto> requestEntity2 = new RequestEntity<>(poolAdditionalSummons, httpHeaders,
             HttpMethod.POST, uri2);
         ResponseEntity<String> response2 = template.exchange(requestEntity2, String.class);
-        assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(response2.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
     }
 
     private PoolAdditionalSummonsDto setUpPoolAdditionalSummonsDto() {
@@ -1900,7 +1900,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         // Not enough citizens without flags to summon from
         assertThat(response.getStatusCode())
             .as("Expect the HTTP status 422 to be returned")
-            .isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+            .isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
 
     }
 
@@ -1992,7 +1992,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
             HttpMethod.POST, uri);
         ResponseEntity<String> response = template.exchange(requestEntity, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
     }
 
     private void confirmCoronerPoolRecordAsExpected(CoronerPoolItemDto coronerPoolItemDto) {

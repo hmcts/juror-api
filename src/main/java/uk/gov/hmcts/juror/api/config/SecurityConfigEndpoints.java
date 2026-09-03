@@ -16,7 +16,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import uk.gov.hmcts.juror.api.config.bureau.BureauPreAuthenticationTokenFilter;
 import uk.gov.hmcts.juror.api.config.hmac.HmacPreAuthenticationTokenFilter;
 import uk.gov.hmcts.juror.api.config.jurorer.JurorErPreAuthenticationTokenFilter;
@@ -146,22 +146,23 @@ public class SecurityConfigEndpoints {
 
     @Bean
     public WebSecurityCustomizer ignoringCustomizer() {
+        PathPatternRequestMatcher.Builder pathMatcher = PathPatternRequestMatcher.withDefaults();
         return web -> web
             .ignoring()
             .requestMatchers(
-                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.GET, ERROR),
-                AntPathRequestMatcher.antMatcher(HttpMethod.POST, ERROR),
-                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/webjars/**"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/swagger-resources/**"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/v3/api-docs/**"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/swagger-ui/**"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/login"),
+                pathMatcher.matcher(HttpMethod.GET, "/"),
+                pathMatcher.matcher(HttpMethod.GET, ERROR),
+                pathMatcher.matcher(HttpMethod.POST, ERROR),
+                pathMatcher.matcher(HttpMethod.GET, "/webjars/**"),
+                pathMatcher.matcher(HttpMethod.GET, "/swagger-resources/**"),
+                pathMatcher.matcher(HttpMethod.GET, "/v3/api-docs/**"),
+                pathMatcher.matcher(HttpMethod.GET, "/swagger-ui/**"),
+                pathMatcher.matcher(HttpMethod.GET, "/login"),
                 //TODO: remove me once the auto-config redirect mvc login is disabled
                 //FIXME: remove the actuator ignores later, move them to be secured under
                 // AuthenticationEndpointHmacSecurityConfiguration
-                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/health"),
-                AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/info")
+                pathMatcher.matcher(HttpMethod.GET, "/health"),
+                pathMatcher.matcher(HttpMethod.GET, "/info")
             );
     }
 }

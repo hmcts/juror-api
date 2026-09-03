@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
@@ -71,7 +71,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT;
 import static uk.gov.hmcts.juror.api.TestUtils.staffBuilder;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_PROCESS_EMPANELLED_JUROR;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.CANNOT_RE_ADD_JUROR_TO_PANEL;
@@ -926,7 +926,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
 
         assertThat(responseEntity.getStatusCode())
             .as("Expect status code to be 422 (ok)")
-            .isEqualTo(UNPROCESSABLE_ENTITY);
+            .isEqualTo(UNPROCESSABLE_CONTENT);
 
         assertThat(responseEntity.getBody()).as("Expect response to have json string").isNotNull();
 
@@ -1103,7 +1103,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
                                                           URI.create(REASSIGN_PANEL_MEMBERS)), String.class);
 
             assertThat(responseEntity.getStatusCode()).as("Expect status code to be 422 (unprocessable entity)")
-                .isEqualTo(UNPROCESSABLE_ENTITY);
+                .isEqualTo(UNPROCESSABLE_CONTENT);
 
             assertBusinessRuleViolation(responseEntity,
                                         "Juror 415000006 was already in the target panel",
@@ -1132,7 +1132,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
                                                           URI.create(REASSIGN_PANEL_MEMBERS)), String.class);
 
             assertThat(responseEntity.getStatusCode()).as("Expect status code to be 422 (unprocessable entity)")
-                .isEqualTo(UNPROCESSABLE_ENTITY);
+                .isEqualTo(UNPROCESSABLE_CONTENT);
 
             assertBusinessRuleViolation(responseEntity,
                                         "Cannot reassign a juror that has been empanelled",

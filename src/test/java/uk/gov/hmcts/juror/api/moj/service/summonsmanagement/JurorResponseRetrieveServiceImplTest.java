@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.moj.utils.converters.ConversionUtils.toProperCase;
 
 @SuppressWarnings("PMD.ExcessiveImports")
-@ExtendWith(SpringExtension.class)
+@ExtendWith({SpringExtension.class, MockitoExtension.class})
 class JurorResponseRetrieveServiceImplTest {
     private static final String JUROR_X_8 = "11111111";
 

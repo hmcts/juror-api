@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -26,12 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BureauFrontendLogControllerTest extends AbstractIntegrationTest {
-    private static final String HMAC_HEADER_VALID = "eyJhbGciOiJIUzI1NiJ9"
-        + ".eyJleHAiOjM0NTIwMTk4MzM1MCwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
-    private static final String HMAC_HEADER_INVALID = "eyJhbGciOiJIUzI1NiJ9"
-        + ".eyJleHAiOjM0NTIwMTk4MzM1MSwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
-    //payload (second section) has been modified
-
     @Autowired
     private TestRestTemplate template;
     private HttpHeaders httpHeaders;
@@ -44,7 +38,7 @@ public class BureauFrontendLogControllerTest extends AbstractIntegrationTest {
 
     @Test
     public void log_happy() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createHmacJwt());
         final URI uri = URI.create("/api/v1/auth/bureau/log");
         final String testLogMessage = "Hello world bureau log message!";
 
@@ -58,7 +52,7 @@ public class BureauFrontendLogControllerTest extends AbstractIntegrationTest {
 
     @Test
     public void log_unhappy() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_INVALID);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createHmacJwt() + "invalid");
         final URI uri = URI.create("/api/v1/auth/bureau/log");
         final String testLogMessage = "Hello world bureau log message!";
 

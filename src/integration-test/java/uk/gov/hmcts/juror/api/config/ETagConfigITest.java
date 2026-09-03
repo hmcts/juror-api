@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -45,7 +45,7 @@ public class ETagConfigITest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         String bureauJwt = createJwt("rprice", "400");
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
     }

@@ -1,12 +1,14 @@
 package uk.gov.hmcts.juror.api.config;
 
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -15,9 +17,12 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.gov.hmcts.juror.api.TestUtil;
 import uk.gov.hmcts.juror.api.testsupport.ContainerTest;
 
 import java.net.URI;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 
 import static net.javacrumbs.jsonunit.fluent.JsonFluentAssert.assertThatJson;
@@ -27,8 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public class SecurityConfigTest extends ContainerTest {
-    private static final String HMAC_HEADER_VALID = "eyJhbGciOiJIUzI1NiJ9"
-        + ".eyJleHAiOjM0NTIwMTk4MzM1MCwiaWF0IjoxNDg2NTY5MzEyMDQzfQ.XT6K5HDAxX57hg9eW3ZWqv57_p5lqptgBfJVreBQD9Y";
+    @Value("${jwt.secret.hmac}")
+    private String hmacSecret;
 
     @SuppressWarnings("SpringJavaAutowiredMembersInspection")
     @Autowired
@@ -44,7 +49,7 @@ public class SecurityConfigTest extends ContainerTest {
 
     @Test
     public void hmacLogin_healthEndpoint_happy() throws Exception {
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, HMAC_HEADER_VALID);
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createHmacJwt());
         ResponseEntity<String> exchange = testRestTemplate.exchange(new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/health")), String.class);
         assertThat(exchange).isNotNull();
@@ -60,5 +65,10 @@ public class SecurityConfigTest extends ContainerTest {
         assertThat(exchange).isNotNull();
         assertThat(exchange.getStatusCode()).isNotEqualTo(HttpStatus.OK);
         assertThat(exchange.getBody()).asString().isNotEmpty();
+    }
+
+    private String createHmacJwt() {
+        return TestUtil.mintHmacJwt(SignatureAlgorithm.HS256, hmacSecret,
+            Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 }

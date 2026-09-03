@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -56,7 +56,7 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_CONTENT;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.CONFIRMED;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.NEEDED;
 import static uk.gov.hmcts.juror.api.moj.enumeration.PoolUtilisationDescription.SURPLUS;
@@ -1111,7 +1111,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             ResponseEntity<DeferralReasonRequestDto> response = template.exchange(requestEntity,
                                   DeferralReasonRequestDto.class);
             assertThat(response.getStatusCode()).as("Expect the status to be unprocessable entity")
-                .isEqualTo(UNPROCESSABLE_ENTITY);
+                .isEqualTo(UNPROCESSABLE_CONTENT);
         }
 
         private void verifyActivePoolOldRecordChangeDate(JurorPool jurorPool, String poolNumber) {
@@ -1639,7 +1639,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 httpHeaders, POST, URI.create(URL)), MojException.BadRequest.class);
 
             assertThat(response.getStatusCode()).as("Expect the status to be unprocessable entity")
-                .isEqualTo(UNPROCESSABLE_ENTITY);
+                .isEqualTo(UNPROCESSABLE_CONTENT);
         }
 
         @Test
