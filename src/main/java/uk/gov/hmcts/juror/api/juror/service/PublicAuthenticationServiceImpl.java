@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.service.JurorServiceModImpl;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseServiceImpl;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -109,7 +110,7 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
                 .lastName(juror.getLastName())
                 .postcode(juror.getPostcode())
                 .digitalByDefault(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
-                    && jurorPool.getCourt().isDigitalByDefault())
+                    && JurorPoolUtils.isDigitalByDefault(jurorPool))
                 .roles(Collections.singletonList(JUROR_ROLE))
                 .build();
         } catch (DataAccessException dae) {
