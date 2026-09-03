@@ -250,7 +250,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(7);
+            assertThat(data.get(0)).hasSize(10);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.CONFIRMATION.getLetterQueryConsumer());
@@ -293,7 +293,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(10);
+            assertThat(data.get(0)).hasSize(13);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_REFUSED.getLetterQueryConsumer());
@@ -322,7 +322,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(10);
+            assertThat(data.get(0)).hasSize(13);
 
             assertThat(data.get(0).get(9))
                 .as("Expect form code to be " + formCode)
@@ -357,7 +357,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(10);
+            assertThat(data.get(0)).hasSize(13);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.WITHDRAWAL.getLetterQueryConsumer());

@@ -55,7 +55,7 @@
 
   <suppress>
     <notes><![CDATA[
-   Jenkins PR-1269 dependency-check finding for Spring Data JPA 3.5.13 modules.
+   Jenkins dependency-check finding for Spring Data JPA 3.5.13 modules.
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework\.data/spring-data-(envers|jpa)@3\.5\.13$</packageUrl>
     <cve>CVE-2026-47834</cve>
