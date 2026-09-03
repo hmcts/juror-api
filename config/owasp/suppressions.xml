@@ -41,6 +41,20 @@
     <cve>CVE-2026-41841</cve>
     <cve>CVE-2026-41843</cve>
     <cve>CVE-2026-41852</cve>
+    <cve>CVE-2026-59313</cve>
+    <cve>CVE-2026-59314</cve>
+    <cve>CVE-2026-47892</cve>
+    <cve>CVE-2026-47893</cve>
+    <cve>CVE-2026-59280</cve>
+    <cve>CVE-2026-59283</cve>
+  </suppress>
+
+  <suppress>
+    <notes><![CDATA[
+   Jenkins dependency-check finding for Spring Security 6.5.11 modules.
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-(config|core|crypto|web)@6\.5\.11$</packageUrl>
+    <cve>CVE-2026-59270</cve>
   </suppress>
 
   <suppress>
@@ -71,6 +85,16 @@
    Jenkins PR-1197 dependency-check findings for tomcat-embed-core-10.1.57.jar and tomcat-embed-websocket-10.1.57.jar.
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-(core|websocket)@10\.1\.57$</packageUrl>
+    <cve>CVE-2026-65637</cve>
+    <cve>CVE-2026-65905</cve>
+    <cve>CVE-2026-65182</cve>
+    <cve>CVE-2026-68525</cve>
+    <cve>CVE-2026-65183</cve>
+    <cve>CVE-2026-66422</cve>
+    <cve>CVE-2026-68569</cve>
+    <cve>CVE-2026-65927</cve>
+    <cve>CVE-2026-68763</cve>
+    <cve>CVE-2026-73180</cve>
     <cve>CVE-2026-66299</cve>
   </suppress>
 

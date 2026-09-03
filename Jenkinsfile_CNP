@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure")
+@Library("Infrastructure@2.5.0") _
 
 import uk.gov.hmcts.contino.GradleBuilder
 
@@ -179,20 +179,8 @@ withPipeline(type, product, component) {
     junit '**/test-results/integration/*.xml'
   }
 
-  before('dbmigrate:demo') {
-      sh("./gradlew --no-daemon --init-script init.gradle assemble")
-  }
-
-  before('dbmigrate:test') {
-      sh("./gradlew --no-daemon --init-script init.gradle assemble")
-  }
-
-  before('dbmigrate:ithc') {
-      sh("./gradlew --no-daemon --init-script init.gradle assemble")
-  }
-
   before('dbmigrate:prod') {
-      env.FLYWAY_LOC_OVERRIDE = 'db/migrationv2'
+      env.FLYWAY_LOC_OVERRIDE = 'classpath:db/migrationv2'
   }
 
 }
