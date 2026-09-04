@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -56,7 +57,11 @@ import static uk.gov.hmcts.juror.api.TestUtils.asJsonString;
 })
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(controllers = JurorManagementController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
+@WebMvcTest(
+    controllers = JurorManagementController.class,
+    excludeAutoConfiguration = {SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class}
+)
+@org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = {JurorManagementController.class})
 class JurorManagementControllerTest {
     private static final String BASE_URL = "/api/v1/moj/juror-management/attendance";
@@ -73,6 +78,7 @@ class JurorManagementControllerTest {
     void setupMocks() {
         mockMvc = MockMvcBuilders
             .standaloneSetup(new JurorManagementController(jurorAppearanceService))
+            .setMessageConverters(TestUtils.jackson2HttpMessageConverter())
             .setCustomArgumentResolvers(new CustomArgumentResolver())
             .build();
     }
@@ -321,6 +327,7 @@ class JurorManagementControllerTest {
     private void buildMockMvcBureau() {
         mockMvc = MockMvcBuilders
             .standaloneSetup(new JurorManagementController(jurorAppearanceService))
+            .setMessageConverters(TestUtils.jackson2HttpMessageConverter())
             .setCustomArgumentResolvers(new CustomArgumentResolverBureau())
             .build();
     }

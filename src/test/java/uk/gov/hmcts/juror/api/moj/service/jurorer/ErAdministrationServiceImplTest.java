@@ -278,6 +278,8 @@ class ErAdministrationServiceImplTest {
 
     @Test
     void markAsDeliveredLaNotFoundGoesToErrors() {
+        TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
+
         MarkAsDeliveredRequestDto request = new MarkAsDeliveredRequestDto();
         request.setLaCodes(List.of("001", "002"));
 

@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.mockito.MockedStatic;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
@@ -137,6 +138,10 @@ public final class TestUtils {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static MappingJackson2HttpMessageConverter jackson2HttpMessageConverter() {
+        return new MappingJackson2HttpMessageConverter(OBJECT_MAPPER.findAndRegisterModules());
     }
 
     /**

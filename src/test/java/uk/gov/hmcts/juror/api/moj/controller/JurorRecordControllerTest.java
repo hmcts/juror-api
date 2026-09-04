@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpMethod;
@@ -77,7 +78,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = JurorRecordController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
+@WebMvcTest(
+    controllers = JurorRecordController.class,
+    excludeAutoConfiguration = {SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class}
+)
+@org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = {JurorRecordController.class, BulkServiceImpl.class})
 @DisplayName("Controller: /api/v1/moj/juror-record")
 class JurorRecordControllerTest {
@@ -109,6 +114,7 @@ class JurorRecordControllerTest {
         bureauJwtPayload = null;
         mockMvc = MockMvcBuilders
             .standaloneSetup(new JurorRecordController(jurorRecordService, bulkService))
+            .setMessageConverters(TestUtils.jackson2HttpMessageConverter())
             .setCustomArgumentResolvers(new PrincipalDetailsArgumentResolver())
             .build();
     }

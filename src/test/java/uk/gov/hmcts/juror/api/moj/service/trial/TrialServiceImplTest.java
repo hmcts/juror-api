@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service.trial;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -121,6 +122,10 @@ class TrialServiceImplTest {
 
     BureauJwtPayload payload = createJwtPayload("415", "COURT_USER");
 
+    @BeforeEach
+    void beforeEach() {
+        TestUtils.setUpMockAuthentication("415", "COURT_USER", "99", createCourtList());
+    }
 
     @Test
     void testCreateTrial() {

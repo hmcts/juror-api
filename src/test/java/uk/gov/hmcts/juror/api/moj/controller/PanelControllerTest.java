@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.RestfulAuthenticationEntryPoint;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -51,9 +53,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.juror.api.TestUtils.asJsonString;
 import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
+import static uk.gov.hmcts.juror.api.TestUtils.jackson2HttpMessageConverter;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = PanelController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
+@WebMvcTest(
+    controllers = PanelController.class,
+    excludeAutoConfiguration = {SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class}
+)
+@org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = {PanelController.class})
 @SuppressWarnings({
     "PMD.ExcessiveImports",
@@ -76,8 +83,10 @@ class PanelControllerTest {
     @BeforeEach
     void setupMocks() {
         jwtPayload = null;
+        TestUtils.setUpMockAuthentication("415", "COURT_USER", "99", List.of("415", "400"));
         mockMvc = MockMvcBuilders
             .standaloneSetup(new PanelController(panelService))
+            .setMessageConverters(jackson2HttpMessageConverter())
             .setCustomArgumentResolvers(new PrincipalDetailsArgumentResolver())
             .build();
     }

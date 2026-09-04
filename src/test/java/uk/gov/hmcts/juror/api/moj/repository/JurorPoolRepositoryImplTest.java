@@ -26,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QAppearance;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.trial.QPanel;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
@@ -48,6 +49,7 @@ class JurorPoolRepositoryImplTest {
     private static final QPanel PANEL = QPanel.panel;
     private static final QJuror JUROR = QJuror.juror;
     private static final QJurorPool JUROR_POOL = QJurorPool.jurorPool;
+    private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
     private static final QAppearance APPEARANCE = QAppearance.appearance;
     private static final QJurorStatus JUROR_STATUS = QJurorStatus.jurorStatus;
 
@@ -83,6 +85,9 @@ class JurorPoolRepositoryImplTest {
 
             jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner);
 
+            Mockito.verify(queryFactory, Mockito.times(1)).select(POOL_REQUEST.owner);
+            Mockito.verify(jpaQuery, Mockito.times(1)).from(POOL_REQUEST);
+            Mockito.verify(jpaQuery, Mockito.times(1)).where(POOL_REQUEST.poolNumber.eq(poolNumber));
             Mockito.verify(queryFactory, Mockito.times(1)).select(JUROR_POOL.juror.jurorNumber);
             Mockito.verify(jpaQuery, Mockito.times(1)).from(JUROR_POOL);
             Mockito.verify(jpaQuery, Mockito.times(1)).where(JUROR_POOL.pool.poolNumber.eq(poolNumber)
@@ -101,6 +106,9 @@ class JurorPoolRepositoryImplTest {
 
             jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner);
 
+            Mockito.verify(queryFactory, Mockito.times(1)).select(POOL_REQUEST.owner);
+            Mockito.verify(jpaQuery, Mockito.times(1)).from(POOL_REQUEST);
+            Mockito.verify(jpaQuery, Mockito.times(1)).where(POOL_REQUEST.poolNumber.eq(poolNumber));
             Mockito.verify(queryFactory, Mockito.times(1)).select(JUROR_POOL.juror.jurorNumber);
             Mockito.verify(jpaQuery, Mockito.times(1)).from(JUROR_POOL);
             Mockito.verify(jpaQuery, Mockito.times(1)).where(JUROR_POOL.pool.poolNumber.eq(poolNumber)
@@ -119,6 +127,9 @@ class JurorPoolRepositoryImplTest {
 
             jurorPoolRepository.fetchThinPoolMembers(poolNumber, owner);
 
+            Mockito.verify(queryFactory, Mockito.times(1)).select(POOL_REQUEST.owner);
+            Mockito.verify(jpaQuery, Mockito.times(1)).from(POOL_REQUEST);
+            Mockito.verify(jpaQuery, Mockito.times(1)).where(POOL_REQUEST.poolNumber.eq(poolNumber));
             Mockito.verify(queryFactory, Mockito.times(1)).select(JUROR_POOL.juror.jurorNumber);
             Mockito.verify(jpaQuery, Mockito.times(1)).from(JUROR_POOL);
             Mockito.verify(jpaQuery, Mockito.times(1)).where(JUROR_POOL.pool.poolNumber.eq(poolNumber)

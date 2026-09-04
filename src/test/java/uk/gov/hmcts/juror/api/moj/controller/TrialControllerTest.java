@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -53,9 +54,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.juror.api.TestUtils.asJsonString;
 import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
+import static uk.gov.hmcts.juror.api.TestUtils.jackson2HttpMessageConverter;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = TrialController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
+@WebMvcTest(
+    controllers = TrialController.class,
+    excludeAutoConfiguration = {SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class}
+)
+@org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = {TrialController.class})
 @SuppressWarnings({
     "PMD.ExcessiveImports",
@@ -85,6 +91,7 @@ class TrialControllerTest {
         jwtPayload = null;
         mockMvc = MockMvcBuilders
             .standaloneSetup(new TrialController(trialService,jurorAppearanceService))
+            .setMessageConverters(jackson2HttpMessageConverter())
             .setCustomArgumentResolvers(new CustomArgumentResolver())
             .build();
     }

@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContext;
@@ -63,7 +64,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(controllers = LetterController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
+@WebMvcTest(
+    controllers = LetterController.class,
+    excludeAutoConfiguration = {SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class}
+)
+@org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = {LetterController.class})
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class LetterControllerTest {
@@ -611,6 +616,7 @@ public class LetterControllerTest {
                 .userType(UserType.COURT)
                 .build()
         );
+        TestUtils.setUpMockAuthentication(courtOwner, username, "99", List.of(courtOwner));
 
         CertificateOfExemptionRequestDto certificateOfExemptionRequestDto =
             CertificateOfExemptionRequestDto.builder()
@@ -817,4 +823,3 @@ public class LetterControllerTest {
         SecurityContextHolder.setContext(securityContext);
     }
 }
-
