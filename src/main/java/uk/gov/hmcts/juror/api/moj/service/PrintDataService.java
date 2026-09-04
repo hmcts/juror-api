@@ -22,7 +22,11 @@ public interface PrintDataService {
 
     void reprintDbdSummonsLetter(JurorPool jurorPool);
 
+    void printDbdResponseLetter(JurorPool jurorPool);
+
     void printSummonsReminderLetter(JurorPool jurorPool);
+
+    void printDbdSummonsReminderLetter(JurorPool jurorPool);
 
     void printDeferralLetter(JurorPool jurorPool);
 

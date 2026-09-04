@@ -419,6 +419,11 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
                                                "Updated notes", null, null);
     }
 
+    @Override
+    public void createResponsePackPrintedHistory(JurorPool jurorPool) {
+        registerHistoryLoginUser(jurorPool, HistoryCodeMod.RESPONSE_PACK_PRINTED, null);
+    }
+
 
     @Override
     public void createPostponementLetterHistory(JurorPool jurorPool, String confirmationLetter,

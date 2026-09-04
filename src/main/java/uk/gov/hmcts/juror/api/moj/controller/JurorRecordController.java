@@ -398,12 +398,12 @@ public class JurorRecordController {
     }
 
     @PostMapping("/send-paper-summons/{juror_number}")
-    @Operation(summary = "Send a paper summons pack to a juror who has switched to Paper communication preference")
+    @Operation(summary = "Send a paper response pack to a juror who has switched to Paper communication preference")
     @IsBureauUser
     public ResponseEntity<Void> sendPaperSummons(
         @Valid @JurorNumber @P("juror_number") @PathVariable("juror_number")
         @Parameter(description = "jurorNumber", required = true) String jurorNumber) {
-        jurorRecordService.sendPaperSummonsPack(jurorNumber);
+        jurorRecordService.sendPaperResponsePack(jurorNumber);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 

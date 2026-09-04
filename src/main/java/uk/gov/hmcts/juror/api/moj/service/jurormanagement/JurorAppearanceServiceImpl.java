@@ -1100,7 +1100,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     private void checkConfirmedAttendance(String jurorNumber, Appearance appearance) {
-        if (!Arrays.asList(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+        if (appearance.isAppearanceConfirmed()
+            || appearance.getAttendanceAuditNumber() != null
+            || !Arrays.asList(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
             .contains(appearance.getAppearanceStage())) {
             throw new MojException.BusinessRuleViolation(CANNOT_UPDATE_CONFIRMED_JUROR + jurorNumber,
                                                          CANNOT_UPDATE_CONFIRMED_ATTENDANCE);
@@ -1216,6 +1218,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
             Appearance appearance = retrieveExistingAppearanceDetails(commonData.getLocationCode(),
                 jurorNumber, commonData.getAttendanceDate());
+
+            checkConfirmedAttendance(jurorNumber, appearance);
 
             // validate and update the relevant values in the Appearance entity based on the attendance status
             validateCheckInNotNull(appearance.getTimeIn());
