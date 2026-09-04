@@ -98,7 +98,7 @@ public class DeletePoolServiceImpl implements DeletePoolService {
         List<JurorPool> jurorPoolList = jurorPoolRepository.findByPoolPoolNumberAndIsActive(poolNumber, false);
 
         if (jurorPoolList.isEmpty()) {
-            log.info(String.format("No inactive pool members were found whilst deleting Pool: %s", poolNumber));
+            log.info("No inactive pool members were found whilst deleting Pool: {}", poolNumber);
         } else {
             jurorPoolList.forEach(jurorPool -> {
                 jurorPoolRepository.delete(jurorPool);

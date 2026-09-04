@@ -37,7 +37,7 @@ public class PoolMemberSequenceServiceImpl implements PoolMemberSequenceService 
                 newPoolMemberSequenceNumber = SEQUENCE_START_POSITION;
             }
 
-            log.info(String.format("New Pool member sequence number generated: %s", newPoolMemberSequenceNumber));
+            log.info("New Pool member sequence number generated: {}", newPoolMemberSequenceNumber);
             return newPoolMemberSequenceNumber;
 
         } catch (IllegalArgumentException ex) {

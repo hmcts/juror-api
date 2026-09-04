@@ -79,8 +79,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     @Override
     @Transactional
     public JurorPaperResponseDetailDto getJurorPaperResponse(final String jurorNumber, BureauJwtPayload payload) {
-        log.info(String.format("Retrieving Juror paper response for juror number %s, by user %s", jurorNumber,
-            payload.getLogin()));
+        log.info("Retrieving Juror paper response for juror number {}, by user {}", jurorNumber, payload.getLogin());
         String owner = payload.getOwner();
 
         // check the user has access to the record
@@ -324,7 +323,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         final String jurorNumber = paperResponseDto.getJurorNumber();
 
-        log.info(String.format("Saving paper response for Juror %s, by user %s", jurorNumber, payload.getLogin()));
+        log.info("Saving paper response for Juror {}, by user {}", jurorNumber, payload.getLogin());
 
         // Check if the current user has access to the Juror record (and also that the record exists)
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
@@ -350,15 +349,15 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         juror.setResponseEntered(true);
         jurorRepository.save(juror);
 
-        log.info(String.format("[Paper Response] Saved paper response for Juror %s", jurorNumber));
+        log.info("[Paper Response] Saved paper response for Juror {}", jurorNumber);
         // create a history entry
         jurorHistoryService.createResponseSubmittedHistory(jurorPool, ReplyMethod.PAPER.getDescription(),
                                                            SecurityUtil.getActiveLogin());
 
         jurorResponseCjsEmploymentRepository.saveAll(jurorPaperResponse.getCjsEmployments());
-        log.info(String.format("Saved CJS employment for Juror %s", jurorNumber));
+        log.info("Saved CJS employment for Juror {}", jurorNumber);
         reasonableAdjustmentsRepository.saveAll(jurorPaperResponse.getReasonableAdjustments());
-        log.info(String.format("Saved Reasonable adjustments for Juror %s", jurorNumber));
+        log.info("Saved Reasonable adjustments for Juror {}", jurorNumber);
 
         processStraightThroughResponse(jurorPaperResponse, jurorPool, jurorPool.getReturnDate(), payload);
     }
@@ -563,9 +562,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     @SuppressWarnings({"PMD.CognitiveComplexity"})
     public void updateCjsDetails(BureauJwtPayload payload, CjsEmploymentDetailsDto cjsEmploymentDetailsDto,
                                  final String jurorNumber) {
-        log.info(String.format("Updating paper response CJS Employment for Juror %s, by user %s",
-            jurorNumber, payload.getLogin()
-        ));
+        log.info("Updating paper response CJS Employment for Juror {}, by user {}", jurorNumber, payload.getLogin());
 
         // Check if the current user has access to the Juror record
         getJurorPaperResponseForWrite(payload, jurorNumber);
@@ -655,9 +652,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                                                    ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto,
                                                    final String jurorNumber) {
 
-        log.info(String.format("Updating paper response reasonable adjustments for Juror %s, by user %s",
-            jurorNumber, payload.getLogin()
-        ));
+        log.info("Updating paper response reasonable adjustments for Juror {}, by user {}", jurorNumber,
+            payload.getLogin());
 
         // Check if the current user has access to the Juror record.
         getJurorPaperResponseForWrite(payload, jurorNumber);
@@ -774,9 +770,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     public void updateJurorEligibilityDetails(BureauJwtPayload payload, EligibilityDetailsDto eligibilityDetailsDto,
                                               final String jurorNumber) {
 
-        log.info(String.format("Updating paper response eligibility details for Juror %s, by user %s",
-            jurorNumber, payload.getLogin()
-        ));
+        log.info("Updating paper response eligibility details for Juror {}, by user {}", jurorNumber,
+            payload.getLogin());
 
         PaperResponse jurorPaperResponse = getJurorPaperResponseForWrite(payload, jurorNumber);
         JurorPaperResponseDto.Eligibility eligibility = eligibilityDetailsDto.getEligibility();
@@ -858,9 +853,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     public void updateJurorReplyTypeDetails(BureauJwtPayload payload, ReplyTypeDetailsDto replyTypeDetailsDto,
                                             final String jurorNumber) {
 
-        log.info(String.format("Updating paper response reply type for Juror %s, by user %s",
-            jurorNumber, payload.getLogin()
-        ));
+        log.info("Updating paper response reply type for Juror {}, by user {}", jurorNumber, payload.getLogin());
 
         // Check if the current user has access to the Juror record
         PaperResponse jurorPaperResponse = getJurorPaperResponseForWrite(payload, jurorNumber);
@@ -890,9 +883,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     public void updateJurorSignatureDetails(BureauJwtPayload payload, SignatureDetailsDto signatureDetailsDto,
                                             final String jurorNumber) {
 
-        log.info(String.format("Updating paper response signature for Juror %s, by user %s",
-            jurorNumber, payload.getLogin()
-        ));
+        log.info("Updating paper response signature for Juror {}, by user {}", jurorNumber, payload.getLogin());
 
         // Check if the current user has access to the Juror record
         PaperResponse jurorPaperResponse = getJurorPaperResponseForWrite(payload, jurorNumber);
