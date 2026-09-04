@@ -136,4 +136,10 @@ class BigDecimalUtilsTest {
         assertThat(BigDecimalUtils.currencyFormat(new BigDecimal("1.0233")))
             .isEqualTo("£1.02");
     }
+
+    @Test
+    void roundUsesHalfUpRounding() {
+        assertThat(BigDecimalUtils.round(new BigDecimal("1.225"), 2))
+            .isEqualTo(new BigDecimal("1.23"));
+    }
 }
