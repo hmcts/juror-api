@@ -132,7 +132,7 @@ dependencies {
   implementation("com.querydsl:querydsl-core:${queryDslVersion}")
   implementation("com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta")
 
-  testImplementation platform("org.junit:junit-bom:5.12.2")
+  testImplementation platform("org.junit:junit-bom:5.14.4")
   testImplementation 'junit:junit:4.13.2'
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
