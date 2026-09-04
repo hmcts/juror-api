@@ -20,6 +20,7 @@ jobs:
     with:
       runner_label: codex-juror-api-aks
       node_version: "22"
+      java_version: "17"
       github_app_client_id: ${{ vars.CODEX_GITHUB_APP_CLIENT_ID }}
       sonar_host_url: https://sonarcloud.io
       sonar_project_key: uk.gov.hmcts.juror:juror-api
