@@ -245,9 +245,9 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         List<JurorPaperResponseDetailDto.ReasonableAdjustment> reasonableAdjustmentsList = new ArrayList<>();
         jurorPaperResponseSpecialNeedList.forEach(specialNeed ->
-                                                      reasonableAdjustmentsList.add(new JurorPaperResponseDetailDto.ReasonableAdjustment(
-                                                          specialNeed.getReasonableAdjustment().getCode(),
-                                                          specialNeed.getReasonableAdjustmentDetail()
+                                    reasonableAdjustmentsList.add(new JurorPaperResponseDetailDto.ReasonableAdjustment(
+                                    specialNeed.getReasonableAdjustment().getCode(),
+                                    specialNeed.getReasonableAdjustmentDetail()
                                                       )));
         jurorPaperResponseDetailDto.setReasonableAdjustments(reasonableAdjustmentsList);
     }
@@ -313,7 +313,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     private void checkAccessForCurrentUser(JurorPool jurorPool, String owner) {
         if (!jurorPool.getOwner().equals(owner)) {
             throw new MojException.Forbidden(String.format("Current user does not own the juror pool association for "
-                                                               + "Juror Number: %s and Pool Number: %s", jurorPool.getJurorNumber(), jurorPool.getPoolNumber()),
+             + "Juror Number: %s and Pool Number: %s", jurorPool.getJurorNumber(), jurorPool.getPoolNumber()),
                                              null);
         }
     }
@@ -712,7 +712,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         // now tidy up any that might be in database from before but no longer required
         List<String> newSpecialNeedsEntries = new ArrayList<>();
         reasonableAdjustmentDetailsDto.getReasonableAdjustments().forEach(specialNeed ->
-                                                                              newSpecialNeedsEntries.add(specialNeed.getAssistanceType()));
+                                      newSpecialNeedsEntries.add(specialNeed.getAssistanceType()));
 
         jurorPaperResponseReasonableAdjustments.forEach(reasonableAdjustment -> {
             if (!newSpecialNeedsEntries.contains(reasonableAdjustment.getReasonableAdjustment().getCode())) {
