@@ -210,7 +210,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Transactional
     @SuppressWarnings({"PMD.NcssCount", "PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void editJurorDetails(BureauJwtPayload payload, EditJurorRecordRequestDto requestDto, String jurorNumber) {
-        log.info(String.format("Juror: %s. Start updating details by user %s", jurorNumber, payload.getLogin()));
+        log.info("Juror: {}. Start updating details by user {}", jurorNumber, payload.getLogin());
 
         String owner = payload.getOwner();
 

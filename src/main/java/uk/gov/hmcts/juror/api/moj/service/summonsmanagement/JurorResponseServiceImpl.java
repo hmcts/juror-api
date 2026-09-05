@@ -58,8 +58,8 @@ public class JurorResponseServiceImpl implements JurorResponseService {
     @Transactional
     public void updateJurorPersonalDetails(BureauJwtPayload payload, JurorPersonalDetailsDto jurorPersonalDetailsDto,
                                            String jurorNumber) {
-        log.info(String.format("Juror: %s. Start updating %s response personal details by user %s", jurorNumber,
-            jurorPersonalDetailsDto.getReplyMethod().getDescription(), payload.getLogin()));
+        log.info("Juror: {}. Start updating {} response personal details by user {}", jurorNumber,
+            jurorPersonalDetailsDto.getReplyMethod().getDescription(), payload.getLogin());
 
         //Check if the current user has access to the Juror record
         JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
@@ -82,11 +82,11 @@ public class JurorResponseServiceImpl implements JurorResponseService {
             } else if (jurorPersonalDetailsDto.getReplyMethod().equals(ReplyMethod.DIGITAL)) {
                 jurorDigitalResponseRepository.save((DigitalResponse) jurorResponse);
             }
-            log.debug(String.format("Juror: %s. Finished updating %s response personal details", jurorNumber,
-                jurorResponse.getReplyType().getDescription().toLowerCase()));
+            log.debug("Juror: {}. Finished updating {} response personal details", jurorNumber,
+                jurorResponse.getReplyType().getDescription().toLowerCase());
         } else {
-            log.debug(String.format("Juror: %s. No changes identified to %s response personal details ", jurorNumber,
-                jurorResponse.getReplyType().getDescription().toLowerCase()));
+            log.debug("Juror: {}. No changes identified to {} response personal details ", jurorNumber,
+                jurorResponse.getReplyType().getDescription().toLowerCase());
         }
 
         //Straight through processing
@@ -338,7 +338,7 @@ public class JurorResponseServiceImpl implements JurorResponseService {
 
     private void processStraightThroughResponse(AbstractJurorResponse jurorResponse,
                                                 JurorPool jurorPool, BureauJwtPayload payload) {
-        log.debug(String.format("Juror: %s. Enter juror processStraightThroughResponse", jurorPool.getJurorNumber()));
+        log.debug("Juror: {}. Enter juror processStraightThroughResponse", jurorPool.getJurorNumber());
         LocalDate poolRequestReturnDate = jurorPool.getPool().getReturnDate();
 
         if (jurorResponse.getDateOfBirth() != null && (poolRequestReturnDate != null)) {
@@ -360,7 +360,7 @@ public class JurorResponseServiceImpl implements JurorResponseService {
                 }
             }
         }
-        log.debug(String.format("Juror: %s. Exit juror processStraightThroughResponse", jurorPool.getJurorNumber()));
+        log.debug("Juror: {}. Exit juror processStraightThroughResponse", jurorPool.getJurorNumber());
     }
 
     @Transactional
@@ -370,10 +370,10 @@ public class JurorResponseServiceImpl implements JurorResponseService {
         }
         jurorResponse.setProcessingStatus(jurorResponseAuditRepositoryMod, ProcessingStatus.CLOSED);
         if (jurorResponse.getStaff() == null) {
-            log.info(String.format("No staff assigned to response for Juror %s", jurorResponse.getJurorNumber()));
+            log.info("No staff assigned to response for Juror {}", jurorResponse.getJurorNumber());
             User staff = userRepository.findByUsername(SecurityUtil.getActiveLogin());
             jurorResponse.setStaff(staff);
-            log.info(String.format("Assigned current user to response for Juror %s", jurorResponse.getJurorNumber()));
+            log.info("Assigned current user to response for Juror {}", jurorResponse.getJurorNumber());
         }
         if (jurorResponse instanceof PaperResponse paperResponse) {
             mergeService.mergePaperResponse(paperResponse, SecurityUtil.getActiveLogin());

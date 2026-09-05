@@ -61,9 +61,9 @@ import java.util.List;
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.GodClass", "PMD.TooManyMethods"})
 public class JurorPaperResponseServiceImpl implements JurorPaperResponseService {
 
-    private static final String INVALID_CJS_EMPLOYMENT_ERROR_MESSAGE = "Invalid CJS Employment supplied for Juror %s";
-    private static final String INVALID_SPECIAL_NEED_ERROR_MESSAGE = "Invalid special need supplied for Juror %s";
-    static final String RESPONSE_UPDATED_LOG = "Paper response for Juror %s will be updated with new value for %s";
+    private static final String INVALID_CJS_EMPLOYMENT_ERROR_MESSAGE = "Invalid CJS Employment supplied for Juror {}";
+    private static final String INVALID_SPECIAL_NEED_ERROR_MESSAGE = "Invalid special need supplied for Juror {}";
+    static final String RESPONSE_UPDATED_LOG = "Paper response for Juror {} will be updated with new value for {}";
     private final JurorPaperResponseRepositoryMod paperResponseRepository;
     private final JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsEmploymentRepository;
     private final JurorReasonableAdjustmentRepository reasonableAdjustmentsRepository;
@@ -79,8 +79,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     @Override
     @Transactional
     public JurorPaperResponseDetailDto getJurorPaperResponse(final String jurorNumber, BureauJwtPayload payload) {
-        log.info(String.format("Retrieving Juror paper response for juror number %s, by user %s", jurorNumber,
-            payload.getLogin()));
+        log.info("Retrieving Juror paper response for juror number {}, by user {}", jurorNumber,
+                 payload.getLogin());
         String owner = payload.getOwner();
 
         // check the user has access to the record
@@ -100,7 +100,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     private PaperResponse getJurorPaperResponse(final String jurorNumber) {
         PaperResponse jurorPaperResponse = paperResponseRepository.findByJurorNumber(jurorNumber);
         if (jurorPaperResponse == null) {
-            log.error(String.format("Cannot find paper response for Juror %s", jurorNumber));
+            log.error("Cannot find paper response for Juror {}", jurorNumber);
             throw new JurorPaperResponseException.JurorPaperResponseDoesNotExist(jurorNumber);
         }
         return jurorPaperResponse;
@@ -158,8 +158,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
             try {
                 jurorPaperResponseDetailDto.setAssignedStaffMember(new UserDetailsDto(jurorPaperResponse.getStaff()));
             } catch (Exception e) {
-                log.error("Error setting assigned staff member for response for juror {}",
-                    jurorPaperResponse.getJurorNumber() + " --  " + e.getMessage());
+                log.error("Error setting assigned staff member for response for juror {} -- {}",
+                          jurorPaperResponse.getJurorNumber(), e.getMessage());
             }
 
         }
@@ -177,16 +177,16 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         // copy third party
         jurorPaperResponseDetailDto.setThirdParty(
             new JurorPaperResponseDetailDto.ThirdParty(
-            jurorPaperResponse.getThirdPartyFName(),
-            jurorPaperResponse.getThirdPartyLName(),
-            jurorPaperResponse.getMainPhone(),
-            jurorPaperResponse.getOtherPhone(),
-            jurorPaperResponse.getEmailAddress(),
-            jurorPaperResponse.getRelationship(),
-            jurorPaperResponse.getThirdPartyReason(),
-            jurorPaperResponse.getThirdPartyOtherReason(),
-            jurorPaperResponse.getJurorEmailDetails(),
-            jurorPaperResponse.getJurorPhoneDetails()));
+                jurorPaperResponse.getThirdPartyFName(),
+                jurorPaperResponse.getThirdPartyLName(),
+                jurorPaperResponse.getMainPhone(),
+                jurorPaperResponse.getOtherPhone(),
+                jurorPaperResponse.getEmailAddress(),
+                jurorPaperResponse.getRelationship(),
+                jurorPaperResponse.getThirdPartyReason(),
+                jurorPaperResponse.getThirdPartyOtherReason(),
+                jurorPaperResponse.getJurorEmailDetails(),
+                jurorPaperResponse.getJurorPhoneDetails()));
 
         // copy address details
         copyAddressToDto(jurorPaperResponse, jurorPaperResponseDetailDto);
@@ -245,10 +245,10 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         List<JurorPaperResponseDetailDto.ReasonableAdjustment> reasonableAdjustmentsList = new ArrayList<>();
         jurorPaperResponseSpecialNeedList.forEach(specialNeed ->
-            reasonableAdjustmentsList.add(new JurorPaperResponseDetailDto.ReasonableAdjustment(
-                specialNeed.getReasonableAdjustment().getCode(),
-                specialNeed.getReasonableAdjustmentDetail()
-            )));
+                                                      reasonableAdjustmentsList.add(new JurorPaperResponseDetailDto.ReasonableAdjustment(
+                                                          specialNeed.getReasonableAdjustment().getCode(),
+                                                          specialNeed.getReasonableAdjustmentDetail()
+                                                      )));
         jurorPaperResponseDetailDto.setReasonableAdjustments(reasonableAdjustmentsList);
     }
 
@@ -305,7 +305,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         if (jurorPools.isEmpty()) {
             // throw an exception as pool member record not found for juror
             throw new MojException.NotFound(String.format("Unable to find any juror pool associations for Juror "
-                + "Number %s", jurorNumber), null);
+                                                              + "Number %s", jurorNumber), null);
         }
         return jurorPools;
     }
@@ -313,8 +313,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     private void checkAccessForCurrentUser(JurorPool jurorPool, String owner) {
         if (!jurorPool.getOwner().equals(owner)) {
             throw new MojException.Forbidden(String.format("Current user does not own the juror pool association for "
-                + "Juror Number: %s and Pool Number: %s", jurorPool.getJurorNumber(), jurorPool.getPoolNumber()),
-                null);
+                                                               + "Juror Number: %s and Pool Number: %s", jurorPool.getJurorNumber(), jurorPool.getPoolNumber()),
+                                             null);
         }
     }
 
@@ -324,7 +324,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         final String jurorNumber = paperResponseDto.getJurorNumber();
 
-        log.info(String.format("Saving paper response for Juror %s, by user %s", jurorNumber, payload.getLogin()));
+        log.info("Saving paper response for Juror {}, by user {}", jurorNumber, payload.getLogin());
 
         // Check if the current user has access to the Juror record (and also that the record exists)
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
@@ -333,7 +333,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         //check if Juror Paper response already exists - then send back error
         PaperResponse jurorPaperResponse = paperResponseRepository.findByJurorNumber(jurorNumber);
         if (jurorPaperResponse != null) {
-            log.error(String.format("Paper response for Juror %s already exists", jurorNumber));
+            log.error("Paper response for Juror {} already exists", jurorNumber);
             throw new JurorPaperResponseException.JurorPaperResponseAlreadyExists(jurorNumber);
         }
 
@@ -350,15 +350,15 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         juror.setResponseEntered(true);
         jurorRepository.save(juror);
 
-        log.info(String.format("[Paper Response] Saved paper response for Juror %s", jurorNumber));
+        log.info("[Paper Response] Saved paper response for Juror {}", jurorNumber);
         // create a history entry
         jurorHistoryService.createResponseSubmittedHistory(jurorPool, ReplyMethod.PAPER.getDescription(),
                                                            SecurityUtil.getActiveLogin());
 
         jurorResponseCjsEmploymentRepository.saveAll(jurorPaperResponse.getCjsEmployments());
-        log.info(String.format("Saved CJS employment for Juror %s", jurorNumber));
+        log.info("Saved CJS employment for Juror {}", jurorNumber);
         reasonableAdjustmentsRepository.saveAll(jurorPaperResponse.getReasonableAdjustments());
-        log.info(String.format("Saved Reasonable adjustments for Juror %s", jurorNumber));
+        log.info("Saved Reasonable adjustments for Juror {}", jurorNumber);
 
         processStraightThroughResponse(jurorPaperResponse, jurorPool, jurorPool.getReturnDate(), payload);
     }
@@ -481,9 +481,9 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                 if (cjsTypes.contains(employer) && !addedCjsEmployment.contains(employer)) {
                     jurorPaperResponseCjsList.setCjsEmployer(cjsEmp.getCjsEmployer());
                     addedCjsEmployment.add(employer);
-                    log.debug(String.format("Adding CJS employer, %s, for Juror %s", employer, jurorNumber));
+                    log.debug("Adding CJS employer, {}, for Juror {}", employer, jurorNumber);
                 } else {
-                    log.error(String.format(INVALID_CJS_EMPLOYMENT_ERROR_MESSAGE, jurorNumber));
+                    log.error(INVALID_CJS_EMPLOYMENT_ERROR_MESSAGE, jurorNumber);
                     throw new JurorPaperResponseException.InvalidCjsEmploymentEntry();
                 }
 
@@ -528,14 +528,9 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                     jurorPaperResponseReasonableAdjustment.setReasonableAdjustmentDetail(
                         reasonableAdjustment.getAssistanceTypeDetails());
                     addedReasonableAdjustment.add(type);
-                    log.debug(String.format("Adding a special need for Juror %s with code %s",
-                        jurorNumber, type
-                    ));
+                    log.debug("Adding a special need for Juror {} with code {}", jurorNumber, type);
                 } else {
-                    log.error(String.format(
-                        INVALID_SPECIAL_NEED_ERROR_MESSAGE,
-                        jurorPaperResponseDto.getJurorNumber()
-                    ));
+                    log.error(INVALID_SPECIAL_NEED_ERROR_MESSAGE, jurorPaperResponseDto.getJurorNumber());
                     throw new JurorPaperResponseException.InvalidSpecialNeedEntry();
                 }
                 reasonableAdjustmentsToAdd.add(jurorPaperResponseReasonableAdjustment);
@@ -563,9 +558,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     @SuppressWarnings({"PMD.CognitiveComplexity"})
     public void updateCjsDetails(BureauJwtPayload payload, CjsEmploymentDetailsDto cjsEmploymentDetailsDto,
                                  final String jurorNumber) {
-        log.info(String.format("Updating paper response CJS Employment for Juror %s, by user %s",
-            jurorNumber, payload.getLogin()
-        ));
+        log.info("Updating paper response CJS Employment for Juror {}, by user {}",
+                 jurorNumber, payload.getLogin());
 
         // Check if the current user has access to the Juror record
         getJurorPaperResponseForWrite(payload, jurorNumber);
@@ -576,15 +570,11 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         if (cjsEmploymentDetailsDto.getCjsEmployment() == null || cjsEmploymentDetailsDto.getCjsEmployment()
             .isEmpty()) {
-            log.debug(String.format("deleting all CJS Employment records for Juror %s, by user %s",
-                jurorNumber, payload.getLogin()
-            ));
+            log.debug("deleting all CJS Employment records for Juror {}, by user {}",
+                      jurorNumber, payload.getLogin());
             // Need to clear out the CJS records for this juror
             jurorPaperResponseCjsList.forEach(jurorResponseCjsEmploymentRepository::delete);
-            log.debug(String.format(
-                "Finished updating paper response CJS Employment records for Juror %s",
-                jurorNumber
-            ));
+            log.debug("Finished updating paper response CJS Employment records for Juror {}", jurorNumber);
             //nothing more to do here.
             return;
 
@@ -599,7 +589,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
                 // cant update the same employer details more than once
                 if (addedCjsEmployment.contains(employer)) {
-                    log.error(String.format(INVALID_CJS_EMPLOYMENT_ERROR_MESSAGE, jurorNumber));
+                    log.error(INVALID_CJS_EMPLOYMENT_ERROR_MESSAGE, jurorNumber);
                     throw new JurorPaperResponseException.InvalidCjsEmploymentEntry();
                 }
 
@@ -610,22 +600,18 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                 if (jurorPaperResponseCjsEmployment != null) {
                     //record already exists, just update it
                     jurorPaperResponseCjsEmployment.setCjsEmployerDetails(cjs.getCjsEmployerDetails());
-                    log.debug(String.format("Updating CJS employer, %s, for Juror %s",
-                        employer, jurorNumber
-                    ));
+                    log.debug("Updating CJS employer, {}, for Juror {}", employer, jurorNumber);
                     addedCjsEmployment.add(employer); // mark as updated
                 } else {
                     if (!cjsTypes.contains(employer)) {
-                        log.error(String.format(INVALID_CJS_EMPLOYMENT_ERROR_MESSAGE, jurorNumber));
+                        log.error(INVALID_CJS_EMPLOYMENT_ERROR_MESSAGE, jurorNumber);
                         throw new JurorPaperResponseException.InvalidCjsEmploymentEntry();
                     }
                     jurorPaperResponseCjsEmployment = new JurorResponseCjsEmployment();
                     jurorPaperResponseCjsEmployment.setJurorNumber(jurorNumber);
                     jurorPaperResponseCjsEmployment.setCjsEmployer(employer);
                     jurorPaperResponseCjsEmployment.setCjsEmployerDetails(cjs.getCjsEmployerDetails());
-                    log.debug(String.format("Adding CJS employer, %s, for Juror %s",
-                        employer, jurorNumber
-                    ));
+                    log.debug("Adding CJS employer, {}, for Juror {}", employer, jurorNumber);
                     addedCjsEmployment.add(employer);
                 }
 
@@ -636,15 +622,15 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         // now tidy up any that might be in database from before but no longer required
         List<String> newCjsEntries = new ArrayList<>();
         cjsEmploymentDetailsDto.getCjsEmployment().forEach(cJS ->
-            newCjsEntries.add(cJS.getCjsEmployer()));
+                                                               newCjsEntries.add(cJS.getCjsEmployer()));
 
         jurorPaperResponseCjsList.forEach(cjs -> {
             if (!newCjsEntries.contains(cjs.getCjsEmployer())) {
-                log.debug(String.format("Deleting CJS employer, %s, for Juror %s", cjs.getCjsEmployer(), jurorNumber));
+                log.debug("Deleting CJS employer, {}, for Juror {}", cjs.getCjsEmployer(), jurorNumber);
                 jurorResponseCjsEmploymentRepository.delete(cjs);
             }
         });
-        log.debug(String.format("Finished updating paper response CJS Employment records for Juror %s", jurorNumber));
+        log.debug("Finished updating paper response CJS Employment records for Juror {}", jurorNumber);
 
     }
 
@@ -655,9 +641,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                                                    ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto,
                                                    final String jurorNumber) {
 
-        log.info(String.format("Updating paper response reasonable adjustments for Juror %s, by user %s",
-            jurorNumber, payload.getLogin()
-        ));
+        log.info("Updating paper response reasonable adjustments for Juror {}, by user {}",
+                 jurorNumber, payload.getLogin());
 
         // Check if the current user has access to the Juror record.
         getJurorPaperResponseForWrite(payload, jurorNumber);
@@ -668,17 +653,13 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         if (reasonableAdjustmentDetailsDto.getReasonableAdjustments() == null
             || reasonableAdjustmentDetailsDto.getReasonableAdjustments().isEmpty()) {
-            log.debug(String.format("deleting reasonable adjustments records for Juror %s, by user %s",
-                jurorNumber, payload.getLogin()
-            ));
+            log.debug("deleting reasonable adjustments records for Juror {}, by user {}",
+                      jurorNumber, payload.getLogin());
             // Need to clear out the reasonable adjustments records for this juror (in reasonable adjustments table).
             jurorPaperResponseReasonableAdjustments.forEach(reasonableAdjustmentsRepository::delete);
             // Removing reasonable adjustments record from juror table
             saveReasonableAdjustmentsToJurorRecord(jurorNumber, reasonableAdjustmentDetailsDto);
-            log.debug(String.format(
-                "Finished updating paper response reasonable adjustments records for Juror %s",
-                jurorNumber
-            ));
+            log.debug("Finished updating paper response reasonable adjustments records for Juror {}", jurorNumber);
             // nothing more to do here
             return;
 
@@ -695,7 +676,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
                 // cant update the same special need more than once
                 if (addedReasonableAdjustments.contains(assistanceType)) {
-                    log.error(String.format(INVALID_SPECIAL_NEED_ERROR_MESSAGE, jurorNumber));
+                    log.error(INVALID_SPECIAL_NEED_ERROR_MESSAGE, jurorNumber);
                     throw new JurorPaperResponseException.InvalidSpecialNeedEntry();
                 }
 
@@ -706,14 +687,13 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                     //record already exists, just update it
                     jurorPaperResponseReasonableAdjustment
                         .setReasonableAdjustmentDetail(specialNeed.getAssistanceTypeDetails());
-                    log.debug(String.format("Updating reasonable adjustments details for Juror %s with code %s",
-                        jurorNumber, assistanceType
-                    ));
+                    log.debug("Updating reasonable adjustments details for Juror {} with code {}",
+                              jurorNumber, assistanceType);
                     addedReasonableAdjustments.add(tReasonableAdjustment.getCode()); // mark as updated
                 } else {
 
                     if (!reasonableAdjustmentTypes.contains(assistanceType)) {
-                        log.error(String.format(INVALID_SPECIAL_NEED_ERROR_MESSAGE, jurorNumber));
+                        log.error(INVALID_SPECIAL_NEED_ERROR_MESSAGE, jurorNumber);
                         throw new JurorPaperResponseException.InvalidSpecialNeedEntry();
                     }
                     jurorPaperResponseReasonableAdjustment = new JurorReasonableAdjustment();
@@ -721,9 +701,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                     jurorPaperResponseReasonableAdjustment.setReasonableAdjustment(tReasonableAdjustment);
                     jurorPaperResponseReasonableAdjustment
                         .setReasonableAdjustmentDetail(specialNeed.getAssistanceTypeDetails());
-                    log.debug(String.format("Adding a special need for Juror %s with code %s",
-                        jurorNumber, assistanceType
-                    ));
+                    log.debug("Adding a special need for Juror {} with code {}", jurorNumber, assistanceType);
                     addedReasonableAdjustments.add(tReasonableAdjustment.getCode());
                 }
 
@@ -734,13 +712,12 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         // now tidy up any that might be in database from before but no longer required
         List<String> newSpecialNeedsEntries = new ArrayList<>();
         reasonableAdjustmentDetailsDto.getReasonableAdjustments().forEach(specialNeed ->
-            newSpecialNeedsEntries.add(specialNeed.getAssistanceType()));
+                                                                              newSpecialNeedsEntries.add(specialNeed.getAssistanceType()));
 
         jurorPaperResponseReasonableAdjustments.forEach(reasonableAdjustment -> {
             if (!newSpecialNeedsEntries.contains(reasonableAdjustment.getReasonableAdjustment().getCode())) {
-                log.debug(String.format("Deleting a special need for Juror %s with code %s",
-                    jurorNumber, reasonableAdjustment.getReasonableAdjustment().getCode()
-                ));
+                log.debug("Deleting a special need for Juror {} with code {}",
+                          jurorNumber, reasonableAdjustment.getReasonableAdjustment().getCode());
                 reasonableAdjustmentsRepository.delete(reasonableAdjustment);
             }
         });
@@ -748,8 +725,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         //updating the reasonable adjustments for the juror in the juror table
         saveReasonableAdjustmentsToJurorRecord(jurorNumber, reasonableAdjustmentDetailsDto);
 
-        log.debug(String.format(
-            "Finished updating paper response reasonable adjustments records for Juror %s", jurorNumber));
+        log.debug("Finished updating paper response reasonable adjustments records for Juror {}", jurorNumber);
     }
 
     private void saveReasonableAdjustmentsToJurorRecord(String jurorNumber,
@@ -774,17 +750,16 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     public void updateJurorEligibilityDetails(BureauJwtPayload payload, EligibilityDetailsDto eligibilityDetailsDto,
                                               final String jurorNumber) {
 
-        log.info(String.format("Updating paper response eligibility details for Juror %s, by user %s",
-            jurorNumber, payload.getLogin()
-        ));
+        log.info("Updating paper response eligibility details for Juror {}, by user {}",
+                 jurorNumber, payload.getLogin());
 
         PaperResponse jurorPaperResponse = getJurorPaperResponseForWrite(payload, jurorNumber);
         JurorPaperResponseDto.Eligibility eligibility = eligibilityDetailsDto.getEligibility();
 
         if (eligibility == null) {
             // object cannot be null
-            log.error(String.format("The eligibility criteria object was null "
-                + "for paper response update for Juror %s", jurorNumber));
+            log.error("The eligibility criteria object was null for paper response update for Juror {}",
+                      jurorNumber);
             throw new JurorPaperResponseException.InvalidEligibilityEntry();
         }
 
@@ -795,13 +770,13 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         }
 
         if (checkForUpdatedValue(jurorPaperResponse.getResidencyDetail(), eligibility.getLivedConsecutiveDetails(),
-            RESIDENCY_DETAILS, jurorNumber
+                                 RESIDENCY_DETAILS, jurorNumber
         )) {
             jurorPaperResponse.setResidencyDetail(eligibility.getLivedConsecutiveDetails());
         }
 
         if (checkForUpdatedValue(jurorPaperResponse.getMentalHealthAct(), eligibility.getMentalHealthAct(),
-            MENTAL_HEALTH, jurorNumber
+                                 MENTAL_HEALTH, jurorNumber
         )) {
             jurorPaperResponse.setMentalHealthAct(eligibility.getMentalHealthAct());
         }
@@ -815,13 +790,13 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         }
 
         if (checkForUpdatedValue(jurorPaperResponse.getMentalHealthCapacity(), eligibility.getMentalHealthCapacity(),
-            MENTAL_CAPACITY, jurorNumber
+                                 MENTAL_CAPACITY, jurorNumber
         )) {
             jurorPaperResponse.setMentalHealthCapacity(eligibility.getMentalHealthCapacity());
         }
 
         if (checkForUpdatedValue(jurorPaperResponse.getBail(), eligibility.getOnBail(),
-            BAIL, jurorNumber
+                                 BAIL, jurorNumber
         )) {
             jurorPaperResponse.setBail(eligibility.getOnBail());
         }
@@ -833,7 +808,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         }
 
         if (checkForUpdatedValue(jurorPaperResponse.getConvictions(), eligibility.getConvicted(),
-            CONVICTION, jurorNumber
+                                 CONVICTION, jurorNumber
         )) {
             jurorPaperResponse.setConvictions(eligibility.getConvicted());
         }
@@ -845,7 +820,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         }
 
         paperResponseRepository.save(jurorPaperResponse);
-        log.debug(String.format("Finished updating paper response eligibility details for Juror %s", jurorNumber));
+        log.debug("Finished updating paper response eligibility details for Juror {}", jurorNumber);
     }
 
     private PaperResponse getJurorPaperResponseForWrite(BureauJwtPayload payload, final String jurorNumber) {
@@ -858,9 +833,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     public void updateJurorReplyTypeDetails(BureauJwtPayload payload, ReplyTypeDetailsDto replyTypeDetailsDto,
                                             final String jurorNumber) {
 
-        log.info(String.format("Updating paper response reply type for Juror %s, by user %s",
-            jurorNumber, payload.getLogin()
-        ));
+        log.info("Updating paper response reply type for Juror {}, by user {}",
+                 jurorNumber, payload.getLogin());
 
         // Check if the current user has access to the Juror record
         PaperResponse jurorPaperResponse = getJurorPaperResponseForWrite(payload, jurorNumber);
@@ -882,7 +856,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         }
 
         paperResponseRepository.save(jurorPaperResponse);
-        log.debug(String.format("Finished updating paper response reply type details for Juror %s", jurorNumber));
+        log.debug("Finished updating paper response reply type details for Juror {}", jurorNumber);
 
     }
 
@@ -890,9 +864,8 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     public void updateJurorSignatureDetails(BureauJwtPayload payload, SignatureDetailsDto signatureDetailsDto,
                                             final String jurorNumber) {
 
-        log.info(String.format("Updating paper response signature for Juror %s, by user %s",
-            jurorNumber, payload.getLogin()
-        ));
+        log.info("Updating paper response signature for Juror {}, by user {}",
+                 jurorNumber, payload.getLogin());
 
         // Check if the current user has access to the Juror record
         PaperResponse jurorPaperResponse = getJurorPaperResponseForWrite(payload, jurorNumber);
@@ -903,16 +876,14 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
         }
 
         paperResponseRepository.save(jurorPaperResponse);
-        log.debug(String.format("Finished updating paper response signature details for Juror %s", jurorNumber));
+        log.debug("Finished updating paper response signature details for Juror {}", jurorNumber);
 
     }
 
     private <T> boolean checkForUpdatedValue(T currentValue, T newValue, String fieldName, String jurorNumber) {
         if ((currentValue != null && !currentValue.equals(newValue))
             || (currentValue == null && newValue != null)) {
-            log.debug(String.format(RESPONSE_UPDATED_LOG,
-                jurorNumber, fieldName
-            ));
+            log.debug(RESPONSE_UPDATED_LOG, jurorNumber, fieldName);
             return true;
         }
         return false;
@@ -924,10 +895,10 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
         if (jurorPaperResponse.getDateOfBirth() != null && returnDate != null
             && straightThroughProcessorService.isValidForStraightThroughAgeDisqualification(jurorPaperResponse,
-            returnDate, jurorPool)) {
+                                                                                            returnDate, jurorPool)) {
             log.info("Juror {} - processed automatically due to age disqualification", jurorPool.getJurorNumber());
             straightThroughProcessorService.processAgeDisqualification(jurorPaperResponse, returnDate, jurorPool,
-                payload);
+                                                                       payload);
         }
 
         log.trace("Exit processStraightThroughResponse for {}", jurorPool.getJurorNumber());

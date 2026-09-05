@@ -26,32 +26,32 @@ public class PoolMemberSequenceServiceImpl implements PoolMemberSequenceService 
 
         int newPoolMemberSequenceNumber;
         try {
-            log.debug(String.format("Searching for existing Jurors from pool number: %s", poolNumber));
+            log.debug("Searching for existing Jurors from pool number: {}", poolNumber);
             String latestPoolSequenceNumber = jurorPoolRepository.findLatestPoolSequence(poolNumber);
 
             if (latestPoolSequenceNumber != null) {
-                log.debug(String.format("Records exist matching the pool number: %s", poolNumber));
+                log.debug("Records exist matching the pool number: {}", poolNumber);
                 newPoolMemberSequenceNumber = getNewSequenceNumber(latestPoolSequenceNumber);
             } else {
-                log.debug(String.format("No existing juror records found matching the pool number: %s", poolNumber));
+                log.debug("No existing juror records found matching the pool number: {}", poolNumber);
                 newPoolMemberSequenceNumber = SEQUENCE_START_POSITION;
             }
 
-            log.info(String.format("New Pool member sequence number generated: %s", newPoolMemberSequenceNumber));
+            log.info("New Pool member sequence number generated: ()", newPoolMemberSequenceNumber);
             return newPoolMemberSequenceNumber;
 
         } catch (IllegalArgumentException ex) {
-            log.error(String.format(
-                "An exception was thrown whilst trying to generate a new Pool member sequence number: %s",
+            log.error(
+                "An exception was thrown whilst trying to generate a new Pool member sequence number: {}",
                 ex.getMessage()
-            ));
+            );
             // Return the default start position to indicate the system failed to generate a pool member sequence number
             return SEQUENCE_START_POSITION;
         }
     }
 
     private int getNewSequenceNumber(String latestPoolSequenceNumber) {
-        log.debug(String.format("Latest Pool Sequence number found: %s", latestPoolSequenceNumber));
+        log.debug("Latest Pool Sequence number found: {}", latestPoolSequenceNumber);
 
         // Increment the previous sequence number by one to get the new sequence number
         return Integer.parseInt(latestPoolSequenceNumber) + 1;
