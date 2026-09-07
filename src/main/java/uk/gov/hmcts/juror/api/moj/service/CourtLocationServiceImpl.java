@@ -156,17 +156,17 @@ public class CourtLocationServiceImpl implements CourtLocationService {
         List<CourtLocationDataDto> courtLocations = new ArrayList<>();
 
         courtLocationList.forEach(courtLocation -> {
-            log.debug(String.format("Mapping court location: %s - %s to DTO",
+            log.debug("Mapping court location: {} - {} to DTO",
                 courtLocation.getLocCode(), courtLocation.getName()
-            ));
+            );
             CourtLocationDataDto courtLocationData =
                 new CourtLocationDataDto(courtLocation);
 
             courtLocations.add(courtLocationData);
-            log.trace(String.format("Court location data added: %s", courtLocationData));
+            log.trace("Court location data added: {}", courtLocationData);
         });
 
-        log.debug(String.format("Court Location data for %d courts retrieved", courtLocations.size()));
+        log.debug("Court Location data for {} courts retrieved", courtLocations.size());
         log.trace("Exit mapCourtLocationsToDto");
         return courtLocations;
     }

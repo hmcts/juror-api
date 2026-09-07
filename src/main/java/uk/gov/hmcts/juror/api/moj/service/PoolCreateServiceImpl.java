@@ -351,7 +351,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     private void updatePoolHistory(String poolNumber, String userId, int numSelected,
                                    String suffix, HistoryCode historyCode) {
-        log.debug(String.format("Update Pool History table for Pool : %s", poolNumber));
+        log.debug("Update Pool History table for Pool : {}", poolNumber);
         poolHistoryRepository.save(new PoolHistory(poolNumber, LocalDateTime.now(), historyCode, userId,
             numSelected + suffix));
     }
@@ -366,10 +366,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         List<JurorHistory> historyList = new ArrayList<>();
         jurorPools.forEach(jurorPool -> {
             Juror juror = jurorPool.getJuror();
-            log.trace(String.format(
-                "Update Participant History table for newly summoned juror: %s",
+            log.trace(
+                "Update Participant History table for newly summoned juror: {}",
                 juror.getJurorNumber()
-            ));
+            );
 
             JurorHistory.JurorHistoryBuilder jurorHistBuilder = JurorHistory.builder()
                 .jurorNumber(juror.getJurorNumber())
@@ -899,7 +899,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         Optional<CoronerPool> coronerPoolOpt = coronerPoolRepository.findById(poolNumber);
 
         if (coronerPoolOpt.isEmpty()) {
-            log.debug(String.format("Unable to find a coroner pool with number %s", poolNumber));
+            log.debug("Unable to find a coroner pool with number {}", poolNumber);
             throw new PoolCreateException.CoronerPoolNotFound(poolNumber);
         }
 

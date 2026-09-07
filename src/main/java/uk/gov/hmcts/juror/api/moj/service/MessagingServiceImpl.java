@@ -238,12 +238,12 @@ public class MessagingServiceImpl implements MessagingService {
                 + messageType.getSendType(), INVALID_SEND_TYPE);
         }
         final String username = SecurityUtil.getActiveLogin();
-        log.debug(String.format("User %s created a %s message of type %s for juror %s in pool %s",
+        log.debug("User {} created a {} message of type {} for juror {} in pool {}",
             username,
             jurorAndSendType.getType(),
             messageType,
             jurorAndSendType.getJurorNumber(),
-            jurorAndSendType.getPoolNumber()));
+            jurorAndSendType.getPoolNumber());
 
         Juror juror = getJuror(jurorAndSendType.getJurorNumber());
         Message message = Message.builder()

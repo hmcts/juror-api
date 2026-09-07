@@ -38,7 +38,7 @@ public class DeletePoolServiceImpl implements DeletePoolService {
     @Override
     @Transactional
     public void deletePool(String poolNumber) {
-        log.trace(String.format("Enter deletePoolRequest for Pool Number: %s", poolNumber));
+        log.trace("Enter deletePoolRequest for Pool Number: {}", poolNumber);
 
         // according to specifications from heritage, users with a userLevel higher than 3 cannot delete empty pools
         if (SecurityUtil.hasRole(Role.SENIOR_JUROR_OFFICER)) {
@@ -58,7 +58,7 @@ public class DeletePoolServiceImpl implements DeletePoolService {
         poolHistoryRepository.save(new PoolHistory(poolNumber, LocalDateTime.now(), HistoryCode.DELP,
             SecurityUtil.getUsername(), "Empty pool deleted"));
 
-        log.trace(String.format("Deleted a pool request with Pool Number: %s", poolNumber));
+        log.trace("Deleted a pool request with Pool Number: {}", poolNumber);
     }
 
     /**
@@ -98,12 +98,12 @@ public class DeletePoolServiceImpl implements DeletePoolService {
         List<JurorPool> jurorPoolList = jurorPoolRepository.findByPoolPoolNumberAndIsActive(poolNumber, false);
 
         if (jurorPoolList.isEmpty()) {
-            log.info(String.format("No inactive pool members were found whilst deleting Pool: %s", poolNumber));
+            log.info("No inactive pool members were found whilst deleting Pool: {}", poolNumber);
         } else {
             jurorPoolList.forEach(jurorPool -> {
                 jurorPoolRepository.delete(jurorPool);
                 jurorPoolRepository.flush();
-                log.trace(String.format("Deleted a pool member with Pool Number: %s", jurorPool.getPoolNumber()));
+                log.trace("Deleted a pool member with Pool Number: {}", jurorPool.getPoolNumber());
             });
         }
     }

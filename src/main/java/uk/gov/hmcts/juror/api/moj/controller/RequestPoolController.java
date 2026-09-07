@@ -142,7 +142,7 @@ public class RequestPoolController {
                                               @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid
                                               LocalDate attendanceDate) {
         DayType dayType = poolRequestService.checkAttendanceDate(attendanceDate, locationCode);
-        log.debug(String.format("Proposed attendance date %s is a %s", attendanceDate, dayType));
+        log.debug("Proposed attendance date {} is a {}", attendanceDate, dayType);
         return ResponseEntity.ok().body(dayType);
     }
 

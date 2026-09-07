@@ -92,7 +92,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     }
 
     public void checkExcusalCodeIsValid(String excusalCode) {
-        log.info(String.format("Checking excusal code %s is valid", excusalCode));
+        log.info("Checking excusal code {} is valid", excusalCode);
 
         List<String> excusalCodes = new ArrayList<>();
         // Extract just the excusal code from the ExcusalCodeEntity objects stored in ExcusalCodeRepository
@@ -105,7 +105,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         }
 
         if (!excusalCodes.contains(excusalCode)) {
-            log.info(String.format("Excusal code %s is invalid", excusalCode));
+            log.info("Excusal code {} is invalid", excusalCode);
             throw new ExcusalResponseException.InvalidExcusalCode(excusalCode);
         }
     }
@@ -117,7 +117,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
                                       JurorPool jurorPool) {
         Juror juror = jurorPool.getJuror();
 
-        log.info(String.format("Processing officer decision to grant excusal for Juror %s", juror.getJurorNumber()));
+        log.info("Processing officer decision to grant excusal for Juror {}", juror.getJurorNumber());
 
         juror.setResponded(true);
         juror.setExcusalDate(LocalDate.now());
@@ -145,7 +145,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private void refuseExcusalForJuror(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
                                        JurorPool jurorPool) {
         Juror juror = jurorPool.getJuror();
-        log.info(String.format("Processing officer decision to refuse excusal for Juror %s", juror.getJurorNumber()));
+        log.info("Processing officer decision to refuse excusal for Juror {}", juror.getJurorNumber());
 
         juror.setResponded(true);
         if (jurorPool.getStatus().getStatus() != IJurorStatus.EXCUSED) {
@@ -205,7 +205,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     }
 
     private void sendExcusalLetter(JurorPool jurorPool, String jurorNumber) {
-        log.info(String.format("Preparing an excusal letter for Juror %s", jurorNumber));
+        log.info("Preparing an excusal letter for Juror {}", jurorNumber);
 
         printDataService.removeQueuedLetterForJuror(
             jurorPool,
@@ -220,7 +220,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
             jurorHistoryService.createExcusedLetter(jurorPool, CommunicationChannel.LETTER);
         }
 
-        log.info(String.format("Excusal letter enqueued for Juror %s", jurorNumber));
+        log.info("Excusal letter enqueued for Juror {}", jurorNumber);
     }
 
     private JurorStatus getPoolStatus(int poolStatusId) {
