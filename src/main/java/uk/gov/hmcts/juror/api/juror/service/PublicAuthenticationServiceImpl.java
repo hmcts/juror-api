@@ -60,7 +60,7 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
 
         try {
             if (jurorResponseServiceImpl.getCommonJurorResponseOptional(credentials.getJurorNumber()).isPresent()) {
-                log.debug(JUROR_ALREADY_RESPONDED);
+                log.info(JUROR_ALREADY_RESPONDED);
                 throw new JurorAlreadyRespondedException(JUROR_ALREADY_RESPONDED);
             }
 
@@ -89,7 +89,7 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
             JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndStatusStatusAndIsActive(
                     credentials.getJurorNumber(), IJurorStatus.SUMMONED, true)
                 .orElseThrow(() -> {
-                    log.debug(JUROR_ALREADY_RESPONDED);
+                    log.info(JUROR_ALREADY_RESPONDED);
                     return new JurorAlreadyRespondedException(JUROR_ALREADY_RESPONDED);
                 });
 

@@ -152,7 +152,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
             // audit the change to the notes column
             jurorHistoryService.createPoolEditHistory(updatedPool);
         } else {
-            log.debug("Note failed hash comparison.");
+            log.info("Note failed hash comparison.");
             if (log.isTraceEnabled()) {
                 log.trace("UI={} DB={}", noteDto.getVersion(), comparisonHash(juror.getJuror().getNotes()));
             }

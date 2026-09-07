@@ -129,8 +129,8 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
                 mergeService.mergeResponse(savedResponse, login);
                 log.debug("Juror response for juror {} merged successfully", savedResponse.getJurorNumber());
             } catch (ObjectOptimisticLockingFailureException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Optimistic locking failure:", e);
+                if (log.isInfoEnabled()) {
+                    log.info("Optimistic locking failure:", e);
                 }
                 throw new ExcusalException.OptimisticLockingFailure(jurorId, e);
             }
@@ -166,8 +166,8 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
             throw e;
         } catch (TransactionSystemException e) {
             // this exception occurs when optimistic locking fails
-            if (log.isDebugEnabled()) {
-                log.debug("Error while attempting to excuse Juror {}: {}", jurorId, e);
+            if (log.isInfoEnabled()) {
+                log.info("Error while attempting to excuse Juror {}: {}", jurorId, e);
             }
             throw new ExcusalException.OptimisticLockingFailure(jurorId, e);
         }
@@ -230,8 +230,8 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
                 mergeService.mergeResponse(savedResponse, login);
                 log.debug("Juror response for juror {} merged successfully", savedResponse.getJurorNumber());
             } catch (ObjectOptimisticLockingFailureException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Optimistic locking failure:", e);
+                if (log.isInfoEnabled()) {
+                    log.info("Optimistic locking failure:", e);
                 }
                 throw new ExcusalException.OptimisticLockingFailure(jurorId, e);
             }
