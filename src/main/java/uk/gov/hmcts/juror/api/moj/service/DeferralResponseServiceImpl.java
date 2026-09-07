@@ -253,7 +253,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
     }
 
     private void checkExcusalCodeIsValid(String excusalCode) {
-        log.info(String.format("Checking excusal code %s is valid", excusalCode));
+        log.info("Checking excusal code {} is valid", excusalCode);
 
         List<String> excusalCodes = new ArrayList<>();
         RepositoryUtils.retrieveAllRecordsFromDatabase(excusalCodeRepository)
@@ -265,7 +265,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
         }
 
         if (!excusalCodes.contains(excusalCode)) {
-            log.info(String.format("Excusal code %s is invalid", excusalCode));
+            log.info("Excusal code {} is invalid", excusalCode);
             throw new ExcusalResponseException.InvalidExcusalCode(excusalCode);
         }
     }
