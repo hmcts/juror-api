@@ -70,14 +70,16 @@
 
   <suppress>
     <notes><![CDATA[
-   dependency-check finding for spring-data-jpa-3.5.13.jar (managed by Spring Boot 3.5.16 BOM).
+   dependency-check finding for spring-data-jpa-3.5.13.jar and spring-data-envers-3.5.13.jar
+   (both managed by Spring Boot 3.5.16 BOM; envers is matched via CPE against
+   spring_data_jpa since it shares the same release train/version).
    CVE-2026-47834 - Sort expression validation bypass allowing inference of data via
    crafted ORDER BY clauses in native SQL repository methods. No OSS fix available;
    3.5.13 is the last open-source release for the 3.5.x train, fix is Enterprise Support
    Only. Suppressed pending OSS fix or Spring Boot BOM upgrade beyond 3.5.16.
    Review and remove once resolved.
    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.springframework\.data/spring-data-jpa@3\.5\.13$</packageUrl>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.data/spring-data-(jpa|envers)@3\.5\.13$</packageUrl>
     <cve>CVE-2026-47834</cve>
   </suppress>
 
