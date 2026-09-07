@@ -56,8 +56,8 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
         long queryFinishTime = System.currentTimeMillis();
         long elapsedTimeSeconds = (queryFinishTime - queryStartTime) / 1000;
 
-        log.trace(String.format("Pool Search request: %s", poolSearchRequestDto));
-        log.debug(String.format("Pool Search took %d seconds to return %d results", elapsedTimeSeconds, totalResults));
+        log.trace("Pool Search request: {}", poolSearchRequestDto);
+        log.debug("Pool Search took {} seconds to return {} results", elapsedTimeSeconds, totalResults);
 
         List<Tuple> results = queryResults.getResults();
         List<PoolRequestSearchListDto.PoolRequestSearchDataDto> resultsData = new ArrayList<>();
@@ -107,8 +107,8 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
         evaluateAdvancedSearchCriteria(query, poolSearchRequestDto);
 
         if (poolSearchRequestDto.getSortColumn() != null && poolSearchRequestDto.getSortDirection() != null) {
-            log.trace(String.format("Sort order specified as %s %s", poolSearchRequestDto.getSortColumn(),
-                poolSearchRequestDto.getSortDirection()));
+            log.trace("Sort order specified as {} {}", poolSearchRequestDto.getSortColumn(),
+                poolSearchRequestDto.getSortDirection());
             applySorting(query, poolSearchRequestDto);
         } else {
             log.trace("No sort order specified, using default: order by Service Start Date, Descending");
@@ -122,7 +122,7 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
         final int fullPoolNumberLength = 9;
 
         if (!isStringEmpty(poolNumber)) {
-            log.debug(String.format("Pool Number supplied as Pool Request Search parameter: %s", poolNumber));
+            log.debug("Pool Number supplied as Pool Request Search parameter: {}", poolNumber);
             if (poolNumber.length() == fullPoolNumberLength) {
                 poolRequestRepository.addPoolNumberPredicate(query, poolNumber);
             } else {
@@ -139,11 +139,11 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
 
         if (isStringEmpty(locCode)) {
             if (!courts.isEmpty()) {
-                log.debug(String.format("User has search results filtered based on court access: %s", courts));
+                log.debug("User has search results filtered based on court access: {}", courts);
                 poolRequestRepository.addCourtUserPredicate(query, courts);
             }
         } else {
-            log.debug(String.format("Court Location Code supplied as Pool Request Search parameter: %s", locCode));
+            log.debug("Court Location Code supplied as Pool Request Search parameter: {}", locCode);
             poolRequestRepository.addCourtLocationPredicate(query, locCode);
 
             if (isStringEmpty(poolNumber)) {
@@ -161,7 +161,7 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
         log.trace("Enter evaluateStartDateParameter");
 
         if (startDate != null) {
-            log.debug(String.format("Service Start Date supplied as Pool Request Search parameter: %s", startDate));
+            log.debug("Service Start Date supplied as Pool Request Search parameter: {}", startDate);
             poolRequestRepository.addServiceStartDatePredicate(query, startDate);
         }
 
@@ -178,20 +178,20 @@ public class PoolRequestSearchServiceImpl implements PoolRequestSearchService {
         final Boolean isNilPool = poolSearchRequestDto.getIsNilPool();
 
         if (isListPopulated(poolStatus) && poolStatus.size() < PoolSearchRequestDto.PoolStatus.values().length) {
-            log.debug(String.format("Pool Status supplied as Pool Request Search parameter: %s", poolStatus));
+            log.debug("Pool Status supplied as Pool Request Search parameter: {}", poolStatus);
             poolRequestRepository.addPoolStatusPredicate(query, poolStatus);
         }
         if (isListPopulated(poolStage) && poolStage.size() < PoolSearchRequestDto.PoolStage.values().length) {
-            log.debug(String.format("Pool Stage supplied as Pool Request Search parameter: %s", poolStage));
+            log.debug("Pool Stage supplied as Pool Request Search parameter: {}", poolStage);
             poolRequestRepository.addPoolStagePredicate(query, poolStage);
         }
         if (isListPopulated(poolTypeCode)) {
-            log.debug(String.format("Pool Type supplied as Pool Request Search parameter: %s", poolTypeCode));
+            log.debug("Pool Type supplied as Pool Request Search parameter: {}", poolTypeCode);
             poolRequestRepository.addPoolTypePredicate(query, poolTypeCode);
         }
 
         if (isNilPool != null) {
-            log.debug(String.format("Nil Pool supplied as Pool Request Search parameter: %s", isNilPool));
+            log.debug("Nil Pool supplied as Pool Request Search parameter: {}", isNilPool);
             poolRequestRepository.addNilPoolPredicate(query, isNilPool);
         }
 
