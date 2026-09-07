@@ -138,6 +138,8 @@ dependencies {
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation 'org.junit.jupiter:junit-jupiter-api'
 
+  testImplementation 'com.github.hmcts:fortify-client:1.4.10:all'
+
   annotationProcessor("com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
   annotationProcessor('jakarta.persistence:jakarta.persistence-api:3.2.0')
 
@@ -408,6 +410,12 @@ task runAllStyleChecks {
   dependsOn 'pmdIntegrationTest'
   dependsOn 'pmdSmokeTest'
   dependsOn 'pmdFunctionalTest'
+}
+
+task fortifyScan(type: JavaExec) {
+  main = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
+  classpath += sourceSets.test.runtimeClasspath
+  jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
 }
 
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
