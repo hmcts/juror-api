@@ -131,8 +131,8 @@ public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService 
                 mergeService.mergeResponse(savedResponse, login);
                 log.debug("Juror response for juror {} merged successfully", savedResponse.getJurorNumber());
             } catch (ObjectOptimisticLockingFailureException e) {
-                if (log.isInfoEnabled()) {
-                    log.info("Optimistic locking failure:", e);
+                if (log.isDebugEnabled()) {
+                    log.debug("Optimistic locking failure:", e);
                 }
                 throw new DisqualifyException.OptimisticLockingFailure(jurorId, e);
             }
