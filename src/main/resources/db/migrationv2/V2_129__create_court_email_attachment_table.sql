@@ -1,10 +1,12 @@
+-- Create Table filename court map attachments
+
 CREATE TABLE juror_mod.court_email_attachment (
     loc_code      VARCHAR(6)  PRIMARY KEY REFERENCES juror_mod.court_location(loc_code),
     file_name_en  VARCHAR(255) NOT NULL,
     file_name_cy  VARCHAR(255)
 );
 
-
+-- Map file name attachments
 INSERT INTO juror_mod.court_email_attachment (loc_code, file_name_en, file_name_cy) VALUES
     ('411',  'EX104_cardiff.pdf',               'EX104_cardiff_CY.pdf'),
     ('415',  'EX104_chester.pdf',                NULL),

@@ -1,3 +1,4 @@
+-- Update View JS-1126
 create or replace view juror_mod.bulk_print_data_notify_comms
  AS SELECT b.id,
     b.creation_date,

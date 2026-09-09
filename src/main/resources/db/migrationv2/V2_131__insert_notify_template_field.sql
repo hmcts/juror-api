@@ -1,3 +1,5 @@
+-- Update Map and static document attachments for DBD Confirmation email English and Welsh
+
 INSERT INTO juror_mod.notify_template_field
     (id, template_id, template_field, position_from, position_to, mapper_object)
     VALUES
