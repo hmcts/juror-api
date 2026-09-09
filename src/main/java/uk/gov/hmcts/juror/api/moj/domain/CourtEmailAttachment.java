@@ -11,7 +11,8 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "court_email_attachment", schema = "juror_mod")
-@Getter@Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class CourtEmailAttachment {
@@ -24,5 +25,4 @@ public class CourtEmailAttachment {
 
     @Column(name = "file_name_cy")
     private String fileNameCy;
-
 }
