@@ -317,7 +317,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     private boolean isIsDigitalByDefault(String poolNumber) {
         PoolRequest poolRequest = RepositoryUtils.retrieveFromDatabase(poolNumber, poolRequestRepository);
-        String locCode = poolRequest.getCourtLocation().getLocCode();
+        final String locCode = poolRequest.getCourtLocation().getLocCode();
 
         CourtLocation courtLocation = courtLocationRepository.findByLocCode(locCode)
             .orElseThrow(() -> new MojException.BusinessRuleViolation(
