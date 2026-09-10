@@ -16,11 +16,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "uk.gov.hmcts.juror.portal.scheme=https",
-        "uk.gov.hmcts.juror.portal.host=juror.test"
-    })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Juror comms notify payload service")
 class JurorCommsNotifyPayLoadServiceImplITest extends AbstractIntegrationTest {
 
@@ -48,15 +44,15 @@ class JurorCommsNotifyPayLoadServiceImplITest extends AbstractIntegrationTest {
 
         assertThat(payload)
             .containsEntry("COURT_MAP_URL",
-                "https://juror.test/assets/documents/court-information/EX104_chester.pdf")
+                "http://localhost:3000/assets/documents/court-information/EX104_chester.pdf")
             .containsEntry("EMAIL_ATTACHMENT_ALLOWANCES_URL",
-                "https://juror.test/assets/documents/5223A_juror_allowances.pdf")
+                "http://localhost:3000/assets/documents/5223A_juror_allowances.pdf")
             .containsEntry("EMAIL_ATTACHMENT_LOSS_OF_EARNINGS_URL",
-                "https://juror.test/assets/documents/5223D_certificate_of_loss_of_earnings.pdf")
+                "http://localhost:3000/assets/documents/5223D_certificate_of_loss_of_earnings.pdf")
             .containsEntry("EMAIL_ATTACHMENT_GUIDANCE_EMPLOYERS_URL",
-                "https://juror.test/assets/documents/5223E_guidance_for_employers.pdf")
+                "http://localhost:3000/assets/documents/5223E_guidance_for_employers.pdf")
             .containsEntry("EMAIL_ATTACHMENT_JURY_GUIDE_URL",
-                "https://juror.test/assets/documents/5222_your_guide_to_jury_service.pdf");
+                "http://localhost:3000/assets/documents/5222_your_guide_to_jury_service.pdf");
     }
 
     @Test
@@ -74,14 +70,14 @@ class JurorCommsNotifyPayLoadServiceImplITest extends AbstractIntegrationTest {
 
         assertThat(payload)
             .containsEntry("COURT_MAP_URL",
-                "https://juror.test/assets/documents/court-information/EX104_cardiff_CY.pdf")
+                "http://localhost:3000/assets/documents/court-information/EX104_cardiff_CY.pdf")
             .containsEntry("EMAIL_ATTACHMENT_ALLOWANCES_URL",
-                "https://juror.test/assets/documents/5223A_juror_allowances_CY.pdf")
+                "http://localhost:3000/assets/documents/5223A_juror_allowances_CY.pdf")
             .containsEntry("EMAIL_ATTACHMENT_LOSS_OF_EARNINGS_URL",
-                "https://juror.test/assets/documents/5223D_certificate_of_loss_of_earnings_CY.pdf")
+                "http://localhost:3000/assets/documents/5223D_certificate_of_loss_of_earnings_CY.pdf")
             .containsEntry("EMAIL_ATTACHMENT_GUIDANCE_EMPLOYERS_URL",
-                "https://juror.test/assets/documents/5223E_guidance_for_employers_CY.pdf")
+                "http://localhost:3000/assets/documents/5223E_guidance_for_employers_CY.pdf")
             .containsEntry("EMAIL_ATTACHMENT_JURY_GUIDE_URL",
-                "https://juror.test/assets/documents/5222_your_guide_to_jury_service_CY.pdf");
+                "http://localhost:3000/assets/documents/5222_your_guide_to_jury_service_CY.pdf");
     }
 }
