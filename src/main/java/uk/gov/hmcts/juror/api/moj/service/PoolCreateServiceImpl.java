@@ -271,7 +271,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     @Override
     public void createPool(BureauJwtPayload payload, PoolCreateRequestDto poolCreateRequestDto) {
 
-        final boolean isDigitalByDefault = isIsDigitalByDefault(poolCreateRequestDto.getCatchmentArea());
+        final boolean isDigitalByDefault = isIsDigitalByDefault(poolCreateRequestDto.getPoolNumber());
 
         // Get a list of Pool members from voters table
         List<JurorPool> jurorPools =
@@ -294,7 +294,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     @Transactional
     public void summonAdditionalCitizens(BureauJwtPayload payload, PoolAdditionalSummonsDto poolAdditionalSummonsDto) {
 
-        final boolean isDigitalByDefault = isIsDigitalByDefault(poolAdditionalSummonsDto.getCatchmentArea());
+        final boolean isDigitalByDefault = isIsDigitalByDefault(poolAdditionalSummonsDto.getPoolNumber());
 
         //populate the PoolCreateRequestDto object from poolAdditionalSummonsDto
         PoolCreateRequestDto poolCreateRequestDto = setupPoolRequestDto(poolAdditionalSummonsDto);
@@ -315,7 +315,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         processBureauDeferrals(poolCreateRequestDto, userId, false);
     }
 
-    private boolean isIsDigitalByDefault(String locCode) {
+    private boolean isIsDigitalByDefault(String poolNumber) {
+        PoolRequest poolRequest = RepositoryUtils.retrieveFromDatabase(poolNumber, poolRequestRepository);
+        final String locCode = poolRequest.getCourtLocation().getLocCode();
+
         CourtLocation courtLocation = courtLocationRepository.findByLocCode(locCode)
             .orElseThrow(() -> new MojException.BusinessRuleViolation(
                 "Court location not found for locCode: " + locCode,
