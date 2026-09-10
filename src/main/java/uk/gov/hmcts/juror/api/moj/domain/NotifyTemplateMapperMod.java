@@ -67,6 +67,13 @@ public enum NotifyTemplateMapperMod {
     COURT_LOC_ADDRESS(Type.COURT, context -> context.getActualCourtLocation().getLocationAddress()),
     COURT_JURY_OFFICER_PHONE(Type.COURT, context -> context.getCourtLocation().getJuryOfficerPhone()),
 
+    COURT_MAP_URL(Type.COURT, Context::getCourtMapUrl),
+    EMAIL_ATTACHMENT_ALLOWANCES_URL(Type.COURT, Context::getAllowancesDocUrl),
+    EMAIL_ATTACHMENT_LOSS_OF_EARNINGS_URL(Type.COURT, Context::getLossOfEarningsDocUrl),
+    EMAIL_ATTACHMENT_GUIDANCE_EMPLOYERS_URL(Type.COURT, Context::getGuidanceEmployersDocUrl),
+    EMAIL_ATTACHMENT_JURY_GUIDE_URL(Type.COURT, Context::getJuryGuideDocUrl),
+
+
     TEMPORARY_COURT_JURY_OFFICER_PHONE(Type.COURT, Context::getTemporaryCourtPhone),
     TEMPORARY_COURT_NAME(Type.COURT, Context::getTemporaryCourtName),
     TEMPORARY_COURT_ADDRESS(Type.COURT, Context::getTemporaryCourtAddress),
@@ -102,6 +109,12 @@ public enum NotifyTemplateMapperMod {
         String temporaryCourtName;
         String temporaryCourtAddress;
         String temporaryCourtPhone;
+
+        String courtMapUrl;
+        String allowancesDocUrl;
+        String lossOfEarningsDocUrl;
+        String guidanceEmployersDocUrl;
+        String juryGuideDocUrl;
 
         public static Context from(JurorPool jurorPool,String temporaryCourtName, String temporaryCourtAddress,
                                     String temporaryCourtPhone) {
