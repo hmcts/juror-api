@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -30,6 +31,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -1159,12 +1161,11 @@ public class ReissueLetterServiceTest {
 
             doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser("555555561");
 
-            doNothing().when(jurorHistoryService)
-                .createSummonsReminderLetterHistory(jurorPool);
+            doNothing().when(jurorHistoryService).createSummonsReminderLetterHistory(jurorPool);
 
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
-            verify(bulkPrintDataRepository, never())
+            verify(bulkPrintDataRepository, times(1))
                 .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
 
@@ -1173,10 +1174,76 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
-            verify(jurorHistoryService, times(1))
-                .createSummonsReminderLetterHistory(jurorPool);
+            verify(jurorHistoryService, times(1)).createSummonsReminderLetterHistory(jurorPool);
+            verify(jurorHistoryService, never())
+                .createResendLetterHistory(jurorPool, HistoryCodeMod.RESEND_NON_RESPONDED_LETTER);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "5225, 5, RESEND_EXCUSAL_LETTER",
+            "5225C, 5, RESEND_EXCUSAL_LETTER",
+            "5226, 1, RESEND_NON_EXCUSED_LETTER",
+            "5226C, 1, RESEND_NON_EXCUSED_LETTER",
+            "5221, 1, RESEND_RESPONSE_PACK",
+            "5221C, 1, RESEND_RESPONSE_PACK",
+            "6220, 1, RESEND_RESPONSE_PACK",
+            "6220C, 1, RESEND_RESPONSE_PACK",
+            "6221, 1, RESEND_RESPONSE_PACK",
+            "6221C, 1, RESEND_RESPONSE_PACK",
+            "5228, 1, RESEND_NON_RESPONDED_LETTER",
+            "5228C, 1, RESEND_NON_RESPONDED_LETTER",
+            "5224A, 2, RESEND_RESPONDED_LETTER",
+            "5224AC, 2, RESEND_RESPONDED_LETTER",
+            "5229A, 7, RESEND_DEFERRED_LETTER",
+            "5229AC, 7, RESEND_DEFERRED_LETTER",
+            "5226A, 2, RESEND_NON_DEFERRED_LETTER",
+            "5226AC, 2, RESEND_NON_DEFERRED_LETTER",
+            "5229, 7, RESEND_POSTPONED_LETTER",
+            "5229C, 7, RESEND_POSTPONED_LETTER",
+            "5224, 6, RESEND_WITHDRAWAL_LETTER",
+            "5224C, 6, RESEND_WITHDRAWAL_LETTER"
+        })
+        void reissueLetterCreatesResendLetterHistory(String formCode, int statusCode,
+                                                     HistoryCodeMod expectedHistoryCode) {
+            String owner = "400";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                getReissueLetterRequestData(formCode);
+            ReissueLetterRequestDto reissueLetterRequestDto = getReissueLetterRequestDto(reissueLetterRequestData);
+            BulkPrintData bulkPrintData = getBulkPrintData(reissueLetterRequestData);
+
+            doReturn(Optional.of(bulkPrintData)).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+
+            doReturn(Optional.empty()).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
+
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(statusCode);
+            FormCode.getFormCode(formCode).getJurorStatus().forEach(validStatusCode -> {
+                JurorStatus validStatus = validStatusCode == statusCode ? jurorStatus : new JurorStatus();
+                validStatus.setStatus(validStatusCode);
+                when(jurorStatusRepository.findById(validStatusCode)).thenReturn(Optional.of(validStatus));
+            });
+
+            PoolRequest pool = new PoolRequest();
+            pool.setPoolNumber("1");
+            JurorPool jurorPool = getJurorPool(jurorStatus);
+            jurorPool.setPool(pool);
+
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
+
+            reissueLetterService.reissueLetter(reissueLetterRequestDto);
+
+            verify(jurorHistoryService, times(1)).createResendLetterHistory(jurorPool, expectedHistoryCode);
         }
 
         @ParameterizedTest
@@ -1219,17 +1286,17 @@ public class ReissueLetterServiceTest {
             doReturn(List.of(dbdSummons)).when(bulkPrintDataRepository)
                 .findByJurorNoAndFormAttributeFormTypeInOrderByCreationDateDesc("555555561",
                     List.of(FormCode.ENG_DBD_SUMMONS.getCode(), FormCode.BI_DBD_SUMMONS.getCode()));
-            doNothing().when(jurorHistoryService)
-                .createSummonsReminderLetterHistory(jurorPool);
+            doNothing().when(jurorHistoryService).createSummonsReminderLetterHistory(jurorPool);
 
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
-            verify(bulkPrintDataRepository, never())
+            verify(bulkPrintDataRepository, times(1))
                 .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
             verify(printDataService, times(1)).printDbdSummonsReminderLetter(jurorPool);
-            verify(jurorHistoryService, times(1))
-                .createSummonsReminderLetterHistory(jurorPool);
+            verify(jurorHistoryService, times(1)).createSummonsReminderLetterHistory(jurorPool);
+            verify(jurorHistoryService, never())
+                .createResendLetterHistory(jurorPool, HistoryCodeMod.RESEND_NON_RESPONDED_LETTER);
         }
 
 
@@ -1329,7 +1396,7 @@ public class ReissueLetterServiceTest {
         }
 
         @Test
-        void reissueInitialSummonsReminderLetterHistoryNotImplementedForFormCode() {
+        void reissueSummonsLetterCreatesResponsePackHistory() {
             String owner = "400";
 
             TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
@@ -1364,9 +1431,6 @@ public class ReissueLetterServiceTest {
             doReturn(jurorPool).when(jurorPoolService)
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
 
-            doNothing().when(jurorHistoryService)
-                .createSummonsReminderLetterHistory(jurorPool);
-
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
             verify(bulkPrintDataRepository, times(1))
@@ -1380,7 +1444,8 @@ public class ReissueLetterServiceTest {
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
             verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
-            verifyNoMoreInteractions(jurorHistoryService);
+            verify(jurorHistoryService, times(1))
+                .createResendLetterHistory(jurorPool, HistoryCodeMod.RESEND_RESPONSE_PACK);
         }
     }
 

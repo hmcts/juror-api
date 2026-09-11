@@ -388,6 +388,11 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
+    public void createResendLetterHistory(JurorPool jurorPool, HistoryCodeMod historyCode) {
+        registerHistoryLoginUser(jurorPool, historyCode, historyCode.getDescription());
+    }
+
+    @Override
     public void createTransferCourtHistory(JurorPool sourceJurorPool, JurorPool targetJurorPool) {
         registerHistoryLoginUserAdditionalInfo(sourceJurorPool,
                                                HistoryCodeMod.TRANSFER_POOL_MEMBER,

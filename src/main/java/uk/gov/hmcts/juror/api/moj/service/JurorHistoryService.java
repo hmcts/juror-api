@@ -6,6 +6,7 @@ import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -110,6 +111,8 @@ public interface JurorHistoryService {
     void createContactDetailsExportedHistory(String jurorNumber, String poolNumber);
 
     void createSummonLetterReprintedHistory(JurorPool jurorPool);
+
+    void createResendLetterHistory(JurorPool jurorPool, HistoryCodeMod historyCode);
 
     void createTransferCourtHistory(JurorPool sourceJurorPool, JurorPool targetJurorPool);
 

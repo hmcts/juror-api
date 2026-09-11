@@ -526,6 +526,30 @@ class JurorHistoryServiceImplTest {
     }
 
     @Test
+    void createResendLetterHistory() {
+        JurorPool jurorPool = createJurorPool();
+        mockCurrentUser("BUREAU_USER");
+
+        jurorHistoryService.createResendLetterHistory(jurorPool, HistoryCodeMod.RESEND_DEFERRED_LETTER);
+
+        assertStandardValues(jurorPool, "BUREAU_USER",
+            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.RESEND_DEFERRED_LETTER,
+                "Resend Deferred Letter"));
+    }
+
+    @Test
+    void createSummonLetterReprintedHistory() {
+        JurorPool jurorPool = createJurorPool();
+        mockCurrentUser("BUREAU_USER");
+
+        jurorHistoryService.createSummonLetterReprintedHistory(jurorPool);
+
+        assertStandardValues(jurorPool, "BUREAU_USER",
+            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.SUMMONS_REPRINTED,
+                "Reissued summons letter"));
+    }
+
+    @Test
     void createJuryAttendanceHistory() {
         TestUtils.setUpMockAuthentication("415", "TEST_USER", "1", List.of("415"));
         JurorPool jurorPool = createJurorPool();
