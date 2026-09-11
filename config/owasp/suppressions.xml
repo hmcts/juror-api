@@ -25,7 +25,7 @@
 
   <suppress>
     <notes><![CDATA[
-   Jenkins PR-1153 dependency-check findings for Spring Framework 6.2.19 modules.
+   Jenkins PR-1153/PR-1276 dependency-check findings for Spring Framework 6.2.19 modules.
    Updated from 6.2.18 to 6.2.19 following dependency upgrade. spring-web added to regex.
    ]]></notes>
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring-(aop|aspects|beans|context|core|expression|jcl|jdbc|orm|tx|web|webmvc)@6\.2\.19$</packageUrl>
@@ -60,6 +60,13 @@
     <cve>CVE-2026-59283</cve>
     <cve>CVE-2026-47890</cve>
     <cve>CVE-2026-47891</cve>
+    <cve>CVE-2026-47883</cve>
+    <cve>CVE-2026-47884</cve>
+    <cve>CVE-2026-47885</cve>
+    <cve>CVE-2026-47886</cve>
+    <cve>CVE-2026-47887</cve>
+    <cve>CVE-2026-47888</cve>
+    <cve>CVE-2026-47889</cve>
     <cve>CVE-2026-59281</cve>
     <cve>CVE-2026-59282</cve>
   </suppress>

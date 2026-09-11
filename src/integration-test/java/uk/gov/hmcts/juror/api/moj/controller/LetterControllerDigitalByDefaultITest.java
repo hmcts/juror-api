@@ -43,6 +43,8 @@ class LetterControllerDigitalByDefaultITest extends AbstractIntegrationTest {
 
     private static final URI REISSUE_LETTER_URI = URI.create("/api/v1/moj/letter/reissue-letter");
     private static final URI REISSUE_LETTER_LIST_URI = URI.create("/api/v1/moj/letter/reissue-letter-list");
+    private static final String ENGLISH_DBD_SUMMONS_DATE = "TUESDAY 8 OCTOBER, 2024";
+    private static final String WELSH_DBD_SUMMONS_DATE = "DYDD MAWRTH 8 HYDREF, 2024";
 
     @Autowired
     private TestRestTemplate template;
@@ -106,10 +108,10 @@ class LetterControllerDigitalByDefaultITest extends AbstractIntegrationTest {
         Map<String, List<Object>> rowsByJurorNumber = data.stream()
             .collect(Collectors.toMap(row -> row.get(0).toString(), Function.identity()));
 
-        assertDbdSummonsRow(rowsByJurorNumber.get("555555561"), "415241001", "FNAMEFIVEFOURZERO",
-                            "LNAMEFIVEFOURZERO", "CH1 2AN", FormCode.ENG_DBD_SUMMONS);
-        assertDbdSummonsRow(rowsByJurorNumber.get("555555562"), "774241001", "FNAMEFIVEFOURONE",
-                            "LNAMEFIVEFOURONE", "CF10 1AA", FormCode.BI_DBD_SUMMONS);
+        assertDbdSummonsRow(rowsByJurorNumber.get("555555561"), "415241001", ENGLISH_DBD_SUMMONS_DATE,
+                            "FNAMEFIVEFOURZERO", "LNAMEFIVEFOURZERO", "CH1 2AN", FormCode.ENG_DBD_SUMMONS);
+        assertDbdSummonsRow(rowsByJurorNumber.get("555555562"), "774241001", WELSH_DBD_SUMMONS_DATE,
+                            "FNAMEFIVEFOURONE", "LNAMEFIVEFOURONE", "CF10 1AA", FormCode.BI_DBD_SUMMONS);
     }
 
     @Test
@@ -162,10 +164,10 @@ class LetterControllerDigitalByDefaultITest extends AbstractIntegrationTest {
         Map<String, List<Object>> rowsByJurorNumber = data.stream()
             .collect(Collectors.toMap(row -> row.get(0).toString(), Function.identity()));
 
-        assertDbdSummonsRow(rowsByJurorNumber.get("555555561"), "415241001", "FNAMEFIVEFOURZERO",
-                            "LNAMEFIVEFOURZERO", "CH1 2AN", FormCode.ENG_DBD_RESPONSE);
-        assertDbdSummonsRow(rowsByJurorNumber.get("555555562"), "774241001", "FNAMEFIVEFOURONE",
-                            "LNAMEFIVEFOURONE", "CF10 1AA", FormCode.BI_DBD_RESPONSE);
+        assertDbdSummonsRow(rowsByJurorNumber.get("555555561"), "415241001", ENGLISH_DBD_SUMMONS_DATE,
+                            "FNAMEFIVEFOURZERO", "LNAMEFIVEFOURZERO", "CH1 2AN", FormCode.ENG_DBD_RESPONSE);
+        assertDbdSummonsRow(rowsByJurorNumber.get("555555562"), "774241001", WELSH_DBD_SUMMONS_DATE,
+                            "FNAMEFIVEFOURONE", "LNAMEFIVEFOURONE", "CF10 1AA", FormCode.BI_DBD_RESPONSE);
     }
 
     private ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData(String jurorNumber,
@@ -177,11 +179,12 @@ class LetterControllerDigitalByDefaultITest extends AbstractIntegrationTest {
             .build();
     }
 
-    private void assertDbdSummonsRow(List<Object> row, String poolNumber, String firstName, String lastName,
-                                     String postcode, FormCode formCode) {
+    private void assertDbdSummonsRow(List<Object> row, String poolNumber, String summonsDate, String firstName,
+                                     String lastName, String postcode, FormCode formCode) {
         assertThat(row).isNotNull();
         assertThat(row).hasSize(9);
         assertThat(row.get(1)).isEqualTo(poolNumber);
+        assertThat(row.get(2)).isEqualTo(summonsDate);
         assertThat(row.get(3)).isEqualTo(firstName);
         assertThat(row.get(4)).isEqualTo(lastName);
         assertThat(row.get(5)).isEqualTo(postcode);
