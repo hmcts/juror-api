@@ -61,7 +61,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private final FeatureFlagConfigurationProperties featureFlags;
     private final PoolHistoryService poolHistoryService;
     private final JurorCommonResponseRepositoryMod jurorResponseRepository;
- 
+
     // this list will include the new summons response and reminder letters that are only to be sent via letters
     // for digital by default eligible jurors
     private static final Set<FormCode> DIGITAL_BY_DEFAULT_LETTER_ONLY_REISSUE_CODES = Set.of(
@@ -166,8 +166,17 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                                     : welshDate;
 
                                 return englishDateNoDay + " " + welshDayName;
+                            } else if ("5221".equals(formCode)) {
+                                return rec.substring(315, 347).trim();
+                            } else if ("6220".equals(formCode)) {
+                                return rec.substring(276, 308).trim();
+                            } else if ("6220C".equals(formCode)) {
+                                return rec.substring(308, 340).trim();
+                            } else if ("6221".equals(formCode)) {
+                                return rec.substring(276, 308).trim();
+                            } else if ("6221C".equals(formCode)) {
+                                return rec.substring(308, 340).trim();
                             }
-                            return rec.substring(315, 347).trim();
                         }
                         return dataType.transform(tuple.get(dataType.getExpression()));
                     })
