@@ -59,4 +59,5 @@ java:
     PNC_CHECK_SERVICE_SUBJECT: juror-back-end
     PNC_CHECK_SERVICE_HOST: juror-pnc.{{ .Values.global.environment }}.platform.hmcts.net
     PNC_CHECK_SERVICE_PORT: 443
+    PUBLIC_HOST: juror-public.{{ .Values.global.environment }}.apps.hmcts.net
     TOKEN_EXPIRY: 30m

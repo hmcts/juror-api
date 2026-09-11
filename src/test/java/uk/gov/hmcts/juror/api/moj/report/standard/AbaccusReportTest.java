@@ -71,7 +71,10 @@ class AbaccusReportTest extends AbstractStandardReportTestSupport<AbaccusReport>
             DataType.DATE_SENT
         );
 
-        verify(query).orderBy(QBulkPrintData.bulkPrintData.formAttribute.formType.asc());
+        verify(query).orderBy(
+            QBulkPrintData.bulkPrintData.formAttribute.formType.asc(),
+            QBulkPrintData.bulkPrintData.creationDate.desc()
+        );
     }
 
     @Override

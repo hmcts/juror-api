@@ -152,8 +152,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkReadAccessForCurr
  */
 @Slf4j
 @Service
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports",
-    "PMD.CyclomaticComplexity", "PMD.CouplingBetweenObjects"})
+@SuppressWarnings("PMD")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorRecordServiceImpl implements JurorRecordService {
     private final ContactCodeRepository contactCodeRepository;
@@ -210,7 +209,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     @Transactional
     @SuppressWarnings({"PMD.NcssCount", "PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void editJurorDetails(BureauJwtPayload payload, EditJurorRecordRequestDto requestDto, String jurorNumber) {
-        log.info(String.format("Juror: %s. Start updating details by user %s", jurorNumber, payload.getLogin()));
+        log.info("Juror: {}. Start updating details by user {}", jurorNumber, payload.getLogin());
 
         String owner = payload.getOwner();
 
@@ -1724,8 +1723,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    public void sendPaperSummonsPack(String jurorNumber) {
-        log.info("Sending paper summons pack for juror {} requested by user {}",
+    public void sendPaperResponsePack(String jurorNumber) {
+        log.info("Sending paper response pack for juror {} requested by user {}",
             jurorNumber, SecurityUtil.getActiveLogin());
 
         final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
@@ -1738,14 +1737,15 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         }
         if (jurorPool.getStatus().getStatus() != IJurorStatus.SUMMONED) {
             throw new MojException.BusinessRuleViolation(
-                "Juror must be in Summoned status to send a paper summons pack", null);
+                "Juror must be in Summoned status to send a paper response pack", null);
         }
         if (!"Paper".equals(juror.getDbdPreference())) {
             throw new MojException.BusinessRuleViolation(
                 "Juror's communication preference must be Paper", null);
         }
 
-        printDataService.reprintSummonsLetter(jurorPool);
+        printDataService.printDbdResponseLetter(jurorPool);
+        jurorHistoryService.createResponsePackPrintedHistory(jurorPool);
     }
 
     @Override

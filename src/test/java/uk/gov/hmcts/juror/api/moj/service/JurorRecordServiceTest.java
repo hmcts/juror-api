@@ -300,8 +300,8 @@ class JurorRecordServiceTest {
     }
 
     @Nested
-    @DisplayName("public void sendPaperSummonsPack(String jurorNumber)")
-    class SendPaperSummonsPack {
+    @DisplayName("public void sendPaperResponsePack(String jurorNumber)")
+    class SendPaperResponsePack {
 
         private JurorPool buildJurorPool(int statusCode, String dbdPreference, boolean courtInPilot) {
             JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
@@ -319,9 +319,10 @@ class JurorRecordServiceTest {
             doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
 
-            jurorRecordService.sendPaperSummonsPack(VALID_JUROR_NUMBER);
+            jurorRecordService.sendPaperResponsePack(VALID_JUROR_NUMBER);
 
-            verify(printDataService, times(1)).reprintSummonsLetter(jurorPool);
+            verify(printDataService, times(1)).printDbdResponseLetter(jurorPool);
+            verify(jurorHistoryService, times(1)).createResponsePackPrintedHistory(jurorPool);
             verifyNoMoreInteractions(printDataService);
         }
 
@@ -334,10 +335,11 @@ class JurorRecordServiceTest {
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
 
             assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(() -> jurorRecordService.sendPaperSummonsPack(VALID_JUROR_NUMBER))
+                .isThrownBy(() -> jurorRecordService.sendPaperResponsePack(VALID_JUROR_NUMBER))
                 .withMessage("Juror's court is not part of the DBD pilot");
 
             verifyNoInteractions(printDataService);
+            verify(jurorHistoryService, never()).createResponsePackPrintedHistory(jurorPool);
         }
 
         @Test
@@ -349,10 +351,11 @@ class JurorRecordServiceTest {
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
 
             assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(() -> jurorRecordService.sendPaperSummonsPack(VALID_JUROR_NUMBER))
-                .withMessage("Juror must be in Summoned status to send a paper summons pack");
+                .isThrownBy(() -> jurorRecordService.sendPaperResponsePack(VALID_JUROR_NUMBER))
+                .withMessage("Juror must be in Summoned status to send a paper response pack");
 
             verifyNoInteractions(printDataService);
+            verify(jurorHistoryService, never()).createResponsePackPrintedHistory(jurorPool);
         }
 
         @Test
@@ -364,10 +367,11 @@ class JurorRecordServiceTest {
                 .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
 
             assertThatExceptionOfType(MojException.BusinessRuleViolation.class)
-                .isThrownBy(() -> jurorRecordService.sendPaperSummonsPack(VALID_JUROR_NUMBER))
+                .isThrownBy(() -> jurorRecordService.sendPaperResponsePack(VALID_JUROR_NUMBER))
                 .withMessage("Juror's communication preference must be Paper");
 
             verifyNoInteractions(printDataService);
+            verify(jurorHistoryService, never()).createResponsePackPrintedHistory(jurorPool);
         }
     }
 

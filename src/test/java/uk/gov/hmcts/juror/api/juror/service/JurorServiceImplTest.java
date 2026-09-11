@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
@@ -62,6 +63,7 @@ import static org.mockito.Mockito.when;
     "PMD.TooManyFields"})
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class JurorServiceImplTest {
+    private static final String DIGITAL_BY_DEFAULT_FEATURE_FLAG = "digital-by-default";
 
     private static final String TEST_JUROR_NUMBER = "209092530";
 
@@ -104,6 +106,8 @@ public class JurorServiceImplTest {
     private JurorService mockJurorService;
     @Mock
     private JurorPoolService jurorPoolService;
+    @Mock
+    private FeatureFlagConfigurationProperties featureFlags;
 
     @InjectMocks
     private JurorServiceImpl defaultService;
@@ -476,6 +480,8 @@ public class JurorServiceImplTest {
         jurorPoolDetails.getPool().setReturnDate(serviceStartDate);
 
         when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPoolDetails);
+        when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(true);
+        jurorPoolUtilsMockedStatic.when(() -> JurorPoolUtils.isDigitalByDefault(jurorPoolDetails)).thenReturn(true);
 
         final DbdInformationResponseDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
 
@@ -492,6 +498,17 @@ public class JurorServiceImplTest {
     @Test
     public void getDbdInformation_WithNoPoolEntry_ReturnsNull() {
         when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(null);
+
+        final DbdInformationResponseDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
+
+        assertThat(dbdInformationDto).isNull();
+    }
+
+    @Test
+    public void getDbdInformation_WithNonDbdJuror_ReturnsNull() {
+        when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPoolDetails);
+        when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(true);
+        jurorPoolUtilsMockedStatic.when(() -> JurorPoolUtils.isDigitalByDefault(jurorPoolDetails)).thenReturn(false);
 
         final DbdInformationResponseDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
 

@@ -50,30 +50,30 @@ public class GeneratePoolNumberServiceImpl implements GeneratePoolNumberService 
     @Override
     @Transactional(readOnly = true)
     public String generatePoolNumber(String locationCode, LocalDate attendanceDate) {
-        log.trace(String.format("Enter generatePoolNumber for Location Code %s and Attendance Date %s",
+        log.trace("Enter generatePoolNumber for Location Code {} and Attendance Date {}",
             locationCode, attendanceDate
-        ));
+        );
         String newPoolNumber;
         try {
             String poolNumberPrefix = buildPoolNumberPrefix(locationCode, attendanceDate);
             PoolRequest poolRequest = findMatchingPoolRequests(poolNumberPrefix);
 
             if (poolRequest != null) {
-                log.debug(String.format("Records exist matching the prefix: %s", poolNumberPrefix));
+                log.debug("Records exist matching the prefix: {}", poolNumberPrefix);
                 String newSequenceNumber = calculateNewSequenceNumber(poolRequest);
                 newPoolNumber = poolNumberPrefix + newSequenceNumber;
             } else {
-                log.debug(String.format("No existing records found matching the prefix: %s", poolNumberPrefix));
+                log.debug("No existing records found matching the prefix: {}", poolNumberPrefix);
                 newPoolNumber = poolNumberPrefix + SEQUENCE_START_POSITION;
             }
 
-            log.info(String.format("New Pool number generated: %s", newPoolNumber));
+            log.info("New Pool number generated: {} ", newPoolNumber);
             return newPoolNumber;
         } catch (IllegalArgumentException ex) {
-            log.error(String.format(
-                "An exception was thrown whilst trying to generate a new Pool Number: %s",
+            log.error(
+                "An exception was thrown whilst trying to generate a new Pool Number: {}",
                 ex.getMessage()
-            ));
+            );
             // Return an empty string to indicate the system failed to generate a pool number
             return "";
         }
@@ -95,16 +95,16 @@ public class GeneratePoolNumberServiceImpl implements GeneratePoolNumberService 
      *      If no Pool Requests exist matching the prefix, the returned object will be null.
      */
     private PoolRequest findMatchingPoolRequests(String poolNumberPrefix) {
-        log.debug(String.format("Searching for existing Pool Numbers matching the prefix: %s", poolNumberPrefix));
+        log.debug("Searching for existing Pool Numbers matching the prefix: {}", poolNumberPrefix);
         return poolRequestRepository.findLatestPoolRequestByPoolNumberPrefix(poolNumberPrefix);
     }
 
     private String calculateNewSequenceNumber(PoolRequest poolRequest) {
         String latestPoolNumber = poolRequest.getPoolNumber();
-        log.debug(String.format("Latest Pool Number found: %s", latestPoolNumber));
+        log.debug("Latest Pool Number found: {}", latestPoolNumber);
 
         String latestSequenceNumber = latestPoolNumber.substring(latestPoolNumber.length() - 2);
-        log.debug(String.format("Latest Sequence Number part: %s", latestSequenceNumber));
+        log.debug("Latest Sequence Number part: {}", latestSequenceNumber);
 
         // Increment the previous sequence number by one to get the new sequence number
         int newSequenceNumber = Integer.parseInt(latestSequenceNumber) + 1;

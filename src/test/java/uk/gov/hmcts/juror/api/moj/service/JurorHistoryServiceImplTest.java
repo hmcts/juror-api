@@ -353,6 +353,16 @@ class JurorHistoryServiceImplTest {
     }
 
     @Test
+    void typicalCreateResponsePackPrintedHistory() {
+        JurorPool jurorPool = createJurorPool();
+
+        mockCurrentUser("someNewUser");
+        jurorHistoryService.createResponsePackPrintedHistory(jurorPool);
+        assertStandardValues(jurorPool, "someNewUser", new JurorHistoryPartHistoryJurorHistoryExpectedValues(
+            HistoryCodeMod.RESPONSE_PACK_PRINTED, null));
+    }
+
+    @Test
     void negativeCreateDeferredLetterHistoryNoDeferredToDate() {
         JurorPool jurorPool = createJurorPool();
         jurorPool.setDeferralCode("A");
@@ -500,7 +510,7 @@ class JurorHistoryServiceImplTest {
     }
 
     @Test
-    void createSummonsReminderLetterHistory() {
+    void createSummonsReminderLetterHistoryForLetter() {
         JurorPool jurorPool = createJurorPool();
         jurorPool.setIsActive(true);
 
