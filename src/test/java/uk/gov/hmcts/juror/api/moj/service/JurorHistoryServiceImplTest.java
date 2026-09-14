@@ -4,6 +4,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -12,6 +14,7 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -534,19 +537,40 @@ class JurorHistoryServiceImplTest {
 
         assertStandardValues(jurorPool, "BUREAU_USER",
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.RESEND_DEFERRED_LETTER,
-                "Resend Deferred Letter"));
+                null));
     }
 
     @Test
-    void createSummonLetterReprintedHistory() {
+    void createResendLetterHistoryForEmail() {
         JurorPool jurorPool = createJurorPool();
         mockCurrentUser("BUREAU_USER");
 
-        jurorHistoryService.createSummonLetterReprintedHistory(jurorPool);
+        jurorHistoryService.createResendLetterHistory(
+            jurorPool,
+            HistoryCodeMod.RESEND_DEFERRED_LETTER,
+            CommunicationChannel.EMAIL);
+
+        assertStandardValues(jurorPool, "BUREAU_USER",
+            new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.RESEND_DEFERRED_LETTER,
+                "Reissue Deferred Email"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "ENG_SUMMONS, Reissued summons letter",
+        "BI_SUMMONS, Reissued summons letter",
+        "ENG_DBD_SUMMONS, Reissued DBD summons letter",
+        "BI_DBD_SUMMONS, Reissued DBD summons letter"
+    })
+    void createSummonLetterReprintedHistory(FormCode formCode, String expectedOtherInformation) {
+        JurorPool jurorPool = createJurorPool();
+        mockCurrentUser("BUREAU_USER");
+
+        jurorHistoryService.createSummonLetterReprintedHistory(jurorPool, formCode);
 
         assertStandardValues(jurorPool, "BUREAU_USER",
             new JurorHistoryPartHistoryJurorHistoryExpectedValues(HistoryCodeMod.SUMMONS_REPRINTED,
-                "Reissued summons letter"));
+                expectedOtherInformation));
     }
 
     @Test

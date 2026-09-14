@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Panel;
 import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
@@ -110,9 +111,12 @@ public interface JurorHistoryService {
 
     void createContactDetailsExportedHistory(String jurorNumber, String poolNumber);
 
-    void createSummonLetterReprintedHistory(JurorPool jurorPool);
+    void createSummonLetterReprintedHistory(JurorPool jurorPool, FormCode formCode);
 
     void createResendLetterHistory(JurorPool jurorPool, HistoryCodeMod historyCode);
+
+    void createResendLetterHistory(JurorPool jurorPool, HistoryCodeMod historyCode,
+                                   CommunicationChannel communicationChannel);
 
     void createTransferCourtHistory(JurorPool sourceJurorPool, JurorPool targetJurorPool);
 

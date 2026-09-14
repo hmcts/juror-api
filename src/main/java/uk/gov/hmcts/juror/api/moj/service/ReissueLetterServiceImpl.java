@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -84,15 +85,16 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         FormCode.BI_SUMMONS_REMINDER.getCode(),
         FormCode.ENG_DBD_SUMMONS_REM.getCode(),
         FormCode.BI_DBD_SUMMONS_REM.getCode());
+    private static final Set<FormCode> SUMMONS_REISSUE_CODES = Set.of(
+        FormCode.ENG_SUMMONS,
+        FormCode.BI_SUMMONS,
+        FormCode.ENG_DBD_SUMMONS,
+        FormCode.BI_DBD_SUMMONS);
     private static final Map<FormCode, HistoryCodeMod> RESEND_LETTER_HISTORY_CODES = Map.ofEntries(
         Map.entry(FormCode.ENG_EXCUSAL, HistoryCodeMod.RESEND_EXCUSAL_LETTER),
         Map.entry(FormCode.BI_EXCUSAL, HistoryCodeMod.RESEND_EXCUSAL_LETTER),
         Map.entry(FormCode.ENG_EXCUSALDENIED, HistoryCodeMod.RESEND_NON_EXCUSED_LETTER),
         Map.entry(FormCode.BI_EXCUSALDENIED, HistoryCodeMod.RESEND_NON_EXCUSED_LETTER),
-        Map.entry(FormCode.ENG_SUMMONS, HistoryCodeMod.RESEND_RESPONSE_PACK),
-        Map.entry(FormCode.BI_SUMMONS, HistoryCodeMod.RESEND_RESPONSE_PACK),
-        Map.entry(FormCode.ENG_DBD_SUMMONS, HistoryCodeMod.RESEND_RESPONSE_PACK),
-        Map.entry(FormCode.BI_DBD_SUMMONS, HistoryCodeMod.RESEND_RESPONSE_PACK),
         Map.entry(FormCode.ENG_DBD_RESPONSE, HistoryCodeMod.RESEND_RESPONSE_PACK),
         Map.entry(FormCode.BI_DBD_RESPONSE, HistoryCodeMod.RESEND_RESPONSE_PACK),
         Map.entry(FormCode.ENG_SUMMONS_REMINDER, HistoryCodeMod.RESEND_NON_RESPONDED_LETTER),
@@ -344,6 +346,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             && !DIGITAL_BY_DEFAULT_LETTER_ONLY_REISSUE_CODES.contains(formCode)) {
             if (emailDataService.emailReissueLetter(jurorPool, formCode)) {
                 log.info("Email resent for juror number {} with form code {}", jurorNumber, formCode);
+                createLetterHistory(formCode, jurorPool, false, CommunicationChannel.EMAIL);
                 return;
             }
             // something went wrong with sending out email, it could be a letter
@@ -548,6 +551,16 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     }
 
     private void createLetterHistory(FormCode formCode, JurorPool jurorPool, boolean initialSummonsReminderLetter) {
+        createLetterHistory(formCode, jurorPool, initialSummonsReminderLetter, CommunicationChannel.LETTER);
+    }
+
+    private void createLetterHistory(FormCode formCode, JurorPool jurorPool, boolean initialSummonsReminderLetter,
+                                     CommunicationChannel communicationChannel) {
+        if (SUMMONS_REISSUE_CODES.contains(formCode)) {
+            jurorHistoryService.createSummonLetterReprintedHistory(jurorPool, formCode);
+            return;
+        }
+
         HistoryCodeMod historyCode = RESEND_LETTER_HISTORY_CODES.get(formCode);
         if (historyCode == null) {
             return;
@@ -558,6 +571,10 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                 jurorHistoryService.createSummonsReminderLetterHistory(jurorPool);
                 return;
             }
+        }
+        if (communicationChannel == CommunicationChannel.EMAIL) {
+            jurorHistoryService.createResendLetterHistory(jurorPool, historyCode, communicationChannel);
+            return;
         }
         jurorHistoryService.createResendLetterHistory(jurorPool, historyCode);
     }

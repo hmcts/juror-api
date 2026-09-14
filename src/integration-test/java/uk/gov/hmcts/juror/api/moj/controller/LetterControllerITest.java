@@ -3673,7 +3673,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .as("Existing letter should not exist for today's date").isEmpty();
 
                 executeInTransaction(() -> {
-                    // verify a previous letter exists - should be welsh
+                    // verify a previous letter exists - should be Welsh
                     BulkPrintData bulkPrintData =
                         bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
                                 FormCode.BI_SUMMONS_REMINDER.getCode(), true)
@@ -3692,7 +3692,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .build()
                 );
                 executeInTransaction(() -> {
-                    // verify letter added - should be english (welsh flag was updated - juror now wants english
+                    // verify letter added - should be English (Welsh flag was updated - juror now wants English
                     // letters)
                     BulkPrintData bulkPrintData =
                         bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
@@ -3814,7 +3814,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(index.getCreatedBy()).isEqualTo("BUREAU_USER");
                 assertThat(index.getDateCreated().isEqual(LocalDate.now().atStartOfDay()));
                 String expectedOtherInformation = expectedHistoryCode == HistoryCodeMod.NON_RESPONDED_LETTER
-                    ? "Reminder letter" : expectedHistoryCode.getDescription();
+                    ? "Reminder letter" : null;
                 assertThat(index.getOtherInformation()).isEqualTo(expectedOtherInformation);
                 assertThat(index.getOtherInformationDate()).isNull();
                 assertThat(index.getOtherInformationRef()).isNull();
