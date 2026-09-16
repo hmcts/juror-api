@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.postgresql.util.PSQLException;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,9 +31,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ControllerAdvice(basePackages = {"uk.gov.hmcts.juror.api.moj"})
+@ControllerAdvice
 @SuppressWarnings({"PMD.TooManyMethods"})
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private static final String GENERIC_INTERNAL_SERVER_ERROR_MESSAGE = "An unexpected error occurred";
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -148,22 +151,22 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         return new ResponseEntity<>(body, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    @ExceptionHandler({SQLException.class, PSQLException.class,
+    @ExceptionHandler({SQLException.class, PSQLException.class, DataAccessException.class,
+        MojException.InternalServerError.class,
         DateException.DateParseException.class,
         JurorPaperResponseException.UnableToFindJurorRecord.class,
         PoolCreateException.UnableToCreatePool.class,
         JurorSequenceException.SequenceNextValNotFound.class
     })
     public ResponseEntity<Object> handleInternalServerError(Throwable ex, WebRequest request) {
-        Map<String, Object> body = createGenericErrorResponseBody(ex.getMessage());
+        logger.error("Internal server error", ex);
+        Map<String, Object> body = createGenericErrorResponseBody(GENERIC_INTERNAL_SERVER_ERROR_MESSAGE);
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Object> handleDataIntegrityViolationException(RuntimeException ex, WebRequest request) {
-        Map<String, Object> body = createGenericErrorResponseBody("Data Integrity Violation - please refer to the "
-            + "log files");
-        return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
+        return handleInternalServerError(ex, request);
     }
 
     @Override
