@@ -365,6 +365,41 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     private void printLetter(String jurorNumber, JurorPool jurorPool, FormCode formCode) {
         log.debug("Printing letter for juror number {} with form code {}", jurorNumber, formCode);
 
+        printLetter(jurorNumber, jurorPool, formCode);
+
+        // create letter history
+        createLetterHistory(letter);
+    }
+
+    private void reissueLetterOrEmail(ReissueLetterRequestDto.@NotNull ReissueLetterRequestData letter,
+                                      JurorPool jurorPool,
+                                      boolean requirePrintedLetter) {
+        validateRequestedLetter(letter, requirePrintedLetter);
+        final String jurorNumber = letter.getJurorNumber();
+        final FormCode formCode = FormCode.getFormCode(letter.getFormCode());
+
+        if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+            && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)
+            && !DIGITAL_BY_DEFAULT_LETTER_ONLY_REISSUE_CODES.contains(formCode)) {
+            if (emailDataService.emailReissueLetter(jurorPool, formCode)) {
+                log.info("Email resent for juror number {} with form code {}", jurorNumber, formCode);
+                return;
+            }
+            // something went wrong with sending out email, it could be a letter
+            // that no longer is allowed for digital by default jurors
+            log.info("Email not resent for juror number {} with form code {}", jurorNumber, formCode);
+            if (INELIGIBLE_DIGITAL_BY_DEFAULT_LETTER_REISSUE_CODES.contains(formCode)) {
+                throw new MojException.BadRequest("Letter type not allowed for digital by default jurors", null);
+            }
+        }
+
+        printLetter(jurorNumber, jurorPool, formCode);
+        createLetterHistory(letter);
+    }
+
+    private void printLetter(String jurorNumber, JurorPool jurorPool, FormCode formCode) {
+        log.debug("Printing letter for juror number {} with form code {}", jurorNumber, formCode);
+
         BiConsumer<PrintDataService, JurorPool> letterPrinter = formCode.getLetterPrinter();
         if (letterPrinter == null) {
             throw new MojException.InternalServerError(
