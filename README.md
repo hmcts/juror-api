@@ -1,7 +1,7 @@
 # Juror Backend API
 
 This is the API for the Juror Modernisation project. It is a Spring Boot application that provides RESTful endpoints for
-managing jurors. 
+managing jurors.
 
 # Building and deploying the application
 
@@ -125,7 +125,7 @@ You should get a response similar to this:
   "readinessState":{"status":"UP"}},"groups":["liveness","readiness"]}%
 ```
 
-It is possible to debug the application through Intellij selecting the appropriate run configuration or through gradle.
+It is possible to debug the application through Intellij selecting the appropriate run configuration or through Gradle.
 
 ### Swagger UI
 
