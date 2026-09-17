@@ -30,7 +30,7 @@ import java.util.Objects;
  */
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor_ =@Autowired)
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
 
 

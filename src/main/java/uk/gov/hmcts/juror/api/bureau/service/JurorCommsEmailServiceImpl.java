@@ -27,7 +27,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor_ =@Autowired)
+@AllArgsConstructor(onConstructor_ = @Autowired)
 @SuppressWarnings("PMD.CognitiveComplexity")
 public class JurorCommsEmailServiceImpl implements BureauProcessService {
 

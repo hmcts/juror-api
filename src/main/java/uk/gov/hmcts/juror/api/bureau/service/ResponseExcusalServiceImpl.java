@@ -36,7 +36,7 @@ import java.util.List;
 @SuppressWarnings("Duplicates")
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ResponseExcusalServiceImpl implements ResponseExcusalService {
 
     private final JurorDigitalResponseRepositoryMod responseRepository;

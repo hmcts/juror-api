@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
  */
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor_ =@Autowired)
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class AssignOnUpdateServiceImpl implements AssignOnUpdateService {
 
     private final UserRepository userRepository;

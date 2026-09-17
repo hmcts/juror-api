@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLoadService {
 

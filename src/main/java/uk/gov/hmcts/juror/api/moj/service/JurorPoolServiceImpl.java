@@ -23,7 +23,7 @@ import java.util.Optional;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_ATTENDANCE_RECORD;
 
 @Service
-@AllArgsConstructor(onConstructor_ =@Autowired)
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class JurorPoolServiceImpl implements JurorPoolService {
 
     private final PoolRequestRepository poolRequestRepository;

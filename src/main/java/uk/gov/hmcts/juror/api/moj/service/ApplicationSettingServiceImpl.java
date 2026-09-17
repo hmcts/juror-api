@@ -9,7 +9,7 @@ import uk.gov.hmcts.juror.api.moj.repository.ApplicationSettingRepository;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ApplicationSettingServiceImpl implements ApplicationSettingService {
 
     private final ApplicationSettingRepository applicationSettingRepository;

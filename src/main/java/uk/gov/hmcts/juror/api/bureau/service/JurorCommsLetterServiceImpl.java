@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor_ =@Autowired)
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class JurorCommsLetterServiceImpl implements BureauProcessService {
 
 

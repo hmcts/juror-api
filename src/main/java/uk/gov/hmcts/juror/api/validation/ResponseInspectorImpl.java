@@ -24,7 +24,7 @@ import java.util.Optional;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ResponseInspectorImpl implements ResponseInspector {
     static final int AGE_LOWER_SP_ID = 101;
     static final int AGE_UPPER_SP_ID = 100;

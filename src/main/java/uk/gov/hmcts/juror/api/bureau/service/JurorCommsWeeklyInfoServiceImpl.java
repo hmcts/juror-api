@@ -28,7 +28,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor_ =@Autowired)
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class JurorCommsWeeklyInfoServiceImpl implements BureauProcessService {
 
 

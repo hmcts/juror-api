@@ -10,7 +10,7 @@ import uk.gov.hmcts.juror.api.moj.repository.juror.JurorThirdPartyRepository;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 
 @Service
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class JurorThirdPartyServiceImpl implements JurorThirdPartyService {
     private final JurorThirdPartyRepository jurorThirdPartyRepository;
 

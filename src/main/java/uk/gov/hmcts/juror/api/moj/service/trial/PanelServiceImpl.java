@@ -54,7 +54,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
     "PMD.GodClass",
     "PMD.CouplingBetweenObjects"
 })
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class PanelServiceImpl implements PanelService {
 
     private static final int MAX_PANEL_MEMBERS = 1000;

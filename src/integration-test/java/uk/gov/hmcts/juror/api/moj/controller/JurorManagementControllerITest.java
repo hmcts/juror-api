@@ -2304,7 +2304,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(jurorsOnTrialResponseDto.getTrialsList().size()).as("Expect 3 records to be returned")
                 .isEqualTo(3);
 
-            JurorsOnTrialResponseDto.JurorsOnTrialResponseData first = jurorsOnTrialResponseDto.getTrialsList().getFirst();
+            JurorsOnTrialResponseDto.JurorsOnTrialResponseData first =
+                jurorsOnTrialResponseDto.getTrialsList().getFirst();
             assertThat(first.getTrialNumber()).isEqualTo("T10000001");
             assertThat(first.getParties()).isEqualTo("test trial");
             assertThat(first.getTrialType()).isEqualTo("Civil");

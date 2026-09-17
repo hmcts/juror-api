@@ -7742,11 +7742,13 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getJurorNumber()).as("Expect juror number to be 5555555" + jurorPostfix)
                 .isEqualTo(JUROR_NUMBER + jurorPostfix);
             assertThat(response.getAttendanceDataList()).isNotNull().hasSize(4);
-            assertThat(response.getAttendanceDataList().getFirst().getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isFalse();
+            assertThat(response.getAttendanceDataList().getFirst().getNonAttendance())
+                .as("Expected Non Attendance to be " + "false")
+                .isFalse();
             assertThat(response.getAttendanceDataList().getFirst().getChildCare()).isEqualTo(new BigDecimal("10.00"));
             assertThat(response.getAttendanceDataList().getFirst().getMisc()).isEqualTo(new BigDecimal("10.00"));
-            assertThat(response.getAttendanceDataList().getFirst().getLossOfEarnings()).isEqualTo(new BigDecimal("40.00"));
+            assertThat(response.getAttendanceDataList().getFirst().getLossOfEarnings())
+                .isEqualTo(new BigDecimal("40.00"));
             assertThat(response.getAttendanceDataList().getFirst().getAttendanceDate()).isEqualTo(
                 LocalDate.now().plusDays(10));
 
@@ -7827,11 +7829,13 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getWelsh()).as("Expect welsh to be true").isTrue();
 
             assertThat(response.getAttendanceDataList()).isNotNull().hasSize(4);
-            assertThat(response.getAttendanceDataList().getFirst().getNonAttendance()).as("Expected Non Attendance to be "
-                + "false").isFalse();
+            assertThat(response.getAttendanceDataList().getFirst().getNonAttendance())
+                .as("Expected Non Attendance to be " + "false")
+                .isFalse();
             assertThat(response.getAttendanceDataList().getFirst().getChildCare()).isEqualTo(new BigDecimal("30.00"));
             assertThat(response.getAttendanceDataList().getFirst().getMisc()).isEqualTo(new BigDecimal("10.00"));
-            assertThat(response.getAttendanceDataList().getFirst().getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
+            assertThat(response.getAttendanceDataList().getFirst().getLossOfEarnings())
+                .isEqualTo(new BigDecimal("50.00"));
             assertThat(response.getAttendanceDataList().getFirst().getAttendanceDate()).isEqualTo(
                 LocalDate.now().plusDays(10));
 

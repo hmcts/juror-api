@@ -1421,7 +1421,8 @@ public class ReissueLetterServiceTest {
             assertThat(response.getInvalidSummonedJurors()).hasSize(1);
             assertThat(response.getInvalidSummonedJurors().getFirst().getJurorNumber()).isEqualTo("222222222");
             assertThat(response.getInvalidSummonedJurors().getFirst().getPostcode()).isEqualTo("BB2 2BB");
-            assertThat(response.getInvalidSummonedJurors().getFirst().getErrorMessage()).isEqualTo("Juror has responded");
+            assertThat(response.getInvalidSummonedJurors().getFirst().getErrorMessage())
+                .isEqualTo("Juror has responded");
             verifyNoMoreInteractions(printDataService, bulkPrintDataRepository, poolHistoryService,
                                      jurorHistoryService);
         }

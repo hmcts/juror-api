@@ -42,7 +42,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor_ =@Autowired)
+@AllArgsConstructor(onConstructor_ = @Autowired)
 @SuppressWarnings({"PMD.CouplingBetweenObjects"})
 public class AutoAssignmentServiceImpl implements AutoAssignmentService {
 

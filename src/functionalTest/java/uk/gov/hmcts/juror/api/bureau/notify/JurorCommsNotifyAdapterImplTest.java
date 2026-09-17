@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "notify.disabled=false")
 class JurorCommsNotifyAdapterImplTest extends ContainerTest {
 
@@ -41,7 +41,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
     private static final String LAST_NAME_VAL = "LASTNAME";
     private static final String EMAIL_ADDRESS = "email address";
     private static final String COURT_PHONE = "COURTPHONE";
-
 
     private static final String DEV_CONFIRM_JUROR_ENG_TEMPLATE_ID = "ADBEDBA6-0955-4D79-AC75-5DD2306A10F4";
     //CONFRIM_JUROR_ENG
@@ -93,7 +92,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
         final String firstName = "Harry";
         final String lastName = "Test";
 
-
         final Juror juror = Juror.builder()
             .jurorNumber(jurorNumber)
             .title(title)
@@ -106,7 +104,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
             .juror(juror)
             .build();
 
-
         Map<String, String> payLoad = new ConcurrentHashMap<>();
         payLoad.put(JUROR_NUM, jurorNumber);
         payLoad.put("courtname", COURT_NAME);
@@ -115,7 +112,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
         payLoad.put(FIRST_NAME_VAL, VALUE_2);
         payLoad.put(LAST_NAME_VAL, VALUE_2);
         payLoad.put(EMAIL_ADDRESS, JUROR_EMAIL);
-
 
         final EmailNotification emailNotification = utilJurorCommsService.createEmailNotification(
             jurorPool,
@@ -131,7 +127,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
         validateEmailNotification(emailNotificationReceipt, jurorNumber, DEV_CONFIRM_JUROR_ENG_TEMPLATE_ID);
     }
 
-
     @Test
     @Timeout(9)
     void sendCommsEmailSendToCourtEmailEnglish() {
@@ -140,7 +135,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
         final String title = "Mr";
         final String firstName = "Harry";
         final String lastName = "Test";
-
 
         final Juror juror = Juror.builder()
             .jurorNumber(jurorNumber)
@@ -153,7 +147,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
         final JurorPool jurorPool = JurorPool.builder()
             .juror(juror)
             .build();
-
 
         Map<String, String> payLoad = new ConcurrentHashMap<>();
         payLoad.put(JUROR_NUM, jurorNumber);
@@ -186,7 +179,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
         final EmailNotificationReceipt emailNotificationReceipt = notifyAdapter.sendCommsEmail(emailNotification);
 
         validateEmailNotification(emailNotificationReceipt, jurorNumber, DEV_SENT_TO_COURT_EMAIL_ENG_TEMPLATE_ID);
-
     }
 
     private void validateEmailNotification(EmailNotificationReceipt emailNotificationReceipt, String jurorNumber,
@@ -202,7 +194,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
             .isNotEmpty()
             .contains(jurorNumber);
     }
-
 
     @Test
     @Timeout(9)
@@ -225,7 +216,6 @@ class JurorCommsNotifyAdapterImplTest extends ContainerTest {
         final JurorPool jurorPool = JurorPool.builder()
             .juror(juror)
             .build();
-
 
         Map<String, String> payLoad = new ConcurrentHashMap<>();
         payLoad.put(JUROR_NUM, jurorNumber);

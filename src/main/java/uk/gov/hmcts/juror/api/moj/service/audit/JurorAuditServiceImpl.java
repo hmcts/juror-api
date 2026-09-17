@@ -18,7 +18,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class JurorAuditServiceImpl implements JurorAuditService {
 
     @PersistenceContext

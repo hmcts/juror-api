@@ -76,7 +76,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.DateUtils.getWorkingDaysBetween;
     "PMD.GodClass",
     "PMD.CouplingBetweenObjects" //false positive
 })
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class TrialServiceImpl implements TrialService {
 
     private final TrialRepository trialRepository;

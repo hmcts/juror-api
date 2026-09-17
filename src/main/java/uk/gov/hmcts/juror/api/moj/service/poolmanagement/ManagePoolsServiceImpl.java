@@ -98,10 +98,10 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
                 owner
             ), null);
         }
-        if (courtLocations.stream().noneMatch(courtLocation -> courtLocation.getLocCode().equals(locCode))) {
-            throw new MojException.NotFound("Court location: %s - No records found for the given location code".formatted(
-                locCode
-            ), null);
+        if (courtLocations.stream()
+            .noneMatch(courtLocation -> courtLocation.getLocCode().equals(locCode))) {
+            final String message = "Court location: %s - No records found for the given location code";
+            throw new MojException.NotFound(message.formatted(locCode), null);
         }
     }
 

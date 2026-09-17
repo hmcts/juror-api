@@ -27,7 +27,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "notify.disabled=false")
 class NotifyAdapterModTest extends ContainerTest {
 
@@ -98,9 +98,7 @@ class NotifyAdapterModTest extends ContainerTest {
         final EmailNotificationReceipt emailNotificationReceipt = notifyAdapterMod.sendCommsEmail(emailNotification);
 
         validateEmailReceipt(emailNotificationReceipt, templateId, jurorNumber);
-
     }
-
 
     @Test
     @Timeout(9)
@@ -154,10 +152,9 @@ class NotifyAdapterModTest extends ContainerTest {
         assertThat(emailNotification.getRecipientEmail()).as(RECIPIENT_EMAIL_IS_CORRECT).isEqualTo(jurorEmail);
 
         // send the email
-        final EmailNotificationReceipt emailNotificationReceipt =  notifyAdapterMod.sendCommsEmail(emailNotification);
+        final EmailNotificationReceipt emailNotificationReceipt = notifyAdapterMod.sendCommsEmail(emailNotification);
 
         validateEmailReceipt(emailNotificationReceipt, templateId, jurorNumber);
-
     }
 
     private void validateEmailReceipt(EmailNotificationReceipt emailNotificationReceipt, String templateId,
@@ -173,6 +170,4 @@ class NotifyAdapterModTest extends ContainerTest {
             .isNotEmpty()
             .contains(jurorNumber);
     }
-
-
 }

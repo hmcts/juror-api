@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Configuration
 @Slf4j
 @Component
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @SuppressWarnings({"PMD.CouplingBetweenObjects"})
 public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService {
 

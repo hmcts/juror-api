@@ -96,7 +96,8 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
             assertThat(responseBody.getTableData().getData().size()).isEqualTo(7);
 
             // Data rows should be in date order ascending
-            DigitalSummonsRepliesReportResponse.TableData.DataRow row = responseBody.getTableData().getData().getFirst();
+            DigitalSummonsRepliesReportResponse.TableData.DataRow row =
+                responseBody.getTableData().getData().getFirst();
             assertThat(row.getDate().toString()).isEqualTo("2025-08-04");
             assertThat(row.getNoOfReplies()).isEqualTo(2);
             row = responseBody.getTableData().getData().get(1);
@@ -140,7 +141,8 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
             assertThat(responseBody.getTableData().getData()).isNotNull();
             assertThat(responseBody.getTableData().getData().size()).isEqualTo(1);
 
-            DigitalSummonsRepliesReportResponse.TableData.DataRow row = responseBody.getTableData().getData().getFirst();
+            DigitalSummonsRepliesReportResponse.TableData.DataRow row =
+                responseBody.getTableData().getData().getFirst();
             assertThat(row.getDate().toString()).isEqualTo("2025-09-01");
             assertThat(row.getNoOfReplies()).isEqualTo(1);
         }

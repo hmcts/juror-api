@@ -85,7 +85,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils.unboxOptionalReco
 })
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor_ ={@Autowired})
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     public static final String CANNOT_UPDATE_CONFIRMED_JUROR = "Cannot update confirmed juror ";

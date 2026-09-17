@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @Service
 public class ValidationServiceImpl implements ValidationService {
 

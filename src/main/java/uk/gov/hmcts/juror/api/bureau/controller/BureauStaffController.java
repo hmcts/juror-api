@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(value = "/api/v1/bureau/staff", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Bureau Staff API", description = "Bureau operations relating to staff members")
-@AllArgsConstructor(onConstructor_ =@Autowired)
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class BureauStaffController {
 
     private final UserService userService;

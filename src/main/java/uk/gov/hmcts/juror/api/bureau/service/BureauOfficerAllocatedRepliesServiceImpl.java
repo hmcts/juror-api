@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-@AllArgsConstructor(onConstructor_ =@Autowired)
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class BureauOfficerAllocatedRepliesServiceImpl implements BureauOfficerAllocatedRepliesService {
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
 

@@ -22,7 +22,7 @@ import uk.gov.hmcts.juror.api.config.public1.PublicJwtAuthenticationProvider;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
-@AllArgsConstructor(onConstructor_ =@Autowired)
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class SecurityConfig {
     private final PublicJwtAuthenticationProvider publicJwtAuthenticationProvider;
 

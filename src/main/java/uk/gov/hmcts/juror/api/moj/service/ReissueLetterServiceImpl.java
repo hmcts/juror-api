@@ -513,7 +513,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             .contains(letter.getFormCode())) {
             Juror juror = jurorRepository.findByJurorNumber(letter.getJurorNumber());
             if (!isDbdSummonsReminderEligible(juror)) {
-                throw new MojException.BadRequest("DBD summons reminder not valid for juror %s".formatted(letter.getJurorNumber()), null);
+                throw new MojException.BadRequest("DBD summons reminder not valid for juror %s".formatted(
+                    letter.getJurorNumber()), null);
             }
         }
     }

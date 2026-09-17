@@ -860,7 +860,8 @@ public class CourtLetterServiceTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((WithdrawalLetterData) data.getFirst(), jurorNumber, dateDisqualified, "Age", poolNumber, null);
+            validateData((WithdrawalLetterData) data.getFirst(), jurorNumber, dateDisqualified, "Age", poolNumber,
+                         null);
         }
 
         @Test

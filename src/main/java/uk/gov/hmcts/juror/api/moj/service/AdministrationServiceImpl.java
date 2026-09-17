@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class AdministrationServiceImpl implements AdministrationService {
 
     private final EntityManager entityManager;

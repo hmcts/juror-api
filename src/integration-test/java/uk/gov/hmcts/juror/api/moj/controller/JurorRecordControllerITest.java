@@ -4033,7 +4033,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.ELIGIBLE));
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
-            final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).getFirst();
+            final JurorPool jurorPool = jurorPoolRepository
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true).getFirst();
 
             assertEquals(PoliceCheck.ELIGIBLE, juror.getPoliceCheck(),
                          "Police check should match");
@@ -4086,7 +4087,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.INELIGIBLE));
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
-            final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).getFirst();
+            final JurorPool jurorPool = jurorPoolRepository
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true).getFirst();
 
             assertEquals(PoliceCheck.INELIGIBLE, juror.getPoliceCheck(),
                          "Police check should match");
@@ -4139,7 +4141,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
-            final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).getFirst();
+            final JurorPool jurorPool = jurorPoolRepository
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true).getFirst();
 
             assertEquals(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR, juror.getPoliceCheck(),
                          "Police check should match");
@@ -4179,7 +4182,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED));
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
-            final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).getFirst();
+            final JurorPool jurorPool = jurorPoolRepository
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true).getFirst();
 
             assertEquals(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED, juror.getPoliceCheck(),
                          "Police check should match");

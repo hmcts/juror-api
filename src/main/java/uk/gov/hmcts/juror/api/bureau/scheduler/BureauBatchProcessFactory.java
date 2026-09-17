@@ -17,7 +17,7 @@ import uk.gov.hmcts.juror.api.juror.service.MessagesServiceImpl;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class BureauBatchProcessFactory {
     private final JurorCommsLetterServiceImpl jurorCommsLetterService;
     private final JurorCommsWeeklyInfoServiceImpl jurorCommsWeeklyInfoService;

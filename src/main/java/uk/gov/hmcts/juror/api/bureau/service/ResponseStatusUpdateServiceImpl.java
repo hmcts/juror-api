@@ -42,7 +42,7 @@ import java.util.Objects;
  */
 @Service
 @Slf4j
-@RequiredArgsConstructor(onConstructor_ =@Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.GodClass"})
 public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateService, ResponseMergeService {
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
