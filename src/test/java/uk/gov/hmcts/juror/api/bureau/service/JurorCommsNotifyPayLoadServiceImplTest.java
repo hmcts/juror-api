@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import uk.gov.hmcts.juror.api.config.JurorPortalProperties;
 import uk.gov.hmcts.juror.api.config.WelshDayMonthTranslationConfig;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
@@ -14,9 +15,11 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateFieldMod;
 import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMapperMod;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.repository.CourtEmailAttachmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.NotifyTemplateFieldRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
 
 import java.time.LocalDate;
@@ -82,6 +85,15 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
 
     @Mock
     private WelshCourtLocationRepository welshCourtLocationRepository;
+
+    @Mock
+    private JurorPortalProperties jurorPortalProperties;
+
+    @Mock
+    private CourtEmailAttachmentRepository courtEmailAttachmentRepository;
+
+    @Mock
+    private ApplicationSettingService applicationSettingService;
 
     @InjectMocks
     private JurorCommsNotifyPayLoadServiceImpl service;

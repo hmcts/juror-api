@@ -179,9 +179,9 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             filterByCourtAndDate(courtLocation.getOwner(), courtLocation.getLocCode(), attendanceDate)).iterator();
 
         int deferralsUsed = processDeferredJurors(deferralsRequested, courtDeferralsIterator, newPool, userId);
-        log.info(String.format("%d deferred juror(s) have been added to Pool: %s", deferralsUsed,
+        log.info("{} deferred juror(s) have been added to Pool: {}", deferralsUsed,
                                newPool.getPoolNumber()
-        ));
+        );
         return deferralsUsed;
     }
 
@@ -885,9 +885,9 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             .findAll(filterByCourtAndDate(owner, courtLocation, attendanceDate)).iterator();
 
         int deferralsUsed = processBureauDeferredJurors(bureauDeferrals, bureauDeferralsIterator, newPool, userId);
-        log.info(String.format("%d deferred juror(s) have been added to Pool: %s", deferralsUsed,
+        log.info("{} deferred juror(s) have been added to Pool: {}", deferralsUsed,
                                newPool.getPoolNumber()
-        ));
+        );
         return deferralsUsed;
     }
 
@@ -1070,11 +1070,11 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 printConfirmationLetter(deferralRecord.getOwner(), newJurorPool);
 
                 deferralsUsed++;
-                log.trace(String.format("Deferred juror %s has been added to Pool: %s",
-                                        deferralRecord.getJurorNumber(), newPool.getPoolNumber()));
+                log.trace("Deferred juror {} has been added to Pool: {}",
+                                        deferralRecord.getJurorNumber(), newPool.getPoolNumber());
             } catch (PoolRequestException.PoolRequestNotFound | CurrentlyDeferredException.DeferredMemberNotFound ex) {
-                log.error(String.format("An error occurred trying to add a deferred juror to the new Pool: %s - %s",
-                                        newPool.getPoolNumber(), ex.getMessage()));
+                log.error("An error occurred trying to add a deferred juror to the new Pool: {} - {}",
+                                        newPool.getPoolNumber(), ex.getMessage());
             }
         }
         return deferralsUsed;
@@ -1099,8 +1099,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     private JurorPool addMemberToNewPool(PoolRequest poolRequest, JurorPool deferredPoolMember,
                                          String userId, int sequenceNumber) {
-        log.trace(String.format("Create new Pool Member from deferred juror: %s",
-                                deferredPoolMember.getJurorNumber()));
+        log.trace("Create new Pool Member from deferred juror: {}",
+                                deferredPoolMember.getJurorNumber());
         JurorPool newJurorPool = new JurorPool();
         BeanUtils.copyProperties(deferredPoolMember, newJurorPool, "pool");
 
@@ -1122,8 +1122,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     private JurorPool addPostponedMemberToNewPool(PoolRequest poolRequest, JurorPool deferredPoolMember,
                                                   String userId, int sequenceNumber) {
-        log.trace(String.format("Create new Pool Member from postponed juror: %s",
-                                deferredPoolMember.getJurorNumber()));
+        log.trace("Create new Pool Member from postponed juror: {}",
+                                deferredPoolMember.getJurorNumber());
 
         JurorPool newJurorPool = new JurorPool();
         BeanUtils.copyProperties(deferredPoolMember, newJurorPool, "pool");
@@ -1162,7 +1162,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     private void removeMemberFromOldPool(JurorPool deferredPoolMember) {
-        log.trace(String.format("Logically delete Juror: %s", deferredPoolMember.getJurorNumber()));
+        log.trace("Logically delete Juror: {}", deferredPoolMember.getJurorNumber());
 
         PoolRequest oldPoolRequest = getPoolRequest(deferredPoolMember.getPoolNumber());
         poolRequestRepository.saveAndFlush(oldPoolRequest);
@@ -1171,8 +1171,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
         jurorPoolRepository.saveAndFlush(deferredPoolMember);
 
-        log.info(String.format("Deferred Juror: %s is no longer active in Pool: %s",
-                               deferredPoolMember.getJurorNumber(), deferredPoolMember.getPoolNumber()));
+        log.info("Deferred Juror: {} is no longer active in Pool: {}",
+                               deferredPoolMember.getJurorNumber(), deferredPoolMember.getPoolNumber());
     }
 
     private PoolRequest getPoolRequest(String poolNumber) {
@@ -1193,8 +1193,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     private void updateJurorHistory(JurorPool deferredJuror, String poolNumber, String userId, String info,
                                     HistoryCodeMod historyCode) {
-        log.trace(String.format("Update Participant History table for deferred juror: %s",
-                                deferredJuror.getJurorNumber()));
+        log.trace("Update Participant History table for deferred juror: {}",
+                                deferredJuror.getJurorNumber());
 
         JurorHistory jurorHistory = JurorHistory.builder()
             .historyCode(historyCode)
@@ -1208,7 +1208,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     }
 
     private void createMovedDeferredJurorPool(String jurorNumber, PoolRequest newPool, JurorPool currentJurorPool) {
-        log.trace(String.format("Create new Pool Member from deferred juror: %s", jurorNumber));
+        log.trace("Create new Pool Member from deferred juror: {}", jurorNumber);
         JurorPool newJurorPool = new JurorPool();
         BeanUtils.copyProperties(currentJurorPool, newJurorPool, "pool");
 

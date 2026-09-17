@@ -391,11 +391,11 @@ public class UserServiceImpl implements UserService {
             .collect(Collectors.toList());
 
         if (missingResponses.isEmpty()) {
-            log.warn(String.format(
-                "%s juror responses could not be found when trying to "
-                    + "retrieve staff assignments: %s", 0,
+            log.warn(
+                "{} juror responses could not be found when trying to retrieve staff assignments: {}",
+                0,
                 String.join(", ", missingResponses)
-            ));
+            );
         }
 
         // process list of responses

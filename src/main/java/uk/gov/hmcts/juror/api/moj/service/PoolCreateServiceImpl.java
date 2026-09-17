@@ -271,7 +271,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     @Override
     public void createPool(BureauJwtPayload payload, PoolCreateRequestDto poolCreateRequestDto) {
 
-        final boolean isDigitalByDefault = isIsDigitalByDefault(poolCreateRequestDto.getCatchmentArea());
+        final boolean isDigitalByDefault = isIsDigitalByDefault(poolCreateRequestDto.getPoolNumber());
 
         // Get a list of Pool members from voters table
         List<JurorPool> jurorPools =
@@ -294,7 +294,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     @Transactional
     public void summonAdditionalCitizens(BureauJwtPayload payload, PoolAdditionalSummonsDto poolAdditionalSummonsDto) {
 
-        final boolean isDigitalByDefault = isIsDigitalByDefault(poolAdditionalSummonsDto.getCatchmentArea());
+        final boolean isDigitalByDefault = isIsDigitalByDefault(poolAdditionalSummonsDto.getPoolNumber());
 
         //populate the PoolCreateRequestDto object from poolAdditionalSummonsDto
         PoolCreateRequestDto poolCreateRequestDto = setupPoolRequestDto(poolAdditionalSummonsDto);
@@ -315,7 +315,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         processBureauDeferrals(poolCreateRequestDto, userId, false);
     }
 
-    private boolean isIsDigitalByDefault(String locCode) {
+    private boolean isIsDigitalByDefault(String poolNumber) {
+        PoolRequest poolRequest = RepositoryUtils.retrieveFromDatabase(poolNumber, poolRequestRepository);
+        final String locCode = poolRequest.getCourtLocation().getLocCode();
+
         CourtLocation courtLocation = courtLocationRepository.findByLocCode(locCode)
             .orElseThrow(() -> new MojException.BusinessRuleViolation(
                 "Court location not found for locCode: " + locCode,
@@ -351,7 +354,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     private void updatePoolHistory(String poolNumber, String userId, int numSelected,
                                    String suffix, HistoryCode historyCode) {
-        log.debug(String.format("Update Pool History table for Pool : %s", poolNumber));
+        log.debug("Update Pool History table for Pool : {}", poolNumber);
         poolHistoryRepository.save(new PoolHistory(poolNumber, LocalDateTime.now(), historyCode, userId,
             numSelected + suffix));
     }
@@ -366,10 +369,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         List<JurorHistory> historyList = new ArrayList<>();
         jurorPools.forEach(jurorPool -> {
             Juror juror = jurorPool.getJuror();
-            log.trace(String.format(
-                "Update Participant History table for newly summoned juror: %s",
+            log.trace(
+                "Update Participant History table for newly summoned juror: {}",
                 juror.getJurorNumber()
-            ));
+            );
 
             JurorHistory.JurorHistoryBuilder jurorHistBuilder = JurorHistory.builder()
                 .jurorNumber(juror.getJurorNumber())
@@ -899,7 +902,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         Optional<CoronerPool> coronerPoolOpt = coronerPoolRepository.findById(poolNumber);
 
         if (coronerPoolOpt.isEmpty()) {
-            log.debug(String.format("Unable to find a coroner pool with number %s", poolNumber));
+            log.debug("Unable to find a coroner pool with number {}", poolNumber);
             throw new PoolCreateException.CoronerPoolNotFound(poolNumber);
         }
 

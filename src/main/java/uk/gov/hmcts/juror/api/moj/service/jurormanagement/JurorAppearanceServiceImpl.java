@@ -355,8 +355,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     @Override
     @Transactional
     public String updateAttendanceDate(UpdateAttendanceDateDto request) {
-        log.trace(String.format("Entered method: updateAttendanceDate(). There are %s jurors to update",
-            request.getJurorNumbers().size()));
+        log.trace("Entered method: updateAttendanceDate(). There are {} jurors to update",
+            request.getJurorNumbers().size());
 
         BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         List<JurorPool> updatedJurorPools = new ArrayList<>();
@@ -366,8 +366,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                 payload.getOwner(), jurorNumber, request.getPoolNumber(), Boolean.TRUE);
 
             if (jurorPool == null) {
-                log.trace(String.format("In method: updateAttendanceDate().  No juror pool found matching criteria "
-                    + "for juror %s.  Attendance date not updated", jurorNumber));
+                log.trace("In method: updateAttendanceDate().  No juror pool found matching criteria "
+                    + "for juror {}.  Attendance date not updated", jurorNumber);
             } else if (List.of(IJurorStatus.RESPONDED, IJurorStatus.PANEL, IJurorStatus.JUROR)
                 .contains(jurorPool.getStatus().getStatus())) {
 
@@ -377,8 +377,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
                 updatedJurorPools.add(jurorPool);
             } else {
-                log.trace(String.format("In method: updateAttendanceDate(). Status is %s for juror %s. "
-                    + "Attendance date not updated", jurorPool.getStatus().getStatus(), jurorNumber));
+                log.trace("In method: updateAttendanceDate(). Status is {} for juror {}. "
+                    + "Attendance date not updated", jurorPool.getStatus().getStatus(), jurorNumber);
             }
         }
 
@@ -527,8 +527,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         BureauJwtPayload payload = SecurityUtil.getActiveUsersBureauPayload();
         String locationCode = request.getLocationCode();
 
-        log.debug(String.format("User %s is retrieving jurors to dismiss for court location %s", payload.getLogin(),
-            locationCode));
+        log.debug("User {} is retrieving jurors to dismiss for court location {}", payload.getLogin(), locationCode);
 
         CourtLocationUtils.validateAccessToCourtLocation(locationCode, payload.getOwner(), courtLocationRepository);
 
@@ -569,8 +568,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         final LocalDate nonAttendanceDate = request.getNonAttendanceDate();
         SecurityUtil.validateIsLocCode(locationCode);
 
-        log.debug(String.format("User %s is adding a non attendance day for juror %s", payload.getLogin(),
-            request.getJurorNumber()));
+        log.debug("User {} is adding a non attendance day for juror {}", payload.getLogin(),
+            request.getJurorNumber());
 
         CourtLocation courtLocation = courtLocationRepository.findByLocCode(locationCode).orElseThrow(
             () -> new MojException.NotFound("Court location " + locationCode + " not found", null)
@@ -609,8 +608,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             final LocalDate nonAttendanceDate = request.getNonAttendanceDate();
             SecurityUtil.validateIsLocCode(locationCode);
 
-            log.debug(String.format("User %s is adding a non-attendance day for juror %s", payload.getLogin(),
-                                    request.getJurorNumber()));
+            log.debug("User {} is adding a non-attendance day for juror {}", payload.getLogin(),
+                                    request.getJurorNumber());
 
             final CourtLocation courtLocation = courtLocationRepository.findByLocCode(locationCode).orElseThrow(
                 () -> new MojException.NotFound("Court location " + locationCode + " not found", null)
@@ -1100,7 +1099,9 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
     }
 
     private void checkConfirmedAttendance(String jurorNumber, Appearance appearance) {
-        if (!Arrays.asList(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
+        if (appearance.isAppearanceConfirmed()
+            || appearance.getAttendanceAuditNumber() != null
+            || !Arrays.asList(AppearanceStage.CHECKED_IN, AppearanceStage.CHECKED_OUT)
             .contains(appearance.getAppearanceStage())) {
             throw new MojException.BusinessRuleViolation(CANNOT_UPDATE_CONFIRMED_JUROR + jurorNumber,
                                                          CANNOT_UPDATE_CONFIRMED_ATTENDANCE);
@@ -1216,6 +1217,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
             Appearance appearance = retrieveExistingAppearanceDetails(commonData.getLocationCode(),
                 jurorNumber, commonData.getAttendanceDate());
+
+            checkConfirmedAttendance(jurorNumber, appearance);
 
             // validate and update the relevant values in the Appearance entity based on the attendance status
             validateCheckInNotNull(appearance.getTimeIn());

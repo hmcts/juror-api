@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
@@ -59,6 +60,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 
 @SuppressWarnings({
     "PMD.ExcessiveImports",
@@ -95,6 +97,10 @@ public class JurorManagementServiceImplTest {
     private JurorDigitalResponseRepositoryMod digitalResponseRepositoryMod;
     @Mock
     private JurorPaperResponseRepositoryMod paperResponseRepositoryMod;
+    @Mock
+    private EmailDataService emailDataService;
+    @Mock
+    private FeatureFlagConfigurationProperties featureFlags;
 
     @InjectMocks
     JurorManagementServiceImpl jurorManagementService;
@@ -206,6 +212,57 @@ public class JurorManagementServiceImplTest {
         verify(jurorHistoryService, times(1))
             .createReassignPoolMemberHistory(any(), any(), any());
         verify(printDataService, times(1)).printConfirmationLetter(any());
+        verify(emailDataService, never()).emailConfirmationLetter(any());
+    }
+
+    @Test
+    public void test_reassignJuror_bureauUser_digitalByDefaultEligible_sendsConfirmationEmail() {
+
+        PoolRequest poolRequest = new PoolRequest();
+        poolRequest.setPoolNumber("123456789");
+        poolRequest.setOwner("400");
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setName("Test Court");
+        courtLocation.setLocCode("415");
+        courtLocation.setOwner("400");
+        courtLocation.setDigitalByDefault(true);
+        poolRequest.setCourtLocation(courtLocation);
+
+        JurorStatus jurorStatus = new JurorStatus();
+        jurorStatus.setStatus(2);
+        jurorStatus.setStatusDesc("Responded");
+
+        List<JurorPool> poolMemberList = createJurorPoolList("400");
+        poolMemberList.forEach(poolMember -> {
+            poolMember.setStatus(jurorStatus);
+            poolMember.getJuror().setPoliceCheck(PoliceCheck.ELIGIBLE);
+            poolMember.getJuror().setDigitalByDefault(true);
+            poolMember.getJuror().setDbdPreference("Digital");
+        });
+
+        when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(true);
+        when(poolRequestRepository.findByPoolNumber(anyString())).thenReturn(Optional.of(poolRequest));
+        when(courtLocationRepository.findByLocCode(anyString())).thenReturn(Optional.of(courtLocation));
+        when(jurorStatusRepository.findById(anyInt())).thenReturn(Optional.of(jurorStatus));
+        when(jurorPoolRepository.findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(
+            anyList(), anyBoolean(), anyString(), any(CourtLocation.class),
+            anyList())).thenReturn(poolMemberList);
+        when(jurorPoolRepository.findByOwnerAndJurorJurorNumberAndPoolPoolNumber(anyString(),
+            anyString(), anyString()))
+            .thenReturn(Optional.empty());
+        when(poolMemberSequenceService
+            .getPoolMemberSequenceNumber(anyString())).thenReturn(1);
+
+        BureauJwtPayload payload = TestUtils.mockBureauUser();
+        JurorManagementRequestDto jurorManagementRequestDto = createValidJurorManagementRequestDto();
+
+        ReassignPoolMembersResultDto
+            jurorsMoved = jurorManagementService.reassignJurors(payload, jurorManagementRequestDto);
+
+        Assertions.assertThat(jurorsMoved.getNumberReassigned()).isEqualTo(1);
+
+        verify(emailDataService, times(1)).emailConfirmationLetter(any());
+        verify(printDataService, never()).printConfirmationLetter(any());
     }
 
     @Test

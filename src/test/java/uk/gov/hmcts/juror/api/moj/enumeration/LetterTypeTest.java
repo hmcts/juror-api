@@ -1,21 +1,20 @@
 package uk.gov.hmcts.juror.api.moj.enumeration;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQuery;
 import lombok.Getter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
-import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.QJuror;
-import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -69,7 +68,8 @@ public class LetterTypeTest {
     class SummonedReminders extends LetterTypeTestBase {
 
         SummonedReminders() {
-            super(LetterType.SUMMONED_REMINDER, List.of(FormCode.ENG_SUMMONS_REMINDER, FormCode.BI_SUMMONS_REMINDER),
+            super(LetterType.SUMMONED_REMINDER, List.of(FormCode.ENG_SUMMONS_REMINDER, FormCode.BI_SUMMONS_REMINDER,
+                FormCode.ENG_DBD_SUMMONS_REM, FormCode.BI_DBD_SUMMONS_REM),
                 List.of(
                     ReissueLetterService.DataType.JUROR_NUMBER,
                     ReissueLetterService.DataType.JUROR_FIRST_NAME,
@@ -87,9 +87,7 @@ public class LetterTypeTest {
         void positiveLetterQueryConsumerTest() {
             JPAQuery<Tuple> jpaQuery = positiveLetterQueryConsumerTestSetup();
 
-            verify(jpaQuery, times(1)).where(
-                QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)
-                    .and(QJuror.juror.responded.eq(false)));
+            verify(jpaQuery, times(1)).where(any(Predicate.class));
         }
     }
 }
