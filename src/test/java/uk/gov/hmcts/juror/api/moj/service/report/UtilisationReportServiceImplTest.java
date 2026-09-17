@@ -138,7 +138,7 @@ class UtilisationReportServiceImplTest {
         }
 
         private void validateTableHeadings(DailyUtilisationReportResponse.TableData tableData) {
-            DailyUtilisationReportResponse.TableData.Heading tablHeading = tableData.getHeadings().get(0);
+            DailyUtilisationReportResponse.TableData.Heading tablHeading = tableData.getHeadings().getFirst();
             assertThat(tablHeading.getId()).isEqualTo(DATE);
             assertThat(tablHeading.getName()).isEqualTo("Date");
             assertThat(tablHeading.getDataType()).isEqualTo("LocalDate");
@@ -262,7 +262,7 @@ class UtilisationReportServiceImplTest {
         }
 
         private void validateTableHeadings(DailyUtilisationReportJurorsResponse.TableData tableData) {
-            DailyUtilisationReportJurorsResponse.TableData.Heading tableHeading = tableData.getHeadings().get(0);
+            DailyUtilisationReportJurorsResponse.TableData.Heading tableHeading = tableData.getHeadings().getFirst();
             assertThat(tableHeading.getId()).isEqualTo(JUROR);
             assertThat(tableHeading.getName()).isEqualTo("Juror");
             assertThat(tableHeading.getDataType()).isEqualTo("String");
@@ -377,7 +377,7 @@ class UtilisationReportServiceImplTest {
         }
 
         private void validateTableHeadings(MonthlyUtilisationReportResponse.TableData tableData) {
-            MonthlyUtilisationReportResponse.TableData.Heading tableHeading = tableData.getHeadings().get(0);
+            MonthlyUtilisationReportResponse.TableData.Heading tableHeading = tableData.getHeadings().getFirst();
             assertThat(tableHeading.getId()).isEqualTo(MONTH);
             assertThat(tableHeading.getName()).isEqualTo("Month");
             assertThat(tableHeading.getDataType()).isEqualTo("String");
@@ -497,7 +497,7 @@ class UtilisationReportServiceImplTest {
         }
 
         private void validateTableHeadings(MonthlyUtilisationReportResponse.TableData tableData) {
-            MonthlyUtilisationReportResponse.TableData.Heading tableHeading = tableData.getHeadings().get(0);
+            MonthlyUtilisationReportResponse.TableData.Heading tableHeading = tableData.getHeadings().getFirst();
             assertThat(tableHeading.getId()).isEqualTo(MONTH);
             assertThat(tableHeading.getName()).isEqualTo("Month");
             assertThat(tableHeading.getDataType()).isEqualTo("String");
@@ -675,7 +675,7 @@ class UtilisationReportServiceImplTest {
 
 
         private void checkTableHeadings(CourtUtilisationStatsReportResponse.TableData tableData) {
-            CourtUtilisationStatsReportResponse.TableData.Heading tableHeading = tableData.getHeadings().get(0);
+            CourtUtilisationStatsReportResponse.TableData.Heading tableHeading = tableData.getHeadings().getFirst();
             assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.COURT_NAME);
             assertThat(tableHeading.getName()).isEqualTo("Court Name");
             assertThat(tableHeading.getDataType()).isEqualTo("String");
@@ -744,7 +744,7 @@ class UtilisationReportServiceImplTest {
         }
 
         private void checkTableHeadings(OverdueUtilisationReportResponse.TableData tableData) {
-            OverdueUtilisationReportResponse.TableData.Heading tableHeading = tableData.getHeadings().get(0);
+            OverdueUtilisationReportResponse.TableData.Heading tableHeading = tableData.getHeadings().getFirst();
             assertThat(tableHeading.getId()).isEqualTo(UtilisationReportService.TableHeading.COURT_NAME);
             assertThat(tableHeading.getName()).isEqualTo("Court Name");
             assertThat(tableHeading.getDataType()).isEqualTo("String");

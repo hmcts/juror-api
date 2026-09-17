@@ -278,7 +278,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     }
 
     private void createPoolHistory(ReissueLetterRequestDto request, Map<String, Integer> poolLetterCount) {
-        if (SUMMONS_REMINDER_CODES.contains(request.getLetters().get(0).getFormCode())) {
+        if (SUMMONS_REMINDER_CODES.contains(request.getLetters().getFirst().getFormCode())) {
 
             poolLetterCount.keySet().forEach(poolNumber -> {
                 // create pool history
@@ -398,7 +398,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         String login = SecurityUtil.getActiveUsersBureauPayload().getLogin();
         log.debug("Delete pending letter request received from Bureau user {}", login);
 
-        ReissueLetterRequestDto.ReissueLetterRequestData letter = request.getLetters().get(0);
+        ReissueLetterRequestDto.ReissueLetterRequestData letter = request.getLetters().getFirst();
         if (!deletePendingLetter(letter.getJurorNumber(), letter.getFormCode())) {
             throw new MojException.NotFound(
                 "Bulk print data not found for juror %s " + letter.getJurorNumber(),
@@ -496,8 +496,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             Optional<BulkPrintData> printedLetter = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(
                 letter.getJurorNumber(), letter.getFormCode(), letter.getDatePrinted());
             if (printedLetter.isEmpty()) {
-                throw new MojException.NotFound(String.format("Bulk print data not found for juror %s ",
-                                                              letter.getJurorNumber()), null);
+                throw new MojException.NotFound("Bulk print data not found for juror %s ".formatted(
+                    letter.getJurorNumber()), null);
             }
         }
 
@@ -505,16 +505,15 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         bulkPrintDataRepository.findByJurorNumberFormCodeAndPending(
                 letter.getJurorNumber(), letter.getFormCode())
             .ifPresent(bulkPrintData -> {
-                throw new MojException.BadRequest(String.format("Letter already pending reprint for juror %s",
-                                                                letter.getJurorNumber()), null);
+                throw new MojException.BadRequest("Letter already pending reprint for juror %s".formatted(
+                    letter.getJurorNumber()), null);
             });
 
         if (Set.of(FormCode.ENG_DBD_SUMMONS_REM.getCode(), FormCode.BI_DBD_SUMMONS_REM.getCode())
             .contains(letter.getFormCode())) {
             Juror juror = jurorRepository.findByJurorNumber(letter.getJurorNumber());
             if (!isDbdSummonsReminderEligible(juror)) {
-                throw new MojException.BadRequest(String.format(
-                    "DBD summons reminder not valid for juror %s", letter.getJurorNumber()), null);
+                throw new MojException.BadRequest("DBD summons reminder not valid for juror %s".formatted(letter.getJurorNumber()), null);
             }
         }
     }

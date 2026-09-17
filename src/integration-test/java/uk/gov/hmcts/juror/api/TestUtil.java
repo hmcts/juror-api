@@ -166,10 +166,10 @@ public final class TestUtil {
                 accumulatedValues.add(value.toString());
             }
 
-            if (value instanceof JSONObject) {
-                accumulatedValues.addAll(getValuesInJsonObject((JSONObject) value, key));
-            } else if (value instanceof JSONArray) {
-                accumulatedValues.addAll(getValuesInJsonArray((JSONArray) value, key));
+            if (value instanceof JSONObject object) {
+                accumulatedValues.addAll(getValuesInJsonObject(object, key));
+            } else if (value instanceof JSONArray array) {
+                accumulatedValues.addAll(getValuesInJsonArray(array, key));
             }
         }
         return accumulatedValues;
@@ -178,10 +178,10 @@ public final class TestUtil {
     public static List<String> getValuesInJsonArray(JSONArray jsonArray, String key) {
         List<String> accumulatedValues = new ArrayList<>();
         for (Object obj : jsonArray) {
-            if (obj instanceof JSONArray) {
-                accumulatedValues.addAll(getValuesInJsonArray((JSONArray) obj, key));
-            } else if (obj instanceof JSONObject) {
-                accumulatedValues.addAll(getValuesInJsonObject((JSONObject) obj, key));
+            if (obj instanceof JSONArray array) {
+                accumulatedValues.addAll(getValuesInJsonArray(array, key));
+            } else if (obj instanceof JSONObject object) {
+                accumulatedValues.addAll(getValuesInJsonObject(object, key));
             }
         }
         return accumulatedValues;

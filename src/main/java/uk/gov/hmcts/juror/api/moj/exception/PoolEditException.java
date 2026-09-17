@@ -17,7 +17,7 @@ public class PoolEditException extends RuntimeException {
     public static class CannotEditPoolRequest extends PoolEditException {
 
         public CannotEditPoolRequest(String login, String poolNumber) {
-            super(String.format("Pool Request is not editable, User: %s, Pool Number: %s", login, poolNumber));
+            super("Pool Request is not editable, User: %s, Pool Number: %s".formatted(login, poolNumber));
         }
     }
 
@@ -28,7 +28,7 @@ public class PoolEditException extends RuntimeException {
     public static class InvalidNoUpdate extends PoolEditException {
 
         public InvalidNoUpdate(String login, String poolNumber, String updatedType) {
-            super(String.format("Edit for %s is invalid, User: %s, Pool Number: %s", updatedType, login, poolNumber));
+            super("Edit for %s is invalid, User: %s, Pool Number: %s".formatted(updatedType, login, poolNumber));
         }
     }
 
@@ -39,7 +39,7 @@ public class PoolEditException extends RuntimeException {
     public static class PoolExtendRecordNotFound extends PoolEditException {
 
         public PoolExtendRecordNotFound(String poolNumber) {
-            super(String.format("Unable to retrieve the total required value for the pool: %s", poolNumber));
+            super("Unable to retrieve the total required value for the pool: %s".formatted(poolNumber));
         }
 
     }

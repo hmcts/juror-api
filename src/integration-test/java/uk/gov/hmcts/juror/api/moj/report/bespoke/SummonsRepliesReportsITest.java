@@ -96,7 +96,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
             assertThat(responseBody.getTableData().getData().size()).isEqualTo(7);
 
             // Data rows should be in date order ascending
-            DigitalSummonsRepliesReportResponse.TableData.DataRow row = responseBody.getTableData().getData().get(0);
+            DigitalSummonsRepliesReportResponse.TableData.DataRow row = responseBody.getTableData().getData().getFirst();
             assertThat(row.getDate().toString()).isEqualTo("2025-08-04");
             assertThat(row.getNoOfReplies()).isEqualTo(2);
             row = responseBody.getTableData().getData().get(1);
@@ -140,7 +140,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
             assertThat(responseBody.getTableData().getData()).isNotNull();
             assertThat(responseBody.getTableData().getData().size()).isEqualTo(1);
 
-            DigitalSummonsRepliesReportResponse.TableData.DataRow row = responseBody.getTableData().getData().get(0);
+            DigitalSummonsRepliesReportResponse.TableData.DataRow row = responseBody.getTableData().getData().getFirst();
             assertThat(row.getDate().toString()).isEqualTo("2025-09-01");
             assertThat(row.getNoOfReplies()).isEqualTo(1);
         }
@@ -262,7 +262,7 @@ class SummonsRepliesReportsITest extends AbstractIntegrationTest {
 
             // Only Bureau users will be listed, so 3 rows expected
             // first row should be for MOD Test Bureau
-            ResponsesCompletedReportResponse.TableData.DataRow row = dataRows.get(0);
+            ResponsesCompletedReportResponse.TableData.DataRow row = dataRows.getFirst();
             AssertionsForClassTypes.assertThat(row.getStaffName()).isEqualTo("MODTESTBUREAU");
             AssertionsForClassTypes.assertThat(row.getDailyTotals()).isEqualTo(List.of(0, 0, 0, 0, 0, 0, 0, 0, 0,
                                                    4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0));

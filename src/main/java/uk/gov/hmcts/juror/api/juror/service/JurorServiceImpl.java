@@ -52,7 +52,7 @@ import java.util.List;
  */
 @Service
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ =@Autowired)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class JurorServiceImpl implements JurorService {
     private static final String DIGITAL_BY_DEFAULT_FEATURE_FLAG = "digital-by-default";

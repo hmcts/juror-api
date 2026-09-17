@@ -42,7 +42,7 @@ import java.util.Objects;
  */
 @Service
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ =@Autowired)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.GodClass"})
 public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateService, ResponseMergeService {
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
@@ -178,9 +178,9 @@ public class ResponseStatusUpdateServiceImpl implements ResponseStatusUpdateServ
         if (specialNeedsByJurorNumber.size() > 1) {
             jurorDetails.getJuror().setReasonableAdjustmentCode("M");
         } else if (specialNeedsByJurorNumber.size() == 1
-            && specialNeedsByJurorNumber.get(0) != null) {
+            && specialNeedsByJurorNumber.getFirst() != null) {
             jurorDetails.getJuror()
-                .setReasonableAdjustmentCode(specialNeedsByJurorNumber.get(0).getReasonableAdjustment().getCode());
+                .setReasonableAdjustmentCode(specialNeedsByJurorNumber.getFirst().getReasonableAdjustment().getCode());
         }
         jurorDetails.getJuror()
             .setReasonableAdjustmentMessage(updatedDetails.getReasonableAdjustmentsArrangements());

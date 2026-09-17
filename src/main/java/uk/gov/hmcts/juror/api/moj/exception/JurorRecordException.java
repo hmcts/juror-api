@@ -31,7 +31,7 @@ public class JurorRecordException extends RuntimeException {
     public static class NoJurorRecordFound extends JurorRecordException {
 
         public NoJurorRecordFound(String jurorNumber) {
-            super(String.format("Unable to find a valid Juror record for juror number: %s", jurorNumber));
+            super("Unable to find a valid Juror record for juror number: %s".formatted(jurorNumber));
         }
 
     }
@@ -43,7 +43,7 @@ public class JurorRecordException extends RuntimeException {
     public static class InvalidJurorNumber extends JurorRecordException {
 
         public InvalidJurorNumber(String jurorNumber) {
-            super(String.format("Invalid Juror number found: %s", jurorNumber));
+            super("Invalid Juror number found: %s".formatted(jurorNumber));
         }
 
     }

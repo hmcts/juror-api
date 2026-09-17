@@ -165,7 +165,7 @@ public class CourtLetterServiceTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((DeferralLetterData) data.get(0), jurorNumber, deferredTo, reason, poolNumber, null);
+            validateData((DeferralLetterData) data.getFirst(), jurorNumber, deferredTo, reason, poolNumber, null);
         }
 
         @Test
@@ -203,7 +203,7 @@ public class CourtLetterServiceTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((DeferralLetterData) data.get(0), jurorNumber, deferredTo, reason, poolNumber,
+            validateData((DeferralLetterData) data.getFirst(), jurorNumber, deferredTo, reason, poolNumber,
                 datePrinted.toLocalDate());
         }
 
@@ -262,7 +262,7 @@ public class CourtLetterServiceTest {
 
         private void validateHeadings(List<String> headings) {
             Assertions.assertThat(headings.size()).isEqualTo(9);
-            Assertions.assertThat(headings.get(0)).isEqualToIgnoringCase("Juror number");
+            Assertions.assertThat(headings.getFirst()).isEqualToIgnoringCase("Juror number");
             Assertions.assertThat(headings.get(1)).isEqualToIgnoringCase("First name");
             Assertions.assertThat(headings.get(2)).isEqualToIgnoringCase("Last name");
             Assertions.assertThat(headings.get(3)).isEqualToIgnoringCase("Postcode");
@@ -275,7 +275,7 @@ public class CourtLetterServiceTest {
 
         private void validateDataTypes(List<String> dataTypes) {
             Assertions.assertThat(dataTypes.size()).isEqualTo(9);
-            Assertions.assertThat(dataTypes.get(0)).isEqualToIgnoringCase("string");
+            Assertions.assertThat(dataTypes.getFirst()).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(1)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(2)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(3)).isEqualToIgnoringCase("string");
@@ -345,7 +345,7 @@ public class CourtLetterServiceTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((NonDeferralLetterData) data.get(0), jurorNumber, statusDesc, dateRefused, reasonDesc,
+            validateData((NonDeferralLetterData) data.getFirst(), jurorNumber, statusDesc, dateRefused, reasonDesc,
                 poolNumber, null);
         }
 
@@ -391,7 +391,7 @@ public class CourtLetterServiceTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((NonDeferralLetterData) data.get(0), jurorNumber, statusDesc, dateRefused, reasonDesc,
+            validateData((NonDeferralLetterData) data.getFirst(), jurorNumber, statusDesc, dateRefused, reasonDesc,
                 poolNumber,
                 datePrinted.toLocalDate());
         }
@@ -453,7 +453,7 @@ public class CourtLetterServiceTest {
 
         private void validateHeadings(List<String> headings) {
             Assertions.assertThat(headings.size()).isEqualTo(9);
-            Assertions.assertThat(headings.get(0)).isEqualToIgnoringCase("Juror number");
+            Assertions.assertThat(headings.getFirst()).isEqualToIgnoringCase("Juror number");
             Assertions.assertThat(headings.get(1)).isEqualToIgnoringCase("First name");
             Assertions.assertThat(headings.get(2)).isEqualToIgnoringCase("Last name");
             Assertions.assertThat(headings.get(3)).isEqualToIgnoringCase("Postcode");
@@ -466,7 +466,7 @@ public class CourtLetterServiceTest {
 
         private void validateDataTypes(List<String> dataTypes) {
             Assertions.assertThat(dataTypes.size()).isEqualTo(9);
-            Assertions.assertThat(dataTypes.get(0)).isEqualToIgnoringCase("string");
+            Assertions.assertThat(dataTypes.getFirst()).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(1)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(2)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(3)).isEqualToIgnoringCase("string");
@@ -528,7 +528,7 @@ public class CourtLetterServiceTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((ExcusalLetterData) data.get(0), jurorNumber, deferredTo, reason, poolNumber, null);
+            validateData((ExcusalLetterData) data.getFirst(), jurorNumber, deferredTo, reason, poolNumber, null);
         }
 
         @Test
@@ -566,7 +566,7 @@ public class CourtLetterServiceTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((ExcusalLetterData) data.get(0), jurorNumber, dateExcused, reason, poolNumber,
+            validateData((ExcusalLetterData) data.getFirst(), jurorNumber, dateExcused, reason, poolNumber,
                 datePrinted.toLocalDate());
         }
 
@@ -619,7 +619,7 @@ public class CourtLetterServiceTest {
 
         private void validateHeadings(List<String> headings) {
             Assertions.assertThat(headings.size()).isEqualTo(9);
-            Assertions.assertThat(headings.get(0)).isEqualToIgnoringCase("Juror number");
+            Assertions.assertThat(headings.getFirst()).isEqualToIgnoringCase("Juror number");
             Assertions.assertThat(headings.get(1)).isEqualToIgnoringCase("First name");
             Assertions.assertThat(headings.get(2)).isEqualToIgnoringCase("Last name");
             Assertions.assertThat(headings.get(3)).isEqualToIgnoringCase("Postcode");
@@ -632,7 +632,7 @@ public class CourtLetterServiceTest {
 
         private void validateDataTypes(List<String> dataTypes) {
             Assertions.assertThat(dataTypes.size()).isEqualTo(9);
-            Assertions.assertThat(dataTypes.get(0)).isEqualToIgnoringCase("string");
+            Assertions.assertThat(dataTypes.getFirst()).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(1)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(2)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(3)).isEqualToIgnoringCase("string");
@@ -693,7 +693,7 @@ public class CourtLetterServiceTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((NonDeferralLetterData) data.get(0), jurorNumber, deferredTo, reason, poolNumber, null);
+            validateData((NonDeferralLetterData) data.getFirst(), jurorNumber, deferredTo, reason, poolNumber, null);
         }
 
         @Test
@@ -731,7 +731,7 @@ public class CourtLetterServiceTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((NonDeferralLetterData) data.get(0), jurorNumber, dateExcused, reason, poolNumber,
+            validateData((NonDeferralLetterData) data.getFirst(), jurorNumber, dateExcused, reason, poolNumber,
                 datePrinted.toLocalDate());
         }
 
@@ -785,7 +785,7 @@ public class CourtLetterServiceTest {
 
         private void validateHeadings(List<String> headings) {
             Assertions.assertThat(headings.size()).isEqualTo(9);
-            Assertions.assertThat(headings.get(0)).isEqualToIgnoringCase("Juror number");
+            Assertions.assertThat(headings.getFirst()).isEqualToIgnoringCase("Juror number");
             Assertions.assertThat(headings.get(1)).isEqualToIgnoringCase("First name");
             Assertions.assertThat(headings.get(2)).isEqualToIgnoringCase("Last name");
             Assertions.assertThat(headings.get(3)).isEqualToIgnoringCase("Postcode");
@@ -798,7 +798,7 @@ public class CourtLetterServiceTest {
 
         private void validateDataTypes(List<String> dataTypes) {
             Assertions.assertThat(dataTypes.size()).isEqualTo(9);
-            Assertions.assertThat(dataTypes.get(0)).isEqualToIgnoringCase("string");
+            Assertions.assertThat(dataTypes.getFirst()).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(1)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(2)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(3)).isEqualToIgnoringCase("string");
@@ -860,7 +860,7 @@ public class CourtLetterServiceTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((WithdrawalLetterData) data.get(0), jurorNumber, dateDisqualified, "Age", poolNumber, null);
+            validateData((WithdrawalLetterData) data.getFirst(), jurorNumber, dateDisqualified, "Age", poolNumber, null);
         }
 
         @Test
@@ -897,7 +897,7 @@ public class CourtLetterServiceTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((WithdrawalLetterData) data.get(0), jurorNumber, dateDisqualified, "Age", poolNumber,
+            validateData((WithdrawalLetterData) data.getFirst(), jurorNumber, dateDisqualified, "Age", poolNumber,
                 datePrinted.toLocalDate());
         }
 
@@ -950,7 +950,7 @@ public class CourtLetterServiceTest {
 
         private void validateHeadings(List<String> headings) {
             Assertions.assertThat(headings.size()).isEqualTo(9);
-            Assertions.assertThat(headings.get(0)).isEqualToIgnoringCase("Juror number");
+            Assertions.assertThat(headings.getFirst()).isEqualToIgnoringCase("Juror number");
             Assertions.assertThat(headings.get(1)).isEqualToIgnoringCase("First name");
             Assertions.assertThat(headings.get(2)).isEqualToIgnoringCase("Last name");
             Assertions.assertThat(headings.get(3)).isEqualToIgnoringCase("Postcode");
@@ -963,7 +963,7 @@ public class CourtLetterServiceTest {
 
         private void validateDataTypes(List<String> dataTypes) {
             Assertions.assertThat(dataTypes.size()).isEqualTo(9);
-            Assertions.assertThat(dataTypes.get(0)).isEqualToIgnoringCase("string");
+            Assertions.assertThat(dataTypes.getFirst()).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(1)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(2)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(3)).isEqualToIgnoringCase("string");
@@ -1026,7 +1026,7 @@ public class CourtLetterServiceTest {
             assertDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            assertData((CertificateOfAttendanceLetterData) data.get(0), jurorNumber,
+            assertData((CertificateOfAttendanceLetterData) data.getFirst(), jurorNumber,
                 startDate, completionDate, poolNumber, null);
 
             CourtLetterSearchCriteria searchCriteria = new CourtLetterSearchCriteria(jurorNumber, null,
@@ -1071,7 +1071,7 @@ public class CourtLetterServiceTest {
             assertDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            assertData((CertificateOfAttendanceLetterData) data.get(0), jurorNumber,
+            assertData((CertificateOfAttendanceLetterData) data.getFirst(), jurorNumber,
                 startDate, completionDate, poolNumber, datePrinted.toLocalDate());
 
             CourtLetterSearchCriteria searchCriteria = new CourtLetterSearchCriteria(jurorNumber, null,
@@ -1143,7 +1143,7 @@ public class CourtLetterServiceTest {
 
         private void assertHeadings(List<String> headings) {
             Assertions.assertThat(headings.size()).isEqualTo(7);
-            Assertions.assertThat(headings.get(0)).isEqualToIgnoringCase("Juror number");
+            Assertions.assertThat(headings.getFirst()).isEqualToIgnoringCase("Juror number");
             Assertions.assertThat(headings.get(1)).isEqualToIgnoringCase("First name");
             Assertions.assertThat(headings.get(2)).isEqualToIgnoringCase("Last name");
             Assertions.assertThat(headings.get(3)).isEqualToIgnoringCase("Pool Number");
@@ -1155,7 +1155,7 @@ public class CourtLetterServiceTest {
 
         private void assertDataTypes(List<String> dataTypes) {
             Assertions.assertThat(dataTypes.size()).isEqualTo(7);
-            Assertions.assertThat(dataTypes.get(0)).isEqualToIgnoringCase("string");
+            Assertions.assertThat(dataTypes.getFirst()).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(1)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(2)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(3)).isEqualToIgnoringCase("string");

@@ -175,7 +175,7 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
         StandardTableData data = response.getTableData().getData();
         assertThat(data).isNotEmpty();
 
-        LinkedHashMap<String, Object> firstRow = data.get(0);
+        LinkedHashMap<String, Object> firstRow = data.getFirst();
         String courtName = (String) firstRow.get("court_location_name_and_code");
 
         assertThat(courtName).isNotNull();
@@ -237,7 +237,7 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
         StandardTableData data = response.getTableData().getData();
         assertThat(data).isNotEmpty();
 
-        LinkedHashMap<String, Object> firstRow = data.get(0);
+        LinkedHashMap<String, Object> firstRow = data.getFirst();
         String oldLimit = (String) firstRow.get("old_limit");
         String newLimit = (String) firstRow.get("new_limit");
 
@@ -271,7 +271,7 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
         StandardTableData data = response.getTableData().getData();
         assertThat(data).isNotEmpty();
 
-        LinkedHashMap<String, Object> firstRow = data.get(0);
+        LinkedHashMap<String, Object> firstRow = data.getFirst();
         LocalDate changeDate = (LocalDate) firstRow.get("change_date");
 
         assertThat(changeDate).isNotNull();
@@ -304,7 +304,7 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
         StandardTableData data = response.getTableData().getData();
         assertThat(data).isNotEmpty();
 
-        LinkedHashMap<String, Object> firstRow = data.get(0);
+        LinkedHashMap<String, Object> firstRow = data.getFirst();
         Long revisionNumber = (Long) firstRow.get("revision_number");
 
         assertThat(revisionNumber).isNotNull();
@@ -337,7 +337,7 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
         StandardTableData data = response.getTableData().getData();
         assertThat(data).isNotEmpty();
 
-        LinkedHashMap<String, Object> firstRow = data.get(0);
+        LinkedHashMap<String, Object> firstRow = data.getFirst();
         String courtName = (String) firstRow.get("court_location_name_and_code");
 
         assertThat(courtName).isEqualTo("CHESTER, CROWN COURT (415)");
@@ -384,7 +384,7 @@ class ManualAdjustmentsToExpenseLimitsReportTest {
         assertThat(data).isNotEmpty();
 
 
-        LinkedHashMap<String, Object> firstRow = data.get(0);
+        LinkedHashMap<String, Object> firstRow = data.getFirst();
         Long firstRevision = (Long) firstRow.get("revision_number");
         assertThat(firstRevision).isEqualTo(12347L);
     }

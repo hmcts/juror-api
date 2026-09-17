@@ -205,14 +205,14 @@ class ErDashboardServiceImplTest {
                      "Expected local authority statuses list size to be 3");
 
         ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus laStatus =
-                                                                responseDto.getLocalAuthorityStatuses().get(0);
+                                                                responseDto.getLocalAuthorityStatuses().getFirst();
         assertEquals("LA1", laStatus.getLocalAuthorityCode(),
                         "Expected first local authority code in response to be LA1");
         assertEquals("Local Authority 1", laStatus.getLocalAuthorityName(),
                         "Expected first local authority name in response to be Local Authority 1");
         assertEquals(UploadStatus.UPLOADED, laStatus.getUploadStatus(),
                         "Expected first local authority upload status in response to be UPLOADED");
-        assertEquals(fileUploadStatuses.get(0).getLastUploadDate(), laStatus.getLastUploadDate(),
+        assertEquals(fileUploadStatuses.getFirst().getLastUploadDate(), laStatus.getLastUploadDate(),
                         "Expected first local authority last upload date in response to match the last upload"
                             + " date from the file upload status");
 
@@ -286,7 +286,7 @@ class ErDashboardServiceImplTest {
 
         assertEquals(3, responseDto.getLocalAuthorities().size(),
                      "Expected local authorities list size to be 3");
-        LocalAuthoritiesResponseDto.LocalAuthorityData la = responseDto.getLocalAuthorities().get(0);
+        LocalAuthoritiesResponseDto.LocalAuthorityData la = responseDto.getLocalAuthorities().getFirst();
         assertEquals("LA1", la.getLocalAuthorityCode(),
                      "Expected first local authority code in response to be LA1");
         assertEquals("Local Authority 1", la.getLocalAuthorityName(),

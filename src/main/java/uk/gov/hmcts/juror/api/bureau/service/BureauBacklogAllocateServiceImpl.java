@@ -39,7 +39,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ =@Autowired)
 public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateService {
 
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;

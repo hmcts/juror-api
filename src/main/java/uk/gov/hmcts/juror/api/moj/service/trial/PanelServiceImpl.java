@@ -54,7 +54,7 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
     "PMD.GodClass",
     "PMD.CouplingBetweenObjects"
 })
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ =@Autowired)
 public class PanelServiceImpl implements PanelService {
 
     private static final int MAX_PANEL_MEMBERS = 1000;
@@ -127,7 +127,7 @@ public class PanelServiceImpl implements PanelService {
 
     private void createPanelValidationChecks(int numberRequested, String trialNumber, String courtLocationCode) {
         if (!trialRepository.existsByTrialNumberAndCourtLocationLocCode(trialNumber, courtLocationCode)) {
-            throw new MojException.NotFound(String.format("Cannot find trial with number: %s for court location %s",
+            throw new MojException.NotFound("Cannot find trial with number: %s for court location %s".formatted(
                 trialNumber, courtLocationCode), null);
         }
 
@@ -149,7 +149,7 @@ public class PanelServiceImpl implements PanelService {
             courtLocationCode);
 
         if (trial.isEmpty()) {
-            throw new MojException.NotFound(String.format("Cannot find trial with number: %s for court location %s",
+            throw new MojException.NotFound("Cannot find trial with number: %s for court location %s".formatted(
                 trialNumber, courtLocationCode), null);
         }
 

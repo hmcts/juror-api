@@ -38,7 +38,7 @@ import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.D
 
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ =@Autowired)
 public class ResponseDisqualifyServiceImpl implements ResponseDisqualifyService {
 
     private final JurorDigitalResponseRepositoryMod responseRepository;

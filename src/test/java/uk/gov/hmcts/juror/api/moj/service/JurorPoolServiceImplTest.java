@@ -170,7 +170,7 @@ class JurorPoolServiceImplTest {
             assertThat(responses).isNotNull();
             List<JurorDetailsDto> data = responses.getData();
             assertThat(data).isNotNull().hasSize(3);
-            JurorDetailsDto response1 = data.get(0);
+            JurorDetailsDto response1 = data.getFirst();
             assertThat(response1).isNotNull();
             assertThat(response1.getJurorNumber()).isEqualTo("111111111");
             assertThat(response1.getPoolNumber()).isEqualTo("2222222222");

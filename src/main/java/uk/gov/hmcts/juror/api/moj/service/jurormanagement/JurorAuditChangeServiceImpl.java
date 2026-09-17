@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
+@RequiredArgsConstructor(onConstructor_ ={@Autowired})
 @SuppressWarnings("PMD.TooManyMethods")
 public class JurorAuditChangeServiceImpl implements JurorAuditChangeService {
     private final ContactCodeRepository contactCodeRepository;

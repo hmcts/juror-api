@@ -54,14 +54,11 @@ public final class CourtLocationUtils {
     }
 
     public static LocalDate checkWeekend(LocalDate date) {
-        switch (date.getDayOfWeek()) {
-            case SATURDAY:
-                return date.plusDays(2);
-            case SUNDAY:
-                return date.plusDays(1);
-            default:
-                return date;
-        }
+        return switch (date.getDayOfWeek()) {
+            case SATURDAY -> date.plusDays(2);
+            case SUNDAY -> date.plusDays(1);
+            default -> date;
+        };
     }
 
 }

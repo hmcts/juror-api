@@ -19,7 +19,7 @@ import java.util.Map;
 import static java.util.stream.Collectors.groupingBy;
 
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ =@Autowired)
 public class AdministrationHolidaysServiceImpl implements AdministrationHolidaysService {
 
     private final HolidaysRepository holidaysRepository;

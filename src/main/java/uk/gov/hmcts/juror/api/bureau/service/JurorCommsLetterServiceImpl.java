@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ =@Autowired)
 public class JurorCommsLetterServiceImpl implements BureauProcessService {
 
 
@@ -175,7 +175,7 @@ public class JurorCommsLetterServiceImpl implements BureauProcessService {
                 "updatePrintFiles: Unable to update printFiles after Juror Comms sent.");
         }
 
-        bulkPrintDataDetail.get(0).setDigitalComms(true);
+        bulkPrintDataDetail.getFirst().setDigitalComms(true);
         bulkPrintDataRepository.saveAll(bulkPrintDataDetail);
         log.trace("Saving updated printFile.digital_comms - updatePrintFiles .....");
 

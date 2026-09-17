@@ -23,7 +23,7 @@ import java.util.Optional;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_ATTENDANCE_RECORD;
 
 @Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ =@Autowired)
 public class JurorPoolServiceImpl implements JurorPoolService {
 
     private final PoolRequestRepository poolRequestRepository;
@@ -88,7 +88,7 @@ public class JurorPoolServiceImpl implements JurorPoolService {
         if (jurorPool.isPresent()) {
             return jurorPool.orElse(null);
         } else if (!jurorPools.isEmpty()) {
-            return jurorPools.get(0);
+            return jurorPools.getFirst();
         }
 
         throw new MojException.BusinessRuleViolation("Invalid attendance record found for Juror: "
@@ -132,7 +132,7 @@ public class JurorPoolServiceImpl implements JurorPoolService {
             return jurorPools.stream()
                 .filter(jurorPool -> SecurityUtil.BUREAU_OWNER.equals(jurorPool.getOwner()))
                 .findFirst()
-                .orElse(jurorPools.get(0));
+                .orElse(jurorPools.getFirst());
         }
         throw new MojException.NotFound("Juror not found: " + jurorNumber, null);
     }

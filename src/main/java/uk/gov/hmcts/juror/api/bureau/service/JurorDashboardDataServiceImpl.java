@@ -30,7 +30,7 @@ import java.util.List;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ =@Autowired)
 public class JurorDashboardDataServiceImpl implements JurorDashboardDataService {
 
 

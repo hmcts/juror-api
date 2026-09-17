@@ -88,7 +88,7 @@ import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.TITLE;
 
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ =@Autowired)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.TooManyMethods"})
 public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     private final ContactCodeRepository contactCodeRepository;

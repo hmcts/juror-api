@@ -85,7 +85,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils.unboxOptionalReco
 })
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__({@Autowired}))
+@RequiredArgsConstructor(onConstructor_ ={@Autowired})
 public class JurorAppearanceServiceImpl implements JurorAppearanceService {
 
     public static final String CANNOT_UPDATE_CONFIRMED_JUROR = "Cannot update confirmed juror ";
@@ -253,7 +253,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             throw new MojException.InternalServerError("Error checking in juror " + jurorNumber, null);
         }
 
-        return appearanceDataList.get(0);
+        return appearanceDataList.getFirst();
     }
 
 
@@ -386,7 +386,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             jurorPoolRepository.saveAllAndFlush(updatedJurorPools);
         }
 
-        String message = String.format("Attendance date updated for %s juror(s)", updatedJurorPools.size());
+        String message = "Attendance date updated for %s juror(s)".formatted(updatedJurorPools.size());
         log.trace("Exiting method: updateAttendanceDate(). " + message);
         return message;
     }
@@ -398,7 +398,7 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
         final String jurorNumber = request.getJurorNumber();
 
         log.debug(
-            String.format("User %s is modifying attendance for juror %s", SecurityUtil.getActiveLogin(), jurorNumber));
+            "User %s is modifying attendance for juror %s".formatted(SecurityUtil.getActiveLogin(), jurorNumber));
 
         // get the appearance record if it exists
         Appearance appearance =
@@ -619,9 +619,8 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
             // Validation: Check if the juror has the SUMMONED status
             if (jurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
                 throw new MojException.BusinessRuleViolation(
-                    String.format(
-                        "Juror %s cannot have a non-attendance status while in the SUMMONED status",
-                         request.getJurorNumber()),
+                    "Juror %s cannot have a non-attendance status while in the SUMMONED status".formatted(
+                        request.getJurorNumber()),
                     MojException.BusinessRuleViolation.ErrorCode.INVALID_JUROR_STATUS
                 );
             }
@@ -1127,12 +1126,12 @@ public class JurorAppearanceServiceImpl implements JurorAppearanceService {
                     JurorStatusGroup.ALL);
 
             // if the status of the juror is panelled, the record is not updated.
-            if (currentAttendanceDetails.get(0).getJurorStatus().equals(IJurorStatus.PANEL)) {
+            if (currentAttendanceDetails.getFirst().getJurorStatus().equals(IJurorStatus.PANEL)) {
                 AttendanceDetailsResponse.Details details = AttendanceDetailsResponse.Details.builder()
                     .jurorNumber(jurorNumber)
-                    .firstName(currentAttendanceDetails.get(0).getFirstName())
-                    .lastName(currentAttendanceDetails.get(0).getLastName())
-                    .jurorStatus(currentAttendanceDetails.get(0).getJurorStatus())
+                    .firstName(currentAttendanceDetails.getFirst().getFirstName())
+                    .lastName(currentAttendanceDetails.getFirst().getLastName())
+                    .jurorStatus(currentAttendanceDetails.getFirst().getJurorStatus())
                     .build();
                 panelledJurors.add(details);
             } else {

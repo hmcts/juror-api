@@ -76,7 +76,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.DateUtils.getWorkingDaysBetween;
     "PMD.GodClass",
     "PMD.CouplingBetweenObjects" //false positive
 })
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ =@Autowired)
 public class TrialServiceImpl implements TrialService {
 
     private final TrialRepository trialRepository;
@@ -419,10 +419,10 @@ public class TrialServiceImpl implements TrialService {
                 trialNumber,
                 locCode
             )
-            .orElseThrow(() -> new MojException.NotFound(String.format(CANNOT_FIND_TRIAL_ERROR_MESSAGE,
-                                                                       trialNumber,
-                                                                       locCode
-            ), null));
+            .orElseThrow(() -> new MojException.NotFound(CANNOT_FIND_TRIAL_ERROR_MESSAGE.formatted(
+            trialNumber,
+            locCode
+        ), null));
     }
 
     private void validateSourceTrialPanel(JurorPanelReassignRequestDto request, List<Panel> panelList,

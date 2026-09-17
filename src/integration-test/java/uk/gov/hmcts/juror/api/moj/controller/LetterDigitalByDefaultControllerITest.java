@@ -120,15 +120,15 @@ class LetterDigitalByDefaultControllerITest extends AbstractIntegrationTest {
 
         List<List<Object>> data = responseDto.getData();
         assertThat(data).hasSize(1);
-        assertThat(data.get(0)).hasSize(13);
-        assertThat(data.get(0).get(0)).isEqualTo(jurorNumber);
-        assertThat(data.get(0).get(4)).isEqualTo("Deferred");
-        assertThat(data.get(0).get(7)).isEqualTo(LocalDate.now().toString());
-        assertThat(data.get(0).get(8)).isEqualTo(true);
-        assertThat(data.get(0).get(9)).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
-        assertThat(data.get(0).get(10)).isEqualTo("EMAIL");
-        assertThat(data.get(0).get(11)).isEqualTo("EMAIL");
-        assertThat(data.get(0).get(12)).isEqualTo("PENDING");
+        assertThat(data.getFirst()).hasSize(13);
+        assertThat(data.getFirst().getFirst()).isEqualTo(jurorNumber);
+        assertThat(data.getFirst().get(4)).isEqualTo("Deferred");
+        assertThat(data.getFirst().get(7)).isEqualTo(LocalDate.now().toString());
+        assertThat(data.getFirst().get(8)).isEqualTo(true);
+        assertThat(data.getFirst().get(9)).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
+        assertThat(data.getFirst().get(10)).isEqualTo("EMAIL");
+        assertThat(data.getFirst().get(11)).isEqualTo("EMAIL");
+        assertThat(data.getFirst().get(12)).isEqualTo("PENDING");
     }
 
     @Test

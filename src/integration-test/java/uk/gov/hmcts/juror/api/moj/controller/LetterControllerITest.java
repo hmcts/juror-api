@@ -596,7 +596,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 List<?> responseBody = response.getBody().getData();
                 assertThat(responseBody.size()).isEqualTo(1);
 
-                DeferralLetterData data = (DeferralLetterData) responseBody.get(0);
+                DeferralLetterData data = (DeferralLetterData) responseBody.getFirst();
                 assertThat(data.getJurorNumber()).isEqualTo(jurorNumber);
                 assertThat(data.getFirstName()).isEqualTo("TEST_TWO");
                 assertThat(data.getLastName()).isEqualTo("PERSON");
@@ -670,7 +670,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 List<?> responseBody = response.getBody().getData();
                 assertThat(responseBody.size()).isEqualTo(1);
 
-                DeferralLetterData data = (DeferralLetterData) responseBody.get(0);
+                DeferralLetterData data = (DeferralLetterData) responseBody.getFirst();
                 assertThat(data.getJurorNumber()).isEqualTo("555555567");
                 assertThat(data.getFirstName()).isEqualTo("TEST_SEVEN");
                 assertThat(data.getLastName()).isEqualTo("PERSON");
@@ -1013,7 +1013,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 List<?> responseBody = response.getBody().getData();
                 assertThat(responseBody.size()).isEqualTo(1);
 
-                NonDeferralLetterData data = (NonDeferralLetterData) responseBody.get(0);
+                NonDeferralLetterData data = (NonDeferralLetterData) responseBody.getFirst();
                 assertThat(data.getJurorNumber()).isEqualTo(jurorNumber);
                 assertThat(data.getFirstName()).isEqualTo("TEST_SEVEN");
                 assertThat(data.getLastName()).isEqualTo("PERSON");
@@ -1087,7 +1087,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 List<?> responseBody = response.getBody().getData();
                 assertThat(responseBody.size()).isEqualTo(1);
 
-                NonDeferralLetterData data = (NonDeferralLetterData) responseBody.get(0);
+                NonDeferralLetterData data = (NonDeferralLetterData) responseBody.getFirst();
                 assertThat(data.getJurorNumber()).isEqualTo("555555566");
                 assertThat(data.getFirstName()).isEqualTo("TEST_SIX");
                 assertThat(data.getLastName()).isEqualTo("PERSON");
@@ -1442,7 +1442,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<?> responseBody = response.getBody().getData();
             assertThat(responseBody.size()).isEqualTo(1);
 
-            ExcusalLetterData data = (ExcusalLetterData) responseBody.get(0);
+            ExcusalLetterData data = (ExcusalLetterData) responseBody.getFirst();
             assertThat(data.getJurorNumber()).isEqualTo(jurorNumber);
             assertThat(data.getFirstName()).isEqualTo("FNAME2");
             assertThat(data.getLastName()).isEqualTo("LNAME2");
@@ -1514,7 +1514,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<?> responseBody = response.getBody().getData();
             assertThat(responseBody.size()).isEqualTo(1);
 
-            ExcusalLetterData data = (ExcusalLetterData) responseBody.get(0);
+            ExcusalLetterData data = (ExcusalLetterData) responseBody.getFirst();
             assertThat(data.getJurorNumber()).isEqualTo(jurorNumber);
             assertThat(data.getFirstName()).isEqualTo("FNAME3");
             assertThat(data.getLastName()).isEqualTo("LNAME3");
@@ -1750,20 +1750,20 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(13);
-            assertThat(data.get(0).get(0)).isEqualTo("555555561");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(3)).isEqualTo("CH1 2AN");
-            assertThat(data.get(0).get(4)).isEqualTo("Deferred");
-            assertThat(data.get(0).get(5)).isEqualTo(LocalDate.now().plusDays(10).toString());
-            assertThat(data.get(0).get(6)).isEqualTo("Moved from area");
-            assertThat(data.get(0).get(7)).isEqualTo(LocalDate.now().minusDays(1).toString());
-            assertThat(data.get(0).get(8)).isEqualTo(true);
-            assertThat(data.get(0).get(9)).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
-            assertThat(data.get(0).get(10)).isEqualTo("LETTER");
-            assertThat(data.get(0).get(11)).isEqualTo("LETTER");
-            assertThat(data.get(0).get(12)).isNull();
+            assertThat(data.getFirst().size()).isEqualTo(13);
+            assertThat(data.getFirst().getFirst()).isEqualTo("555555561");
+            assertThat(data.getFirst().get(1)).isEqualTo("FNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(2)).isEqualTo("LNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(3)).isEqualTo("CH1 2AN");
+            assertThat(data.getFirst().get(4)).isEqualTo("Deferred");
+            assertThat(data.getFirst().get(5)).isEqualTo(LocalDate.now().plusDays(10).toString());
+            assertThat(data.getFirst().get(6)).isEqualTo("Moved from area");
+            assertThat(data.getFirst().get(7)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.getFirst().get(8)).isEqualTo(true);
+            assertThat(data.getFirst().get(9)).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
+            assertThat(data.getFirst().get(10)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(11)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(12)).isNull();
         }
 
         @Test
@@ -1798,20 +1798,20 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(2);  // deferred twice
-            assertThat(data.get(0).size()).isEqualTo(13);
-            assertThat(data.get(0).get(0)).isEqualTo("555555567");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(3)).isEqualTo("CH1 2AN");
-            assertThat(data.get(0).get(4)).isEqualTo("Deferred");
-            assertThat(data.get(0).get(5)).isEqualTo(LocalDate.now().plusDays(20).toString());
-            assertThat(data.get(0).get(6)).isEqualTo("Childcare");
-            assertThat(data.get(0).get(7)).isEqualTo(LocalDate.now().minusDays(1).toString());
-            assertThat(data.get(0).get(8)).isEqualTo(true);
-            assertThat(data.get(0).get(9)).isEqualTo(FormCode.BI_DEFERRAL.getCode());
-            assertThat(data.get(0).get(10)).isEqualTo("LETTER");
-            assertThat(data.get(0).get(11)).isEqualTo("LETTER");
-            assertThat(data.get(0).get(12)).isNull();
+            assertThat(data.getFirst().size()).isEqualTo(13);
+            assertThat(data.getFirst().getFirst()).isEqualTo("555555567");
+            assertThat(data.getFirst().get(1)).isEqualTo("FNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(2)).isEqualTo("LNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(3)).isEqualTo("CH1 2AN");
+            assertThat(data.getFirst().get(4)).isEqualTo("Deferred");
+            assertThat(data.getFirst().get(5)).isEqualTo(LocalDate.now().plusDays(20).toString());
+            assertThat(data.getFirst().get(6)).isEqualTo("Childcare");
+            assertThat(data.getFirst().get(7)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.getFirst().get(8)).isEqualTo(true);
+            assertThat(data.getFirst().get(9)).isEqualTo(FormCode.BI_DEFERRAL.getCode());
+            assertThat(data.getFirst().get(10)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(11)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(12)).isNull();
         }
 
         @Test
@@ -1848,14 +1848,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.size()).isEqualTo(5);
 
             // verify the order of the rows - pending should be first, then sorted by date printed descending
-            assertThat(data.get(0).get(7)).isEqualTo(LocalDate.now().toString());
+            assertThat(data.getFirst().get(7)).isEqualTo(LocalDate.now().toString());
             assertThat(data.get(1).get(7)).isEqualTo(LocalDate.now().toString());
             assertThat(data.get(2).get(7)).isEqualTo(LocalDate.now().minusDays(1).toString());
             assertThat(data.get(2).get(8)).as("Expect extracted flag to be true").isEqualTo(true);
             assertThat(data.get(3).get(7)).isEqualTo(LocalDate.now().minusDays(4).toString());
             assertThat(data.get(4).get(7)).isEqualTo(LocalDate.now().minusDays(8).toString());
 
-            assertThat(data.get(0).get(8)).as("Expect extracted flag to be false").isEqualTo(false);
+            assertThat(data.getFirst().get(8)).as("Expect extracted flag to be false").isEqualTo(false);
             assertThat(data.get(1).get(8)).as("Expect extracted flag to be false").isEqualTo(false);
         }
 
@@ -1947,7 +1947,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody().getData()).isNotNull();
             assertThat(response.getBody().getHeadings()).isNotNull();
             for (int i = 0; i < response.getBody().getHeadings().size(); i++) {
-                Object value = response.getBody().getData().get(0).get(i);
+                Object value = response.getBody().getData().getFirst().get(i);
                 switch (response.getBody().getHeadings().get(i)) {
                     case "Juror number" -> assertThat(value).isEqualTo("555555551");
                     case "First name" -> assertThat(value).isEqualTo("FNAMEFIVEFOURZERO");
@@ -2021,17 +2021,17 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(10);
-            assertThat(data.get(0).get(0)).isEqualTo("555555561");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(3)).isEqualTo("CH1 2AN");
-            assertThat(data.get(0).get(4)).isEqualTo(LocalDate.now().minusDays(1).toString());
-            assertThat(data.get(0).get(5)).isEqualTo(true);
-            assertThat(data.get(0).get(6)).isEqualTo(FormCode.ENG_CONFIRMATION.getCode());
-            assertThat(data.get(0).get(7)).isEqualTo("LETTER");
-            assertThat(data.get(0).get(8)).isEqualTo("LETTER");
-            assertThat(data.get(0).get(9)).isNull();
+            assertThat(data.getFirst().size()).isEqualTo(10);
+            assertThat(data.getFirst().getFirst()).isEqualTo("555555561");
+            assertThat(data.getFirst().get(1)).isEqualTo("FNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(2)).isEqualTo("LNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(3)).isEqualTo("CH1 2AN");
+            assertThat(data.getFirst().get(4)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.getFirst().get(5)).isEqualTo(true);
+            assertThat(data.getFirst().get(6)).isEqualTo(FormCode.ENG_CONFIRMATION.getCode());
+            assertThat(data.getFirst().get(7)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(8)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(9)).isNull();
         }
 
         @Test
@@ -2064,17 +2064,17 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(10);
-            assertThat(data.get(0).get(0)).isEqualTo("555555562");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(3)).isEqualTo("CH1 2AN");
-            assertThat(data.get(0).get(4)).isEqualTo(LocalDate.now().minusDays(1).toString());
-            assertThat(data.get(0).get(5)).isEqualTo(true);
-            assertThat(data.get(0).get(6)).isEqualTo(FormCode.BI_CONFIRMATION.getCode());
-            assertThat(data.get(0).get(7)).isEqualTo("LETTER");
-            assertThat(data.get(0).get(8)).isEqualTo("LETTER");
-            assertThat(data.get(0).get(9)).isNull();
+            assertThat(data.getFirst().size()).isEqualTo(10);
+            assertThat(data.getFirst().getFirst()).isEqualTo("555555562");
+            assertThat(data.getFirst().get(1)).isEqualTo("FNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(2)).isEqualTo("LNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(3)).isEqualTo("CH1 2AN");
+            assertThat(data.getFirst().get(4)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.getFirst().get(5)).isEqualTo(true);
+            assertThat(data.getFirst().get(6)).isEqualTo(FormCode.BI_CONFIRMATION.getCode());
+            assertThat(data.getFirst().get(7)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(8)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(9)).isNull();
         }
 
         @Test
@@ -2138,17 +2138,17 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(10);
-            assertThat(data.get(0).get(0)).isEqualTo("555555563");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(3)).isEqualTo("CH1 2AN");
-            assertThat(data.get(0).get(4)).isEqualTo(LocalDate.now().toString());
-            assertThat(data.get(0).get(5)).isEqualTo(false);
-            assertThat(data.get(0).get(6)).isEqualTo(FormCode.BI_CONFIRMATION.getCode());
-            assertThat(data.get(0).get(7)).isEqualTo("LETTER");
-            assertThat(data.get(0).get(8)).isEqualTo("LETTER");
-            assertThat(data.get(0).get(9)).isNull();
+            assertThat(data.getFirst().size()).isEqualTo(10);
+            assertThat(data.getFirst().getFirst()).isEqualTo("555555563");
+            assertThat(data.getFirst().get(1)).isEqualTo("FNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(2)).isEqualTo("LNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(3)).isEqualTo("CH1 2AN");
+            assertThat(data.getFirst().get(4)).isEqualTo(LocalDate.now().toString());
+            assertThat(data.getFirst().get(5)).isEqualTo(false);
+            assertThat(data.getFirst().get(6)).isEqualTo(FormCode.BI_CONFIRMATION.getCode());
+            assertThat(data.getFirst().get(7)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(8)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(9)).isNull();
         }
 
         @Test
@@ -2183,17 +2183,17 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(13);
-            assertThat(data.get(0).get(0)).isEqualTo("555555561");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(3)).isEqualTo("CH1 2AN");
-            assertThat(data.get(0).get(4)).isEqualTo("Responded");
-            assertThat(data.get(0).get(5)).isEqualTo(LocalDate.now().minusDays(10).toString()); // date refused
-            assertThat(data.get(0).get(6)).isEqualTo("Carer");
-            assertThat(data.get(0).get(7)).isEqualTo(LocalDate.now().minusDays(10).toString()); // date printed
-            assertThat(data.get(0).get(8)).isEqualTo(true);
-            assertThat(data.get(0).get(9)).isEqualTo(FormCode.ENG_DEFERRALDENIED.getCode());
+            assertThat(data.getFirst().size()).isEqualTo(13);
+            assertThat(data.getFirst().getFirst()).isEqualTo("555555561");
+            assertThat(data.getFirst().get(1)).isEqualTo("FNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(2)).isEqualTo("LNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(3)).isEqualTo("CH1 2AN");
+            assertThat(data.getFirst().get(4)).isEqualTo("Responded");
+            assertThat(data.getFirst().get(5)).isEqualTo(LocalDate.now().minusDays(10).toString()); // date refused
+            assertThat(data.getFirst().get(6)).isEqualTo("Carer");
+            assertThat(data.getFirst().get(7)).isEqualTo(LocalDate.now().minusDays(10).toString()); // date printed
+            assertThat(data.getFirst().get(8)).isEqualTo(true);
+            assertThat(data.getFirst().get(9)).isEqualTo(FormCode.ENG_DEFERRALDENIED.getCode());
         }
 
         @Test
@@ -2228,17 +2228,17 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(13);
-            assertThat(data.get(0).get(0)).isEqualTo("555555565");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(3)).isEqualTo("CH1 2AN");
-            assertThat(data.get(0).get(4)).isEqualTo("Responded");
-            assertThat(data.get(0).get(5)).isEqualTo(LocalDate.now().minusDays(6).toString()); // date refused
-            assertThat(data.get(0).get(6)).isEqualTo("Moved from area");
-            assertThat(data.get(0).get(7)).isEqualTo(LocalDate.now().minusDays(6).toString()); // date printed
-            assertThat(data.get(0).get(8)).isEqualTo(true);
-            assertThat(data.get(0).get(9)).isEqualTo(FormCode.BI_DEFERRALDENIED.getCode());
+            assertThat(data.getFirst().size()).isEqualTo(13);
+            assertThat(data.getFirst().getFirst()).isEqualTo("555555565");
+            assertThat(data.getFirst().get(1)).isEqualTo("FNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(2)).isEqualTo("LNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(3)).isEqualTo("CH1 2AN");
+            assertThat(data.getFirst().get(4)).isEqualTo("Responded");
+            assertThat(data.getFirst().get(5)).isEqualTo(LocalDate.now().minusDays(6).toString()); // date refused
+            assertThat(data.getFirst().get(6)).isEqualTo("Moved from area");
+            assertThat(data.getFirst().get(7)).isEqualTo(LocalDate.now().minusDays(6).toString()); // date printed
+            assertThat(data.getFirst().get(8)).isEqualTo(true);
+            assertThat(data.getFirst().get(9)).isEqualTo(FormCode.BI_DEFERRALDENIED.getCode());
         }
 
         @Test
@@ -2340,17 +2340,17 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(13);
-            assertThat(data.get(0).get(0)).isEqualTo("555555561");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(3)).isEqualTo("CH1 2AN");
-            assertThat(data.get(0).get(4)).isEqualTo("Disqualified");
-            assertThat(data.get(0).get(5)).isEqualTo(LocalDate.now().minusDays(1).toString());
-            assertThat(data.get(0).get(6)).isEqualTo("Age");
-            assertThat(data.get(0).get(7)).isEqualTo(LocalDate.now().minusDays(1).toString());
-            assertThat(data.get(0).get(8)).isEqualTo(true);
-            assertThat(data.get(0).get(9)).isEqualTo(FormCode.ENG_WITHDRAWAL.getCode());
+            assertThat(data.getFirst().size()).isEqualTo(13);
+            assertThat(data.getFirst().getFirst()).isEqualTo("555555561");
+            assertThat(data.getFirst().get(1)).isEqualTo("FNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(2)).isEqualTo("LNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(3)).isEqualTo("CH1 2AN");
+            assertThat(data.getFirst().get(4)).isEqualTo("Disqualified");
+            assertThat(data.getFirst().get(5)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.getFirst().get(6)).isEqualTo("Age");
+            assertThat(data.getFirst().get(7)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.getFirst().get(8)).isEqualTo(true);
+            assertThat(data.getFirst().get(9)).isEqualTo(FormCode.ENG_WITHDRAWAL.getCode());
         }
 
         @Test
@@ -2385,17 +2385,17 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(13);
-            assertThat(data.get(0).get(0)).isEqualTo("555555562");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(3)).isEqualTo("CH1 2AN");
-            assertThat(data.get(0).get(4)).isEqualTo("Disqualified");
-            assertThat(data.get(0).get(5)).isEqualTo(LocalDate.now().minusDays(1).toString());
-            assertThat(data.get(0).get(6)).isEqualTo("Age");
-            assertThat(data.get(0).get(7)).isEqualTo(LocalDate.now().minusDays(1).toString());
-            assertThat(data.get(0).get(8)).isEqualTo(true);
-            assertThat(data.get(0).get(9)).isEqualTo(FormCode.BI_WITHDRAWAL.getCode());
+            assertThat(data.getFirst().size()).isEqualTo(13);
+            assertThat(data.getFirst().getFirst()).isEqualTo("555555562");
+            assertThat(data.getFirst().get(1)).isEqualTo("FNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(2)).isEqualTo("LNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(3)).isEqualTo("CH1 2AN");
+            assertThat(data.getFirst().get(4)).isEqualTo("Disqualified");
+            assertThat(data.getFirst().get(5)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.getFirst().get(6)).isEqualTo("Age");
+            assertThat(data.getFirst().get(7)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.getFirst().get(8)).isEqualTo(true);
+            assertThat(data.getFirst().get(9)).isEqualTo(FormCode.BI_WITHDRAWAL.getCode());
         }
 
         @Test
@@ -2467,14 +2467,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(7);
-            assertThat(data.get(0).get(0)).isEqualTo("641500017");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEONESEVEN");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEONESEVEN");
-            assertThat(data.get(0).get(3)).isEqualTo("CH3 2AR");
-            assertThat(data.get(0).get(4)).isEqualTo(LocalDate.now().minusDays(1).toString());
-            assertThat(data.get(0).get(5)).isEqualTo(false);
-            assertThat(data.get(0).get(6)).isEqualTo(FormCode.ENG_REQUESTINFO.getCode());
+            assertThat(data.getFirst().size()).isEqualTo(7);
+            assertThat(data.getFirst().getFirst()).isEqualTo("641500017");
+            assertThat(data.getFirst().get(1)).isEqualTo("FNAMEONESEVEN");
+            assertThat(data.getFirst().get(2)).isEqualTo("LNAMEONESEVEN");
+            assertThat(data.getFirst().get(3)).isEqualTo("CH3 2AR");
+            assertThat(data.getFirst().get(4)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.getFirst().get(5)).isEqualTo(false);
+            assertThat(data.getFirst().get(6)).isEqualTo(FormCode.ENG_REQUESTINFO.getCode());
         }
 
         @Test
@@ -2509,14 +2509,14 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(7);
-            assertThat(data.get(0).get(0)).isEqualTo("641500212");
-            assertThat(data.get(0).get(1)).isEqualTo("FNAMEONETWO");
-            assertThat(data.get(0).get(2)).isEqualTo("LNAMEONETWOT");
-            assertThat(data.get(0).get(3)).isEqualTo("CH2 2AB");
-            assertThat(data.get(0).get(4)).isEqualTo(LocalDate.now().minusDays(2).toString());
-            assertThat(data.get(0).get(5)).isEqualTo(false);
-            assertThat(data.get(0).get(6)).isEqualTo(FormCode.BI_REQUESTINFO.getCode());
+            assertThat(data.getFirst().size()).isEqualTo(7);
+            assertThat(data.getFirst().getFirst()).isEqualTo("641500212");
+            assertThat(data.getFirst().get(1)).isEqualTo("FNAMEONETWO");
+            assertThat(data.getFirst().get(2)).isEqualTo("LNAMEONETWOT");
+            assertThat(data.getFirst().get(3)).isEqualTo("CH2 2AB");
+            assertThat(data.getFirst().get(4)).isEqualTo(LocalDate.now().minusDays(2).toString());
+            assertThat(data.getFirst().get(5)).isEqualTo(false);
+            assertThat(data.getFirst().get(6)).isEqualTo(FormCode.BI_REQUESTINFO.getCode());
         }
 
 
@@ -2599,7 +2599,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> headings = reissueLetterListResponseDto.getHeadings();
             assertThat(headings).isNotNull();
             assertThat(headings.size()).as("Expect there to be 7 headings").isEqualTo(7);
-            assertThat(headings.get(0)).isEqualTo("Juror number");
+            assertThat(headings.getFirst()).isEqualTo("Juror number");
             assertThat(headings.get(1)).isEqualTo("First name");
             assertThat(headings.get(2)).isEqualTo("Last name");
             assertThat(headings.get(3)).isEqualTo("Postcode");
@@ -2610,7 +2610,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> dataTypes = reissueLetterListResponseDto.getDataTypes();
             assertThat(dataTypes).isNotNull();
             assertThat(dataTypes.size()).as("Expect there to be 7 data types").isEqualTo(7);
-            assertThat(dataTypes.get(0)).isEqualTo("string");
+            assertThat(dataTypes.getFirst()).isEqualTo("string");
             assertThat(dataTypes.get(1)).isEqualTo("string");
             assertThat(dataTypes.get(2)).isEqualTo("string");
             assertThat(dataTypes.get(3)).isEqualTo("string");
@@ -2624,7 +2624,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> headings = reissueLetterListResponseDto.getHeadings();
             assertThat(headings).isNotNull();
             assertThat(headings.size()).as("Expect there to be 13 headings").isEqualTo(13);
-            assertThat(headings.get(0)).isEqualTo("Juror number");
+            assertThat(headings.getFirst()).isEqualTo("Juror number");
             assertThat(headings.get(1)).isEqualTo("First name");
             assertThat(headings.get(2)).isEqualTo("Last name");
             assertThat(headings.get(3)).isEqualTo("Postcode");
@@ -2641,7 +2641,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> dataTypes = reissueLetterListResponseDto.getDataTypes();
             assertThat(dataTypes).isNotNull();
             assertThat(dataTypes.size()).as("Expect there to be 13 data types").isEqualTo(13);
-            assertThat(dataTypes.get(0)).isEqualTo("string");
+            assertThat(dataTypes.getFirst()).isEqualTo("string");
             assertThat(dataTypes.get(1)).isEqualTo("string");
             assertThat(dataTypes.get(2)).isEqualTo("string");
             assertThat(dataTypes.get(3)).isEqualTo("string");
@@ -2661,7 +2661,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> headings = reissueLetterListResponseDto.getHeadings();
             assertThat(headings).isNotNull();
             assertThat(headings.size()).as("Expect there to be 10 headings").isEqualTo(10);
-            assertThat(headings.get(0)).isEqualTo("Juror number");
+            assertThat(headings.getFirst()).isEqualTo("Juror number");
             assertThat(headings.get(1)).isEqualTo("First name");
             assertThat(headings.get(2)).isEqualTo("Last name");
             assertThat(headings.get(3)).isEqualTo("Postcode");
@@ -2675,7 +2675,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> dataTypes = reissueLetterListResponseDto.getDataTypes();
             assertThat(dataTypes).isNotNull();
             assertThat(dataTypes.size()).as("Expect there to be 10 data types").isEqualTo(10);
-            assertThat(dataTypes.get(0)).isEqualTo("string");
+            assertThat(dataTypes.getFirst()).isEqualTo("string");
             assertThat(dataTypes.get(1)).isEqualTo("string");
             assertThat(dataTypes.get(2)).isEqualTo("string");
             assertThat(dataTypes.get(3)).isEqualTo("string");
@@ -2692,7 +2692,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> headings = reissueLetterListResponseDto.getHeadings();
             assertThat(headings).isNotNull();
             assertThat(headings.size()).as("Expect there to be 13 headings").isEqualTo(13);
-            assertThat(headings.get(0)).isEqualTo("Juror number");
+            assertThat(headings.getFirst()).isEqualTo("Juror number");
             assertThat(headings.get(1)).isEqualTo("First name");
             assertThat(headings.get(2)).isEqualTo("Last name");
             assertThat(headings.get(3)).isEqualTo("Postcode");
@@ -2709,7 +2709,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> dataTypes = reissueLetterListResponseDto.getDataTypes();
             assertThat(dataTypes).isNotNull();
             assertThat(dataTypes.size()).as("Expect there to be 13 data types").isEqualTo(13);
-            assertThat(dataTypes.get(0)).isEqualTo("string");
+            assertThat(dataTypes.getFirst()).isEqualTo("string");
             assertThat(dataTypes.get(1)).isEqualTo("string");
             assertThat(dataTypes.get(2)).isEqualTo("string");
             assertThat(dataTypes.get(3)).isEqualTo("string");
@@ -2729,7 +2729,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> headings = reissueLetterListResponseDto.getHeadings();
             assertThat(headings).isNotNull();
             assertThat(headings.size()).as("Expect there to be 13 headings").isEqualTo(13);
-            assertThat(headings.get(0)).isEqualTo("Juror number");
+            assertThat(headings.getFirst()).isEqualTo("Juror number");
             assertThat(headings.get(1)).isEqualTo("First name");
             assertThat(headings.get(2)).isEqualTo("Last name");
             assertThat(headings.get(3)).isEqualTo("Postcode");
@@ -2746,7 +2746,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> dataTypes = reissueLetterListResponseDto.getDataTypes();
             assertThat(dataTypes).isNotNull();
             assertThat(dataTypes.size()).as("Expect there to be 13 data types").isEqualTo(13);
-            assertThat(dataTypes.get(0)).isEqualTo("string");
+            assertThat(dataTypes.getFirst()).isEqualTo("string");
             assertThat(dataTypes.get(1)).isEqualTo("string");
             assertThat(dataTypes.get(2)).isEqualTo("string");
             assertThat(dataTypes.get(3)).isEqualTo("string");
@@ -2766,7 +2766,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> headings = reissueLetterListResponseDto.getHeadings();
             assertThat(headings).isNotNull();
             assertThat(headings.size()).as("Expect there to be 9 headings").isEqualTo(9);
-            assertThat(headings.get(0)).isEqualTo("Juror number");
+            assertThat(headings.getFirst()).isEqualTo("Juror number");
             assertThat(headings.get(1)).isEqualTo("Pool Number");
             assertThat(headings.get(2)).isEqualTo("Summons date");
             assertThat(headings.get(3)).isEqualTo("First name");
@@ -2779,7 +2779,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> dataTypes = reissueLetterListResponseDto.getDataTypes();
             assertThat(dataTypes).isNotNull();
             assertThat(dataTypes.size()).as("Expect there to be 9 data types").isEqualTo(9);
-            assertThat(dataTypes.get(0)).isEqualTo("string");
+            assertThat(dataTypes.getFirst()).isEqualTo("string");
             assertThat(dataTypes.get(1)).isEqualTo("string");
             assertThat(dataTypes.get(2)).isEqualTo("string");
             assertThat(dataTypes.get(3)).isEqualTo("string");
@@ -2823,16 +2823,16 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).get(0)).isEqualTo("555555561");
-            assertThat(data.get(0).size()).isEqualTo(9);
-            assertThat(data.get(0).get(1)).isEqualTo("415241001");
-            assertThat(data.get(0).get(2)).isEqualTo("TUESDAY 8 OCTOBER, 2024");
-            assertThat(data.get(0).get(3)).isEqualTo("FNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(4)).isEqualTo("LNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(5)).isEqualTo("CH1 2AN");
-            assertThat(data.get(0).get(6)).isEqualTo(LocalDate.now().minusDays(1).toString());
-            assertThat(data.get(0).get(7)).isEqualTo(true);
-            assertThat(data.get(0).get(8)).isEqualTo(FormCode.ENG_SUMMONS.getCode());
+            assertThat(data.getFirst().getFirst()).isEqualTo("555555561");
+            assertThat(data.getFirst().size()).isEqualTo(9);
+            assertThat(data.getFirst().get(1)).isEqualTo("415241001");
+            assertThat(data.getFirst().get(2)).isEqualTo("TUESDAY 8 OCTOBER, 2024");
+            assertThat(data.getFirst().get(3)).isEqualTo("FNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(4)).isEqualTo("LNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(5)).isEqualTo("CH1 2AN");
+            assertThat(data.getFirst().get(6)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.getFirst().get(7)).isEqualTo(true);
+            assertThat(data.getFirst().get(8)).isEqualTo(FormCode.ENG_SUMMONS.getCode());
         }
 
         @Test
@@ -2901,16 +2901,16 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = reissueLetterListResponseDto.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
-            assertThat(data.get(0).size()).isEqualTo(9);
-            assertThat(data.get(0).get(0)).isEqualTo("555555562");
-            assertThat(data.get(0).get(1)).isEqualTo("415241001");
-            assertThat(data.get(0).get(2)).isEqualTo("8 OCTOBER, 2024 DYDD MAWRTH");
-            assertThat(data.get(0).get(3)).isEqualTo("FNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(4)).isEqualTo("LNAMEFIVEFOURZERO");
-            assertThat(data.get(0).get(5)).isEqualTo("CH1 2AN");
-            assertThat(data.get(0).get(6)).isEqualTo(LocalDate.now().minusDays(1).toString());
-            assertThat(data.get(0).get(7)).isEqualTo(true);
-            assertThat(data.get(0).get(8)).isEqualTo(FormCode.BI_SUMMONS.getCode());
+            assertThat(data.getFirst().size()).isEqualTo(9);
+            assertThat(data.getFirst().getFirst()).isEqualTo("555555562");
+            assertThat(data.getFirst().get(1)).isEqualTo("415241001");
+            assertThat(data.getFirst().get(2)).isEqualTo("8 OCTOBER, 2024 DYDD MAWRTH");
+            assertThat(data.getFirst().get(3)).isEqualTo("FNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(4)).isEqualTo("LNAMEFIVEFOURZERO");
+            assertThat(data.getFirst().get(5)).isEqualTo("CH1 2AN");
+            assertThat(data.getFirst().get(6)).isEqualTo(LocalDate.now().minusDays(1).toString());
+            assertThat(data.getFirst().get(7)).isEqualTo(true);
+            assertThat(data.getFirst().get(8)).isEqualTo(FormCode.BI_SUMMONS.getCode());
         }
     }
 
@@ -3405,7 +3405,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .findByJurorNumberAndDateCreatedGreaterThanEqual("555555561", LocalDate.now());
                     assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).as("Expect 1 history record").isEqualTo(1);
-                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "561", "504");
+                    verifyHistoryResponse(updatedJurorHistoryList.getFirst(), "561", "504");
 
                     verifyPoolHistoryCreated();
 
@@ -3452,7 +3452,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
                     assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "570", "405");
+                    verifyHistoryResponse(updatedJurorHistoryList.getFirst(), "570", "405");
 
                     verifyPoolHistoryCreated();
                 });
@@ -3497,7 +3497,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
                 assertThat(responseDto.getValidSummonedJurors()).hasSize(1);
                 ValidateReissueLetterListResponseDto.ValidSummonedJurors validJuror =
-                    responseDto.getValidSummonedJurors().get(0);
+                    responseDto.getValidSummonedJurors().getFirst();
                 assertThat(validJuror.getJurorNumber()).isEqualTo("555555570");
                 assertThat(validJuror.getFirstName()).isEqualTo("Juror570");
                 assertThat(validJuror.getLastName()).isEqualTo("Juror570Surname");
@@ -3505,7 +3505,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
                 assertThat(responseDto.getInvalidSummonedJurors()).hasSize(1);
                 ValidateReissueLetterListResponseDto.InvalidSummonedJurors invalidJuror =
-                    responseDto.getInvalidSummonedJurors().get(0);
+                    responseDto.getInvalidSummonedJurors().getFirst();
                 assertThat(invalidJuror.getJurorNumber()).isEqualTo("555555571");
                 assertThat(invalidJuror.getFirstName()).isEqualTo("Juror571");
                 assertThat(invalidJuror.getLastName()).isEqualTo("Juror571Surname");
@@ -3549,7 +3549,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
                     assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "578", "405", "Reminder letter");
+                    verifyHistoryResponse(updatedJurorHistoryList.getFirst(), "578", "405", "Reminder letter");
 
                     verifyPoolHistoryCreated();
                 });
@@ -3586,7 +3586,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     assertThat(updatedJurorHistoryList).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
 
-                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "570", "405");
+                    verifyHistoryResponse(updatedJurorHistoryList.getFirst(), "570", "405");
 
                     verifyPoolHistoryCreated();
                 });
@@ -3652,7 +3652,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                 assertThat(responseDto.getJurors().size()).isEqualTo(1);
 
                 ReissueLetterReponseDto.ReissueLetterResponseData reissueLetterResponseData =
-                    responseDto.getJurors().get(0);
+                    responseDto.getJurors().getFirst();
                 assertThat(reissueLetterResponseData.getJurorNumber()).isEqualTo(jurorNumber);
                 assertThat(reissueLetterResponseData.getFirstName()).isEqualTo("Juror566");
                 assertThat(reissueLetterResponseData.getLastName()).isEqualTo("Juror566Surname");
@@ -3706,7 +3706,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
                     assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "576", "405");
+                    verifyHistoryResponse(updatedJurorHistoryList.getFirst(), "576", "405");
                 });
             }
 
@@ -3769,7 +3769,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .findByJurorNumberAndDateCreatedGreaterThanEqual("555555561", LocalDate.now());
                     assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "561", "504");
+                    verifyHistoryResponse(updatedJurorHistoryList.getFirst(), "561", "504");
                 });
             }
 
@@ -3820,7 +3820,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .findAll();
                 assertThat(updatedPoolHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotEmpty();
                 assertThat(updatedPoolHistoryList.size()).as("Expect 1 history record").isEqualTo(1);
-                assertThat(updatedPoolHistoryList.get(0).getHistoryCode()).isEqualTo(HistoryCode.PHRS);
+                assertThat(updatedPoolHistoryList.getFirst().getHistoryCode()).isEqualTo(HistoryCode.PHRS);
             }
 
             private void verifyRecDate(BulkPrintData bulkPrintData, LocalDate reprintRecDate) {
@@ -4181,44 +4181,44 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertThat(data.get(arrayIndex).size())
                 .as("Expect the array index to contain 13 elements").isEqualTo(13);
-            assertThat(data.get(arrayIndex).get(0))
-                .as(String.format("Expect juror number for array index %s to be %s", arrayIndex, jurorNumber))
+            assertThat(data.get(arrayIndex).getFirst())
+                .as("Expect juror number for array index %s to be %s".formatted(arrayIndex, jurorNumber))
                 .isEqualTo(jurorNumber);
             assertThat(data.get(arrayIndex).get(1))
-                .as(String.format("Expect juror first name for array index %s to be %s", arrayIndex, jurorFirstName))
+                .as("Expect juror first name for array index %s to be %s".formatted(arrayIndex, jurorFirstName))
                 .isEqualTo(jurorFirstName);
             assertThat(data.get(arrayIndex).get(2))
-                .as(String.format("Expect juror surname for array index %s to be %s", arrayIndex, jurorSurname))
+                .as("Expect juror surname for array index %s to be %s".formatted(arrayIndex, jurorSurname))
                 .isEqualTo(jurorSurname);
             assertThat(data.get(arrayIndex).get(3))
-                .as(String.format("Expect the postcode for array index %s to be CH1 2AN", arrayIndex))
+                .as("Expect the postcode for array index %s to be CH1 2AN".formatted(arrayIndex))
                 .isEqualTo("CH1 2AN");
             assertThat(data.get(arrayIndex).get(4))
-                .as(String.format("Expect the status for array index %s to be %s", arrayIndex, status))
+                .as("Expect the status for array index %s to be %s".formatted(arrayIndex, status))
                 .isEqualTo(status);
             assertThat(data.get(arrayIndex).get(5))
-                .as(String.format("Expect excusal date for array index %s to be %s", arrayIndex, excusalDate))
+                .as("Expect excusal date for array index %s to be %s".formatted(arrayIndex, excusalDate))
                 .isEqualTo(excusalDate);
             assertThat(data.get(arrayIndex).get(6))
-                .as(String.format("Expect excusal reason for array index %s to be %s", arrayIndex, excusedReason))
+                .as("Expect excusal reason for array index %s to be %s".formatted(arrayIndex, excusedReason))
                 .isEqualTo(excusedReason);
             assertThat(data.get(arrayIndex).get(7))
-                .as(String.format("Expect letter printed date for array index %s to be %s", arrayIndex, printedDate))
+                .as("Expect letter printed date for array index %s to be %s".formatted(arrayIndex, printedDate))
                 .isEqualTo(printedDate);
             assertThat(data.get(arrayIndex).get(8))
-                .as(String.format("Expect extracted flag for array index %s to be %s", arrayIndex, extractedFlag))
+                .as("Expect extracted flag for array index %s to be %s".formatted(arrayIndex, extractedFlag))
                 .isEqualTo(extractedFlag);
             assertThat(data.get(arrayIndex).get(9))
-                .as(String.format("Expect form code hidden flag for array index %s to be %s", arrayIndex, formCode))
+                .as("Expect form code hidden flag for array index %s to be %s".formatted(arrayIndex, formCode))
                 .isEqualTo(formCode);
             assertThat(data.get(arrayIndex).get(10))
-                .as(String.format("Expect communication channel for array index %s to be LETTER", arrayIndex))
+                .as("Expect communication channel for array index %s to be LETTER".formatted(arrayIndex))
                 .isEqualTo("LETTER");
             assertThat(data.get(arrayIndex).get(11))
-                .as(String.format("Expect juror preference for array index %s to be LETTER", arrayIndex))
+                .as("Expect juror preference for array index %s to be LETTER".formatted(arrayIndex))
                 .isEqualTo("LETTER");
             assertThat(data.get(arrayIndex).get(12))
-                .as(String.format("Expect email status for array index %s to be null", arrayIndex))
+                .as("Expect email status for array index %s to be null".formatted(arrayIndex))
                 .isNull();
         }
 
@@ -4229,7 +4229,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> headings = reissueLetterListResponseDto.getHeadings();
             assertThat(headings).isNotNull();
             assertThat(headings.size()).as("Expect there to be 13 headings").isEqualTo(13);
-            assertThat(headings.get(0)).isEqualTo("Juror number");
+            assertThat(headings.getFirst()).isEqualTo("Juror number");
             assertThat(headings.get(1)).isEqualTo("First name");
             assertThat(headings.get(2)).isEqualTo("Last name");
             assertThat(headings.get(3)).isEqualTo("Postcode");
@@ -4246,7 +4246,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> dataTypes = reissueLetterListResponseDto.getDataTypes();
             assertThat(dataTypes).isNotNull();
             assertThat(dataTypes.size()).as("Expect there to be 13 data types").isEqualTo(13);
-            assertThat(dataTypes.get(0)).isEqualTo("string");
+            assertThat(dataTypes.getFirst()).isEqualTo("string");
             assertThat(dataTypes.get(1)).isEqualTo("string");
             assertThat(dataTypes.get(2)).isEqualTo("string");
             assertThat(dataTypes.get(3)).isEqualTo("string");
@@ -4304,9 +4304,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<List<Object>> data = response.getData();
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(2);
-            List<Object> data1 = data.get(0);
+            List<Object> data1 = data.getFirst();
             assertThat(data1).hasSize(7);
-            assertThat(data1.get(0)).isEqualTo("555555561");
+            assertThat(data1.getFirst()).isEqualTo("555555561");
             assertThat(data1.get(1)).isEqualTo("Juror561");
             assertThat(data1.get(2)).isEqualTo("Juror561Surname");
             assertThat(data1.get(3)).isEqualTo("CH1 2AN");
@@ -4315,7 +4315,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data1.get(6)).isEqualTo("5228");
             List<Object> data2 = data.get(1);
             assertThat(data2).hasSize(7);
-            assertThat(data2.get(0)).isEqualTo("555555561");
+            assertThat(data2.getFirst()).isEqualTo("555555561");
             assertThat(data2.get(1)).isEqualTo("Juror561");
             assertThat(data2.get(2)).isEqualTo("Juror561Surname");
             assertThat(data2.get(3)).isEqualTo("CH1 2AN");
@@ -4337,7 +4337,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
 
-            List<Object> dataIndex0 = data.get(0);
+            List<Object> dataIndex0 = data.getFirst();
             verifyResponse(dataIndex0, "570", null, false, "5228");
         }
 
@@ -4354,7 +4354,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
 
-            List<Object> dataIndex0 = data.get(0);
+            List<Object> dataIndex0 = data.getFirst();
             verifyResponse(dataIndex0, "572", null, false, "5228C");
         }
 
@@ -4371,7 +4371,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
 
-            List<Object> dataIndex0 = data.get(0);
+            List<Object> dataIndex0 = data.getFirst();
             verifyResponse(dataIndex0, "578", null, false, "6228");
         }
 
@@ -4388,7 +4388,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(1);
 
-            List<Object> dataIndex0 = data.get(0);
+            List<Object> dataIndex0 = data.getFirst();
             verifyResponse(dataIndex0, "579", null, false, "5228");
         }
 
@@ -4405,7 +4405,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(5);
 
-            List<Object> dataIndex2 = data.get(0);
+            List<Object> dataIndex2 = data.getFirst();
             verifyResponse(dataIndex2, "562", "2024-02-01", false, "5228");
 
             List<Object> dataIndex3 = data.get(1);
@@ -4435,7 +4435,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data).isNotNull();
             assertThat(data.size()).isEqualTo(10);
 
-            List<Object> dataIndex0 = data.get(0);
+            List<Object> dataIndex0 = data.getFirst();
             verifyResponse(dataIndex0, "570", null, false, "5228");
 
             List<Object> dataIndex1 = data.get(1);
@@ -4481,7 +4481,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(data.size()).isEqualTo(6);
 
             // verify data
-            List<Object> dataIndex0 = data.get(0);
+            List<Object> dataIndex0 = data.getFirst();
             verifyResponse(dataIndex0, "562", "2024-02-01", false, "5228");
 
             List<Object> dataIndex1 = data.get(1);
@@ -4523,7 +4523,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> headings = reissueLetterListResponseDto.getHeadings();
             assertThat(headings).isNotNull();
             assertThat(headings).as("Expect there to be 7 headings").hasSize(7);
-            assertThat(headings.get(0)).isEqualTo("Juror number");
+            assertThat(headings.getFirst()).isEqualTo("Juror number");
             assertThat(headings.get(1)).isEqualTo("First name");
             assertThat(headings.get(2)).isEqualTo("Last name");
             assertThat(headings.get(3)).isEqualTo("Postcode");
@@ -4536,7 +4536,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<String> dataTypes = reissueLetterListResponseDto.getDataTypes();
             assertThat(dataTypes).isNotNull();
             assertThat(dataTypes).as("Expect there to be 7 data types").hasSize(7);
-            assertThat(dataTypes.get(0)).isEqualTo("string");
+            assertThat(dataTypes.getFirst()).isEqualTo("string");
             assertThat(dataTypes.get(1)).isEqualTo("string");
             assertThat(dataTypes.get(2)).isEqualTo("string");
             assertThat(dataTypes.get(3)).isEqualTo("string");
@@ -4553,7 +4553,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
         private void verifyResponse(List<Object> dataIndex, String jurorPostfix, String datePrinted,
                                     Boolean extractedFlag, String formCode) {
             assertThat(dataIndex).hasSize(7);
-            assertThat(dataIndex.get(0)).isEqualTo("555555" + jurorPostfix);
+            assertThat(dataIndex.getFirst()).isEqualTo("555555" + jurorPostfix);
             assertThat(dataIndex.get(1)).isEqualTo("Juror" + jurorPostfix);
             assertThat(dataIndex.get(2)).isEqualTo("Juror" + jurorPostfix + "Surname");
             assertThat(dataIndex.get(3)).isEqualTo("CH1 2AN");
@@ -5077,7 +5077,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<?> responseBody = response.getBody().getData();
             assertThat(responseBody.size()).isEqualTo(1);
 
-            WithdrawalLetterData data = (WithdrawalLetterData) responseBody.get(0);
+            WithdrawalLetterData data = (WithdrawalLetterData) responseBody.getFirst();
             assertThat(data.getJurorNumber()).isEqualTo(jurorNumber);
             assertThat(data.getFirstName()).isEqualTo("FNAME1");
             assertThat(data.getLastName()).isEqualTo("LNAME1");
@@ -5149,7 +5149,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<?> responseBody = response.getBody().getData();
             assertThat(responseBody.size()).isEqualTo(1);
 
-            WithdrawalLetterData data = (WithdrawalLetterData) responseBody.get(0);
+            WithdrawalLetterData data = (WithdrawalLetterData) responseBody.getFirst();
             assertThat(data.getJurorNumber()).isEqualTo(jurorNumber);
             assertThat(data.getFirstName()).isEqualTo("FNAME3");
             assertThat(data.getLastName()).isEqualTo("LNAME3");
@@ -6152,7 +6152,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<?> responseBody = response.getBody().getData();
             assertThat(responseBody.size()).isEqualTo(1);
 
-            PostponeLetterData data = (PostponeLetterData) responseBody.get(0);
+            PostponeLetterData data = (PostponeLetterData) responseBody.getFirst();
             assertThat(data.getJurorNumber()).isEqualTo(JUROR_555555562);
             assertThat(data.getFirstName()).isEqualTo("JurorForename62");
             assertThat(data.getLastName()).isEqualTo("JurorSurname62");
@@ -6219,7 +6219,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<?> responseBody = response.getBody().getData();
             assertThat(responseBody.size()).isEqualTo(1);
 
-            PostponeLetterData data = (PostponeLetterData) responseBody.get(0);
+            PostponeLetterData data = (PostponeLetterData) responseBody.getFirst();
             assertThat(data.getJurorNumber()).isEqualTo("555555567");
             assertThat(data.getFirstName()).isEqualTo(jurorName);
             assertThat(data.getLastName()).isEqualTo("JurorSurname67");
@@ -6278,9 +6278,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
+            assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(1)).isEqualTo(1);
 
-            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.get(0);
+            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.getFirst();
             verifyResponse("61", data, LocalDate.now().minusDays(10));
 
             assertThat(data.getDatePrinted())
@@ -6309,9 +6309,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
+            assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(1)).isEqualTo(1);
 
-            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.get(0);
+            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.getFirst();
             verifyResponse("63", data, LocalDate.now().minusDays(10));
             assertThat(data.getDatePrinted()).as(DATE_PRINTED_IS_NULL_MESSAGE).isNull();
         }
@@ -6339,9 +6339,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             List<String> messageValues = getValuesInJsonObject(exceptionDetails, MESSAGE);
             List<String> fieldValues = getValuesInJsonObject(exceptionDetails, FIELD);
-            assertThat(messageValues.get(0)).as(VALIDATION_MESSAGE_IS + FIELDS_REQUIRED)
+            assertThat(messageValues.getFirst()).as(VALIDATION_MESSAGE_IS + FIELDS_REQUIRED)
                 .isEqualTo(FIELDS_REQUIRED);
-            assertThat(fieldValues.get(0)).as("Validated fields are jurorNumber")
+            assertThat(fieldValues.getFirst()).as("Validated fields are jurorNumber")
                 .isEqualTo("jurorNumber");
         }
 
@@ -6366,9 +6366,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 3)).isEqualTo(3);
+            assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(3)).isEqualTo(3);
 
-            FailedToAttendLetterData dataIndex0 = (FailedToAttendLetterData) responseBody.get(0);
+            FailedToAttendLetterData dataIndex0 = (FailedToAttendLetterData) responseBody.getFirst();
             verifyResponse("63", dataIndex0, LocalDate.now().minusDays(10)); // no juror_history record exists
             assertThat(dataIndex0.getDatePrinted()).as(DATE_PRINTED_IS_NULL_MESSAGE).isNull();
 
@@ -6405,9 +6405,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
+            assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(1)).isEqualTo(1);
 
-            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.get(0);
+            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.getFirst();
             verifyResponse("65", data, LocalDate.now().minusDays(3));
         }
 
@@ -6433,7 +6433,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 0)).isEqualTo(0);
+            assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(0)).isEqualTo(0);
         }
 
         @Test
@@ -6459,7 +6459,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 0)).isEqualTo(0);
+            assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(0)).isEqualTo(0);
         }
 
         void verifyResponse(String jurorPostfix, FailedToAttendLetterData data, LocalDate absentDate) {
@@ -6501,9 +6501,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @DisplayName("Failed To Attend List - include printed letters")
             void includePrinted() {
                 List<?> responseBody = invokeApiHappy(true, OWNER_415, URL);
-                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 8)).isEqualTo(8);
+                assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(8)).isEqualTo(8);
 
-                verifyResponse("67", (FailedToAttendLetterData) responseBody.get(0), null,
+                verifyResponse("67", (FailedToAttendLetterData) responseBody.getFirst(), null,
                     LOCAL_DATE_NOW.minusDays(5));
                 verifyResponse("70", (FailedToAttendLetterData) responseBody.get(5),
                     LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW.minusDays(9));
@@ -6526,9 +6526,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @DisplayName("Failed To Attend List - exclude printed letters")
             void excludePrinted() {
                 List<?> responseBody = invokeApiHappy(false, OWNER_415, URL);
-                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 3)).isEqualTo(3);
+                assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(3)).isEqualTo(3);
 
-                verifyResponse("67", (FailedToAttendLetterData) responseBody.get(0), null,
+                verifyResponse("67", (FailedToAttendLetterData) responseBody.getFirst(), null,
                     LOCAL_DATE_NOW.minusDays(5));
                 verifyResponse("63", (FailedToAttendLetterData) responseBody.get(1), null,
                     LOCAL_DATE_NOW.minusDays(10));
@@ -6541,9 +6541,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @DisplayName("Failed To Attend List - court owner 457")
             void courtOwner457() {
                 List<?> responseBody = invokeApiHappy(true, "457", URL);
-                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
+                assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(1)).isEqualTo(1);
 
-                verifyResponse("68", (FailedToAttendLetterData) responseBody.get(0),
+                verifyResponse("68", (FailedToAttendLetterData) responseBody.getFirst(),
                     LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW);
             }
         }
@@ -6560,9 +6560,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @DisplayName("Show Cause letter - include printed letters")
             void includePrinted() {
                 List<?> responseBody = invokeApiHappy(true, OWNER_415, URL);
-                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 8)).isEqualTo(8);
+                assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(8)).isEqualTo(8);
 
-                verifyResponse("72", (FailedToAttendLetterData) responseBody.get(0), null,
+                verifyResponse("72", (FailedToAttendLetterData) responseBody.getFirst(), null,
                     LOCAL_DATE_NOW.minusDays(6));
                 verifyResponse("72", (FailedToAttendLetterData) responseBody.get(1), null,
                     LOCAL_DATE_NOW.minusDays(8));
@@ -6585,9 +6585,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @DisplayName("Show Cause letter - exclude printed letters")
             void excludePrinted() {
                 List<?> responseBody = invokeApiHappy(false, OWNER_415, URL);
-                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 5)).isEqualTo(5);
+                assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(5)).isEqualTo(5);
 
-                verifyResponse("72", (FailedToAttendLetterData) responseBody.get(0), null,
+                verifyResponse("72", (FailedToAttendLetterData) responseBody.getFirst(), null,
                     LOCAL_DATE_NOW.minusDays(6));
                 verifyResponse("72", (FailedToAttendLetterData) responseBody.get(1), null,
                     LOCAL_DATE_NOW.minusDays(8));
@@ -6604,9 +6604,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             @DisplayName("Show Cause letter - court owner 457")
             void courtOwner457() {
                 List<?> responseBody = invokeApiHappy(true, "457", URL);
-                assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 2)).isEqualTo(2);
+                assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(2)).isEqualTo(2);
 
-                verifyResponse("68", (FailedToAttendLetterData) responseBody.get(0),
+                verifyResponse("68", (FailedToAttendLetterData) responseBody.getFirst(),
                     LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW);
                 verifyResponse("71", (FailedToAttendLetterData) responseBody.get(1),
                     LOCAL_DATE_NOW.minusDays(1), LOCAL_DATE_NOW.minusDays(10));
@@ -6713,7 +6713,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
 
             PrintLetterDataResponseDto[] data = response.getBody();
-            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 2)).isEqualTo(2);
+            assertThat(data.length).as(NUMBER_OF_LETTERS_MESSAGE.formatted(2)).isEqualTo(2);
 
             verifyDataEnglish(data[0], request, LocalDate.now().minusDays(10), "61");
             verifyDataEnglish(data[1], request, LocalDate.now(), "62");
@@ -6738,7 +6738,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
 
             PrintLetterDataResponseDto[] data = response.getBody();
-            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 1)).isEqualTo(1);
+            assertThat(data.length).as(NUMBER_OF_LETTERS_MESSAGE.formatted(1)).isEqualTo(1);
 
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
 
@@ -6860,7 +6860,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
 
             PrintLetterDataResponseDto[] data = response.getBody();
-            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 2)).isEqualTo(2);
+            assertThat(data.length).as(NUMBER_OF_LETTERS_MESSAGE.formatted(2)).isEqualTo(2);
 
             verifyDataEnglish(data[0], request, LocalDate.now().minusDays(8), "72");
             verifyDataEnglish(data[1], request, LocalDate.now().minusDays(6), "72");
@@ -7377,7 +7377,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             List<?> responseBody = response.getBody().getData();
             assertThat(responseBody.size()).isEqualTo(1);
 
-            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.get(0);
+            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.getFirst();
             verifyResponse("61", data,
                 LocalDate.now().minusDays(1), LocalDate.now().minusDays(10));
 
@@ -7404,9 +7404,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
+            assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(1)).isEqualTo(1);
 
-            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.get(0);
+            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.getFirst();
             verifyResponse("63", data, null, LocalDate.now().minusDays(10));
         }
 
@@ -7432,9 +7432,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 2)).isEqualTo(2);
+            assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(2)).isEqualTo(2);
 
-            verifyResponse("70", (FailedToAttendLetterData) responseBody.get(0),
+            verifyResponse("70", (FailedToAttendLetterData) responseBody.getFirst(),
                 LocalDate.now().minusDays(1), LocalDate.now().minusDays(9));
             verifyResponse("70", (FailedToAttendLetterData) responseBody.get(1),
                 LocalDate.now().minusDays(1), LocalDate.now().minusDays(10));
@@ -7461,9 +7461,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 3)).isEqualTo(3);
+            assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(3)).isEqualTo(3);
 
-            FailedToAttendLetterData dataIndex0 = (FailedToAttendLetterData) responseBody.get(0);
+            FailedToAttendLetterData dataIndex0 = (FailedToAttendLetterData) responseBody.getFirst();
             verifyResponse("67", dataIndex0, null, LocalDate.now().minusDays(5));
             assertThat(dataIndex0.getDatePrinted()).as(DATE_PRINTED_IS_NULL_MESSAGE).isNull();
 
@@ -7500,9 +7500,9 @@ class LetterControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 1)).isEqualTo(1);
+            assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(1)).isEqualTo(1);
 
-            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.get(0);
+            FailedToAttendLetterData data = (FailedToAttendLetterData) responseBody.getFirst();
             verifyResponse("65", data,
                 LocalDate.now().minusDays(1), LocalDate.now().minusDays(3));
         }
@@ -7529,7 +7529,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 0)).isEqualTo(0);
+            assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(0)).isEqualTo(0);
         }
 
         @Test
@@ -7555,7 +7555,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getStatusCode()).as(RESPONSE_OK_MESSAGE).isEqualTo(OK);
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
             List<?> responseBody = response.getBody().getData();
-            assertThat(responseBody.size()).as(String.format(RESPONSE_DATA_SIZE_MESSAGE, 0)).isEqualTo(0);
+            assertThat(responseBody.size()).as(RESPONSE_DATA_SIZE_MESSAGE.formatted(0)).isEqualTo(0);
         }
 
         void verifyResponse(String jurorPostfix, FailedToAttendLetterData data, LocalDate dateLetterPrinted,
@@ -7618,7 +7618,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
 
             PrintLetterDataResponseDto[] data = response.getBody();
-            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 1)).isEqualTo(1);
+            assertThat(data.length).as(NUMBER_OF_LETTERS_MESSAGE.formatted(1)).isEqualTo(1);
 
             verifyDataEnglish(data[0], LocalDate.now().minusDays(10), "61");
         }
@@ -7648,7 +7648,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
 
             PrintLetterDataResponseDto[] data = response.getBody();
-            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 1)).isEqualTo(1);
+            assertThat(data.length).as(NUMBER_OF_LETTERS_MESSAGE.formatted(1)).isEqualTo(1);
 
             verifyDataWelsh(data[0], "62");
         }
@@ -7742,12 +7742,12 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getJurorNumber()).as("Expect juror number to be 5555555" + jurorPostfix)
                 .isEqualTo(JUROR_NUMBER + jurorPostfix);
             assertThat(response.getAttendanceDataList()).isNotNull().hasSize(4);
-            assertThat(response.getAttendanceDataList().get(0).getNonAttendance()).as("Expected Non Attendance to be "
+            assertThat(response.getAttendanceDataList().getFirst().getNonAttendance()).as("Expected Non Attendance to be "
                 + "false").isFalse();
-            assertThat(response.getAttendanceDataList().get(0).getChildCare()).isEqualTo(new BigDecimal("10.00"));
-            assertThat(response.getAttendanceDataList().get(0).getMisc()).isEqualTo(new BigDecimal("10.00"));
-            assertThat(response.getAttendanceDataList().get(0).getLossOfEarnings()).isEqualTo(new BigDecimal("40.00"));
-            assertThat(response.getAttendanceDataList().get(0).getAttendanceDate()).isEqualTo(
+            assertThat(response.getAttendanceDataList().getFirst().getChildCare()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().getFirst().getMisc()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().getFirst().getLossOfEarnings()).isEqualTo(new BigDecimal("40.00"));
+            assertThat(response.getAttendanceDataList().getFirst().getAttendanceDate()).isEqualTo(
                 LocalDate.now().plusDays(10));
 
 
@@ -7827,12 +7827,12 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getWelsh()).as("Expect welsh to be true").isTrue();
 
             assertThat(response.getAttendanceDataList()).isNotNull().hasSize(4);
-            assertThat(response.getAttendanceDataList().get(0).getNonAttendance()).as("Expected Non Attendance to be "
+            assertThat(response.getAttendanceDataList().getFirst().getNonAttendance()).as("Expected Non Attendance to be "
                 + "false").isFalse();
-            assertThat(response.getAttendanceDataList().get(0).getChildCare()).isEqualTo(new BigDecimal("30.00"));
-            assertThat(response.getAttendanceDataList().get(0).getMisc()).isEqualTo(new BigDecimal("10.00"));
-            assertThat(response.getAttendanceDataList().get(0).getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
-            assertThat(response.getAttendanceDataList().get(0).getAttendanceDate()).isEqualTo(
+            assertThat(response.getAttendanceDataList().getFirst().getChildCare()).isEqualTo(new BigDecimal("30.00"));
+            assertThat(response.getAttendanceDataList().getFirst().getMisc()).isEqualTo(new BigDecimal("10.00"));
+            assertThat(response.getAttendanceDataList().getFirst().getLossOfEarnings()).isEqualTo(new BigDecimal("50.00"));
+            assertThat(response.getAttendanceDataList().getFirst().getAttendanceDate()).isEqualTo(
                 LocalDate.now().plusDays(10));
 
             assertThat(response.getAttendanceDataList().get(1).getNonAttendance()).as("Expected Non Attendance to be "
@@ -7898,7 +7898,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
 
             PrintLetterDataResponseDto[] data = response.getBody();
-            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 2)).isEqualTo(2);
+            assertThat(data.length).as(NUMBER_OF_LETTERS_MESSAGE.formatted(2)).isEqualTo(2);
 
             verifyDataEnglish(data[0], LocalDate.now().minusDays(10), "61");
             verifyDataEnglish(data[1], LocalDate.now(), "62");
@@ -7924,7 +7924,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
 
             PrintLetterDataResponseDto[] data = response.getBody();
-            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 2)).isEqualTo(2);
+            assertThat(data.length).as(NUMBER_OF_LETTERS_MESSAGE.formatted(2)).isEqualTo(2);
 
             verifyDataEnglish(data[0], LocalDate.now().minusDays(9), "70");
             verifyDataEnglish(data[1], LocalDate.now().minusDays(10), "70");
@@ -7949,7 +7949,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
 
             PrintLetterDataResponseDto[] data = response.getBody();
-            assertThat(data.length).as(String.format(NUMBER_OF_LETTERS_MESSAGE, 1)).isEqualTo(1);
+            assertThat(data.length).as(NUMBER_OF_LETTERS_MESSAGE.formatted(1)).isEqualTo(1);
 
             assertThat(response.getBody()).as(RESPONSE_BODY_NOT_NULL_MESSAGE).isNotNull();
 
