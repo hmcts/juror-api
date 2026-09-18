@@ -13,6 +13,7 @@ def component = "api"
 withNightlyPipeline(type, product, component) {
   enableSlackNotifications('#juror-build-notices')
   enableFortifyScan()
+  env.FORTIFY_SCAN_RUNNER = 'library'
 
   afterSuccess('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '/Fortify Scan//*'
