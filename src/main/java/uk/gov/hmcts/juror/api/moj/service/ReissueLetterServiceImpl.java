@@ -581,9 +581,11 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
     private boolean isInitialSummonsReminderLetter(ReissueLetterRequestDto.ReissueLetterRequestData letter,
                                                   FormCode formCode) {
-        return SUMMONS_REMINDER_CODES.contains(formCode.getCode())
-            && letter.getDatePrinted() != null
-            && bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(
+        if (!SUMMONS_REMINDER_CODES.contains(formCode.getCode())) {
+            return false;
+        }
+        return letter.getDatePrinted() == null
+            || bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(
                 letter.getJurorNumber(), letter.getFormCode(), letter.getDatePrinted()).isEmpty();
     }
 
