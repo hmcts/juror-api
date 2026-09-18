@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -382,9 +383,29 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
-    public void createSummonLetterReprintedHistory(JurorPool jurorPool) {
+    public void createSummonLetterReprintedHistory(JurorPool jurorPool, FormCode formCode) {
+        if (formCode == FormCode.ENG_DBD_SUMMONS || formCode == FormCode.BI_DBD_SUMMONS) {
+            registerHistoryLoginUser(jurorPool, HistoryCodeMod.SUMMONS_REPRINTED,
+                                     "Reissued DBD summons letter");
+            return;
+        }
         registerHistoryLoginUser(jurorPool, HistoryCodeMod.SUMMONS_REPRINTED,
                                  "Reissued summons letter");
+    }
+
+    @Override
+    public void createResendLetterHistory(JurorPool jurorPool, HistoryCodeMod historyCode) {
+        registerHistoryLoginUser(jurorPool, historyCode, null);
+    }
+
+    @Override
+    public void createResendLetterHistory(JurorPool jurorPool, HistoryCodeMod historyCode,
+                                          CommunicationChannel communicationChannel) {
+        String otherInfo = communicationChannel == CommunicationChannel.EMAIL
+            ? channelInfo(historyCode.getDescription(), communicationChannel)
+            : null;
+
+        registerHistoryLoginUser(jurorPool, historyCode, otherInfo);
     }
 
     @Override

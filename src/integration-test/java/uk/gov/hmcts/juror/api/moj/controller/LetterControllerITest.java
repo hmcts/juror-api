@@ -3405,7 +3405,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .findByJurorNumberAndDateCreatedGreaterThanEqual("555555561", LocalDate.now());
                     assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).as("Expect 1 history record").isEqualTo(1);
-                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "561", "504");
+                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "561", "504",
+                        HistoryCodeMod.RESEND_NON_RESPONDED_LETTER);
 
                     verifyPoolHistoryCreated();
 
@@ -3549,7 +3550,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
                     assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "578", "405", "Reminder letter");
+                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "578", "405");
 
                     verifyPoolHistoryCreated();
                 });
@@ -3672,7 +3673,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                     .as("Existing letter should not exist for today's date").isEmpty();
 
                 executeInTransaction(() -> {
-                    // verify a previous letter exists - should be welsh
+                    // verify a previous letter exists - should be Welsh
                     BulkPrintData bulkPrintData =
                         bulkPrintDataRepository.findByJurorNumberFormCodeAndExtracted(jurorNumber,
                                 FormCode.BI_SUMMONS_REMINDER.getCode(), true)
@@ -3691,7 +3692,7 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .build()
                 );
                 executeInTransaction(() -> {
-                    // verify letter added - should be english (welsh flag was updated - juror now wants english
+                    // verify letter added - should be English (Welsh flag was updated - juror now wants English
                     // letters)
                     BulkPrintData bulkPrintData =
                         bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(jurorNumber,
@@ -3706,7 +3707,8 @@ class LetterControllerITest extends AbstractIntegrationTest {
                         .findByJurorNumberAndDateCreatedGreaterThanEqual(jurorNumber, LocalDate.now());
                     assertThat(updatedJurorHistoryList).as(HISTORY_RECORD_ADDED_TEXT).isNotNull();
                     assertThat(updatedJurorHistoryList.size()).isEqualTo(1);
-                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "576", "405");
+                    verifyHistoryResponse(updatedJurorHistoryList.get(0), "576", "405",
+                        HistoryCodeMod.RESEND_NON_RESPONDED_LETTER);
                 });
             }
 
@@ -3800,17 +3802,20 @@ class LetterControllerITest extends AbstractIntegrationTest {
             }
 
             private void verifyHistoryResponse(JurorHistory index, String jurorPostfix, String poolNumberPostfix) {
-                verifyHistoryResponse(index, jurorPostfix, poolNumberPostfix, "Reminder letter");
+                verifyHistoryResponse(index, jurorPostfix, poolNumberPostfix,
+                    HistoryCodeMod.NON_RESPONDED_LETTER);
             }
 
             private void verifyHistoryResponse(JurorHistory index, String jurorPostfix, String poolNumberPostfix,
-                                               String otherInformation) {
+                                               HistoryCodeMod expectedHistoryCode) {
                 assertThat(index.getJurorNumber()).isEqualTo("555555" + jurorPostfix);
                 assertThat(index.getPoolNumber()).isEqualTo("415220" + poolNumberPostfix);
-                assertThat(index.getHistoryCode()).isEqualTo(HistoryCodeMod.NON_RESPONDED_LETTER);
+                assertThat(index.getHistoryCode()).isEqualTo(expectedHistoryCode);
                 assertThat(index.getCreatedBy()).isEqualTo("BUREAU_USER");
                 assertThat(index.getDateCreated().isEqual(LocalDate.now().atStartOfDay()));
-                assertThat(index.getOtherInformation()).isEqualTo(otherInformation);
+                String expectedOtherInformation = expectedHistoryCode == HistoryCodeMod.NON_RESPONDED_LETTER
+                    ? "Reminder letter" : null;
+                assertThat(index.getOtherInformation()).isEqualTo(expectedOtherInformation);
                 assertThat(index.getOtherInformationDate()).isNull();
                 assertThat(index.getOtherInformationRef()).isNull();
             }
