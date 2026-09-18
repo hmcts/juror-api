@@ -19,11 +19,14 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
+import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
 import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -40,6 +43,7 @@ import static uk.gov.hmcts.juror.api.TestUtils.OBJECT_MAPPER;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = "feature-flags.flags.digital-by-default=true")
 @DisplayName("Digital by default letter controller")
+@SuppressWarnings("PMD.ExcessiveImports")
 class LetterDigitalByDefaultControllerITest extends AbstractIntegrationTest {
 
     private static final URI REISSUE_LETTER_URI = URI.create("/api/v1/moj/letter/reissue-letter");
@@ -50,6 +54,9 @@ class LetterDigitalByDefaultControllerITest extends AbstractIntegrationTest {
 
     @Autowired
     private BulkPrintDataRepository bulkPrintDataRepository;
+
+    @Autowired
+    private JurorHistoryRepository jurorHistoryRepository;
 
     private HttpHeaders httpHeaders;
 
@@ -233,6 +240,12 @@ class LetterDigitalByDefaultControllerITest extends AbstractIntegrationTest {
             assertThat(pendingEmailData.isDigitalComms()).isTrue();
             assertThat(pendingEmailData.getDetailRec()).isEqualTo("N/A");
             assertThat(pendingEmailData.getCommunicationChannel()).isEqualTo(CommunicationChannel.EMAIL);
+
+            List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberAndDateCreatedGreaterThanEqual(
+                jurorNumber, LocalDate.now());
+            assertThat(jurorHistory).hasSize(1);
+            assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.RESEND_DEFERRED_LETTER);
+            assertThat(jurorHistory.get(0).getOtherInformation()).isEqualTo("Reissue Deferred Email");
         });
     }
 }
