@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Configuration
 @Slf4j
 @Component
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @SuppressWarnings({"PMD.CouplingBetweenObjects"})
 public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService {
 
@@ -278,7 +278,7 @@ public class JurorDashboardSmartSurveyImportImpl implements BureauProcessService
         String exportUrl = null;
         //Get the Url for the latest export record - first item in list
         if (!jsonList.isEmpty()) {
-            JSONObject obj = jsonList.get(0);
+            JSONObject obj = jsonList.getFirst();
             log.debug("Smart Survey export details: {}", obj);
             exportUrl = obj.getString("href_download");
         }

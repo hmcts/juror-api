@@ -26,7 +26,7 @@ public class ExcusalResponseException extends RuntimeException {
     public static class InvalidExcusalCode extends ExcusalResponseException {
 
         public InvalidExcusalCode(String excusalCode) {
-            super(String.format("Provided excusal code %s is not valid", excusalCode));
+            super("Provided excusal code %s is not valid".formatted(excusalCode));
         }
     }
 }

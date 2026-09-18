@@ -5,15 +5,12 @@ import lombok.Getter;
 
 @Getter
 public enum TemporaryCourtAddress {
-    TAUNTON("Taunton Crown Court Sitting at Worle,\n"
-                +
-                "North Somerset Court House,\n"
-                +
-                "The Hedges,\n"
-                +
-                "Weston Super Mare,\n"
-                +
-                "BS22 7BB.");
+    TAUNTON("""
+                Taunton Crown Court Sitting at Worle,
+                North Somerset Court House,
+                The Hedges,
+                Weston Super Mare,
+                BS22 7BB.""");
 
     private final String temporaryCourtAddress;
 

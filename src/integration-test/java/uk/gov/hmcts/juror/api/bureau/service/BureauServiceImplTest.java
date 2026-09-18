@@ -66,13 +66,13 @@ public class BureauServiceImplTest extends AbstractIntegrationTest {
     public void testGDetailsByJurorNumber_WithValidJurorNumber_ReturnsEnrichedDetails() {
         BureauJurorDetailDto actualDetails = bureauService.getDetailsByJurorNumber(modJurorDetail.getJurorNumber());
         assertThat(actualDetails.getPhoneLogs()).hasSize(3);
-        assertThat(actualDetails.getPhoneLogs().get(0)).extracting("jurorNumber")
+        assertThat(actualDetails.getPhoneLogs().getFirst()).extracting("jurorNumber")
             .isEqualTo(modJurorDetail.getJurorNumber());
         assertThat(actualDetails.getCjsEmployments()).hasSize(1);
-        assertThat(actualDetails.getCjsEmployments().get(0)).extracting("jurorNumber")
+        assertThat(actualDetails.getCjsEmployments().getFirst()).extracting("jurorNumber")
             .isEqualTo(modJurorDetail.getJurorNumber());
         assertThat(actualDetails.getSpecialNeeds()).hasSize(1);
-        assertThat(actualDetails.getSpecialNeeds().get(0)).extracting("jurorNumber")
+        assertThat(actualDetails.getSpecialNeeds().getFirst()).extracting("jurorNumber")
             .isEqualTo(modJurorDetail.getJurorNumber());
     }
 

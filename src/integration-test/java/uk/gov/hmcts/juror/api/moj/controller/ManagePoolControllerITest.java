@@ -146,7 +146,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     public void testGPoolStatisticsAllDataPresent() {
         ResponseEntity<PoolSummaryResponseDto> responseEntity =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                    URI.create(String.format(URI_MANAGE_POOL_SUMMARY, POOL_NUMBER_415221001))),
+                    URI.create(URI_MANAGE_POOL_SUMMARY.formatted(POOL_NUMBER_415221001))),
                 PoolSummaryResponseDto.class);
 
         assertThat(responseEntity.getStatusCode()).as(EXPECT_HTTP_RESPONSE_SUCCESSFUL).isEqualTo(HttpStatus.OK);
@@ -230,7 +230,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     public void testGPoolStatisticsCourtSupplyOnly() {
         ResponseEntity<PoolSummaryResponseDto> responseEntity =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                URI.create(String.format(URI_MANAGE_POOL_SUMMARY, 415_221_001))), PoolSummaryResponseDto.class);
+                URI.create(URI_MANAGE_POOL_SUMMARY.formatted(415_221_001))), PoolSummaryResponseDto.class);
 
         assertThat(responseEntity.getStatusCode()).as(EXPECT_HTTP_RESPONSE_SUCCESSFUL).isEqualTo(HttpStatus.OK);
 
@@ -321,7 +321,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     public void testGPoolStatisticsNoPoolRequestExt() {
         ResponseEntity<PoolSummaryResponseDto> responseEntity =
             restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
-                    URI.create(String.format(URI_MANAGE_POOL_SUMMARY, POOL_NUMBER_415221001))),
+                    URI.create(URI_MANAGE_POOL_SUMMARY.formatted(POOL_NUMBER_415221001))),
                 PoolSummaryResponseDto.class);
 
         assertThat(responseEntity.getStatusCode()).as(EXPECT_HTTP_RESPONSE_SUCCESSFUL).isEqualTo(HttpStatus.OK);
@@ -760,7 +760,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
             .findFirst().orElse(null);
         assertThat(validationFailure2).isNotNull();
         assertThat(validationFailure2.getFailureReason())
-            .isEqualToIgnoringCase(String.format(JurorManagementConstants.INVALID_STATUS_MESSAGE, "Transferred"));
+            .isEqualToIgnoringCase(JurorManagementConstants.INVALID_STATUS_MESSAGE.formatted("Transferred"));
         assertThat(validationFailure2.getFirstName()).isEqualToIgnoringCase("FNAMETHREES");
         assertThat(validationFailure2.getLastName()).isEqualToIgnoringCase("LNAMETHREES");
 
@@ -1425,7 +1425,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
     public void availablePoolsInCourtLocationCourtUserHappy() {
-        final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "416"));
+        final URI uri = URI.create(URI_AVAILABLE_POOLS.formatted("416"));
         httpHeaders = initialiseHeaders(COURT_USER, UserType.COURT, null, "416");
 
         ResponseEntity<AvailablePoolsInCourtLocationDto> responseEntity =
@@ -1440,7 +1440,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(availablePoolsList.size()).isEqualTo(4);
 
         // confirm the first pool in the list is the one for 2025-05-23 as it should sorted in ascending order
-        assertThat(availablePoolsList.get(0).getPoolNumber()).isEqualTo(POOL_NUMBER_416220502);
+        assertThat(availablePoolsList.getFirst().getPoolNumber()).isEqualTo(POOL_NUMBER_416220502);
 
         availablePoolsList.sort(Comparator.comparing(AvailablePoolsInCourtLocationDto
             .AvailablePoolsDto::getPoolNumber));
@@ -1459,7 +1459,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/ManagePoolController_initAvailablePools_courtUser.sql"})
     public void availablePoolsInCourtLocationCourtUserOwnerNotFoundException() {
-        final URI uri = URI.create(String.format(URI_AVAILABLE_POOLS, "404"));
+        final URI uri = URI.create(URI_AVAILABLE_POOLS.formatted("404"));
         httpHeaders = initialiseHeaders(COURT_USER, UserType.COURT, null, "505");
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(new RequestEntity<>(httpHeaders,
@@ -1699,7 +1699,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(resultDto.getNewPoolNumber()).isEqualTo(targetPoolNumber);
         assertThat(resultDto.getAgeDisqualified()).hasSize(1);
 
-        AgeDisqualifiedJurorDto ageDisqualifiedJuror = resultDto.getAgeDisqualified().get(0);
+        AgeDisqualifiedJurorDto ageDisqualifiedJuror = resultDto.getAgeDisqualified().getFirst();
         assertThat(ageDisqualifiedJuror.getJurorNumber()).isEqualTo(jurorNumber);
         assertThat(ageDisqualifiedJuror.getDob()).isEqualTo(expectedDob);
         assertThat(ageDisqualifiedJuror.getCurrentServiceStartDate()).isEqualTo(expectedServiceStartDate);
@@ -1968,7 +1968,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(resultDto.getNewPoolNumber()).isEqualTo(targetPoolNumber);
         assertThat(resultDto.getAgeDisqualified()).hasSize(1);
 
-        AgeDisqualifiedJurorDto ageDisqualifiedJuror = resultDto.getAgeDisqualified().get(0);
+        AgeDisqualifiedJurorDto ageDisqualifiedJuror = resultDto.getAgeDisqualified().getFirst();
         assertThat(ageDisqualifiedJuror.getJurorNumber()).isEqualTo(jurorNumber);
         assertThat(ageDisqualifiedJuror.getDob()).isEqualTo(expectedDob);
         assertThat(ageDisqualifiedJuror.getCurrentServiceStartDate()).isEqualTo(expectedServiceStartDate);
@@ -2025,7 +2025,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(resultDto.getNewPoolNumber()).isNotBlank();
         assertThat(resultDto.getAgeDisqualified()).hasSize(1);
 
-        AgeDisqualifiedJurorDto ageDisqualifiedJuror = resultDto.getAgeDisqualified().get(0);
+        AgeDisqualifiedJurorDto ageDisqualifiedJuror = resultDto.getAgeDisqualified().getFirst();
         assertThat(ageDisqualifiedJuror.getJurorNumber()).isEqualTo(jurorNumber);
         assertThat(ageDisqualifiedJuror.getDob()).isEqualTo(expectedDob);
         assertThat(ageDisqualifiedJuror.getCurrentServiceStartDate()).isEqualTo(expectedServiceStartDate);

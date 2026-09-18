@@ -73,11 +73,11 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
         List<Date> dateRange = getAmendedDateRange(request);
         // Get responded total from db within a date range.
         final List<StatsResponseTime> responsesOverTime = jurorDashboardData.getResponsesOverTime(
-            dateRange.get(0), dateRange.get(1));
+            dateRange.getFirst(), dateRange.get(1));
 
         // Get not-responded total from db within a date range.
         final List<StatsNotResponded> notResponded = jurorDashboardData.getNotResponded(
-            dateRange.get(0), dateRange.get(1));
+            dateRange.getFirst(), dateRange.get(1));
 
 
         // GET all response count totals from the view STAT_RESPONSE_TIMES_TOTAL
@@ -142,7 +142,7 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
 
         // Get responded total from db.
         final List<StatsResponseTime> responsesOverTime = jurorDashboardData.getResponsesOverTime(
-            dateRange.get(0), dateRange.get(1));
+            dateRange.getFirst(), dateRange.get(1));
 
         //Check data returned
         if (isRetrievedDataEmpty(responsesOverTime)) {
@@ -258,7 +258,7 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
 
         // Get welsh responses from db for given period.
         final List<StatsWelshOnlineResponse> welshResponses = jurorDashboardData.getWelshOnlineResponses(
-            dateRange.get(0), dateRange.get(1));
+            dateRange.getFirst(), dateRange.get(1));
 
         //Check data returned
         if (isRetrievedDataEmpty(welshResponses)) {
@@ -292,7 +292,7 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
 
         // Get welsh responses from db for given period.
         final List<StatsAutoProcessed> autoResponses = jurorDashboardData.getAutoOnlineResponses(
-            dateRange.get(0), dateRange.get(1));
+            dateRange.getFirst(), dateRange.get(1));
 
         //Check data returned
         if (isRetrievedDataEmpty(autoResponses)) {
@@ -326,7 +326,7 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
 
         // Get third party responses from db for given period.
         final List<StatsThirdPartyOnlineResponse> thirdPtyResponses = jurorDashboardData.getThirdPtyOnlineResponses(
-            dateRange.get(0), dateRange.get(1));
+            dateRange.getFirst(), dateRange.get(1));
 
         //Check data returned
         if (isRetrievedDataEmpty(thirdPtyResponses)) {
@@ -369,7 +369,7 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
 
         // Get survey responses responses from db for given period.
         final List<SurveyResponse> surveyResponses = jurorDashboardData.getSurveyResponses(
-            dateRange.get(0), dateRange.get(1));
+            dateRange.getFirst(), dateRange.get(1));
 
         log.debug("Satisfaction survey responses count: " + surveyResponses.size());
 

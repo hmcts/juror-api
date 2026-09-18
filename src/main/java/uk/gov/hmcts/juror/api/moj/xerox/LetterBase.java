@@ -26,8 +26,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
-
 @Slf4j
 @SuppressWarnings("PMD.ExcessivePublicCount")
 public class LetterBase {
@@ -111,7 +109,7 @@ public class LetterBase {
         String welshMonth = XeroxConstants.WELSH_DATE_TRANSLATION_MAP
             .get(dateParts[2].substring(0, dateParts[2].length() - 1));
 
-        return format("%s %s %s, %s", welshDay, dateParts[1], welshMonth, dateParts[3]);
+        return "%s %s %s, %s".formatted(welshDay, dateParts[1], welshMonth, dateParts[3]);
     }
 
     public static String getDateOfLetter() {
@@ -158,7 +156,7 @@ public class LetterBase {
         String dateString = formatter.format(cal.getTime()).toUpperCase();
         String[] dateParts = dateString.split("\\s");
         String welshMonth = XeroxConstants.WELSH_DATE_TRANSLATION_MAP.get(dateParts[1]);
-        return format("%s %s %s", dateParts[0], welshMonth, dateParts[2]);
+        return "%s %s %s".formatted(dateParts[0], welshMonth, dateParts[2]);
     }
 
     @RequiredArgsConstructor

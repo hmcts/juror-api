@@ -782,12 +782,12 @@ class JurorRecordServiceTest {
         hist.setHistoryCode(HistoryCodeMod.RESPONDED_POSITIVELY);
         jurorHistoryList.add(hist);
 
-        jurorPools.get(0).getJuror().setWelsh(welshFlag);
+        jurorPools.getFirst().getJuror().setWelsh(welshFlag);
         doReturn(jurorHistoryList).when(jurorHistoryRepository)
             .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(LOC_CODE);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto expectedResponse = new JurorOverviewResponseDto();
@@ -837,7 +837,7 @@ class JurorRecordServiceTest {
             .as("Expect there to be one juror record in the result list")
             .singleElement();
 
-        JurorRecordSearchDto.JurorRecordSearchDataDto jurorSearchRecord = dataDto.get(0);
+        JurorRecordSearchDto.JurorRecordSearchDataDto jurorSearchRecord = dataDto.getFirst();
 
         assertThat(jurorSearchRecord.getJurorNumber())
             .as("Expect the juror number to be 416010101")
@@ -878,7 +878,7 @@ class JurorRecordServiceTest {
             .as("Expect there to be one juror record in the result list")
             .singleElement();
 
-        JurorRecordSearchDto.JurorRecordSearchDataDto jurorSearchRecord = dataDto.get(0);
+        JurorRecordSearchDto.JurorRecordSearchDataDto jurorSearchRecord = dataDto.getFirst();
 
         assertThat(jurorSearchRecord.getJurorNumber())
             .as("Expect the juror number to be 416010101")
@@ -956,7 +956,7 @@ class JurorRecordServiceTest {
         assertThat(contactLogListDto.getData())
             .as("Expect one contact log data item to be mapped in to the DTO").hasSize(1);
 
-        ContactLogListDto.ContactLogDataDto contactLogDataDto = contactLogListDto.getData().get(0);
+        ContactLogListDto.ContactLogDataDto contactLogDataDto = contactLogListDto.getData().getFirst();
         verifyContactLogData(contactLogDataDto, contactLog);
     }
 
@@ -980,7 +980,7 @@ class JurorRecordServiceTest {
         assertThat(contactLogListDto.getData())
             .as("Expect one contact log data item to be mapped in to the DTO").hasSize(1);
 
-        ContactLogListDto.ContactLogDataDto contactLogDataDto = contactLogListDto.getData().get(0);
+        ContactLogListDto.ContactLogDataDto contactLogDataDto = contactLogListDto.getData().getFirst();
         verifyContactLogData(contactLogDataDto, contactLog);
     }
 
@@ -1052,7 +1052,7 @@ class JurorRecordServiceTest {
         assertThat(contactLogListDto.getData())
             .as("Expect two contact log data items to be mapped in to the DTO").hasSize(2);
 
-        ContactLogListDto.ContactLogDataDto contactLogDataDto1 = contactLogListDto.getData().get(0);
+        ContactLogListDto.ContactLogDataDto contactLogDataDto1 = contactLogListDto.getData().getFirst();
         ContactLogListDto.ContactLogDataDto contactLogDataDto2 = contactLogListDto.getData().get(1);
         verifyContactLogData(contactLogDataDto1, contactLog1);
         verifyContactLogData(contactLogDataDto2, contactLog2);
@@ -1385,7 +1385,7 @@ class JurorRecordServiceTest {
         String notes = "Some example notes";
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(jurorNumber, owner));
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         Juror juror = jurorPool.getJuror();
         juror.setNotes(notes);
 
@@ -1406,7 +1406,7 @@ class JurorRecordServiceTest {
         String notes = "Some example notes";
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(jurorNumber, "415"));
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         Juror juror = jurorPool.getJuror();
         juror.setNotes(notes);
 
@@ -1461,7 +1461,7 @@ class JurorRecordServiceTest {
         String notes = "Some example notes";
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(jurorNumber, owner));
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         Juror juror = jurorPool.getJuror();
         juror.setNotes(notes);
 
@@ -1498,7 +1498,7 @@ class JurorRecordServiceTest {
         String notes = "Some example notes";
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(jurorNumber, "416"));
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         Juror juror = jurorPool.getJuror();
         juror.setNotes(notes);
 
@@ -1660,10 +1660,10 @@ class JurorRecordServiceTest {
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
 
-        jurorPools.get(0).setStatus(createJurorStatus(IJurorStatus.RESPONDED));
-        Juror juror = jurorPools.get(0).getJuror();
+        jurorPools.getFirst().setStatus(createJurorStatus(IJurorStatus.RESPONDED));
+        Juror juror = jurorPools.getFirst().getJuror();
         juror.setPoliceCheck(policeCheck);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
@@ -1685,14 +1685,14 @@ class JurorRecordServiceTest {
         courtLocation.setLocCode(locCode);
 
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
 
         Juror juror = jurorPool.getJuror();
         juror.setPoliceCheck(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED);
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
@@ -1715,14 +1715,14 @@ class JurorRecordServiceTest {
         courtLocation.setLocCode(locCode);
 
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
 
         Juror juror = jurorPool.getJuror();
         juror.setPoliceCheck(policeCheck);
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
@@ -1749,14 +1749,14 @@ class JurorRecordServiceTest {
 
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
 
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
 
         Juror juror = jurorPool.getJuror();
         juror.setPoliceCheck(PoliceCheck.ELIGIBLE);
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
@@ -1784,13 +1784,13 @@ class JurorRecordServiceTest {
         JurorStatus jurorStatus = new JurorStatus();
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
 
-        jurorPools.get(0).setStatus(jurorStatus);
+        jurorPools.getFirst().setStatus(jurorStatus);
 
         JurorResponse response = new JurorResponse();
         response.setJurorNumber(jurorNumber);
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         jurorRecordService.getJurorOverview(buildPayload("400"),
@@ -1810,11 +1810,11 @@ class JurorRecordServiceTest {
         courtLocation.setLocCode(locCode);
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
 
-        Juror juror = jurorPools.get(0).getJuror();
+        Juror juror = jurorPools.getFirst().getJuror();
         juror.setPoliceCheck(PoliceCheck.INELIGIBLE);
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
@@ -1847,12 +1847,12 @@ class JurorRecordServiceTest {
         JurorStatus jurorStatus = new JurorStatus();
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
 
-        jurorPools.get(0).setStatus(jurorStatus);
+        jurorPools.getFirst().setStatus(jurorStatus);
         doReturn(jurorHistoryList).when(jurorHistoryRepository)
             .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         jurorRecordService.getJurorOverview(buildPayload("400"), jurorNumber, locCode);

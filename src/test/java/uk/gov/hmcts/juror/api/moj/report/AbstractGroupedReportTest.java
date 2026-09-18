@@ -105,7 +105,7 @@ class AbstractGroupedReportTest {
         assertThat(result).isNotNull();
         assertThat(result).hasSize(3);
         assertThat(toLinkedHashMapList(result.get("1231"))).hasSize(2)
-            .contains(tableData.get(0), tableData.get(2));
+            .contains(tableData.getFirst(), tableData.get(2));
         assertThat(toLinkedHashMapList(result.get("1232"))).hasSize(1)
             .contains(tableData.get(1));
         assertThat(toLinkedHashMapList(result.get("1233"))).hasSize(1)

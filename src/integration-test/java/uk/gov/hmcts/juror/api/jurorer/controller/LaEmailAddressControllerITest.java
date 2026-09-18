@@ -111,7 +111,7 @@ public class LaEmailAddressControllerITest extends AbstractIntegrationTest {
                 .as("LA 004 should have 1 email address (inactive user included)")
                 .hasSize(1);
 
-            ExportLaEmailAddressResponseDto.EmailAddressDto email = la004.getEmailAddresses().get(0);
+            ExportLaEmailAddressResponseDto.EmailAddressDto email = la004.getEmailAddresses().getFirst();
             assertThat(email.getUsername()).isEqualTo("inactive@la004.gov.uk");
             assertThat(email.getActive())
                 .as("User should be marked as inactive")
@@ -171,7 +171,7 @@ public class LaEmailAddressControllerITest extends AbstractIntegrationTest {
                 .as("Should include inactive users by default")
                 .hasSize(1);
 
-            assertThat(la004.getEmailAddresses().get(0).getActive())
+            assertThat(la004.getEmailAddresses().getFirst().getActive())
                 .as("User should be inactive")
                 .isFalse();
         }
@@ -268,7 +268,7 @@ public class LaEmailAddressControllerITest extends AbstractIntegrationTest {
                 .as("LA 002 should have 1 email address")
                 .hasSize(1);
 
-            assertThat(la002.getEmailAddresses().get(0).getUsername())
+            assertThat(la002.getEmailAddresses().getFirst().getUsername())
                 .isEqualTo("user1@la002.gov.uk");
         }
 
@@ -315,7 +315,7 @@ public class LaEmailAddressControllerITest extends AbstractIntegrationTest {
                 .as("LA 004 should have 1 email address")
                 .hasSize(1);
 
-            ExportLaEmailAddressResponseDto.EmailAddressDto email = la004.getEmailAddresses().get(0);
+            ExportLaEmailAddressResponseDto.EmailAddressDto email = la004.getEmailAddresses().getFirst();
             assertThat(email.getUsername()).isEqualTo("inactive@la004.gov.uk");
             assertThat(email.getActive())
                 .as("User should be marked as inactive")

@@ -54,7 +54,7 @@ public class BureauJwtPayload {
     public BureauJwtPayload(User user, UserType activeType, String locCode, List<CourtLocation> courtLocations) {
         this.owner = courtLocations.stream()
             .filter(courtLocation -> courtLocation.getType() == CourtType.MAIN)
-            .toList().get(0).getOwner();
+            .toList().getFirst().getOwner();
         this.locCode = locCode;
         this.email = user.getEmail();
         this.login = user.getUsername();

@@ -892,7 +892,7 @@ class AdministrationControllerITest extends AbstractIntegrationTest {
 
                 List<ExpenseRates> expenseRates = expenseRatesRepository.findAll();
                 assertThat(expenseRates).hasSize(3);
-                assertThat(expenseRates.get(0)).isEqualTo(
+                assertThat(expenseRates.getFirst()).isEqualTo(
                     ExpenseRates.builder()
                         .id(999_998)
                         .carMileageRatePerMile0Passengers(new BigDecimal("0.10000"))

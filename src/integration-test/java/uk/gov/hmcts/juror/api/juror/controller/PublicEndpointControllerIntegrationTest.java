@@ -458,7 +458,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Iterable<JurorReasonableAdjustment> reasonableAdjustmentList = jurorReasonableAdjustmentRepository
                                                                                                         .findAll();
             assertThat(reasonableAdjustmentList).hasSize(1);
-            JurorResponseCjsEmployment cjsEmployment = cjsEmploymentList.get(0);
+            JurorResponseCjsEmployment cjsEmployment = cjsEmploymentList.getFirst();
             assertThat(cjsEmployment.getCjsEmployer()).isEqualTo("Mega City 1 Hall of Justice");
             JurorReasonableAdjustment reasonableAdjustment = reasonableAdjustmentList.iterator().next();
             assertThat(reasonableAdjustment.getReasonableAdjustment().getCode()).isEqualTo("V");
@@ -983,8 +983,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
             List<JurorResponseCjsEmployment> cjsEmploymentList = jurorResponseCjsEmploymentRepositoryMod.findAll();
             assertThat(cjsEmploymentList.size()).isEqualTo(1);
-            assertThat(cjsEmploymentList.get(0).getCjsEmployer()).isEqualTo("police");
-            assertThat(cjsEmploymentList.get(0).getCjsEmployerDetails())
+            assertThat(cjsEmploymentList.getFirst().getCjsEmployer()).isEqualTo("police");
+            assertThat(cjsEmploymentList.getFirst().getCjsEmployerDetails())
                 .isEqualTo("I am invalid because I am a forensic examiner");
 
             // check the response submitted history is present for juror
@@ -1408,7 +1408,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
             List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository.findByJurorNo("644892530");
             assertThat(bulkPrintDataList.size()).isEqualTo(1);
-            assertThat(bulkPrintDataList.get(0).getFormAttribute().getFormType())
+            assertThat(bulkPrintDataList.getFirst().getFormAttribute().getFormType())
                 .as("form code should be withdrawal codes").isIn("5224", "5224C");
 
         });
@@ -1502,7 +1502,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
             List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository.findByJurorNo("644892530");
             assertThat(bulkPrintDataList.size()).isEqualTo(1);
-            assertThat(bulkPrintDataList.get(0).getFormAttribute().getFormType())
+            assertThat(bulkPrintDataList.getFirst().getFormAttribute().getFormType())
                 .as("form code should be withdrawal codes").isIn("5224", "5224C").isIn("5224", "5224C");
         });
 

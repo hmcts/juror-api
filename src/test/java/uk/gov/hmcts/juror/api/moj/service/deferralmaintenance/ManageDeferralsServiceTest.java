@@ -644,8 +644,8 @@ class ManageDeferralsServiceTest {
 
             assertThat(response.getEligible()).isEqualTo(0);
             assertThat(response.getAgeDisqualified()).hasSize(1);
-            assertThat(response.getAgeDisqualified().get(0).getJurorNumber()).isEqualTo(JUROR_123456789);
-            assertThat(response.getAgeDisqualified().get(0).getDob())
+            assertThat(response.getAgeDisqualified().getFirst().getJurorNumber()).isEqualTo(JUROR_123456789);
+            assertThat(response.getAgeDisqualified().getFirst().getDob())
                 .isEqualTo(LocalDate.of(1910, 1, 1));
 
             verify(jurorPoolRepository, never()).save(any());
@@ -790,7 +790,7 @@ class ManageDeferralsServiceTest {
                 verify(jurorPoolRepository, times(2)).save(jurorPoolCaptor.capture());
 
                 // the first save is the new juror pool created by createMovedDeferredJurorPool
-                JurorPool savedNewJurorPool = jurorPoolCaptor.getAllValues().get(0);
+                JurorPool savedNewJurorPool = jurorPoolCaptor.getAllValues().getFirst();
                 assertThat(savedNewJurorPool.isOnCall())
                     .as("on_call should be cleared on the new pool record created from a moved deferred juror")
                     .isFalse();
@@ -833,7 +833,7 @@ class ManageDeferralsServiceTest {
 
                 verify(jurorPoolRepository, times(2)).save(jurorPoolCaptor.capture());
 
-                JurorPool savedNewJurorPool = jurorPoolCaptor.getAllValues().get(0);
+                JurorPool savedNewJurorPool = jurorPoolCaptor.getAllValues().getFirst();
                 assertThat(savedNewJurorPool.isOnCall())
                     .as("on_call should remain false on the new pool record when juror was not on call")
                     .isFalse();
@@ -1388,7 +1388,7 @@ class ManageDeferralsServiceTest {
             .findByPoolNumber("111111111");
         doReturn(jurorPools).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
-        doReturn(jurorPools.get(0)).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
+        doReturn(jurorPools.getFirst()).when(jurorPoolService).getJurorPoolFromUser(jurorNumber);
         doReturn(Optional.of(jurorStatus)).when(jurorStatusRepository).findById(any());
     }
 
@@ -2571,7 +2571,7 @@ class ManageDeferralsServiceTest {
         final List<JurorPool> poolMembers = createJurorPools(jurorNumbers, poolNumber, payload.getOwner(),
             courtLocationCode);
 
-        poolMembers.get(0).getJuror().setDateOfBirth(null);
+        poolMembers.getFirst().getJuror().setDateOfBirth(null);
 
         final List<CurrentlyDeferred> deferrals = createDeferrals(payload.getOwner(), courtLocationCode, jurorNumbers,
             LocalDate.now().plusWeeks(5));
@@ -2744,12 +2744,12 @@ class ManageDeferralsServiceTest {
 
         DeferralListDto dto = manageDeferralsService.getDeferralsByCourtLocationCode(payload, courtLocationCode);
         assertThat(dto.getDeferrals().size()).isEqualTo(3);
-        assertThat(dto.getDeferrals().get(0).getCourtLocation()).isEqualTo(courtLocationCode);
-        assertThat(dto.getDeferrals().get(0).getJurorNumber()).isEqualTo("111111111");
-        assertThat(dto.getDeferrals().get(0).getFirstName()).isEqualTo("FNAME");
-        assertThat(dto.getDeferrals().get(0).getLastName()).isEqualTo("LNAME");
-        assertThat(dto.getDeferrals().get(0).getPoolNumber()).isEqualTo("123456789");
-        assertThat(dto.getDeferrals().get(0).getDeferredTo()).isEqualTo("2023-06-16");
+        assertThat(dto.getDeferrals().getFirst().getCourtLocation()).isEqualTo(courtLocationCode);
+        assertThat(dto.getDeferrals().getFirst().getJurorNumber()).isEqualTo("111111111");
+        assertThat(dto.getDeferrals().getFirst().getFirstName()).isEqualTo("FNAME");
+        assertThat(dto.getDeferrals().getFirst().getLastName()).isEqualTo("LNAME");
+        assertThat(dto.getDeferrals().getFirst().getPoolNumber()).isEqualTo("123456789");
+        assertThat(dto.getDeferrals().getFirst().getDeferredTo()).isEqualTo("2023-06-16");
         verify(currentlyDeferredRepository, times(1))
             .getDeferralsByCourtLocationCode(any(), any());
     }
@@ -2780,12 +2780,12 @@ class ManageDeferralsServiceTest {
             any(),
             anyBoolean());
 
-        DeferralOptionsDto.OptionSummaryDto summaryDto = deferralOptionsDto.getDeferralPoolsSummary().get(0);
-        assertThat(summaryDto.getDeferralOptions().get(0).getPoolNumber()).isEqualTo("111111111");
-        assertThat(summaryDto.getDeferralOptions().get(0).getServiceStartDate())
+        DeferralOptionsDto.OptionSummaryDto summaryDto = deferralOptionsDto.getDeferralPoolsSummary().getFirst();
+        assertThat(summaryDto.getDeferralOptions().getFirst().getPoolNumber()).isEqualTo("111111111");
+        assertThat(summaryDto.getDeferralOptions().getFirst().getServiceStartDate())
             .isEqualTo(LocalDate.of(2023, 6, 22));
-        assertThat(summaryDto.getDeferralOptions().get(0).getUtilisation()).isEqualTo(4);
-        assertThat(summaryDto.getDeferralOptions().get(0).getUtilisationDescription())
+        assertThat(summaryDto.getDeferralOptions().getFirst().getUtilisation()).isEqualTo(4);
+        assertThat(summaryDto.getDeferralOptions().getFirst().getUtilisationDescription())
             .isEqualTo(PoolUtilisationDescription.NEEDED);
     }
 
@@ -3096,8 +3096,8 @@ class ManageDeferralsServiceTest {
 
             assertThat(response.getDisqualifiedCount()).isEqualTo(1);
             assertThat(response.getDisqualified()).hasSize(1);
-            assertThat(response.getDisqualified().get(0).getJurorNumber()).isEqualTo(JUROR_123456789);
-            assertThat(response.getDisqualified().get(0).getDob()).isEqualTo(LocalDate.of(1990, 6, 1));
+            assertThat(response.getDisqualified().getFirst().getJurorNumber()).isEqualTo(JUROR_123456789);
+            assertThat(response.getDisqualified().getFirst().getDob()).isEqualTo(LocalDate.of(1990, 6, 1));
             assertThat(response.getFailedToDisqualify()).isEmpty();
 
             verify(jurorRepository, times(1)).save(any());
@@ -3345,9 +3345,9 @@ class ManageDeferralsServiceTest {
 
             assertThat(response.getDisqualifiedCount()).isEqualTo(1);
             assertThat(response.getDisqualified()).hasSize(1);
-            assertThat(response.getDisqualified().get(0).getJurorNumber()).isEqualTo(JUROR_123456789);
+            assertThat(response.getDisqualified().getFirst().getJurorNumber()).isEqualTo(JUROR_123456789);
             assertThat(response.getFailedToDisqualify()).hasSize(1);
-            assertThat(response.getFailedToDisqualify().get(0).getJurorNumber())
+            assertThat(response.getFailedToDisqualify().getFirst().getJurorNumber())
                 .isEqualTo(JUROR_111111111);
 
             verify(jurorRepository, times(1)).save(any());

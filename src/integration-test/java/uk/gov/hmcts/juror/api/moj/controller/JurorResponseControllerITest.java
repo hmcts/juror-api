@@ -447,7 +447,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             executeInTransaction(() -> {
                 List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(
                     jurorNumber, true);
-                JurorPool jurorPool = jurorPools.get(0);
+                JurorPool jurorPool = jurorPools.getFirst();
                 Juror juror = jurorPool.getJuror();
 
                 // assert the changes to pool were not applied
@@ -501,7 +501,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             executeInTransaction(() -> {
                 List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(
                     jurorNumber, true);
-                JurorPool jurorPool = jurorPools.get(0);
+                JurorPool jurorPool = jurorPools.getFirst();
                 Juror juror = jurorPool.getJuror();
 
                 // assert the changes to pool were not applied
@@ -551,7 +551,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             executeInTransaction(() -> {
                 final String jurorNumber = "644892530";
                 List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true);
-                JurorPool jurorPool = jurorPools.get(0);
+                JurorPool jurorPool = jurorPools.getFirst();
                 Juror juror = jurorPool.getJuror();
 
                 // assert the changes to pool were not applied
@@ -601,7 +601,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             executeInTransaction(() -> {
                 final String jurorNumber = "644892530";
                 List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true);
-                JurorPool jurorPool = jurorPools.get(0);
+                JurorPool jurorPool = jurorPools.getFirst();
                 Juror juror = jurorPool.getJuror();
 
                 // assert the changes to pool were not applied
@@ -652,7 +652,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             assertThat(body.getRecordCount()).as("Record count should be 1").isEqualTo(1);
 
             // validate data
-            JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
+            JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().getFirst();
             validateData(data, JUROR_NUMBER_111222333, "TestOne",
                 "PersonOne", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8, 0, 0, 0));
@@ -675,7 +675,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             // validate data
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
 
-            validateData(records.get(0), "666666666", "Test6Paper",
+            validateData(records.getFirst(), "666666666", "Test6Paper",
                          "Person6Paper", OFFICER_ASSIGNED_BUREAU_OFFICER,
                          ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 10, 0, 0, 0));
 
@@ -700,7 +700,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             assertThat(body.getRecordCount()).as("Record count should be 1").isEqualTo(1);
 
             // validate data
-            JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
+            JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().getFirst();
             validateData(data, JUROR_NUMBER_555555555, "Test5Paper",
                 "Person5Paper", "JDoe",
                 ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9, 10, 0, 0));
@@ -720,7 +720,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             assertThat(body.getRecordCount()).as("Record count should be 1").isEqualTo(1);
 
             // validate data
-            JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
+            JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().getFirst();
             validateData(data, JUROR_NUMBER_555555555, "Test5Paper",
                 "Person5Paper", "JDoe",
                 ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9, 10, 0, 0));
@@ -740,7 +740,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             assertThat(body.getRecordCount()).as("Record count should be 1").isEqualTo(1);
 
             // validate data
-            JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
+            JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().getFirst();
             validateData(data, JUROR_NUMBER_555555555, "Test5Paper",
                 "Person5Paper", "JDoe",
                 ProcessingStatus.AWAITING_COURT_REPLY, LocalDateTime.of(2023, 3, 9, 10, 0, 0));
@@ -774,7 +774,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             assertThat(body.getRecordCount()).as("Record count should be 1").isEqualTo(1);
 
             // validate data
-            JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().get(0);
+            JurorResponseRetrieveResponseDto.JurorResponseDetails data = body.getRecords().getFirst();
             validateData(data, JUROR_NUMBER_111222333, "TestOne",
                 "PersonOne", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8, 0, 0, 0));
@@ -795,7 +795,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
             // validate data - results should be in correct
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
-            validateData(records.get(0), JUROR_NUMBER_111222333, "TestOne",
+            validateData(records.getFirst(), JUROR_NUMBER_111222333, "TestOne",
                 "PersonOne", OFFICER_ASSIGNED_BUREAU_OFFICER,
                 ProcessingStatus.TODO, LocalDateTime.of(2023, 3, 8, 0, 0, 0));
 
@@ -837,7 +837,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             // validate data - results should be in correct (desc order by received date)
             List<JurorResponseRetrieveResponseDto.JurorResponseDetails> records = body.getRecords();
 
-            validateData(records.get(0), "666666666", "Test6Paper",
+            validateData(records.getFirst(), "666666666", "Test6Paper",
                          "Person6Paper", OFFICER_ASSIGNED_BUREAU_OFFICER,
                          ProcessingStatus.CLOSED, LocalDateTime.of(2023, 3, 10, 0, 0, 0));
 
@@ -952,7 +952,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
 
     private void assertTemplateExchange(JurorPersonalDetailsDto jurorPersonalDetailsDto, String jurorNumber,
                                         String userType, String owner, HttpStatus httpStatus) {
-        final URI uri = URI.create(String.format(URI_PERSONAL_DETAILS, jurorNumber));
+        final URI uri = URI.create(URI_PERSONAL_DETAILS.formatted(jurorNumber));
         httpHeaders =
             initialiseHeaders(userType,
                 "400".equals(owner) ? UserType.BUREAU : UserType.COURT,
@@ -1065,7 +1065,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             AbstractJurorResponse jurorResponse = createGenericJurorResponse(replyMethod, jurorNumber);
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true)
-                    .get(0);
+                    .getFirst();
             Juror juror = jurorPool.getJuror();
 
             assertThat(juror.getPendingTitle()).isEqualToIgnoringCase(jurorResponse.getTitle());
@@ -1102,7 +1102,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
         executeInTransaction(() -> {
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true)
-                    .get(0);
+                    .getFirst();
             Juror juror = jurorPool.getJuror();
 
             assertThat(juror.isResponded()).as("Juror record should be updated and marked as responded").isTrue();
@@ -1140,7 +1140,7 @@ class JurorResponseControllerITest extends AbstractIntegrationTest {
             AbstractJurorResponse jurorResponse = createGenericJurorResponse(replyMethod, jurorNumber);
             JurorPool jurorPool =
                 jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true)
-                    .get(0);
+                    .getFirst();
             final Juror juror = jurorPool.getJuror();
 
             assertThat(jurorResponse.isProcessingComplete())

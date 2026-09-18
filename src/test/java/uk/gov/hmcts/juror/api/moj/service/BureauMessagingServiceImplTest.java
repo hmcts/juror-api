@@ -204,7 +204,7 @@ class BureauMessagingServiceImplTest {
                 assertThat(response.getSuccessfulEmailsSent()).isEqualTo(0);
                 assertThat(response.getFailedNotifications()).hasSize(1);
 
-                BureauEmailResponseDto.FailedNotification failure = response.getFailedNotifications().get(0);
+                BureauEmailResponseDto.FailedNotification failure = response.getFailedNotifications().getFirst();
                 assertThat(failure.getJurorNumber()).isEqualTo(JUROR_NUMBER);
                 assertThat(failure.getEmailAddress()).isEqualTo(EMAIL);
                 assertThat(failure.getFailureReason())
@@ -231,7 +231,7 @@ class BureauMessagingServiceImplTest {
                 BureauEmailResponseDto response = bureauMessagingService.sendEmailsToJurors(request);
 
                 assertThat(response.getFailedNotifications()).hasSize(1);
-                assertThat(response.getFailedNotifications().get(0).getFailureReason())
+                assertThat(response.getFailedNotifications().getFirst().getFailureReason())
                     .isEqualTo(BureauEmailResponseDto.FailureReason.TEMPLATE_NOT_CONFIGURED);
 
                 verifyNoInteractions(notifyAdapter);
@@ -257,7 +257,7 @@ class BureauMessagingServiceImplTest {
                 assertThat(response.getSuccessfulEmailsSent()).isEqualTo(0);
                 assertThat(response.getFailedNotifications()).hasSize(1);
 
-                BureauEmailResponseDto.FailedNotification failure = response.getFailedNotifications().get(0);
+                BureauEmailResponseDto.FailedNotification failure = response.getFailedNotifications().getFirst();
                 assertThat(failure.getJurorNumber()).isEqualTo(JUROR_NUMBER);
                 assertThat(failure.getEmailAddress()).isEqualTo(EMAIL);
                 assertThat(failure.getFailureReason())
@@ -291,7 +291,7 @@ class BureauMessagingServiceImplTest {
                 assertThat(response.getSuccessfulEmailsSent()).isEqualTo(0);
                 assertThat(response.getFailedNotifications()).hasSize(1);
 
-                BureauEmailResponseDto.FailedNotification failure = response.getFailedNotifications().get(0);
+                BureauEmailResponseDto.FailedNotification failure = response.getFailedNotifications().getFirst();
                 assertThat(failure.getJurorNumber()).isEqualTo(JUROR_NUMBER);
                 assertThat(failure.getEmailAddress()).isEqualTo(EMAIL);
                 assertThat(failure.getFailureReason())
@@ -327,9 +327,9 @@ class BureauMessagingServiceImplTest {
                 assertThat(response.getTotalJurorsRequested()).isEqualTo(2);
                 assertThat(response.getSuccessfulEmailsSent()).isEqualTo(1);
                 assertThat(response.getFailedNotifications()).hasSize(1);
-                assertThat(response.getFailedNotifications().get(0).getJurorNumber())
+                assertThat(response.getFailedNotifications().getFirst().getJurorNumber())
                     .isEqualTo(failingJurorNumber);
-                assertThat(response.getFailedNotifications().get(0).getFailureReason())
+                assertThat(response.getFailedNotifications().getFirst().getFailureReason())
                     .isEqualTo(BureauEmailResponseDto.FailureReason.JUROR_NOT_FOUND);
 
                 verify(notifyAdapter, times(1)).sendCommsEmail(any(EmailNotification.class));

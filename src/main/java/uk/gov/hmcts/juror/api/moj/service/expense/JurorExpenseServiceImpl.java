@@ -128,7 +128,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
     }
 
     AppearanceStage getAppearanceStage(List<Appearance> appearances) {
-        AppearanceStage firstAppearanceStage = appearances.get(0).getAppearanceStage();
+        AppearanceStage firstAppearanceStage = appearances.getFirst().getAppearanceStage();
 
         //Get all unique appearance stages
         Set<AppearanceStage> optionalAppearance = appearances.stream()
@@ -830,7 +830,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 List<JurorPool> jurorPools = jurorPoolRepository
                     .findByPoolCourtLocationLocCodeAndJurorJurorNumber(locCode, unpaidExpense.getJurorNumber());
                 if (jurorPools.size() == 1) {
-                    unpaidExpense.setPoolNumber(jurorPools.get(0).getPoolNumber());
+                    unpaidExpense.setPoolNumber(jurorPools.getFirst().getPoolNumber());
                 } else {
                     log.info("Could not determine pool number for juror: {}", unpaidExpense.getJurorNumber());
                 }
@@ -928,7 +928,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
             return;
         }
 
-        Appearance firstAppearance = appearances.get(0);
+        Appearance firstAppearance = appearances.getFirst();
         FinancialAuditDetails financialAuditDetails =
             financialAuditService.createFinancialAuditDetail(jurorNumber,
                 firstAppearance.getCourtLocation().getLocCode(),
@@ -998,7 +998,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
                 validateExpense(appearance);
             });
 
-        Appearance lastAppearance = appearances.get(appearances.size() - 1);
+        Appearance lastAppearance = appearances.getLast();
         lastAppearance.setSmartCardAmountDue(lastDayOffSet);
         validateExpense(lastAppearance);
         saveAppearancesWithExpenseRateIdUpdate(appearances);
@@ -1075,7 +1075,7 @@ public class JurorExpenseServiceImpl implements JurorExpenseService {
 
     PendingApproval mapAppearancesToPendingApprovalSinglePool(
         String locCode, List<Appearance> appearances, boolean isReapproval) {
-        final String jurorNumber = appearances.get(0).getJurorNumber();
+        final String jurorNumber = appearances.getFirst().getJurorNumber();
         final Juror juror = getJuror(jurorNumber);
 
         return PendingApproval.builder()

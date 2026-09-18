@@ -337,8 +337,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
             if (jurorPool.getCourt() == null || jurorPool.getCourt().getLocCode() == null) {
                 throw new MojException.NotFound(
-                    String.format("Court location for pool member %s cannot be found",
-                                  jurorPool.getJurorNumber()), null);
+                    "Court location for pool member %s cannot be found".formatted(
+                        jurorPool.getJurorNumber()), null);
             }
 
             updateJurorHistory(jurorPool, jurorPool.getPoolNumber(), auditorUsername, JurorHistory.ADDED,
@@ -391,7 +391,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
         Optional<PoolRequest> poolRequestOpt = poolRequestRepository.findById(dto.getPoolNumber());
         PoolRequest poolRequest = poolRequestOpt.orElseThrow(() ->
-                 new MojException.NotFound(String.format("Cannot find pool request - %s", dto.getPoolNumber()), null));
+                 new MojException.NotFound("Cannot find pool request - %s".formatted(dto.getPoolNumber()), null));
 
         final LocalDate serviceStartDate = poolRequest.getReturnDate();
 
@@ -823,8 +823,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
         List<String> preferredDeferralDatesAsString = getPreferredDeferralDates(jurorNumber, payload);
         if (preferredDeferralDatesAsString.isEmpty()) {
-            throw new MojException.NotFound(String.format("Juror  %s: No deferral dates provided in the response ",
-                                                          jurorNumber), null);
+            throw new MojException.NotFound("Juror  %s: No deferral dates provided in the response ".formatted(
+                jurorNumber), null);
         }
 
         List<LocalDate> preferredDeferralDates = preferredDeferralDatesAsString.stream()
@@ -843,7 +843,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     @Override
     public void deleteDeferral(BureauJwtPayload payload, String jurorNumber) {
 
-        String customErrorMessage = String.format("Cannot find deferred record for juror number %s - ", jurorNumber);
+        String customErrorMessage = "Cannot find deferred record for juror number %s - ".formatted(jurorNumber);
 
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, payload.getOwner());
@@ -1006,8 +1006,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
         if (jurorPool.getCourt() == null || jurorPool.getCourt().getLocCode() == null) {
             throw new MojException.NotFound(
-                String.format("Court location for pool member %s cannot be found",
-                              jurorPool.getJurorNumber()), null);
+                "Court location for pool member %s cannot be found".formatted(
+                    jurorPool.getJurorNumber()), null);
         }
 
         String otherInfo = POSTPONE_REASON_CODE.equalsIgnoreCase(deferralReasonDto.getExcusalReasonCode())
@@ -1030,7 +1030,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
         // check to see whether the response has been completed already
         if (BooleanUtils.isTrue(jurorResponse.isProcessingComplete())) {
-            final String message = String.format("Response %s has been previously merged", jurorNumber);
+            final String message = "Response %s has been previously merged".formatted(jurorNumber);
             log.error("Response {} has previously been completed at {}", jurorNumber,
                       jurorResponse.getCompletedAt());
             throw new JurorResponseAlreadyCompletedException(message);

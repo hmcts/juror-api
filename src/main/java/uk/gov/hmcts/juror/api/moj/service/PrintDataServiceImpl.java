@@ -248,7 +248,7 @@ public class PrintDataServiceImpl implements PrintDataService {
                 "Attempted to reprint request info letter for juror with no existing request info letter", null);
         }
 
-        BulkPrintData bulkPrintData = bulkPrintDataList.get(0);
+        BulkPrintData bulkPrintData = bulkPrintDataList.getFirst();
         BulkPrintData newBulkPrintData = BulkPrintData.builder()
             .creationDate(LocalDate.now())
             .formAttribute(bulkPrintData.getFormAttribute())

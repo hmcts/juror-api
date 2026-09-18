@@ -104,7 +104,7 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
         assertThat(tableData.getHeadings()).hasSize(8);
 
         // validate all the headings are present
-        AbstractReportResponse.TableData.Heading tableHeading = tableData.getHeadings().get(0);
+        AbstractReportResponse.TableData.Heading tableHeading = tableData.getHeadings().getFirst();
         assertThat(tableHeading.getId()).isEqualTo("juror_number");
         assertThat(tableHeading.getName()).isEqualTo("Juror Number");
         assertThat(tableHeading.getDataType()).isEqualTo("String");
