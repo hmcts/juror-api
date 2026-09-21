@@ -529,8 +529,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
                 }
             }
 
-            jurorHistoryService.createPostponementLetterHistory(jurorPool, "", CommunicationChannel.LETTER);
-
             if (payload.getUserType() == UserType.BUREAU) {
                 printPostponementLetter(payload.getOwner(), jurorPool);
             }

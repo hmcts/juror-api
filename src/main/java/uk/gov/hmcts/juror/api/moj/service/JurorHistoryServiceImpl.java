@@ -447,7 +447,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
 
     @Override
-    public void createPostponementLetterHistory(JurorPool jurorPool, String confirmationLetter,
+    public void createPostponementLetterHistory(JurorPool jurorPool, String postponedLetter,
                                                 CommunicationChannel communicationChannel) {
         if (jurorPool.getDeferralDate() == null || !"P".equals(jurorPool.getDeferralCode())) {
             throw new MojException.InternalServerError("A postponed juror_pool record should exist for "
@@ -456,7 +456,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         }
 
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.POSTPONED_LETTER,
-                                               channelInfo("Postponement Letter", communicationChannel),
+                                               channelInfo(postponedLetter, communicationChannel),
                                                jurorPool.getDeferralDate(),
                                                jurorPool.getDeferralCode());
 

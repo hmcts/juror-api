@@ -235,7 +235,7 @@ class ManageDeferralsServiceTest {
             verify(jurorPoolRepository, times(2)).saveAndFlush(any());
             verify(jurorPoolRepository, times(2)).save(any());
             verify(jurorHistoryRepository, times(2)).save(any());
-            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "",
+            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "Postponed Letter",
                                                                         CommunicationChannel.LETTER);
             verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111111);
             verify(poolRequestRepository, times(2)).findByPoolNumber(POOL_111111112);
@@ -292,8 +292,7 @@ class ManageDeferralsServiceTest {
             verify(printDataService, never()).printConfirmationLetter(any());
             verify(printDataService, never()).printPostponeLetter(any());
             verify(jurorHistoryService, never()).createConfirmationLetterHistory(any(), anyString(), any());
-            verify(jurorHistoryService, never()).createPostponementLetterHistory(jurorPool, "Postponed Letter",
-                                                                                 CommunicationChannel.LETTER);
+            verify(jurorHistoryService, never()).createPostponementLetterHistory(any(), anyString(), any());
         }
 
         @Test
@@ -334,7 +333,7 @@ class ManageDeferralsServiceTest {
             verify(jurorPoolRepository, times(2)).saveAndFlush(any());
             verify(jurorPoolRepository, times(2)).save(any());
             verify(jurorHistoryRepository, times(2)).save(any());
-            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "",
+            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "Postponed Letter",
                                                                         CommunicationChannel.LETTER);
             verify(poolRequestRepository, times(1)).findByPoolNumber(POOL_111111111);
             verify(poolRequestRepository, times(2)).findByPoolNumber(POOL_111111112);
@@ -397,9 +396,9 @@ class ManageDeferralsServiceTest {
             verify(jurorPoolRepository, times(4)).saveAndFlush(any());
             verify(jurorPoolRepository, times(4)).save(any());
             verify(jurorHistoryRepository, times(4)).save(any());
-            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool1, "",
+            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool1, "Postponed Letter",
                                                                         CommunicationChannel.LETTER);
-            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool2, "",
+            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool2, "Postponed Letter",
                                                                         CommunicationChannel.LETTER);
             verify(poolRequestRepository, times(6)).findByPoolNumber(anyString());
             verify(poolMemberSequenceService, times(2))
@@ -558,7 +557,7 @@ class ManageDeferralsServiceTest {
             verify(jurorPoolRepository, times(0)).saveAndFlush(any());
             verify(jurorPoolRepository, times(2)).save(any());
             verify(jurorHistoryRepository, times(1)).save(any());
-            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "",
+            verify(jurorHistoryService).createPostponementLetterHistory(jurorPool, "Postponed Letter",
                                                                         CommunicationChannel.LETTER);
             verify(poolRequestRepository, times(0)).findByPoolNumber(anyString());
             verify(poolMemberSequenceService, times(0))
