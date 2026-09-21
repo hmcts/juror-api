@@ -33,6 +33,7 @@ public class ReissueLetterRequestDto implements Serializable {
 
     @Getter
     @Builder
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class ReissueLetterRequestData {
 
         @JurorNumber

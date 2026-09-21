@@ -75,7 +75,7 @@ gradle_command=(
   --console=plain
   --stacktrace
   --info
-  integrationTest
+  integration
 )
 
 set +e

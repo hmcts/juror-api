@@ -2,10 +2,13 @@ package uk.gov.hmcts.juror.api.bureau.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
+import uk.gov.hmcts.juror.api.config.JurorPortalProperties;
 import uk.gov.hmcts.juror.api.config.WelshDayMonthTranslationConfig;
+import uk.gov.hmcts.juror.api.juror.domain.ApplicationSettings;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.ICourtLocation;
@@ -15,8 +18,10 @@ import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMapperMod;
 import uk.gov.hmcts.juror.api.moj.domain.TemporaryCourtAddress;
 import uk.gov.hmcts.juror.api.moj.domain.TemporaryCourtName;
 import uk.gov.hmcts.juror.api.moj.domain.TemporaryCourtPhone;
+import uk.gov.hmcts.juror.api.moj.repository.CourtEmailAttachmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.NotifyTemplateFieldRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 
@@ -41,7 +46,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLoadService {
 
     private static final String SERVICE_START_DATE = "SERVICESTARTDATE";
@@ -59,6 +64,9 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     private final WelshDayMonthTranslationConfig welshDayMonthTranslationConfig;
     private final PoolRequestService poolRequestService;
     private final WelshCourtLocationRepository welshCourtLocationRepository;
+    private final JurorPortalProperties jurorPortalProperties;
+    private final CourtEmailAttachmentRepository courtFileAttachmentRepository;
+    private final ApplicationSettingService applicationSettingService;
 
     /**
      * Establishes the mapping for the required fields required for the given templateId
@@ -101,7 +109,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         final WelshCourtLocation welshCourtLocation = getWelshCourtLocation(context.getCourtLocation().getLocCode());
         context.setWelshCourtLocation(welshCourtLocation);
         Boolean isWelshCourt = isWelshCourtAndComms(juror.getJuror().getWelsh(), welshCourtLocation);
-
+        resolveAttachmentUrls(context, isWelshCourt);
 
 
         final Map<String, String> map = new ConcurrentHashMap<>();
@@ -203,7 +211,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         final WelshCourtLocation welshCourtLocation = getWelshCourtLocation(context.getCourtLocation().getLocCode());
         context.setWelshCourtLocation(welshCourtLocation);
         Boolean isWelshCourt = isWelshCourtAndComms(jurorPool.getJuror().getWelsh(), welshCourtLocation);
-
+        resolveAttachmentUrls(context, isWelshCourt);
 
         final Map<String, String> map = new ConcurrentHashMap<>();
         try {
@@ -358,6 +366,57 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         }
         return myWelshTranslationMap;
     }
+
+    private String resolveCourtMapUrl(String locCode, boolean isWelshCourt) {
+        String baseUrl = jurorPortalProperties.getMapBaseUrl();
+        if (StringUtils.isBlank(baseUrl)) {
+            return "";
+        }
+        return courtFileAttachmentRepository.findById(locCode)
+            .map(a -> isWelshCourt && a.getFileNameCy() != null ? a.getFileNameCy() : a.getFileNameEn())
+            .map(filename -> buildUrl(baseUrl, filename))
+            .orElse("");
+    }
+
+    private String resolveStaticDocUrl(ApplicationSettings.Setting enSetting,
+                                       ApplicationSettings.Setting cySetting,
+                                       boolean isWelshCourt) {
+        String baseUrl = jurorPortalProperties.getDocumentBaseUrl();
+        if (StringUtils.isBlank(baseUrl)) {
+            return "";
+        }
+        ApplicationSettings.Setting setting = isWelshCourt ? cySetting : enSetting;
+        return applicationSettingService.getAppSetting(setting)
+            .map(ApplicationSettings::getValue)
+            .map(filename -> buildUrl(baseUrl, filename))
+            .orElse("");
+    }
+
+    private String buildUrl(String baseUrl, String filename) {
+        String url = baseUrl.endsWith("/") ? baseUrl + filename : baseUrl + "/" + filename;
+        return url.replace(" ", "%20");
+    }
+
+    private void resolveAttachmentUrls(NotifyTemplateMapperMod.Context context, boolean isWelshCourt) {
+        context.setCourtMapUrl(resolveCourtMapUrl(context.getCourtLocation().getLocCode(), isWelshCourt));
+        context.setAllowancesDocUrl(resolveStaticDocUrl(
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_ALLOWANCES_EN,
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_ALLOWANCES_CY,
+            isWelshCourt));
+        context.setLossOfEarningsDocUrl(resolveStaticDocUrl(
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_LOSS_OF_EARNINGS_EN,
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_LOSS_OF_EARNINGS_CY,
+            isWelshCourt));
+        context.setGuidanceEmployersDocUrl(resolveStaticDocUrl(
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_GUIDANCE_EMPLOYERS_EN,
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_GUIDANCE_EMPLOYERS_CY,
+            isWelshCourt));
+        context.setJuryGuideDocUrl(resolveStaticDocUrl(
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_JURY_GUIDE_EN,
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_JURY_GUIDE_CY,
+            isWelshCourt));
+    }
+
 
     /**
      * Gets the attendance time for a summons

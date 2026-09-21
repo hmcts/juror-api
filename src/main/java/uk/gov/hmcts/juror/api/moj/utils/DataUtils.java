@@ -21,7 +21,7 @@ import java.util.Locale;
 @Slf4j
 @SuppressWarnings({"PMD.UseObjectForClearerAPI", "PMD.TooManyMethods"})
 public final class DataUtils {
-    static final String RESPONSE_UPDATED_LOG = "Juror: %s. %s response will be updated with new value for %s";
+    static final String RESPONSE_UPDATED_LOG = "Juror: {}. {} response will be updated with new value for {}";
 
     private DataUtils() {
         // private constructor
@@ -33,7 +33,7 @@ public final class DataUtils {
         if ((currentValue != null && newValue != null && !currentValue.isEqual(newValue))
             || (currentValue == null && newValue != null)
             || (currentValue != null && newValue == null)) {
-            log.debug(String.format(RESPONSE_UPDATED_LOG, jurorNumber, replyMethod, fieldName));
+            log.debug(RESPONSE_UPDATED_LOG, jurorNumber, replyMethod, fieldName);
             return true;
         }
         return false;
@@ -42,7 +42,7 @@ public final class DataUtils {
     public static boolean hasValueChanged(String currentValue, String newValue, String fieldName, String jurorNumber,
                                           String replyMethod) {
         if ((currentValue != null && !currentValue.equals(newValue)) || (currentValue == null && newValue != null)) {
-            log.debug(String.format(RESPONSE_UPDATED_LOG, jurorNumber, replyMethod, fieldName));
+            log.debug(RESPONSE_UPDATED_LOG, jurorNumber, replyMethod, fieldName);
             return true;
         }
         return false;
@@ -51,7 +51,7 @@ public final class DataUtils {
     public static boolean hasValueChanged(Boolean currentValue, Boolean newValue, String fieldName,
                                           String jurorNumber, String replyMethod) {
         if ((currentValue != null && !currentValue.equals(newValue)) || (currentValue == null && newValue != null)) {
-            log.debug(String.format(RESPONSE_UPDATED_LOG, jurorNumber, replyMethod, fieldName));
+            log.debug(RESPONSE_UPDATED_LOG, jurorNumber, replyMethod, fieldName);
             return true;
         }
         return false;

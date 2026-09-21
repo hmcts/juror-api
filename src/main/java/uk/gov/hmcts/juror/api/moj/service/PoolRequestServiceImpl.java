@@ -83,8 +83,8 @@ public class PoolRequestServiceImpl implements PoolRequestService {
 
         validateNewPoolRequest(poolRequestDto);
 
-        log.debug(String.format("Pool Request: %s to be created (court-only flag: %s)",
-            poolRequestDto.getPoolNumber(), poolRequestDto.isCourtOnly()));
+        log.debug("Pool Request: {} to be created (court-only flag: {})",
+            poolRequestDto.getPoolNumber(), poolRequestDto.isCourtOnly());
 
         if (poolRequestDto.isCourtOnly()) {
             createPoolForCourtUse(poolRequestDto, payload);
@@ -121,7 +121,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     @Override
     @Transactional(readOnly = true)
     public DayType checkAttendanceDate(@NotNull LocalDate attendanceDate, @NotBlank String locationCode) {
-        log.debug(String.format("Check attendance date %s for court location %s", attendanceDate, locationCode));
+        log.debug("Check attendance date {} for court location {}", attendanceDate, locationCode);
         DayOfWeek dayOfWeek = attendanceDate.getDayOfWeek();
         switch (dayOfWeek) {
             case SATURDAY, SUNDAY:
@@ -146,7 +146,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
      */
     @Override
     public PoolNumbersListDto getPoolNumbers(String poolNumberPrefix) {
-        log.trace(String.format("Enter findAllPoolNumbersByPoolNumberPrefix: %s", poolNumberPrefix));
+        log.trace("Enter findAllPoolNumbersByPoolNumberPrefix: {}", poolNumberPrefix);
         int poolNumberIndex = 0;
         int attendanceDateIndex = 1;
         List<PoolNumbersListDto.PoolNumbersDataDto> poolNumbers = new ArrayList<>();
@@ -155,10 +155,10 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         poolRequestRecords = poolRequestRepository.findAllPoolNumbersByPoolNumberPrefix(poolNumberPrefix);
 
         poolRequestRecords.forEach(poolRequest -> {
-            log.debug(String.format(
-                "Mapping pool data: %s to DTO",
+            log.debug(
+                "Mapping pool data: {} to DTO",
                 poolRequest.get(poolNumberIndex, String.class)
-            ));
+            );
             PoolNumbersListDto.PoolNumbersDataDto poolNumbersData =
                 new PoolNumbersListDto.PoolNumbersDataDto(
                     poolRequest.get(poolNumberIndex, String.class),
@@ -166,10 +166,10 @@ public class PoolRequestServiceImpl implements PoolRequestService {
                 );
 
             poolNumbers.add(poolNumbersData);
-            log.trace(String.format("Pool number and attendance date added: %s", poolNumbersData));
+            log.trace("Pool number and attendance date added: {}", poolNumbersData);
         });
 
-        log.debug(String.format("%d pools retrieved", poolNumbers.size()));
+        log.debug("{} pools retrieved", poolNumbers.size());
         return new PoolNumbersListDto(poolNumbers);
     }
 
@@ -266,14 +266,14 @@ public class PoolRequestServiceImpl implements PoolRequestService {
     private void useDeferrals(PoolRequest poolRequest, int deferralsRequested, String userId) {
         if (deferralsRequested > 0) {
             int actualDeferralsUsed = manageDeferralsService.useCourtDeferrals(poolRequest, deferralsRequested, userId);
-            log.trace(String.format("Out of %d requested deferrals, %d deferrals have successfully been used for "
-                + "pool: %s", deferralsRequested, actualDeferralsUsed, poolRequest.getPoolNumber()));
+            log.trace("Out of {} requested deferrals, {} deferrals have successfully been used for pool: {}",
+                deferralsRequested, actualDeferralsUsed, poolRequest.getPoolNumber());
 
             int numberRequested = poolRequest.getNumberRequested();
             poolRequest.setNumberRequested(numberRequested - actualDeferralsUsed);
-            log.debug(String.format("Number requested for this pool has been adjusted from %d to %d (deferrals used)",
+            log.debug("Number requested for this pool has been adjusted from {} to {} (deferrals used)",
                 numberRequested, numberRequested - actualDeferralsUsed
-            ));
+            );
         }
     }
 

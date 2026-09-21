@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
@@ -37,6 +38,7 @@ import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDateTime;
@@ -53,6 +55,8 @@ import java.util.List;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class JurorServiceImpl implements JurorService {
+    private static final String DIGITAL_BY_DEFAULT_FEATURE_FLAG = "digital-by-default";
+
     private final ReplyTypeRepository replyTypeRepository;
 
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
@@ -64,6 +68,7 @@ public class JurorServiceImpl implements JurorService {
     private final JurorRepository jurorRepository;
     private final JurorPoolService jurorPoolService;
     private final JurorHistoryService jurorHistoryService;
+    private final FeatureFlagConfigurationProperties featureFlags;
 
 
     @Override
@@ -114,6 +119,12 @@ public class JurorServiceImpl implements JurorService {
 
         if (jurorDetails == null) {
             log.debug("Pool entry not found for {}", jurorNumber);
+            return null;
+        }
+
+        if (!featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+            || !JurorPoolUtils.isDigitalByDefault(jurorDetails)) {
+            log.debug("Juror {} is not eligible for DBD information", jurorNumber);
             return null;
         }
 

@@ -84,7 +84,10 @@ import static org.mockito.ArgumentMatchers.anyString;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = "notify.disabled=false")
+    properties = {
+        "notify.disabled=false",
+        "feature-flags.flags.digital-by-default=true"
+    })
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods",
@@ -256,6 +259,11 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Test
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/PublicEndpointControllerTest_retrieveJurorById.sql")
+    @Sql(statements = {
+        "UPDATE juror_mod.court_location SET digital_by_default = true WHERE loc_code = '448'",
+        "UPDATE juror_mod.juror SET digital_by_default = true, dbd_preference = 'Digital' "
+            + "WHERE juror_number = '209092530'"
+    })
     public void retrieveDbdInformation_RequestWithValidNumber_ReturnsDbdInformation() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()

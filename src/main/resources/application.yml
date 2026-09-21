@@ -156,7 +156,11 @@ uk:
             url: /job/{job-key}/task/{task-id}/status
             retry-delay: 1000
             max-retries: 3
-
+        portal:
+          scheme: https
+          host: ${PUBLIC_HOST:localhost:3000}
+          document-path: /assets/documents/
+          map-path: /assets/documents/court-information/
 ---
 spring:
   config:
@@ -208,6 +212,12 @@ welshtranslations:
     - Hydref
     - Tachwedd
     - Rhagfyr
+uk:
+  gov:
+    hmcts:
+      juror:
+        portal:
+          scheme: http
 ---
 spring:
   config:
@@ -232,6 +242,8 @@ uk:
             host: localhost
             port: 8090
             scheme: http
+        portal:
+          scheme: http
 ---
 spring:
   config:

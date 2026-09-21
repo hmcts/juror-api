@@ -193,11 +193,11 @@ public class TrialServiceImpl implements TrialService {
         final String sourceTrialLocCode = request.getSourceTrialLocCode();
         final int countJurorsToMove = request.getJurors().size();
 
-        log.info("Reassigning %s panel members from trial %s to trial %s".formatted(
-            countJurorsToMove,
-            sourceTrialNumber,
-            targetTrialNumber
-        ));
+        log.info("Reassigning {} panel members from trial {} to trial {}",
+                 countJurorsToMove,
+                 sourceTrialNumber,
+                 targetTrialNumber
+        );
 
         // validate the user has access to both source and target court locations
         validateTrialsAndAccess(request);
@@ -478,7 +478,7 @@ public class TrialServiceImpl implements TrialService {
             panelRepository.findByTrialTrialNumberAndTrialCourtLocationLocCode(trialNo, locCode);
         List<Panel> panelMembersToReturn = getPanelMembersToReturn(jurorDetailRequestDto, panelList);
 
-        log.debug(String.format("found %d panel members to be returned", panelMembersToReturn.size()));
+        log.debug("found {} panel members to be returned", panelMembersToReturn.size());
 
         JurorStatus jurorStatus = new JurorStatus();
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
@@ -493,9 +493,9 @@ public class TrialServiceImpl implements TrialService {
                 jurorPoolRepository.saveAndFlush(jurorPool);
             }
 
-            log.debug(String.format("updated juror trial record for juror %s", panel.getJurorNumber()));
+            log.debug("updated juror trial record for juror {}", panel.getJurorNumber());
             jurorHistoryService.createReturnFromPanelHistory(jurorPool, panel);
-            log.debug(String.format("saved history item for juror %s", panel.getJurorNumber()));
+            log.debug("saved history item for juror {}", panel.getJurorNumber());
         }
     }
 
@@ -513,7 +513,7 @@ public class TrialServiceImpl implements TrialService {
 
         List<Panel> juryMembersToBeReturned = getPanelMembersToReturn(returnJuryDto.getJurors(), panelList);
 
-        log.info(String.format("found %d jury members to be returned", juryMembersToBeReturned.size()));
+        log.info("found {} jury members to be returned", juryMembersToBeReturned.size());
 
         // see if there is an attendance record for the date to get the audit number
         List<Appearance> appearances = appearanceRepository.findByLocCodeAndAttendanceDateAndTrialNumber(locationCode,
@@ -549,7 +549,7 @@ public class TrialServiceImpl implements TrialService {
                 if (appearance.getTimeIn() == null && StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
                     appearance.setAppearanceStage(AppearanceStage.CHECKED_IN);
                     appearance.setTimeIn(LocalTime.parse(returnJuryDto.getCheckIn()));
-                    log.debug("setting time in for juror %s".formatted(jurorNumber));
+                    log.debug("setting time in for juror {}",(jurorNumber));
                     jurorAppearanceService.saveAppearance(appearance);
                 }
 
@@ -558,7 +558,7 @@ public class TrialServiceImpl implements TrialService {
 
                     appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
                     appearance.setTimeOut(LocalTime.parse(returnJuryDto.getCheckOut()));
-                    log.debug("setting time out for juror %s".formatted(jurorNumber));
+                    log.debug("setting time out for juror {}",(jurorNumber));
 
                     if (appearance.getAttendanceAuditNumber() == null) {
                         //Only give them an attendance number if they were checked out via this process
@@ -586,9 +586,9 @@ public class TrialServiceImpl implements TrialService {
                 jurorPool.setStatus(jurorStatus);
             }
 
-            log.debug(String.format("updated juror trial record for juror %s", jurorNumber));
+            log.debug("updated juror trial record for juror {}", jurorNumber);
             jurorHistoryService.createReturnFromPanelHistory(jurorPool, panel);
-            log.debug(String.format(String.format("saved history item for juror %s", jurorNumber)));
+            log.debug("saved history item for juror {}", jurorNumber);
 
             if (Boolean.TRUE.equals(returnJuryDto.getCompleted())) {
                 completeService.completeServiceSingle(jurorPool, LocalDate.now());
@@ -706,14 +706,14 @@ public class TrialServiceImpl implements TrialService {
     private Appearance getJurorAppearanceForDate(JurorPool jurorPool, LocalDate attendanceDate, String locCode) {
 
         final String jurorNumber = jurorPool.getJurorNumber();
-        log.debug(String.format("Check for an appearance record for Juror: %s on %s", jurorNumber, attendanceDate));
+        log.debug("Check for an appearance record for Juror: {} on {}", jurorNumber, attendanceDate);
         Optional<Appearance> appearanceOpt = jurorAppearanceService
             .getAppearance(jurorNumber, attendanceDate, locCode);
-        log.debug(String.format("Appearance record for Juror: %s on %s at %s %s",
+        log.debug("Appearance record for Juror: {} on {} at {} {}",
             jurorNumber, attendanceDate, locCode,
             appearanceOpt.isPresent()
                 ? "already exists"
-                : "could not be found"));
+                : "could not be found");
 
         return appearanceOpt.orElse(
             appearanceCreationService.createAppearance(

@@ -16,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.repository.FormAttributeRepository;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -55,6 +56,7 @@ public class EmailDataServiceImpl implements EmailDataService {
 
         boolean welsh = jurorPool.getJuror().isWelsh();
         FormCode formCode = welsh ? FormCode.BI_DEFERRAL : FormCode.ENG_DEFERRAL;
+
         DigitalByDefaultEmailTemplate template = welsh
             ? DigitalByDefaultEmailTemplate.DEFERRAL_GRANTED_WELSH
             : DigitalByDefaultEmailTemplate.DEFERRAL_GRANTED_ENGLISH;
@@ -66,6 +68,80 @@ public class EmailDataServiceImpl implements EmailDataService {
     }
 
     @Override
+    public boolean emailReissueLetter(JurorPool jurorPool, FormCode requestedFormCode) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to email reissue letter for null jurorPool", null);
+        }
+
+        Optional<EmailTemplateData> templateData = getEmailTemplateData(
+            requestedFormCode,
+            jurorPool.getJuror().isWelsh()
+        );
+        if (templateData.isEmpty()) {
+            return false;
+        }
+
+        BulkPrintData bulkPrintData = createPendingEmail(
+            jurorPool,
+            templateData.get().formCode(),
+            templateData.get().template()
+        );
+        bulkPrintDataRepository.save(bulkPrintData);
+        return true;
+    }
+
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+    private static Optional<EmailTemplateData> getEmailTemplateData(FormCode requestedFormCode, boolean welsh) {
+        return Optional.ofNullable(switch (requestedFormCode) {
+            case ENG_DEFERRAL, BI_DEFERRAL -> new EmailTemplateData(
+                welsh ? FormCode.BI_DEFERRAL : FormCode.ENG_DEFERRAL,
+                welsh
+                    ? DigitalByDefaultEmailTemplate.DEFERRAL_GRANTED_WELSH
+                    : DigitalByDefaultEmailTemplate.DEFERRAL_GRANTED_ENGLISH
+            );
+            case ENG_DEFERRALDENIED, BI_DEFERRALDENIED -> new EmailTemplateData(
+                welsh ? FormCode.BI_DEFERRALDENIED : FormCode.ENG_DEFERRALDENIED,
+                welsh
+                    ? DigitalByDefaultEmailTemplate.DEFERRAL_DENIED_WELSH
+                    : DigitalByDefaultEmailTemplate.DEFERRAL_DENIED_ENGLISH
+            );
+            case ENG_EXCUSAL, BI_EXCUSAL -> new EmailTemplateData(
+                welsh ? FormCode.BI_EXCUSAL : FormCode.ENG_EXCUSAL,
+                welsh
+                    ? DigitalByDefaultEmailTemplate.EXCUSAL_GRANTED_WELSH
+                    : DigitalByDefaultEmailTemplate.EXCUSAL_GRANTED_ENGLISH
+            );
+            case ENG_EXCUSALDENIED, BI_EXCUSALDENIED -> new EmailTemplateData(
+                welsh ? FormCode.BI_EXCUSALDENIED : FormCode.ENG_EXCUSALDENIED,
+                welsh
+                    ? DigitalByDefaultEmailTemplate.EXCUSAL_DENIED_WELSH
+                    : DigitalByDefaultEmailTemplate.EXCUSAL_DENIED_ENGLISH
+            );
+            case ENG_POSTPONE, BI_POSTPONE -> new EmailTemplateData(
+                welsh ? FormCode.BI_POSTPONE : FormCode.ENG_POSTPONE,
+                welsh
+                    ? DigitalByDefaultEmailTemplate.POSTPONEMENT_WELSH
+                    : DigitalByDefaultEmailTemplate.POSTPONEMENT_ENGLISH
+            );
+            case ENG_CONFIRMATION, BI_CONFIRMATION -> new EmailTemplateData(
+                welsh ? FormCode.BI_CONFIRMATION : FormCode.ENG_CONFIRMATION,
+                welsh
+                    ? DigitalByDefaultEmailTemplate.CONFIRMATION_WELSH
+                    : DigitalByDefaultEmailTemplate.CONFIRMATION_ENGLISH
+            );
+            case ENG_WITHDRAWAL, BI_WITHDRAWAL -> new EmailTemplateData(
+                welsh ? FormCode.BI_WITHDRAWAL : FormCode.ENG_WITHDRAWAL,
+                welsh
+                    ? DigitalByDefaultEmailTemplate.WITHDRAWAL_WELSH
+                    : DigitalByDefaultEmailTemplate.WITHDRAWAL_ENGLISH
+            );
+            default -> null;
+        });
+    }
+
+    private record EmailTemplateData(FormCode formCode, DigitalByDefaultEmailTemplate template) {}
+
     public void emailDeferralDeniedLetter(JurorPool jurorPool) {
         if (jurorPool == null) {
             throw new MojException.InternalServerError(

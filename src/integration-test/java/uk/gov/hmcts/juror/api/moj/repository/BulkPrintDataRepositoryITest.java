@@ -59,6 +59,30 @@ class BulkPrintDataRepositoryITest extends AbstractIntegrationTest {
         ).forEach(this::assertBulkPrintDataDeleted);
     }
 
+    @Test
+    @Sql({
+        "/db/mod/truncate.sql",
+        "/db/BulkPrintDataRepository_deletePrintfilesDbdSummons.sql"
+    })
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert") // false positive
+    void deletePrintfilesAppliesDbdSummonsStatusRules() {
+        bulkPrintDataRepository.deletePrintfiles();
+
+        List.of(
+            "333333333",
+            "333333334",
+            "333333335",
+            "333333336"
+        ).forEach(this::assertBulkPrintDataRetained);
+
+        List.of(
+            "444444444",
+            "444444445",
+            "444444446",
+            "444444447"
+        ).forEach(this::assertBulkPrintDataDeleted);
+    }
+
     private void assertBulkPrintDataRetained(String jurorNumber) {
         assertThat(bulkPrintDataRepository.countByJurorNo(jurorNumber))
             .as("Bulk print data retained for juror %s", jurorNumber)

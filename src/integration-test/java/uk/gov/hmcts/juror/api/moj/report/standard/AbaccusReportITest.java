@@ -82,28 +82,36 @@ class AbaccusReportITest extends AbstractStandardReportControllerITest {
                 ))
                 .data(StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
+                            .add("document_code", "5221")
+                            .add("total_sent_for_printing", 1)
+                            .add("date_sent", "2024-01-31"),
+                        new ReportLinkedMap<String, Object>()
                             .add("document_code", "5224AC")
                             .add("total_sent_for_printing", 1)
-                            .add("date_sent", "2024-01-27"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("document_code", "5228")
-                            .add("total_sent_for_printing", 1)
-                            .add("date_sent", "2024-01-20"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("document_code", "5228")
-                            .add("total_sent_for_printing", 1)
-                            .add("date_sent", "2024-01-25"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("document_code", "5228")
-                            .add("total_sent_for_printing", 2)
                             .add("date_sent", "2024-01-27"),
                         new ReportLinkedMap<String, Object>()
                             .add("document_code", "5228")
                             .add("total_sent_for_printing", 4)
                             .add("date_sent", "2024-01-31"),
                         new ReportLinkedMap<String, Object>()
+                            .add("document_code", "5228")
+                            .add("total_sent_for_printing", 2)
+                            .add("date_sent", "2024-01-27"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("document_code", "5228")
+                            .add("total_sent_for_printing", 1)
+                            .add("date_sent", "2024-01-25"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("document_code", "5228")
+                            .add("total_sent_for_printing", 1)
+                            .add("date_sent", "2024-01-20"),
+                        new ReportLinkedMap<String, Object>()
                             .add("document_code", "5228C")
                             .add("total_sent_for_printing", 4)
+                            .add("date_sent", "2024-01-31"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("document_code", "6220")
+                            .add("total_sent_for_printing", 1)
                             .add("date_sent", "2024-01-31")
                     )
                 ).build()).build();
