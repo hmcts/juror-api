@@ -86,6 +86,14 @@ public class DbdDashboardResponseDto implements Serializable {
         @Schema(description = "Total paper responses for the period.")
         private Integer paperResponseTotal;
 
+        @Schema(description = "Responded jurors as a percentage of all jurors summoned "
+            + "((online + paper) / (online + paper + notResponded) * 100). Null if nothing was summoned.")
+        private Float responseRatePercent;
+
+        @Schema(description = "Online responses as a percentage of all responses received "
+            + "(online / (online + paper) * 100). Null if there were no responses.")
+        private Float digitalResponsesPercent;
+
         @Schema(description = "Online response counts broken down by response-time bucket.")
         private DashboardMandatoryKpiData.ResponseMethod onlineResponseTimes;
 
