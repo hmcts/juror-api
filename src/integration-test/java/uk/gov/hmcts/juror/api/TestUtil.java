@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.MacAlgorithm;
 import lombok.SneakyThrows;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,11 +21,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.crypto.SecretKey;
 
 /**
  * Testing utility methods.
  */
-@SuppressWarnings("PMD.UseConcurrentHashMap")//False Positive -- Need to support null values
+@SuppressWarnings("PMD.UseConcurrentHashMap") // False Positive -- Need to support null values
 public final class TestUtil {
 
     private TestUtil() {
@@ -63,17 +66,21 @@ public final class TestUtil {
      * @return Json Web Token
      */
     public static String mintPublicJwt(final PublicJwtPayload dataPayload,
-                                       final SignatureAlgorithm algorithm, final String base64Key,
+                                       final MacAlgorithm algorithm,
+                                       final String base64Key,
                                        final Instant expires) {
 
         final Map<String, Object> claimsMap = new HashMap<>();
         claimsMap.put(Claims.EXPIRATION, Date.from(expires));
-        claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
+        claimsMap.put(
+            Claims.ISSUED_AT,
+            Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant())
+        );
         claimsMap.put("data", dataPayload);
 
         return Jwts.builder()
-            .setClaims(claimsMap)
-            .signWith(algorithm, base64Key)
+            .claims(claimsMap)
+            .signWith(getSigningKey(base64Key), algorithm)
             .compact();
     }
 
@@ -87,12 +94,16 @@ public final class TestUtil {
      * @return Json Web Token
      */
     public static String mintBureauJwt(final BureauJwtPayload payload,
-                                       final SignatureAlgorithm algorithm, final String base64Key,
+                                       final MacAlgorithm algorithm,
+                                       final String base64Key,
                                        final Instant expires) {
 
         final Map<String, Object> claimsMap = new HashMap<>();
         claimsMap.put(Claims.EXPIRATION, Date.from(expires));
-        claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
+        claimsMap.put(
+            Claims.ISSUED_AT,
+            Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant())
+        );
         claimsMap.put("login", payload.getLogin());
         claimsMap.put("owner", payload.getOwner());
         claimsMap.put("locCode", payload.getLocCode());
@@ -102,12 +113,16 @@ public final class TestUtil {
         claimsMap.put("roles", payload.getRoles());
         claimsMap.put("permissions", payload.getPermissions());
         claimsMap.put("userType", payload.getUserType());
-        claimsMap.put("activeUserType", payload.getActiveUserType() == null
-            ? payload.getUserType() : payload.getActiveUserType());
+        claimsMap.put(
+            "activeUserType",
+            payload.getActiveUserType() == null
+                ? payload.getUserType()
+                : payload.getActiveUserType()
+        );
 
         return Jwts.builder()
-            .setClaims(claimsMap)
-            .signWith(algorithm, base64Key)
+            .claims(claimsMap)
+            .signWith(getSigningKey(base64Key), algorithm)
             .compact();
     }
 
@@ -119,15 +134,20 @@ public final class TestUtil {
      * @param expires   Expiry date
      * @return Json Web Token
      */
-    public static String mintHmacJwt(final SignatureAlgorithm algorithm, final String base64Key,
+    public static String mintHmacJwt(final MacAlgorithm algorithm,
+                                     final String base64Key,
                                      final Instant expires) {
+
         final Map<String, Object> claimsMap = new HashMap<>();
         claimsMap.put(Claims.EXPIRATION, Date.from(expires));
-        claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
+        claimsMap.put(
+            Claims.ISSUED_AT,
+            Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant())
+        );
 
         return Jwts.builder()
-            .setClaims(claimsMap)
-            .signWith(algorithm, base64Key)
+            .claims(claimsMap)
+            .signWith(getSigningKey(base64Key), algorithm)
             .compact();
     }
 
@@ -141,21 +161,35 @@ public final class TestUtil {
      * @return Json Web Token
      */
     public static String mintJurorErJwt(final JurorErJwtPayload dataPayload,
-                                       final SignatureAlgorithm algorithm, final String base64Key,
-                                       final Instant expires) {
+                                        final MacAlgorithm algorithm,
+                                        final String base64Key,
+                                        final Instant expires) {
 
         final Map<String, Object> claimsMap = new HashMap<>();
         claimsMap.put(Claims.EXPIRATION, Date.from(expires));
-        claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
+        claimsMap.put(
+            Claims.ISSUED_AT,
+            Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant())
+        );
         claimsMap.put("username", dataPayload.getUsername());
         claimsMap.put("laCode", dataPayload.getLaCode());
         claimsMap.put("laName", dataPayload.getLaName());
         claimsMap.put("role", dataPayload.getRoles());
 
         return Jwts.builder()
-            .setClaims(claimsMap)
-            .signWith(algorithm, base64Key)
+            .claims(claimsMap)
+            .signWith(getSigningKey(base64Key), algorithm)
             .compact();
+    }
+
+    /**
+     * Creates an HMAC signing key from a Base64 encoded secret.
+     *
+     * @param base64Key Base64 encoded secret key
+     * @return HMAC secret key
+     */
+    private static SecretKey getSigningKey(final String base64Key) {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64Key));
     }
 
     public static List<String> getValuesInJsonObject(JSONObject jsonObject, String key) {
@@ -190,6 +224,7 @@ public final class TestUtil {
     public static String getJsonNthValue(JSONObject jsonObject, String key, int index) {
         List<String> values = getValuesInJsonObject(jsonObject, key);
         return values.size() >= index
-            ? values.get(index - 1) : null;
+            ? values.get(index - 1)
+            : null;
     }
 }

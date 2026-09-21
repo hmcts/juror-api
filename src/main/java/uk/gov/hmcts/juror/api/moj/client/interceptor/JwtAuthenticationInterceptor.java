@@ -1,7 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.client.interceptor;
 
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
@@ -11,7 +9,7 @@ import uk.gov.hmcts.juror.api.config.JwtSecurityConfig;
 import uk.gov.hmcts.juror.api.moj.service.JwtService;
 
 import java.io.IOException;
-import java.security.Key;
+import javax.crypto.SecretKey;
 
 
 public class JwtAuthenticationInterceptor implements ClientHttpRequestInterceptor {
@@ -36,15 +34,15 @@ public class JwtAuthenticationInterceptor implements ClientHttpRequestIntercepto
     }
 
     private String generateJwt() {
-        return jwtService.generateJwtToken(null,this.config.getIssuer(),
+        return jwtService.generateJwtToken(null, this.config.getIssuer(),
             this.config.getSubject(),
             this.config.getTokenValidity(),
             getSigningKey(),
             this.config.getClaims());
     }
 
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(this.config.getSecret()));
+    private SecretKey getSigningKey() {
+        return jwtService.getSigningKey(this.config.getSecret());
     }
 
 }

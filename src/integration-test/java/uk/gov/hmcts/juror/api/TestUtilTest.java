@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.junit.Test;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 
 import java.time.Instant;
+import javax.crypto.SecretKey;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,20 +21,27 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests for testing utility methods.
  */
 public class TestUtilTest {
+
     private static final String SECRET_KEY_HMAC =
-        "U2VjcmV0S2V5SE1BQ1NlY3JldEtleUhNQUNTZWNyZXRLZXlITUFDU2VjcmV0S2V5SE1BQw==";//
+        "U2VjcmV0S2V5SE1BQ1NlY3JldEtleUhNQUNTZWNyZXRLZXlITUFDU2VjcmV0S2V5SE1BQw==";
     // SecretKeyHMACSecretKeyHMACSecretKeyHMACSecretKeyHMAC
-    private static final String SECRET_KEY_PUBLIC = "U2VjcmV0S2V5U2VjcmV0S2V5U2VjcmV0S2V5U2VjcmV0S2V5";//
+
+    private static final String SECRET_KEY_PUBLIC =
+        "U2VjcmV0S2V5U2VjcmV0S2V5U2VjcmV0S2V5U2VjcmV0S2V5";
     // SecretKeySecretKeySecretKeySecretKey
-    private static final String SECRET_KEY_BUREAU = "U2VjcmV0S2V5MlNlY3JldEtleTJTZWNyZXRLZXkyU2VjcmV0S2V5Mg==";//
+
+    private static final String SECRET_KEY_BUREAU =
+        "U2VjcmV0S2V5MlNlY3JldEtleTJTZWNyZXRLZXkyU2VjcmV0S2V5Mg==";
     // SecretKey2SecretKey2SecretKey2SecretKey2
 
     private static final String TEST_ID = "123";
     private static final String TEST_JUROR_NUMBER = "987654321";
     private static final String[] TEST_ROLES = {"juror", "test"};
-    private static final Instant HUNDRED_YEARS = Instant.now().plusSeconds(60L * 60L * 24L * 365L * 100L);
+    private static final Instant HUNDRED_YEARS =
+        Instant.now().plusSeconds(60L * 60L * 24L * 365L * 100L);
     private static final String TEST_BUREAU_LOGIN = "testuser";
-    private static final String TEST_BUREAU_OWNER = JurorDigitalApplication.JUROR_OWNER;
+    private static final String TEST_BUREAU_OWNER =
+        JurorDigitalApplication.JUROR_OWNER;
     private static final String TEST_BUREAU_USER_LEVEL = "3";
 
     @Test
@@ -43,19 +52,26 @@ public class TestUtilTest {
         jwtPayload.setRoles(TEST_ROLES);
 
         // encode a token
-        final String jwt = TestUtil.mintPublicJwt(jwtPayload, SignatureAlgorithm.HS256, SECRET_KEY_PUBLIC,
-            HUNDRED_YEARS);
+        final String jwt = TestUtil.mintPublicJwt(
+            jwtPayload,
+            Jwts.SIG.HS256,
+            SECRET_KEY_PUBLIC,
+            HUNDRED_YEARS
+        );
+
         assertThat(jwt).isNotEmpty();
 
-        //decode the token and test validity
+        // decode the token and test validity
         Jws<Claims> claimsJws = Jwts.parser()
-            .setSigningKey(SECRET_KEY_PUBLIC)
+            .verifyWith(getSigningKey(SECRET_KEY_PUBLIC))
             .build()
-            .parseClaimsJws(jwt);
+            .parseSignedClaims(jwt);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        PublicJwtPayload data = objectMapper.convertValue(claimsJws.getBody().get("data"), PublicJwtPayload.class);
-
+        PublicJwtPayload data = objectMapper.convertValue(
+            claimsJws.getPayload().get("data"),
+            PublicJwtPayload.class
+        );
 
         assertThat(data).isNotNull();
         assertThat(data.getId()).isEqualTo(TEST_ID);
@@ -64,31 +80,44 @@ public class TestUtilTest {
         assertThat(data.getRoles())
             .isNotEmpty()
             .hasSize(2)
-            .containsExactlyInAnyOrder(TEST_ROLES)
-        ;
+            .containsExactlyInAnyOrder(TEST_ROLES);
     }
-
 
     @Test
     public void testMintBureauJwt() throws Exception {
-        BureauJwtPayload jwtPayload = new BureauJwtPayload(TEST_BUREAU_OWNER, TEST_BUREAU_LOGIN,
-            TEST_BUREAU_USER_LEVEL, null);
+        BureauJwtPayload jwtPayload = new BureauJwtPayload(
+            TEST_BUREAU_OWNER,
+            TEST_BUREAU_LOGIN,
+            TEST_BUREAU_USER_LEVEL,
+            null
+        );
 
         // encode a token
-        final String jwt = TestUtil.mintBureauJwt(jwtPayload, SignatureAlgorithm.HS256, SECRET_KEY_BUREAU,
-            HUNDRED_YEARS);
+        final String jwt = TestUtil.mintBureauJwt(
+            jwtPayload,
+            Jwts.SIG.HS256,
+            SECRET_KEY_BUREAU,
+            HUNDRED_YEARS
+        );
+
         assertThat(jwt).isNotEmpty();
 
-        //decode the token and test validity
+        // decode the token and test validity
         Jws<Claims> claimsJws = Jwts.parser()
-            .setSigningKey(SECRET_KEY_BUREAU)
+            .verifyWith(getSigningKey(SECRET_KEY_BUREAU))
             .build()
-            .parseClaimsJws(jwt);
+            .parseSignedClaims(jwt);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        BureauJwtPayload data = objectMapper.convertValue(claimsJws.getBody(), BureauJwtPayload.class);
+        objectMapper.configure(
+            DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+            false
+        );
 
+        BureauJwtPayload data = objectMapper.convertValue(
+            claimsJws.getPayload(),
+            BureauJwtPayload.class
+        );
 
         assertThat(data).isNotNull();
         assertThat(data.getLogin()).isEqualTo(TEST_BUREAU_LOGIN);
@@ -99,16 +128,24 @@ public class TestUtilTest {
     @Test
     public void testMintHmacJwt() throws Exception {
         // encode a token
-        final String jwt = TestUtil.mintHmacJwt(SignatureAlgorithm.HS256, SECRET_KEY_HMAC, HUNDRED_YEARS);
+        final String jwt = TestUtil.mintHmacJwt(
+            Jwts.SIG.HS256,
+            SECRET_KEY_HMAC,
+            HUNDRED_YEARS
+        );
+
         assertThat(jwt).isNotEmpty();
 
-        //decode the token and test validity
+        // decode the token and test validity
         Jws<Claims> claimsJws = Jwts.parser()
-            .setSigningKey(SECRET_KEY_HMAC)
+            .verifyWith(getSigningKey(SECRET_KEY_HMAC))
             .build()
-            .parseClaimsJws(jwt);
+            .parseSignedClaims(jwt);
 
         assertThat(claimsJws).isNotNull();
     }
 
+    private static SecretKey getSigningKey(final String base64Key) {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(base64Key));
+    }
 }
