@@ -573,11 +573,16 @@ class JurorRecordServiceTest {
         EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
         requestDto.setDateOfBirth(LocalDate.parse("1990-01-01"));
         requestDto.setDbdPreference("Digital");
+        requestDto.setAddressLineTwo(" ");
+        requestDto.setAddressLineThree("addressLineThree ");
 
         JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
         Juror juror = jurorPool.getJuror();
         setJurorDetailsFromRequest(juror, requestDto);
         juror.setDateOfBirth(LocalDate.parse("1980-01-01"));
+        juror.setAddressLine2(null);
+        juror.setAddressLine3("addressLineThree");
+        juror.setPostcode("M244BP");
         setDigitalByDefaultJuror(jurorPool);
 
         doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
@@ -593,6 +598,8 @@ class JurorRecordServiceTest {
 
         verifyNoInteractions(printDataService);
         verify(jurorHistoryRepository, never()).delete(any());
+        verify(jurorHistoryService, never()).createEditChangeOfPersonalDetailsHistory(
+            any(), any(), any(), eq("Address Changed"));
     }
 
     @Test

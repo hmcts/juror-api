@@ -131,6 +131,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -219,33 +220,14 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         final JurorPool myJurorPool = JurorPoolUtils.getActiveJurorPoolForUser(
             jurorPoolRepository, jurorNumber, payload.getOwner());
 
-        //Track changes to address fields
-        boolean addressChanged = false;
+        boolean addressChanged = hasAddressChanged(juror, requestDto);
 
-        if (!Objects.equals(juror.getAddressLine1(), requestDto.getAddressLineOne())) {
-            juror.setAddressLine1(requestDto.getAddressLineOne());
-            addressChanged = true;
-        }
-        if (!Objects.equals(juror.getAddressLine2(), requestDto.getAddressLineTwo())) {
-            juror.setAddressLine2(requestDto.getAddressLineTwo());
-            addressChanged = true;
-        }
-        if (!Objects.equals(juror.getAddressLine3(), requestDto.getAddressLineThree())) {
-            juror.setAddressLine3(requestDto.getAddressLineThree());
-            addressChanged = true;
-        }
-        if (!Objects.equals(juror.getAddressLine4(), requestDto.getAddressTown())) {
-            juror.setAddressLine4(requestDto.getAddressTown());
-            addressChanged = true;
-        }
-        if (!Objects.equals(juror.getAddressLine5(), requestDto.getAddressCounty())) {
-            juror.setAddressLine5(requestDto.getAddressCounty());
-            addressChanged = true;
-        }
-        if (!Objects.equals(juror.getPostcode(), requestDto.getAddressPostcode())) {
-            juror.setPostcode(requestDto.getAddressPostcode());
-            addressChanged = true;
-        }
+        juror.setAddressLine1(requestDto.getAddressLineOne());
+        juror.setAddressLine2(requestDto.getAddressLineTwo());
+        juror.setAddressLine3(requestDto.getAddressLineThree());
+        juror.setAddressLine4(requestDto.getAddressTown());
+        juror.setAddressLine5(requestDto.getAddressCounty());
+        juror.setPostcode(requestDto.getAddressPostcode());
 
         juror.setTitle(requestDto.getTitle());
         juror.setFirstName(requestDto.getFirstName());
@@ -361,6 +343,37 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                     .findFirst().ifPresent(jurorHistoryRepository::delete);
             }
         }
+    }
+
+    private boolean hasAddressChanged(Juror juror, EditJurorRecordRequestDto requestDto) {
+        return !sameAddressValue(juror.getAddressLine1(), requestDto.getAddressLineOne())
+            || !sameAddressValue(juror.getAddressLine2(), requestDto.getAddressLineTwo())
+            || !sameAddressValue(juror.getAddressLine3(), requestDto.getAddressLineThree())
+            || !sameAddressValue(juror.getAddressLine4(), requestDto.getAddressTown())
+            || !sameAddressValue(juror.getAddressLine5(), requestDto.getAddressCounty())
+            || !samePostcode(juror.getPostcode(), requestDto.getAddressPostcode());
+    }
+
+    private boolean sameAddressValue(String existingValue, String requestedValue) {
+        return Objects.equals(normalizeAddressValue(existingValue), normalizeAddressValue(requestedValue));
+    }
+
+    private String normalizeAddressValue(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return value.trim();
+    }
+
+    private boolean samePostcode(String existingPostcode, String requestedPostcode) {
+        return Objects.equals(normalizePostcode(existingPostcode), normalizePostcode(requestedPostcode));
+    }
+
+    private String normalizePostcode(String postcode) {
+        if (postcode == null || postcode.trim().isEmpty()) {
+            return null;
+        }
+        return postcode.replaceAll("\\s+", "").toUpperCase(Locale.ROOT);
     }
 
     private void updateJurorReasonableAdjustments(EditJurorRecordRequestDto requestDto, String jurorNumber) {
