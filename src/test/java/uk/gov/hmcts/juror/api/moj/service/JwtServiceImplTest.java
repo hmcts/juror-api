@@ -24,7 +24,6 @@ import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.utils.TestConstants;
 
-import java.security.Key;
 import java.time.Clock;
 import java.util.Date;
 import java.util.Map;
@@ -211,7 +210,7 @@ class JwtServiceImplTest {
             String issuer = "MyIssuer";
             String subject = "MySubject";
             long tokenValidity = 500L;
-            Key secretKey = mock(Key.class);
+            SecretKey secretKey = mock(SecretKey.class);
             Map<String, Object> claims = getClaims();
 
             JwtBuilder jwtBuilder = setupJwtTokenGenerator();
@@ -236,7 +235,7 @@ class JwtServiceImplTest {
             String issuer = "MyIssuer";
             String subject = "MySubject";
             long tokenValidity = 500L;
-            Key secretKey = mock(Key.class);
+            SecretKey secretKey = mock(SecretKey.class);
             Map<String, Object> claims = getClaims();
 
             MalformedJwtException exception = new MalformedJwtException("Example exception");

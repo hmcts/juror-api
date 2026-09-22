@@ -57,7 +57,7 @@ public class PoolStatisticsServiceImpl implements PoolStatisticsService {
      */
     private PoolRequest getActivePoolRequest(String poolNumber) {
         Optional<PoolRequest> poolRequestOpt = poolRequestRepository.findByPoolNumber(poolNumber);
-        if (!poolRequestOpt.isPresent()) {
+        if (poolRequestOpt.isEmpty()) {
             throw new PoolRequestException.PoolRequestNotFound(poolNumber);
         }
         return poolRequestOpt.get();

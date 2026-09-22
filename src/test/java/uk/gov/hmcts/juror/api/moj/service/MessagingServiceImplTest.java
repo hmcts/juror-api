@@ -288,9 +288,10 @@ class MessagingServiceImplTest {
 
     @Nested
     @DisplayName(
-        "public ViewMessageTemplateDto getViewMessageTemplateDtoPopulated(MessageType messageType, String locCode,\n"
-            + "                                                                     Map<String, String> "
-            + "overridePlaceholders)")
+        """
+        public ViewMessageTemplateDto getViewMessageTemplateDtoPopulated(MessageType messageType, String locCode,
+                                                                             Map<String, String> \
+        overridePlaceholders)""")
     class GetViewMessageTemplateDtoPopulated {
         @Test
         void positiveEnglishLocation() {
@@ -376,10 +377,11 @@ class MessagingServiceImplTest {
     }
 
     @Nested
-    @DisplayName("String getMessageTemplatePopulated(MessageTemplate messageTemplate,\n"
-        + "                                       String locCode,\n"
-        + "                                       boolean isWelsh,\n"
-        + "                                       Map<String, String> overridePlaceholders)")
+    @DisplayName("""
+        String getMessageTemplatePopulated(MessageTemplate messageTemplate,
+                                               String locCode,
+                                               boolean isWelsh,
+                                               Map<String, String> overridePlaceholders)""")
     class GetMessageTemplatePopulated {
         @Test
         void positiveTypical() {
@@ -427,8 +429,9 @@ class MessagingServiceImplTest {
     }
 
     @Nested
-    @DisplayName("String getMessageTemplatePopulated(MessageTemplate messageTemplate,\n"
-        + "                                       Map<String, String> placeholders)")
+    @DisplayName("""
+        String getMessageTemplatePopulated(MessageTemplate messageTemplate,
+                                               Map<String, String> placeholders)""")
     class GetMessageTemplatePopulatedSimple {
         @Test
         void positiveTypical() {
@@ -486,8 +489,9 @@ class MessagingServiceImplTest {
     }
 
     @Nested
-    @DisplayName("public PaginatedList<JurorToSendMessage> search(MessageSearch messageSearch, String locCode,\n"
-        + "                                                    boolean simpleResponse)")
+    @DisplayName("""
+        public PaginatedList<JurorToSendMessage> search(MessageSearch messageSearch, String locCode,
+                                                            boolean simpleResponse)""")
     class Search {
 
         @Test
@@ -545,8 +549,9 @@ class MessagingServiceImplTest {
     }
 
     @Nested
-    @DisplayName("void validateTrialNumber(String trialNumber, String locCode,\n"
-        + "                             List<MessageSendRequest.JurorNumberAndSendType> jurors)")
+    @DisplayName("""
+        void validateTrialNumber(String trialNumber, String locCode,
+                                     List<MessageSendRequest.JurorNumberAndSendType> jurors)""")
     class ValidateTrialNumber {
         @Test
         void positiveTrialNumberNull() {
@@ -1007,11 +1012,12 @@ class MessagingServiceImplTest {
     }
 
     @Nested
-    @DisplayName("Message createMessage(MessageSendRequest.JurorNumberAndSendType jurorNumberAndSendType,\n"
-        + "                          MessageType messageType,\n"
-        + "                          CourtLocation courtLocation,\n"
-        + "                          String englishTemplate,\n"
-        + "                          String welshTemplate)")
+    @DisplayName("""
+        Message createMessage(MessageSendRequest.JurorNumberAndSendType jurorNumberAndSendType,
+                                  MessageType messageType,
+                                  CourtLocation courtLocation,
+                                  String englishTemplate,
+                                  String welshTemplate)""")
     class CreateMessage {
 
         private static final String ENGLISH_SUBJECT = "Your Jury Service";
@@ -1432,9 +1438,10 @@ class MessagingServiceImplTest {
 
     @Nested
     @DisplayName(
-        "Map<String, String> getPopulatedPlaceholders(List<ViewMessageTemplateDto.Placeholder> requiredPlaceholders,\n"
-            + "                                                 Map<String, String> overridePlaceholderValues,\n"
-            + "                                                 boolean isWelsh)")
+        """
+        Map<String, String> getPopulatedPlaceholders(List<ViewMessageTemplateDto.Placeholder> requiredPlaceholders,
+                                                         Map<String, String> overridePlaceholderValues,
+                                                         boolean isWelsh)""")
     class GetPopulatedPlaceholders {
 
         @Test
@@ -1530,9 +1537,10 @@ class MessagingServiceImplTest {
     }
 
     @Nested
-    @DisplayName("String getPlaceholderValue(ViewMessageTemplateDto.Placeholder placeholder,\n"
-        + "                               Map<String, String> overridePlaceholderValues,\n"
-        + "                               boolean isWelsh)")
+    @DisplayName("""
+        String getPlaceholderValue(ViewMessageTemplateDto.Placeholder placeholder,
+                                       Map<String, String> overridePlaceholderValues,
+                                       boolean isWelsh)""")
     class GetPlaceholderValue {
 
         @Test
@@ -1718,8 +1726,9 @@ class MessagingServiceImplTest {
     }
 
     @Nested
-    @DisplayName("List<ViewMessageTemplateDto.Placeholder> getRequiredPlaceholders(MessageTemplate messageTemplate,\n"
-        + "                                                                     String locCode)")
+    @DisplayName("""
+        List<ViewMessageTemplateDto.Placeholder> getRequiredPlaceholders(MessageTemplate messageTemplate,
+                                                                             String locCode)""")
     class GetRequiredPlaceholders {
         @Test
         void positiveTypical() {

@@ -244,7 +244,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
         poolRequest.setReturnDate(poolRequestDto.getAttendanceDate());
         poolRequest.setTotalNoRequired(poolRequestDto.getNumberRequested());
         updatePoolHistory(poolRequestDto.getPoolNumber(), login,
-            String.format("Pool Requested for %s Jurors", poolRequestDto.getNumberRequested()));
+            "Pool Requested for %s Jurors".formatted(poolRequestDto.getNumberRequested()));
 
         poolRequest.setNumberRequested(poolRequestDto.getNumberRequested());
         if (poolRequestDto.getAttendanceTime() != null) {
@@ -353,7 +353,7 @@ public class PoolRequestServiceImpl implements PoolRequestService {
 
             PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto =
                 PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto.builder()
-                    .poolNumber(poolDetails.get(0))
+                    .poolNumber(poolDetails.getFirst())
                     .jurorsInAttendance(jurorsInAttendance)
                     .jurorsOnCall(jurorsOnCall)
                     .otherJurors(others)

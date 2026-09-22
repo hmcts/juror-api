@@ -250,8 +250,8 @@ public final class SecurityUtil {
         String userLaCode = getActiveLaCode();
         if (!userLaCode.equals(laCode)) {
             throw new MojException.Forbidden(
-                String.format("User does not have access to LA code: %s (user LA code: %s)",
-                              laCode, userLaCode),
+                "User does not have access to LA code: %s (user LA code: %s)".formatted(
+                    laCode, userLaCode),
                 null
             );
         }

@@ -151,7 +151,7 @@ class JurorHistoryServiceImplTest {
     @Test
     void createWithdrawHistory() {
         JurorPool jurorPool = createJurorPool();
-        jurorHistoryService.createWithdrawHistory(jurorPool, "Other Info", "E",CommunicationChannel.LETTER);;
+        jurorHistoryService.createWithdrawHistory(jurorPool, "Other Info", "E",CommunicationChannel.LETTER);
         assertStandardValuesSystem(jurorPool, new JurorHistoryPartHistoryJurorHistoryExpectedValues(
             HistoryCodeMod.WITHDRAWAL_LETTER, "Other Info"));
     }

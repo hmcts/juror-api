@@ -288,8 +288,8 @@ class ErAdministrationServiceImplTest {
         assertThat(response.getUpdated()).containsExactly("002");
         assertThat(response.getAlreadySent()).isEmpty();
         assertThat(response.getErrors()).hasSize(1);
-        assertThat(response.getErrors().get(0).getLaCode()).isEqualTo("001");
-        assertThat(response.getErrors().get(0).getReason()).contains("LA with code 001 not found");
+        assertThat(response.getErrors().getFirst().getLaCode()).isEqualTo("001");
+        assertThat(response.getErrors().getFirst().getReason()).contains("LA with code 001 not found");
 
         verify(localAuthorityRepository, times(1)).findByLaCode("001");
         verify(localAuthorityRepository, times(1)).findByLaCode("002");
@@ -319,7 +319,7 @@ class ErAdministrationServiceImplTest {
         assertThat(response.getUpdated()).containsExactly("001");
         assertThat(response.getAlreadySent()).containsExactly("002");
         assertThat(response.getErrors()).hasSize(1);
-        assertThat(response.getErrors().get(0).getLaCode()).isEqualTo("003");
+        assertThat(response.getErrors().getFirst().getLaCode()).isEqualTo("003");
 
         verify(localAuthorityRepository, times(1)).save(any(LocalAuthority.class));
     }

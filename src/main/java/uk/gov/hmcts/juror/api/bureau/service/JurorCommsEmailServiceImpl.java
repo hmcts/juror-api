@@ -27,7 +27,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ = @Autowired)
 @SuppressWarnings("PMD.CognitiveComplexity")
 public class JurorCommsEmailServiceImpl implements BureauProcessService {
 
@@ -103,8 +103,13 @@ public class JurorCommsEmailServiceImpl implements BureauProcessService {
 
         // log the results for Dynatrace
         log.info(
-            "[JobKey: CRONBATCH_EMAIL_COMMS]\n[{}]\nresult={},\nmetadata={messages_sent={},messages_failed={},"
-                + "invalid_email_count={}}",
+            """
+            [JobKey: CRONBATCH_EMAIL_COMMS]
+            [{}]
+            result={},
+            metadata={messages_sent={},messages_failed={},\
+            invalid_email_count={}}\
+            """,
             DATE_TIME_FORMATTER.format(LocalDateTime.now()),
             status,
             commsSent,
@@ -139,7 +144,7 @@ public class JurorCommsEmailServiceImpl implements BureauProcessService {
                 "Unable to update bulk print data after Juror Comms sent.");
         }
 
-        bulkPrintDataDetail.get(0).setEmailStatus(EmailStatus.SENT);
+        bulkPrintDataDetail.getFirst().setEmailStatus(EmailStatus.SENT);
         bulkPrintDataRepository.saveAll(bulkPrintDataDetail);
         log.trace("Saving updated bulk_print_data - updated status to SENT .....");
 

@@ -138,7 +138,7 @@ class SittingDaysReportsITest extends AbstractControllerIntegrationTest<CourtsAn
         assertThat(response.getTableData().getHeadings()).hasSize(15);
         assertThat(response.getTableData().getData()).hasSize(1);
 
-        SittingDaysStatsReportResponse.TableData.DataRow dataRow = response.getTableData().getData().get(0);
+        SittingDaysStatsReportResponse.TableData.DataRow dataRow = response.getTableData().getData().getFirst();
         assertThat(dataRow.getCourtLocationNameAndCode()).isEqualTo("CHESTER (415)");
         assertSittingDaysRow(dataRow);
 

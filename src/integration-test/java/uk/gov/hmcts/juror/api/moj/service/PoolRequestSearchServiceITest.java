@@ -49,7 +49,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getResultsCount()).isEqualTo(1);
         assertThat(results.getData().size()).isEqualTo(1);
 
-        PoolRequestSearchListDto.PoolRequestSearchDataDto data = results.getData().get(0);
+        PoolRequestSearchListDto.PoolRequestSearchDataDto data = results.getData().getFirst();
         assertThat(data.getPoolNumber()).isEqualTo(poolNumber);
         assertThat(data.getPoolType()).isEqualTo("Crown court");
         assertThat(data.getPoolStatus()).isEqualTo("Requested");
@@ -140,7 +140,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getResultsCount()).isEqualTo(1);
         assertThat(results.getData().size()).isEqualTo(1);
 
-        PoolRequestSearchListDto.PoolRequestSearchDataDto data = results.getData().get(0);
+        PoolRequestSearchListDto.PoolRequestSearchDataDto data = results.getData().getFirst();
         assertThat(data.getPoolNumber()).isEqualTo(poolNumber);
         assertThat(data.getCourtName()).isEqualToIgnoringCase("Guildford Sitting At Chichester");
         assertThat(data.getPoolType()).isEqualToIgnoringCase("Civil court");
@@ -180,7 +180,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getResultsCount()).isEqualTo(1);
         assertThat(results.getData().size()).isEqualTo(1);
 
-        PoolRequestSearchListDto.PoolRequestSearchDataDto data = results.getData().get(0);
+        PoolRequestSearchListDto.PoolRequestSearchDataDto data = results.getData().getFirst();
         assertThat(data.getPoolNumber()).isEqualTo("416230102");
         assertThat(data.getCourtName()).isEqualToIgnoringCase("Guildford Sitting At Chichester");
         assertThat(data.getPoolType()).isEqualToIgnoringCase("Crown court");
@@ -207,7 +207,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getResultsCount()).isEqualTo(1);
         assertThat(results.getData().size()).isEqualTo(1);
 
-        PoolRequestSearchListDto.PoolRequestSearchDataDto data = results.getData().get(0);
+        PoolRequestSearchListDto.PoolRequestSearchDataDto data = results.getData().getFirst();
         assertThat(data.getPoolNumber()).isEqualTo(poolNumber);
         assertThat(data.getCourtName()).isEqualToIgnoringCase("Guildford Sitting At Chichester");
         assertThat(data.getPoolType()).isEqualToIgnoringCase("Crown court");
@@ -244,7 +244,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         List<PoolRequestSearchListDto.PoolRequestSearchDataDto> data = results.getData();
 
-        assertThat(data.get(0).getPoolNumber()).isEqualTo("416230101");
+        assertThat(data.getFirst().getPoolNumber()).isEqualTo("416230101");
         assertThat(data.get(1).getPoolNumber()).isEqualTo("416230102");
         assertThat(data.get(2).getPoolNumber()).isEqualTo("416230103");
     }
@@ -267,7 +267,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         List<PoolRequestSearchListDto.PoolRequestSearchDataDto> data = results.getData();
 
-        assertThat(data.get(0).getPoolNumber()).isEqualTo("416230103");
+        assertThat(data.getFirst().getPoolNumber()).isEqualTo("416230103");
         assertThat(data.get(1).getPoolNumber()).isEqualTo("416230102");
         assertThat(data.get(2).getPoolNumber()).isEqualTo("416230101");
     }
@@ -290,7 +290,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         List<PoolRequestSearchListDto.PoolRequestSearchDataDto> data = results.getData();
 
-        assertThat(data.get(0).getCourtName()).isEqualToIgnoringCase("Chester");
+        assertThat(data.getFirst().getCourtName()).isEqualToIgnoringCase("Chester");
         assertThat(data.get(1).getCourtName()).isEqualToIgnoringCase("Coventry");
         assertThat(data.get(2).getCourtName()).isEqualToIgnoringCase("Guildford Sitting At Chichester");
     }
@@ -313,7 +313,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         List<PoolRequestSearchListDto.PoolRequestSearchDataDto> data = results.getData();
 
-        assertThat(data.get(0).getCourtName()).isEqualToIgnoringCase("Guildford Sitting At Chichester");
+        assertThat(data.getFirst().getCourtName()).isEqualToIgnoringCase("Guildford Sitting At Chichester");
         assertThat(data.get(1).getCourtName()).isEqualToIgnoringCase("Coventry");
         assertThat(data.get(2).getCourtName()).isEqualToIgnoringCase("Chester");
     }
@@ -336,7 +336,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         List<PoolRequestSearchListDto.PoolRequestSearchDataDto> data = results.getData();
 
-        assertThat(data.get(0).getPoolStage()).isEqualToIgnoringCase("With the Bureau");
+        assertThat(data.getFirst().getPoolStage()).isEqualToIgnoringCase("With the Bureau");
         assertThat(data.get(1).getPoolStage()).isEqualToIgnoringCase("At court");
         assertThat(data.get(2).getPoolStage()).isEqualToIgnoringCase("At court");
     }
@@ -359,7 +359,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         List<PoolRequestSearchListDto.PoolRequestSearchDataDto> data = results.getData();
 
-        assertThat(data.get(0).getPoolStage()).isEqualToIgnoringCase("At court");
+        assertThat(data.getFirst().getPoolStage()).isEqualToIgnoringCase("At court");
         assertThat(data.get(1).getPoolStage()).isEqualToIgnoringCase("At court");
         assertThat(data.get(2).getPoolStage()).isEqualToIgnoringCase("With the Bureau");
     }
@@ -382,7 +382,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         List<PoolRequestSearchListDto.PoolRequestSearchDataDto> data = results.getData();
 
-        assertThat(data.get(0).getPoolStatus()).isEqualToIgnoringCase("Requested");
+        assertThat(data.getFirst().getPoolStatus()).isEqualToIgnoringCase("Requested");
         assertThat(data.get(1).getPoolStatus()).isEqualToIgnoringCase("Nil");
         assertThat(data.get(2).getPoolStatus()).isEqualToIgnoringCase("Active");
         assertThat(data.get(3).getPoolStatus()).isEqualToIgnoringCase("Active");
@@ -409,7 +409,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         List<PoolRequestSearchListDto.PoolRequestSearchDataDto> data = results.getData();
 
-        assertThat(data.get(0).getPoolStatus()).isEqualToIgnoringCase("Completed");
+        assertThat(data.getFirst().getPoolStatus()).isEqualToIgnoringCase("Completed");
         assertThat(data.get(1).getPoolStatus()).isEqualToIgnoringCase("Completed");
         assertThat(data.get(2).getPoolStatus()).isEqualToIgnoringCase("Active");
         assertThat(data.get(3).getPoolStatus()).isEqualToIgnoringCase("Active");
@@ -436,7 +436,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         List<PoolRequestSearchListDto.PoolRequestSearchDataDto> data = results.getData();
 
-        assertThat(data.get(0).getPoolType()).isEqualToIgnoringCase("Civil court");
+        assertThat(data.getFirst().getPoolType()).isEqualToIgnoringCase("Civil court");
         assertThat(data.get(1).getPoolType()).isEqualToIgnoringCase("Civil court");
         assertThat(data.get(2).getPoolType()).isEqualToIgnoringCase("Crown court");
         assertThat(data.get(3).getPoolType()).isEqualToIgnoringCase("Crown court");
@@ -463,7 +463,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
 
         List<PoolRequestSearchListDto.PoolRequestSearchDataDto> data = results.getData();
 
-        assertThat(data.get(0).getPoolType()).isEqualToIgnoringCase("Crown court");
+        assertThat(data.getFirst().getPoolType()).isEqualToIgnoringCase("Crown court");
         assertThat(data.get(1).getPoolType()).isEqualToIgnoringCase("Crown court");
         assertThat(data.get(2).getPoolType()).isEqualToIgnoringCase("Crown court");
         assertThat(data.get(3).getPoolType()).isEqualToIgnoringCase("Crown court");
@@ -493,7 +493,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         String nextWeek = LocalDate.now().plusWeeks(1).toString();
         String lastWeek = LocalDate.now().plusWeeks(-1).toString();
 
-        assertThat(data.get(0).getServiceStartDate()).isEqualTo("2023-01-09");
+        assertThat(data.getFirst().getServiceStartDate()).isEqualTo("2023-01-09");
         assertThat(data.get(1).getServiceStartDate()).isEqualTo("2023-01-16");
         assertThat(data.get(2).getServiceStartDate()).isEqualTo("2023-01-23");
         assertThat(data.get(3).getServiceStartDate()).isEqualTo("2023-01-30");
@@ -523,7 +523,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         String nextWeek = LocalDate.now().plusWeeks(1).toString();
         String lastWeek = LocalDate.now().plusWeeks(-1).toString();
 
-        assertThat(data.get(0).getServiceStartDate()).isEqualTo(nextWeek);
+        assertThat(data.getFirst().getServiceStartDate()).isEqualTo(nextWeek);
         assertThat(data.get(1).getServiceStartDate()).isEqualTo(lastWeek);
         assertThat(data.get(2).getServiceStartDate()).isEqualTo(lastWeek);
         assertThat(data.get(3).getServiceStartDate()).isEqualTo("2023-01-30");
@@ -551,7 +551,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         String nextWeek = LocalDate.now().plusWeeks(1).toString();
         String lastWeek = LocalDate.now().plusWeeks(-1).toString();
 
-        assertThat(data.get(0).getServiceStartDate()).isEqualTo(nextWeek);
+        assertThat(data.getFirst().getServiceStartDate()).isEqualTo(nextWeek);
         assertThat(data.get(1).getServiceStartDate()).isEqualTo(lastWeek);
         assertThat(data.get(2).getServiceStartDate()).isEqualTo(lastWeek);
         assertThat(data.get(3).getServiceStartDate()).isEqualTo("2023-01-30");
@@ -604,7 +604,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getResultsCount()).isEqualTo(1);
         assertThat(results.getData().size()).isEqualTo(1);
 
-        assertThat(results.getData().get(0).getPoolNumber()).isEqualTo("415230101");
+        assertThat(results.getData().getFirst().getPoolNumber()).isEqualTo("415230101");
     }
 
     @Test
@@ -646,7 +646,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getResultsCount()).isEqualTo(1);
         assertThat(results.getData().size()).isEqualTo(1);
 
-        assertThat(results.getData().get(0).getPoolNumber()).isEqualTo("417230102");
+        assertThat(results.getData().getFirst().getPoolNumber()).isEqualTo("417230102");
     }
 
     /**
@@ -838,7 +838,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getResultsCount()).isEqualTo(1);
         assertThat(results.getData().size()).isEqualTo(1);
 
-        assertThat(results.getData().get(0).getPoolNumber()).isEqualTo("416230101");
+        assertThat(results.getData().getFirst().getPoolNumber()).isEqualTo("416230101");
     }
 
     @Test
@@ -891,7 +891,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getResultsCount()).isEqualTo(1);
         assertThat(results.getData().size()).isEqualTo(1);
 
-        assertThat(results.getData().get(0).getPoolNumber()).isIn("416230102");
+        assertThat(results.getData().getFirst().getPoolNumber()).isIn("416230102");
     }
 
     @Test
@@ -909,7 +909,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getResultsCount()).isEqualTo(1);
         assertThat(results.getData().size()).isEqualTo(1);
 
-        assertThat(results.getData().get(0).getPoolNumber()).isIn("416230101");
+        assertThat(results.getData().getFirst().getPoolNumber()).isIn("416230101");
     }
 
     @Test
@@ -926,7 +926,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getResultsCount()).isEqualTo(1);
         assertThat(results.getData().size()).isEqualTo(1);
 
-        assertThat(results.getData().get(0).getPoolNumber()).isEqualTo("415230101");
+        assertThat(results.getData().getFirst().getPoolNumber()).isEqualTo("415230101");
     }
 
     @Test
@@ -943,7 +943,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getResultsCount()).isEqualTo(1);
         assertThat(results.getData().size()).isEqualTo(1);
 
-        assertThat(results.getData().get(0).getPoolNumber()).isEqualTo("417230102");
+        assertThat(results.getData().getFirst().getPoolNumber()).isEqualTo("417230102");
     }
 
     @Test
@@ -960,7 +960,7 @@ public class PoolRequestSearchServiceITest extends ContainerTest {
         assertThat(results.getResultsCount()).isEqualTo(1);
         assertThat(results.getData().size()).isEqualTo(1);
 
-        assertThat(results.getData().get(0).getPoolNumber()).isEqualTo("416230105");
+        assertThat(results.getData().getFirst().getPoolNumber()).isEqualTo("416230105");
     }
 
     @Test

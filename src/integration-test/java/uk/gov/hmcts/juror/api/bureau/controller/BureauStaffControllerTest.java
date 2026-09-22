@@ -819,9 +819,9 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         assertThat(responseData.size()).isEqualTo(3);
 
         // assert data is returned correctly
-        assertThat(responseData.get(0).getAssignedTo()).isNull();
-        assertThat(responseData.get(0).getJurorNumber()).isEqualTo("111111000");
-        assertThat(responseData.get(0).getVersion()).isEqualTo(0);
+        assertThat(responseData.getFirst().getAssignedTo()).isNull();
+        assertThat(responseData.getFirst().getJurorNumber()).isEqualTo("111111000");
+        assertThat(responseData.getFirst().getVersion()).isEqualTo(0);
     }
 
     @Sql("/db/truncate.sql")
@@ -1006,8 +1006,8 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         // assert body of response has correct details
         OperationFailureListDto failureListDto = exchange.getBody();
         assertThat(failureListDto.getFailureDtos().size()).isEqualTo(2);
-        assertThat(failureListDto.getFailureDtos().get(0).getJurorNumber()).isEqualTo("644892530");
-        assertThat(failureListDto.getFailureDtos().get(0).getReason()).isEqualToIgnoringCase("URGENT");
+        assertThat(failureListDto.getFailureDtos().getFirst().getJurorNumber()).isEqualTo("644892530");
+        assertThat(failureListDto.getFailureDtos().getFirst().getReason()).isEqualToIgnoringCase("URGENT");
         assertThat(failureListDto.getFailureDtos().get(1).getJurorNumber()).isEqualTo("586856851");
         assertThat(failureListDto.getFailureDtos().get(1).getReason()).isEqualToIgnoringCase("URGENT");
 

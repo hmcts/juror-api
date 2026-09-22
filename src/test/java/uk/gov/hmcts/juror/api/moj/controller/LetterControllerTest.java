@@ -12,11 +12,11 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.juror.api.TestUtils;
@@ -71,18 +71,18 @@ public class LetterControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private RequestInformationLetterService requestInformationLetterService;
-    @MockBean
+    @MockitoBean
     private CourtLetterService courtLetterService;
-    @MockBean
+    @MockitoBean
     private CourtLetterPrintService courtLetterPrintService;
-    @MockBean
+    @MockitoBean
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;
-    @MockBean
+    @MockitoBean
     private ReissueLetterService reissueLetterService;
 
-    @MockBean
+    @MockitoBean
     private ExemptionCertificateService exemptionCertificateService;
 
     @AfterEach

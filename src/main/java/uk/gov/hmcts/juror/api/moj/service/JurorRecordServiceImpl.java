@@ -375,8 +375,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         } else {
             List<JurorReasonableAdjustment> jurorReasonableAdjustment =
                 jurorReasonableAdjustmentRepository.findByJurorNumber(jurorNumber);
-            jurorReasonableAdjustment.get(0).setReasonableAdjustmentDetail(requestDto.getSpecialNeedMessage());
-            jurorReasonableAdjustment.get(0).setReasonableAdjustment(reasonableAdjustments);
+            jurorReasonableAdjustment.getFirst().setReasonableAdjustmentDetail(requestDto.getSpecialNeedMessage());
+            jurorReasonableAdjustment.getFirst().setReasonableAdjustment(reasonableAdjustments);
             jurorReasonableAdjustmentRepository.saveAll(jurorReasonableAdjustment);
         }
     }
@@ -1011,8 +1011,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         poolHistoryRepository.save(
             new PoolHistory(poolRequest.getPoolNumber(), LocalDateTime.now(), HistoryCode.PREQ,
-                            payload.getLogin(), String.format("Pool Request %s created for pending Juror",
-                                                              poolRequest.getPoolNumber()
+                            payload.getLogin(), "Pool Request %s created for pending Juror".formatted(
+                poolRequest.getPoolNumber()
             )));
 
         return poolRequest;
@@ -1141,8 +1141,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         final String owner = payload.getOwner();
 
         Juror juror = jurorRepository.findById(jurorNumber).orElseThrow(() ->
-            new MojException.NotFound(String.format("Unable to find valid juror record for Juror Number: %s",
-                                                                        jurorNumber), null));
+            new MojException.NotFound("Unable to find valid juror record for Juror Number: %s".formatted(
+                jurorNumber), null));
 
         // only allow access if the owner of record is same as users owner
         JurorUtils.checkOwnershipForCurrentUser(juror, owner);
@@ -1201,8 +1201,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         JurorPoolUtils.checkMultipleRecordReadAccess(jurorPoolRepository, jurorNumber, owner);
 
         ModJurorDetail jurorDetails = jurorDetailRepositoryMod.findById(jurorNumber)
-            .orElseThrow(() -> new MojException.NotFound(String.format("Could not find juror details for %s",
-                                                                       jurorNumber), null));
+            .orElseThrow(() -> new MojException.NotFound("Could not find juror details for %s".formatted(
+            jurorNumber), null));
 
         BureauJurorDetailDto responseDto = bureauService.mapJurorDetailsToDto(jurorDetails);
         responseDto.setWelshCourt(jurorDetails.isWelshCourt());

@@ -251,7 +251,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             assertThat(jurors.size()).isEqualTo(8);
 
             // check the address details have been saved correctly, not shuffled
-            Juror juror = jurors.get(0);
+            Juror juror = jurors.getFirst();
             assertThat(juror.getAddressLine2()).isEqualTo("2nd ADDRESS LINE");
             assertThat(juror.getAddressLine3()).isEqualTo("ADDRESS LINE 3");
             assertThat(juror.getAddressLine4()).isEqualTo("ANYTOWN");
@@ -407,7 +407,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
                                             .findByJurorJurorNumberAndIsActive(juror.getJurorNumber(), true);
             assertThat(jurorPool).isNotEmpty();
             assertThat(jurorPool.size()).isEqualTo(1);
-            JurorStatus expectedJurorStatus = jurorPool.get(0).getStatus();
+            JurorStatus expectedJurorStatus = jurorPool.getFirst().getStatus();
             // juror could be summoned or disqualified (there is one disqualified juror)
             assertThat(expectedJurorStatus.getStatus()).isIn(IJurorStatus.SUMMONED, IJurorStatus.DISQUALIFIED);
         });
@@ -878,7 +878,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         assertThat(response.getBody()).hasSize(1);
-        assertThat(response.getBody().get(0)).isEqualTo("333333333");
+        assertThat(response.getBody().getFirst()).isEqualTo("333333333");
         assertThat(response.getBody().indexOf("444444444")).isEqualTo(-1);
         assertThat(response.getBody().indexOf("111111111")).isEqualTo(-1);
         assertThat(response.getBody().indexOf("777777777")).isEqualTo(-1);
@@ -994,7 +994,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         List<FilterPoolMember> poolMembers = response.getBody().getData();
         assertThat(poolMembers.size()).isEqualTo(2);
 
-        FilterPoolMember responseData1 = poolMembers.get(0);
+        FilterPoolMember responseData1 = poolMembers.getFirst();
         assertThat(responseData1.getJurorNumber()).isEqualToIgnoringCase("111111111");
         assertThat(responseData1.getFirstName()).isEqualToIgnoringCase("TEST");
         assertThat(responseData1.getLastName()).isEqualToIgnoringCase("ONE");
@@ -1043,7 +1043,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         List<FilterPoolMember> poolMembers = response.getBody().getData();
         assertThat(poolMembers.size()).isEqualTo(2);
 
-        FilterPoolMember responseData1 = poolMembers.get(0);
+        FilterPoolMember responseData1 = poolMembers.getFirst();
         assertThat(responseData1.getJurorNumber()).isEqualToIgnoringCase("666666666");
         assertThat(responseData1.getFirstName()).isEqualToIgnoringCase("TEST");
         assertThat(responseData1.getLastName()).isEqualToIgnoringCase("SIX");
@@ -1092,7 +1092,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         List<FilterPoolMember> poolMembers = response.getBody().getData();
         assertThat(poolMembers.size()).isEqualTo(1);
 
-        FilterPoolMember responseData = poolMembers.get(0);
+        FilterPoolMember responseData = poolMembers.getFirst();
         assertThat(responseData.getJurorNumber()).isEqualToIgnoringCase("333333333");
         assertThat(responseData.getFirstName()).isEqualToIgnoringCase("TEST");
         assertThat(responseData.getLastName()).isEqualToIgnoringCase("THREE");
@@ -1129,7 +1129,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         List<FilterPoolMember> poolMembers = response.getBody().getData();
         assertThat(poolMembers.size()).isEqualTo(1);
 
-        FilterPoolMember responseData = poolMembers.get(0);
+        FilterPoolMember responseData = poolMembers.getFirst();
         assertThat(responseData.getJurorNumber()).isEqualToIgnoringCase("999999999");
         assertThat(responseData.getFirstName()).isEqualToIgnoringCase("TEST");
         assertThat(responseData.getLastName()).isEqualToIgnoringCase("NINE");
@@ -1225,8 +1225,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(filteredResponse.getBody()).isNotNull();
         List<FilterPoolMember> filteredPoolMembers = filteredResponse.getBody().getData();
         assertThat(filteredPoolMembers.size()).isEqualTo(1);
-        assertThat(filteredPoolMembers.get(0).getLastName()).isEqualToIgnoringCase("SEVEN");
-        assertThat(filteredPoolMembers.get(0).getStatus()).isEqualTo("Responded");
+        assertThat(filteredPoolMembers.getFirst().getLastName()).isEqualToIgnoringCase("SEVEN");
+        assertThat(filteredPoolMembers.getFirst().getStatus()).isEqualTo("Responded");
     }
 
     @Test
@@ -1256,8 +1256,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(filteredResponse2.getBody()).isNotNull();
         List<FilterPoolMember> filteredPoolMembers2 = filteredResponse2.getBody().getData();
         assertThat(filteredPoolMembers2.size()).isEqualTo(1);
-        assertThat(filteredPoolMembers2.get(0).getLastName()).isEqualToIgnoringCase("SEVEN");
-        assertThat(filteredPoolMembers2.get(0).getCheckedIn()).isEqualTo("09:00:00");
+        assertThat(filteredPoolMembers2.getFirst().getLastName()).isEqualToIgnoringCase("SEVEN");
+        assertThat(filteredPoolMembers2.getFirst().getCheckedIn()).isEqualTo("09:00:00");
     }
 
     @Test
@@ -1287,8 +1287,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(filteredResponse3.getBody()).isNotNull();
         List<FilterPoolMember> filteredPoolMembers3 = filteredResponse3.getBody().getData();
         assertThat(filteredPoolMembers3.size()).isEqualTo(1);
-        assertThat(filteredPoolMembers3.get(0).getLastName()).isEqualToIgnoringCase("seven");
-        assertThat(filteredPoolMembers3.get(0).getNextDate()).isEqualTo(LocalDate.parse("2023-01-01"));
+        assertThat(filteredPoolMembers3.getFirst().getLastName()).isEqualToIgnoringCase("seven");
+        assertThat(filteredPoolMembers3.getFirst().getNextDate()).isEqualTo(LocalDate.parse("2023-01-01"));
 
     }
 
@@ -1319,8 +1319,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(filteredResponse3.getBody()).isNotNull();
         List<FilterPoolMember> filteredPoolMembers3 = filteredResponse3.getBody().getData();
         assertThat(filteredPoolMembers3.size()).isEqualTo(1);
-        assertThat(filteredPoolMembers3.get(0).getLastName()).isEqualToIgnoringCase("eight");
-        assertThat(filteredPoolMembers3.get(0).getNextDate()).isNull();
+        assertThat(filteredPoolMembers3.getFirst().getLastName()).isEqualToIgnoringCase("eight");
+        assertThat(filteredPoolMembers3.getFirst().getNextDate()).isNull();
     }
 
     @Test
@@ -1349,8 +1349,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(filteredResponse3.getBody()).isNotNull();
         List<FilterPoolMember> filteredPoolMembers3 = filteredResponse3.getBody().getData();
         assertThat(filteredPoolMembers3.size()).isEqualTo(2);
-        assertThat(filteredPoolMembers3.get(0).getLastName()).isEqualToIgnoringCase("seven");
-        assertThat(filteredPoolMembers3.get(0).getNextDate()).isEqualTo(LocalDate.parse("2023-01-01"));
+        assertThat(filteredPoolMembers3.getFirst().getLastName()).isEqualToIgnoringCase("seven");
+        assertThat(filteredPoolMembers3.getFirst().getNextDate()).isEqualTo(LocalDate.parse("2023-01-01"));
         assertThat(filteredPoolMembers3.get(1).getLastName()).isEqualToIgnoringCase("eight");
         assertThat(filteredPoolMembers3.get(1).getNextDate()).isNull();
     }
@@ -1719,7 +1719,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         List<CoronerPool> coronerPools = coronerPoolRepository.findAll();
         assertThat(coronerPools.size()).as("Expect there to be 1 record in database")
             .isEqualTo(1);
-        CoronerPool coronerPool = coronerPools.get(0);
+        CoronerPool coronerPool = coronerPools.getFirst();
 
 
         confirmCoronerPoolDataSavedSuccessfully(coronerPoolRequestDto, coronerPool);

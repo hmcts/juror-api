@@ -133,11 +133,11 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(13);
-            assertThat(data.get(0).get(9)).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
-            assertThat(data.get(0).get(10)).isEqualTo("LETTER");
-            assertThat(data.get(0).get(11)).isEqualTo("LETTER");
-            assertThat(data.get(0).get(12)).isNull();
+            assertThat(data.getFirst()).hasSize(13);
+            assertThat(data.getFirst().get(9)).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
+            assertThat(data.getFirst().get(10)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(11)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(12)).isNull();
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_GRANTED.getLetterQueryConsumer());
@@ -165,11 +165,11 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(13);
-            assertThat(data.get(0).get(9)).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
-            assertThat(data.get(0).get(10)).isEqualTo("EMAIL");
-            assertThat(data.get(0).get(11)).isEqualTo("EMAIL");
-            assertThat(data.get(0).get(12)).isEqualTo("PENDING");
+            assertThat(data.getFirst()).hasSize(13);
+            assertThat(data.getFirst().get(9)).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
+            assertThat(data.getFirst().get(10)).isEqualTo("EMAIL");
+            assertThat(data.getFirst().get(11)).isEqualTo("EMAIL");
+            assertThat(data.getFirst().get(12)).isEqualTo("PENDING");
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_GRANTED.getLetterQueryConsumer());
@@ -197,7 +197,7 @@ public class ReissueLetterServiceTest {
 
         private List<Tuple> getDeferralGrantedEmailLetters(String jurorNumber) {
             final List<Tuple> deferralGrantedLetters = getDeferralGrantedLetters(jurorNumber);
-            Tuple tuple = deferralGrantedLetters.get(0);
+            Tuple tuple = deferralGrantedLetters.getFirst();
             doReturn(CommunicationChannel.EMAIL).when(tuple)
                 .get(ReissueLetterService.DataType.COMMUNICATION_CHANNEL.getExpression());
             doReturn(ReplyMethod.DIGITAL.getDescription()).when(tuple)
@@ -252,7 +252,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(10);
+            assertThat(data.getFirst()).hasSize(10);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.CONFIRMATION.getLetterQueryConsumer());
@@ -295,7 +295,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(13);
+            assertThat(data.getFirst()).hasSize(13);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_REFUSED.getLetterQueryConsumer());
@@ -324,12 +324,12 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(13);
+            assertThat(data.getFirst()).hasSize(13);
 
-            assertThat(data.get(0).get(9))
+            assertThat(data.getFirst().get(9))
                 .as("Expect form code to be " + formCode)
                 .isEqualTo(formCode);
-            assertThat(data.get(0).get(4))
+            assertThat(data.getFirst().get(4))
                 .as("Expect status description to be Postponed")
                 .isEqualTo("Postponed");
 
@@ -359,7 +359,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(13);
+            assertThat(data.getFirst()).hasSize(13);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.WITHDRAWAL.getLetterQueryConsumer());
@@ -442,7 +442,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(9);
+            assertThat(data.getFirst()).hasSize(9);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.SUMMONS.getLetterQueryConsumer());
@@ -469,8 +469,8 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(9);
-            assertThat(data.get(0).get(8)).isEqualTo(FormCode.ENG_DBD_RESPONSE.getCode());
+            assertThat(data.getFirst()).hasSize(9);
+            assertThat(data.getFirst().get(8)).isEqualTo(FormCode.ENG_DBD_RESPONSE.getCode());
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.RESPONSE.getLetterQueryConsumer());
@@ -504,7 +504,7 @@ public class ReissueLetterServiceTest {
                 reissueLetterListRequestDto);
 
             assertThat(responseDto.getData()).hasSize(1);
-            assertThat(responseDto.getData().get(0).get(6)).isEqualTo(FormCode.ENG_DBD_SUMMONS_REM.getCode());
+            assertThat(responseDto.getData().getFirst().get(6)).isEqualTo(FormCode.ENG_DBD_SUMMONS_REM.getCode());
         }
 
         @Test
@@ -534,7 +534,7 @@ public class ReissueLetterServiceTest {
                 reissueLetterListRequestDto);
 
             assertThat(responseDto.getData()).hasSize(1);
-            assertThat(responseDto.getData().get(0).get(6)).isEqualTo(FormCode.ENG_SUMMONS_REMINDER.getCode());
+            assertThat(responseDto.getData().getFirst().get(6)).isEqualTo(FormCode.ENG_SUMMONS_REMINDER.getCode());
         }
 
         private List<Tuple> getInitialSummonsLetters(String jurorNumber) {
@@ -553,7 +553,7 @@ public class ReissueLetterServiceTest {
 
         private List<Tuple> getDbdResponseLetters(String jurorNumber) {
             final List<Tuple> dbdResponseLetters = getInitialSummonsLetters(jurorNumber);
-            doReturn(FormCode.ENG_DBD_RESPONSE.getCode()).when(dbdResponseLetters.get(0))
+            doReturn(FormCode.ENG_DBD_RESPONSE.getCode()).when(dbdResponseLetters.getFirst())
                 .get(ReissueLetterService.DataType.FORM_CODE.getExpression());
             return dbdResponseLetters;
         }
@@ -593,7 +593,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(7);
+            assertThat(data.getFirst()).hasSize(7);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.INFORMATION.getLetterQueryConsumer());
@@ -939,11 +939,11 @@ public class ReissueLetterServiceTest {
             ReissueLetterReponseDto responseDto = reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
             assertThat(responseDto.getJurors().size()).isEqualTo(1);
-            assertThat(responseDto.getJurors().get(0).getJurorNumber()).isEqualTo(
+            assertThat(responseDto.getJurors().getFirst().getJurorNumber()).isEqualTo(
                 reissueLetterRequestData.getJurorNumber());
-            assertThat(responseDto.getJurors().get(0).getFirstName()).isEqualTo("John");
-            assertThat(responseDto.getJurors().get(0).getLastName()).isEqualTo("Doe");
-            assertThat(responseDto.getJurors().get(0).getJurorStatus()).isEqualTo(
+            assertThat(responseDto.getJurors().getFirst().getFirstName()).isEqualTo("John");
+            assertThat(responseDto.getJurors().getFirst().getLastName()).isEqualTo("Doe");
+            assertThat(responseDto.getJurors().getFirst().getJurorStatus()).isEqualTo(
                 JurorStatusDto.of(disqualifiedStatus));
 
             verify(bulkPrintDataRepository, times(0))
@@ -1609,15 +1609,16 @@ public class ReissueLetterServiceTest {
                 reissueLetterService.validateReissueLetterRequest(request);
 
             assertThat(response.getValidSummonedJurors()).hasSize(1);
-            assertThat(response.getValidSummonedJurors().get(0).getJurorNumber()).isEqualTo("111111111");
-            assertThat(response.getValidSummonedJurors().get(0).getFirstName()).isEqualTo("John");
-            assertThat(response.getValidSummonedJurors().get(0).getLastName()).isEqualTo("Doe");
-            assertThat(response.getValidSummonedJurors().get(0).getPostcode()).isEqualTo("AA1 1AA");
+            assertThat(response.getValidSummonedJurors().getFirst().getJurorNumber()).isEqualTo("111111111");
+            assertThat(response.getValidSummonedJurors().getFirst().getFirstName()).isEqualTo("John");
+            assertThat(response.getValidSummonedJurors().getFirst().getLastName()).isEqualTo("Doe");
+            assertThat(response.getValidSummonedJurors().getFirst().getPostcode()).isEqualTo("AA1 1AA");
 
             assertThat(response.getInvalidSummonedJurors()).hasSize(1);
-            assertThat(response.getInvalidSummonedJurors().get(0).getJurorNumber()).isEqualTo("222222222");
-            assertThat(response.getInvalidSummonedJurors().get(0).getPostcode()).isEqualTo("BB2 2BB");
-            assertThat(response.getInvalidSummonedJurors().get(0).getErrorMessage()).isEqualTo("Juror has responded");
+            assertThat(response.getInvalidSummonedJurors().getFirst().getJurorNumber()).isEqualTo("222222222");
+            assertThat(response.getInvalidSummonedJurors().getFirst().getPostcode()).isEqualTo("BB2 2BB");
+            assertThat(response.getInvalidSummonedJurors().getFirst().getErrorMessage())
+                .isEqualTo("Juror has responded");
             verifyNoMoreInteractions(printDataService, bulkPrintDataRepository, poolHistoryService,
                                      jurorHistoryService);
         }

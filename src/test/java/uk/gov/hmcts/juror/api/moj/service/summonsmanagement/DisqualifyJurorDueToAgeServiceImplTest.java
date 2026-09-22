@@ -128,13 +128,13 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         verifyJurorPoolRepository(jurorPoolEntityCaptor);
 
         //verification of the JurorHistoryRepository invocation
-        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"A");
-        verify(jurorHistoryService).createWithdrawHistoryUser(jurorPoolList.get(0), "Withdrawal Letter", "A",
+        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.getFirst(),"A");
+        verify(jurorHistoryService).createWithdrawHistoryUser(jurorPoolList.getFirst(), "Withdrawal Letter", "A",
                                                               CommunicationChannel.LETTER);
 
         //verification of the DisqualificationLetterRepository invocation
         // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
-        verify(printDataService).printWithdrawalLetter(jurorPoolList.get(0));
+        verify(printDataService).printWithdrawalLetter(jurorPoolList.getFirst());
 
         //verify that the below services are never invoked
         verify(emailDataService, never()).emailWithdrawalLetter(any(JurorPool.class), anyString());
@@ -201,13 +201,13 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
 
         //verification of the JurorHistoryRepository activity
 
-        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"A");
-        verify(jurorHistoryService).createWithdrawHistoryUser(jurorPoolList.get(0), "Withdrawal Letter", "A",
+        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.getFirst(),"A");
+        verify(jurorHistoryService).createWithdrawHistoryUser(jurorPoolList.getFirst(), "Withdrawal Letter", "A",
                                                               CommunicationChannel.LETTER);
 
         //verification of the DisqualificationLetterRepository
         // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
-        verify(printDataService).printWithdrawalLetter(jurorPoolList.get(0));
+        verify(printDataService).printWithdrawalLetter(jurorPoolList.getFirst());
         verify(emailDataService, never()).emailWithdrawalLetter(any(JurorPool.class), anyString());
 
         //verification of the JurorResponseAuditRepository
@@ -265,13 +265,13 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
         verifyJurorPoolRepository(jurorPoolEntityCaptor);
 
         //verification of the JurorHistoryRepository activity
-        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"A");
-        verify(jurorHistoryService).createWithdrawHistoryUser(jurorPoolList.get(0), "Withdrawal Letter", "A",
+        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.getFirst(),"A");
+        verify(jurorHistoryService).createWithdrawHistoryUser(jurorPoolList.getFirst(), "Withdrawal Letter", "A",
                                                               CommunicationChannel.LETTER);
 
         //verification of the DisqualificationLetterRepository invocation
         // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
-        verify(printDataService).printWithdrawalLetter(jurorPoolList.get(0));
+        verify(printDataService).printWithdrawalLetter(jurorPoolList.getFirst());
         verify(emailDataService, never()).emailWithdrawalLetter(any(JurorPool.class), anyString());
     }
 

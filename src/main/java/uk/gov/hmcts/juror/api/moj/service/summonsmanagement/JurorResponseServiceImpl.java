@@ -77,8 +77,8 @@ public class JurorResponseServiceImpl implements JurorResponseService {
 
         //If changes to personal data detected, update the juror response
         if (hasSummonsReplyDataChanged(jurorResponse, jurorPersonalDetailsDto)) {
-            if (jurorResponse instanceof PaperResponse) {
-                jurorPaperResponseRepository.save((PaperResponse) jurorResponse);
+            if (jurorResponse instanceof PaperResponse response) {
+                jurorPaperResponseRepository.save(response);
             } else if (jurorPersonalDetailsDto.getReplyMethod().equals(ReplyMethod.DIGITAL)) {
                 jurorDigitalResponseRepository.save((DigitalResponse) jurorResponse);
             }

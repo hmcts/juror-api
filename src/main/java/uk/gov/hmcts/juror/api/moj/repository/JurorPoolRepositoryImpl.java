@@ -313,9 +313,9 @@ public class JurorPoolRepositoryImpl implements IJurorPoolRepository {
             partialQuery.where(getCheckedInBoolean());
         }
         if (null != search.getNextDue()) {
-            if (search.getNextDue().size() != 2 && "set".equals(search.getNextDue().get(0))) {
+            if (search.getNextDue().size() != 2 && "set".equals(search.getNextDue().getFirst())) {
                 partialQuery.where(JUROR_POOL.nextDate.isNotNull());
-            } else if (search.getNextDue().size() != 2 && "notSet".equals(search.getNextDue().get(0))) {
+            } else if (search.getNextDue().size() != 2 && "notSet".equals(search.getNextDue().getFirst())) {
                 partialQuery.where(JUROR_POOL.nextDate.isNull());
             }
         }

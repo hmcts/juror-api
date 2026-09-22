@@ -33,8 +33,7 @@ public class StaffAssignmentException extends RuntimeException {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public static class StatusUrgent extends StaffAssignmentException {
         StatusUrgent(final String jurorId, final String assignTo) {
-            super(String.format(
-                "Could not assign response %s to %s as the response status is Urgent",
+            super("Could not assign response %s to %s as the response status is Urgent".formatted(
                 jurorId,
                 assignTo
             ));
@@ -57,8 +56,7 @@ public class StaffAssignmentException extends RuntimeException {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public static class StatusClosed extends StaffAssignmentException {
         StatusClosed(final String jurorId, final String assignTo) {
-            super(String.format(
-                "Could not assign response %s to %s as the response status is Closed",
+            super("Could not assign response %s to %s as the response status is Closed".formatted(
                 jurorId,
                 assignTo
             ));

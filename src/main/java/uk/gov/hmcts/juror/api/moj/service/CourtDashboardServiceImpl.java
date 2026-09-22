@@ -245,8 +245,10 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
 
         if (notCheckedIn < 0) {
             // log the values of the calculations
-            log.info("Not checked in count is negative for court {}, resetting to 0. Current value: {}\n"
-                         + "Expected: {}, Confirmed: {}, Absent: {}, Checked In: {}, Checked Out: {}, On Trials: {}",
+            log.info("""
+                         Not checked in count is negative for court {}, resetting to 0. Current value: {}
+                         Expected: {}, Confirmed: {}, Absent: {}, Checked In: {}, Checked Out: {}, On Trials: {}\
+                         """,
                      locCode, notCheckedIn, expectedToday, confirmedAttendances,
                      absentToday, attendanceStatsToday.getCheckedIn(),
                      attendanceStatsToday.getCheckedOut(), attendanceStatsToday.getOnTrials());
@@ -272,7 +274,7 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
         if (utilisationStats.isEmpty()) {
             log.info("No utilisation stats found for location code: {}", locCode);
         } else {
-            UtilisationStats lastUtilisationStats = utilisationStats.get(0);
+            UtilisationStats lastUtilisationStats = utilisationStats.getFirst();
             courtAdminInfoDto.setUtilisationReportDate(lastUtilisationStats.getLastUpdate());
 
             // calculate the overall utilisation
