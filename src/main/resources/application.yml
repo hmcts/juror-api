@@ -50,9 +50,10 @@ feature-flags:
     digital-by-default: ${DIGITAL_BY_DEFAULT:false}
 server:
   error:
-    include-message: always
-    include-exception: true
-    include-binding-errors: always
+    include-message: never
+    include-exception: false
+    include-binding-errors: never
+    include-stacktrace: never
   tomcat:
     basedir: "my-tomcat"
     accesslog:
@@ -225,6 +226,11 @@ spring:
       on-profile: test
 testing:
   fix-clock: true
+server:
+  error:
+    include-message: always
+    include-exception: true
+    include-binding-errors: always
 jwt:
   secret:
     hmac: test-hmac-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256-algorithm
