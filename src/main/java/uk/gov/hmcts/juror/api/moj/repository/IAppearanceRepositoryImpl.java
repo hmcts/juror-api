@@ -36,6 +36,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -414,6 +415,8 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED
             )) // JS-777 hide appearances before 1 Jan 2025.
             .where(QAppearance.appearance.attendanceDate.goe(LocalDate.of(2025, 1, 1)))
+            .where(QAppearance.appearance.attendanceDate.goe(LocalDate.now().minusMonths(3))
+                                .or(QAppearance.appearance.totalDue.ne(BigDecimal.ZERO)))
             .join(QJuror.juror)
             .on(QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber))
             .groupBy(

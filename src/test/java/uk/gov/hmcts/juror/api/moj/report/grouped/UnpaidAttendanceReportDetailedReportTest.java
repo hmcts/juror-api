@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 
@@ -93,6 +94,8 @@ class UnpaidAttendanceReportDetailedReportTest
         verify(query).where(QAppearance.appearance.locCode.eq(SecurityUtil.getLocCode()));
         verify(query).where(QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
         verify(query).where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse());
+        verify(query).where(QAppearance.appearance.attendanceDate.goe(LocalDate.now().minusMonths(3))
+                                .or(QAppearance.appearance.totalDue.ne(BigDecimal.ZERO)));
 
         verify(query).orderBy(
             QAppearance.appearance.poolNumber.asc(),
