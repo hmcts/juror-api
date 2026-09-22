@@ -16,11 +16,11 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
+import uk.gov.hmcts.juror.api.moj.report.UnpaidAttendanceReportFilter;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.service.CourtLocationService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -62,8 +62,7 @@ public class UnpaidAttendanceSummaryReport extends AbstractGroupedReport {
         query.where(QAppearance.appearance.locCode.eq(SecurityUtil.getLocCode()));
         query.where(QAppearance.appearance.attendanceDate.between(request.getFromDate(), request.getToDate()));
         query.where(QAppearance.appearance.hideOnUnpaidExpenseAndReports.isFalse());
-        query.where(QAppearance.appearance.attendanceDate.goe(LocalDate.now().minusMonths(3))
-                        .or(QAppearance.appearance.totalDue.ne(BigDecimal.ZERO)));
+        query.where(UnpaidAttendanceReportFilter.includeRecentOrNonZeroTotalDue(LocalDate.now()));
 
         query.orderBy(QAppearance.appearance.attendanceDate.asc(), QJuror.juror.jurorNumber.asc());
         addGroupBy(query, DataType.JUROR_NUMBER, DataType.ATTENDANCE_DATE);
