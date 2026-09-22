@@ -55,10 +55,13 @@ import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
+import uk.gov.hmcts.juror.api.moj.domain.FormAttribute;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -563,6 +566,74 @@ class JurorRecordServiceTest {
 
         verify(jurorHistoryService, never()).createEditChangeOfPersonalDetailsHistory(
             any(), any(), any(), eq("Communication preference changed"));
+    }
+
+    @Test
+    void testEditJurorRecordDateOfBirthOnlyDoesNotUpdateQueuedDbdSummons() {
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
+        requestDto.setDateOfBirth(LocalDate.parse("1990-01-01"));
+        requestDto.setDbdPreference("Digital");
+        requestDto.setAddressLineTwo(" ");
+        requestDto.setAddressLineThree("addressLineThree ");
+
+        JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+        Juror juror = jurorPool.getJuror();
+        setJurorDetailsFromRequest(juror, requestDto);
+        juror.setDateOfBirth(LocalDate.parse("1980-01-01"));
+        juror.setAddressLine2(null);
+        juror.setAddressLine3("addressLineThree");
+        juror.setPostcode("M244BP");
+        setDigitalByDefaultJuror(jurorPool);
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+        doReturn(Optional.of(juror)).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+
+        ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        reasonableAdjustments.setDescription("Vision impairment");
+        reasonableAdjustments.setCode("V");
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+
+        jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
+
+        verifyNoInteractions(printDataService);
+        verify(jurorHistoryRepository, never()).delete(any());
+        verify(jurorHistoryService, never()).createEditChangeOfPersonalDetailsHistory(
+            any(), any(), any(), eq("Address Changed"));
+    }
+
+    @Test
+    void testEditJurorRecordAddressChangedRemovesDbdSummonsReprintHistory() {
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
+        requestDto.setDbdPreference("Digital");
+
+        JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+        Juror juror = jurorPool.getJuror();
+        setJurorDetailsFromRequest(juror, requestDto);
+        juror.setAddressLine1("old address line");
+        setDigitalByDefaultJuror(jurorPool);
+
+        BulkPrintData queuedDbdSummons = createBulkPrintData(FormCode.ENG_DBD_SUMMONS);
+        JurorHistory summonsReprintedHistory = new JurorHistory();
+        summonsReprintedHistory.setHistoryCode(HistoryCodeMod.SUMMONS_REPRINTED);
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+        doReturn(Optional.of(juror)).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+        doReturn(List.of(queuedDbdSummons)).when(printDataService).getLettersQueuedForJuror(VALID_JUROR_NUMBER);
+        doReturn(List.of(summonsReprintedHistory)).when(jurorHistoryRepository)
+            .findByJurorNumberAndDateCreatedGreaterThanEqual(eq(VALID_JUROR_NUMBER), any(LocalDateTime.class));
+
+        ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        reasonableAdjustments.setDescription("Vision impairment");
+        reasonableAdjustments.setCode("V");
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+
+        jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
+
+        verify(printDataService).removeQueuedLetterForJuror(jurorPool, List.of(FormCode.ENG_DBD_SUMMONS));
+        verify(printDataService).reprintDbdSummonsLetter(jurorPool);
+        verify(jurorHistoryRepository).delete(summonsReprintedHistory);
     }
 
 
@@ -2564,6 +2635,38 @@ class JurorRecordServiceTest {
         editJurorRecordRequestDto.setPendingLastName("Pending Last Name");
 
         return editJurorRecordRequestDto;
+    }
+
+    private void setJurorDetailsFromRequest(Juror juror, EditJurorRecordRequestDto requestDto) {
+        juror.setTitle(requestDto.getTitle());
+        juror.setFirstName(requestDto.getFirstName());
+        juror.setLastName(requestDto.getLastName());
+        juror.setAddressLine1(requestDto.getAddressLineOne());
+        juror.setAddressLine2(requestDto.getAddressLineTwo());
+        juror.setAddressLine3(requestDto.getAddressLineThree());
+        juror.setAddressLine4(requestDto.getAddressTown());
+        juror.setAddressLine5(requestDto.getAddressCounty());
+        juror.setPostcode(requestDto.getAddressPostcode());
+        juror.setDateOfBirth(requestDto.getDateOfBirth());
+        juror.setPhoneNumber(requestDto.getPrimaryPhone());
+        juror.setAltPhoneNumber(requestDto.getSecondaryPhone());
+        juror.setEmail(requestDto.getEmailAddress());
+        juror.setReasonableAdjustmentCode(requestDto.getSpecialNeed());
+        juror.setReasonableAdjustmentMessage(requestDto.getSpecialNeedMessage());
+        juror.setOpticRef(requestDto.getOpticReference());
+        juror.setPendingTitle(requestDto.getPendingTitle());
+        juror.setPendingFirstName(requestDto.getPendingFirstName());
+        juror.setPendingLastName(requestDto.getPendingLastName());
+    }
+
+    private BulkPrintData createBulkPrintData(FormCode formCode) {
+        FormAttribute formAttribute = new FormAttribute();
+        formAttribute.setFormType(formCode.getCode());
+
+        BulkPrintData bulkPrintData = new BulkPrintData();
+        bulkPrintData.setJurorNo(VALID_JUROR_NUMBER);
+        bulkPrintData.setFormAttribute(formAttribute);
+        return bulkPrintData;
     }
 
     private JurorStatus createJurorStatus(int statusCode) {
