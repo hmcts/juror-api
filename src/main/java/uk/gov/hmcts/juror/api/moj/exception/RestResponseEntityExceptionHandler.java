@@ -23,10 +23,13 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
+import uk.gov.hmcts.juror.api.bureau.exception.DisqualifyException;
+import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
+import uk.gov.hmcts.juror.api.juror.service.JurorServiceImpl;
 
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,8 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final String GENERIC_INTERNAL_SERVER_ERROR_MESSAGE = "An unexpected error occurred";
-
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @ExceptionHandler(FinancialLossLimitExceededException.class)
     public ResponseEntity<FinancialLossLimitExceededException.RequestBody> handleFinancialLossLimitExceededException(
@@ -151,6 +152,22 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         return new ResponseEntity<>(body, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
+    @ExceptionHandler({
+        BureauOptimisticLockingException.class,
+        DisqualifyException.OptimisticLockingFailure.class,
+        ExcusalException.OptimisticLockingFailure.class
+    })
+    public ResponseEntity<Object> handleOptimisticLockingFailure(RuntimeException ex, WebRequest request) {
+        Map<String, Object> body = createSpringBootErrorResponseBody(ex, HttpStatus.CONFLICT, request);
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(JurorServiceImpl.JurorResponseAlreadyExistsException.class)
+    public ResponseEntity<Object> handleJurorResponseAlreadyExists(RuntimeException ex, WebRequest request) {
+        Map<String, Object> body = createSpringBootErrorResponseBody(ex, HttpStatus.NOT_MODIFIED, request);
+        return new ResponseEntity<>(body, HttpStatus.NOT_MODIFIED);
+    }
+
     @ExceptionHandler({SQLException.class, PSQLException.class, DataAccessException.class,
         MojException.InternalServerError.class,
         DateException.DateParseException.class,
@@ -175,7 +192,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         HttpStatusCode status, WebRequest request) {
 
         Map<String, Object> body = new ConcurrentHashMap<>();
-        body.put("timestamp", LocalDateTime.now().format(dateTimeFormatter));
+        body.put("timestamp", new Date());
         body.put("status", status.value());
 
         List<FieldError> errors = ex.getBindingResult()
@@ -190,8 +207,21 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
     private Map<String, Object> createGenericErrorResponseBody(String message) {
         Map<String, Object> body = new ConcurrentHashMap<>();
-        body.put("timestamp", LocalDateTime.now().format(dateTimeFormatter));
+        body.put("timestamp", new Date());
         body.put("message", message);
+        return body;
+    }
+
+    private Map<String, Object> createSpringBootErrorResponseBody(Throwable ex, HttpStatus status, WebRequest request) {
+        Map<String, Object> body = new ConcurrentHashMap<>();
+        body.put("timestamp", new Date());
+        body.put("status", status.value());
+        body.put("error", status.getReasonPhrase());
+        body.put("exception", ex.getClass().getName());
+        body.put("message", ex.getMessage());
+        if (request instanceof ServletWebRequest servletWebRequest) {
+            body.put("path", servletWebRequest.getRequest().getRequestURI());
+        }
         return body;
     }
 
