@@ -347,7 +347,9 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private void removeRsupHistory(String jurorNumber, FormCode formCode) {
         // Need to remove any unnecessary RSUP history entries
         if (formCode == FormCode.ENG_SUMMONS
-            || formCode == FormCode.BI_SUMMONS) {
+            || formCode == FormCode.BI_SUMMONS
+            || formCode == FormCode.ENG_DBD_SUMMONS
+            || formCode == FormCode.BI_DBD_SUMMONS) {
             List<JurorHistory> jurorHistories = jurorHistoryRepository
                 .findByJurorNumberAndDateCreatedGreaterThanEqual(
                     jurorNumber,
