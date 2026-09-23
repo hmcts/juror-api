@@ -40,6 +40,7 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
+import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
@@ -1208,7 +1209,7 @@ class ManageDeferralsServiceTest {
         doReturn(null).when(poolHistoryRepository).save(any());
         doReturn(null).when(jurorHistoryRepository).save(any());
 
-        manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER");
+        manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER", true);
 
         assertThat(deferredJuror.getIsActive())
             .as("Expect the old, deferred juror record to be updated to inactive")
@@ -1223,7 +1224,10 @@ class ManageDeferralsServiceTest {
             .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActiveTrue(any(), any(), any());
         verify(jurorPoolRepository, times(deferralsUsed * 2))
             .saveAndFlush(any());
-        verify(poolHistoryRepository, times(1)).save(any());
+        ArgumentCaptor<PoolHistory> poolHistoryCaptor = ArgumentCaptor.forClass(PoolHistory.class);
+        verify(poolHistoryRepository, times(1)).save(poolHistoryCaptor.capture());
+        assertThat(poolHistoryCaptor.getValue().getOtherInformation())
+            .isEqualTo(deferralsUsed + PoolHistory.NEW_POOL_REQUEST_SUFFIX);
         verify(printDataService, times(deferralsUsed)).printConfirmationLetter(any());
     }
 
@@ -1265,7 +1269,7 @@ class ManageDeferralsServiceTest {
         doReturn(null).when(poolHistoryRepository).save(any());
         doReturn(null).when(jurorHistoryRepository).save(any());
 
-        manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER");
+        manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER", false);
 
         assertThat(deferredJuror.getIsActive())
             .as("Expect the old, deferred juror record to be updated to inactive")
@@ -1278,7 +1282,10 @@ class ManageDeferralsServiceTest {
             .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActiveTrue(any(), any(), any());
         verify(jurorPoolRepository, times(deferralsUsed * 2))
             .saveAndFlush(any());
-        verify(poolHistoryRepository, times(1)).save(any());
+        ArgumentCaptor<PoolHistory> poolHistoryCaptor = ArgumentCaptor.forClass(PoolHistory.class);
+        verify(poolHistoryRepository, times(1)).save(poolHistoryCaptor.capture());
+        assertThat(poolHistoryCaptor.getValue().getOtherInformation())
+            .isEqualTo(deferralsUsed + PoolHistory.ADD_POOL_REQUEST_SUFFIX);
         verify(printDataService, times(0)).printConfirmationLetter(any());
     }
 
@@ -1319,7 +1326,7 @@ class ManageDeferralsServiceTest {
             .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActiveTrue("222222222", BUREAU_OWNER,
                 newAttendanceDate);
 
-        manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER");
+        manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER", true);
 
         assertThat(listAppender.list)
             .as("Verify number of jurors added to the Pool")
@@ -1360,7 +1367,7 @@ class ManageDeferralsServiceTest {
         doReturn(null).when(poolRequestRepository).save(any());
         doReturn(null).when(poolRequestRepository).saveAndFlush(any());
 
-        manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER");
+        manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER", true);
 
         assertThat(listAppender.list)
             .as("Verify number of jurors added to the pool")

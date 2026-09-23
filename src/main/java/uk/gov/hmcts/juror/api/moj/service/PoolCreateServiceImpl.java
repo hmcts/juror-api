@@ -703,14 +703,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         if (bureauDeferrals > 0) {
             String poolNumber = poolCreateRequestDto.getPoolNumber();
             PoolRequest poolRequest = RepositoryUtils.retrieveFromDatabase(poolNumber, poolRequestRepository);
-            int deferralsUsed = manageDeferralsService.useBureauDeferrals(poolRequest, bureauDeferrals, userId);
-            if (deferralsUsed > 0) {
-                updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, deferralsUsed,
-                    isNewPool
-                        ? PoolHistory.NEW_POOL_REQUEST_SUFFIX
-                        : PoolHistory.ADD_POOL_REQUEST_SUFFIX,
-                    HistoryCode.PHDI);
-            }
+            manageDeferralsService.useBureauDeferrals(poolRequest, bureauDeferrals, userId, isNewPool);
         }
     }
 
