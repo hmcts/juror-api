@@ -220,7 +220,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         final JurorPool myJurorPool = JurorPoolUtils.getActiveJurorPoolForUser(
             jurorPoolRepository, jurorNumber, payload.getOwner());
 
-        boolean addressChanged = hasAddressChanged(juror, requestDto);
+        final boolean addressChanged = hasAddressChanged(juror, requestDto);
 
         juror.setAddressLine1(requestDto.getAddressLineOne());
         juror.setAddressLine2(requestDto.getAddressLineTwo());

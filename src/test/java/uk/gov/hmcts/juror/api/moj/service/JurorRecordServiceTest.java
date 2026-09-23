@@ -613,7 +613,7 @@ class JurorRecordServiceTest {
         juror.setAddressLine1("old address line");
         setDigitalByDefaultJuror(jurorPool);
 
-        BulkPrintData queuedDbdSummons = createBulkPrintData(FormCode.ENG_DBD_SUMMONS);
+        final BulkPrintData queuedDbdSummons = createBulkPrintData(FormCode.ENG_DBD_SUMMONS);
         JurorHistory summonsReprintedHistory = new JurorHistory();
         summonsReprintedHistory.setHistoryCode(HistoryCodeMod.SUMMONS_REPRINTED);
 
