@@ -1,0 +1,25 @@
+INSERT INTO juror_mod.pool_history
+    (id, pool_no, history_date, history_code, user_id, other_information)
+VALUES
+    (1001, '415240001', TIMESTAMP '2024-07-01 09:00:00.000', 'PHDI', 'BUREAU_USER',
+     '2 (New Pool Request)'),
+    (1002, '415240001', TIMESTAMP '2024-07-01 09:00:00.005', 'PHDI', 'BUREAU_USER',
+     '2 (New Pool Request)'),
+    (1003, '415240002', TIMESTAMP '2024-07-02 09:00:00.000', 'PHDI', 'BUREAU_USER',
+     '3 (New Pool Request)'),
+    (1004, '415240002', TIMESTAMP '2024-07-02 09:00:00.005', 'PHDI', 'BUREAU_USER',
+     '3 (Add Pool Request)'),
+    (1005, '415240003', TIMESTAMP '2024-07-03 09:00:00.000', 'PHDI', 'BUREAU_USER',
+     '4 (New Pool Request)'),
+    (1006, '415240004', TIMESTAMP '2024-07-04 09:00:00.000', 'PHSI', 'BUREAU_USER',
+     '5 (New Pool Request)'),
+    (1007, '415240004', TIMESTAMP '2024-07-04 09:00:00.005', 'PHSI', 'BUREAU_USER',
+     '5 (New Pool Request)'),
+    (1008, '415240005', TIMESTAMP '2024-07-05 09:00:00.000', 'PHDI', 'BUREAU_USER',
+     '6 (New Pool Request)'),
+    (1009, '415240005', TIMESTAMP '2024-07-05 09:00:01.001', 'PHDI', 'BUREAU_USER',
+     '6 (New Pool Request)'),
+    (1010, '415240006', TIMESTAMP '2024-06-30 09:00:00.000', 'PHDI', 'BUREAU_USER',
+     '7 (New Pool Request)'),
+    (1011, '415240006', TIMESTAMP '2024-06-30 09:00:00.005', 'PHDI', 'BUREAU_USER',
+     '7 (New Pool Request)');

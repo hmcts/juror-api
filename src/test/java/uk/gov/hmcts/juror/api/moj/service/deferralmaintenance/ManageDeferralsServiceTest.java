@@ -56,7 +56,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
-import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
@@ -131,8 +130,6 @@ class ManageDeferralsServiceTest {
     private JurorPoolRepository jurorPoolRepository;
     @Mock
     private CurrentlyDeferredRepository currentlyDeferredRepository;
-    @Mock
-    private PoolHistoryRepository poolHistoryRepository;
     @Mock
     private JurorHistoryRepository jurorHistoryRepository;
     @Mock
@@ -1004,7 +1001,6 @@ class ManageDeferralsServiceTest {
         verify(jurorPoolRepository, never()).saveAndFlush(any());
         verify(poolRequestRepository, never()).save(any());
         verify(poolRequestRepository, never()).saveAndFlush(any());
-        verify(poolHistoryRepository, never()).save(any());
         verify(jurorHistoryRepository, never()).save(any());
         verify(printDataService, never()).printConfirmationLetter(any());
     }
@@ -1047,7 +1043,6 @@ class ManageDeferralsServiceTest {
         doReturn(null).when(jurorPoolRepository).saveAndFlush(any());
         doReturn(null).when(poolRequestRepository).save(any());
         doReturn(null).when(poolRequestRepository).saveAndFlush(any());
-        doReturn(null).when(poolHistoryRepository).save(any());
         doReturn(null).when(jurorHistoryRepository).save(any());
 
         int deferralsUsed = courtDeferrals.size();
@@ -1067,7 +1062,6 @@ class ManageDeferralsServiceTest {
             .saveAndFlush(any());
         verify(poolRequestRepository, times(deferralsUsed)).save(any());
         verify(poolRequestRepository, times(deferralsUsed)).saveAndFlush(any());
-        verify(poolHistoryRepository, never()).save(any());
         verify(jurorHistoryRepository, times(deferralsUsed)).save(any());
     }
 
@@ -1206,7 +1200,6 @@ class ManageDeferralsServiceTest {
         doReturn(null).when(jurorPoolRepository).saveAndFlush(any());
         doReturn(null).when(poolRequestRepository).save(any());
         doReturn(null).when(poolRequestRepository).saveAndFlush(any());
-        doReturn(null).when(poolHistoryRepository).save(any());
         doReturn(null).when(jurorHistoryRepository).save(any());
 
         manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER");
@@ -1224,7 +1217,6 @@ class ManageDeferralsServiceTest {
             .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActiveTrue(any(), any(), any());
         verify(jurorPoolRepository, times(deferralsUsed * 2))
             .saveAndFlush(any());
-        verify(poolHistoryRepository, times(1)).save(any());
         verify(printDataService, times(deferralsUsed)).printConfirmationLetter(any());
     }
 
@@ -1263,7 +1255,6 @@ class ManageDeferralsServiceTest {
         doReturn(null).when(jurorPoolRepository).saveAndFlush(any());
         doReturn(null).when(poolRequestRepository).save(any());
         doReturn(null).when(poolRequestRepository).saveAndFlush(any());
-        doReturn(null).when(poolHistoryRepository).save(any());
         doReturn(null).when(jurorHistoryRepository).save(any());
 
         manageDeferralsService.useBureauDeferrals(newPoolRequest, deferralsUsed, "SOME_USER");
@@ -1279,7 +1270,6 @@ class ManageDeferralsServiceTest {
             .findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActiveTrue(any(), any(), any());
         verify(jurorPoolRepository, times(deferralsUsed * 2))
             .saveAndFlush(any());
-        verify(poolHistoryRepository, times(1)).save(any());
         verify(printDataService, times(0)).printConfirmationLetter(any());
     }
 

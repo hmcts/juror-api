@@ -29,13 +29,11 @@ import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.BulkDi
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.CurrentlyDeferred;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
-import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
-import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
@@ -54,7 +52,6 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
-import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
@@ -76,7 +73,6 @@ import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -117,7 +113,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
     private final JurorRepository jurorRepository;
     private final JurorPoolRepository jurorPoolRepository;
     private final PoolRequestRepository poolRequestRepository;
-    private final PoolHistoryRepository poolHistoryRepository;
     private final JurorHistoryRepository jurorHistoryRepository;
     private final JurorStatusRepository jurorStatusRepository;
     private final PoolMemberSequenceService poolMemberSequenceService;
@@ -867,7 +862,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
      *     <li>Create a new Bureau owned Pool Member record (OWNER = 400) for the newly requested Pool</li>
      *     <li>Update the Pool Total of the newly requested Pool (increment by one)</li>
      *     <li>Insert a record in the PART_HIST table for each used deferral</li>
-     *     <li>Insert a record in the POOL_HIST table to summarise the deferrals used</li>
      *     <li>Insert/Update records in the CONFRIM_LETT table for each used deferral</li>
      * </ul>
      *
@@ -884,7 +878,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         Iterator<CurrentlyDeferred> bureauDeferralsIterator = currentlyDeferredRepository
             .findAll(filterByCourtAndDate(owner, courtLocation, attendanceDate)).iterator();
 
-        int deferralsUsed = processBureauDeferredJurors(bureauDeferrals, bureauDeferralsIterator, newPool, userId);
+        int deferralsUsed = processDeferredJurors(bureauDeferrals, bureauDeferralsIterator, newPool, userId);
         log.info("{} deferred juror(s) have been added to Pool: {}", deferralsUsed,
                                newPool.getPoolNumber()
         );
@@ -1080,14 +1074,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         return deferralsUsed;
     }
 
-    private int processBureauDeferredJurors(int deferralsRequested,
-                                            Iterator<CurrentlyDeferred> bureauDeferralsIterator,
-                                            PoolRequest poolRequest, String userId) {
-        int deferralsUsed = processDeferredJurors(deferralsRequested, bureauDeferralsIterator, poolRequest, userId);
-        updatePoolHistory(poolRequest, deferralsUsed, userId);
-        return deferralsUsed;
-    }
-
     private JurorPool getPoolMember(CurrentlyDeferred courtDeferral, LocalDate attendanceDate) {
         Optional<JurorPool> jurorPool =
             jurorPoolRepository.findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActiveTrue(
@@ -1181,13 +1167,6 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
             return poolRequestOpt.get();
         } else {
             throw new PoolRequestException.PoolRequestNotFound(poolNumber);
-        }
-    }
-
-    private void updatePoolHistory(PoolRequest newPool, int deferralsUsed, String userId) {
-        if (deferralsUsed > 0) {
-            poolHistoryRepository.save(new PoolHistory(newPool.getPoolNumber(), LocalDateTime.now(), HistoryCode.PHDI,
-                                                       userId, deferralsUsed + PoolHistory.NEW_POOL_REQUEST_SUFFIX));
         }
     }
 

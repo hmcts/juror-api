@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.request.PoolAdditionalSummonsDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolMemberFilterRequestQuery;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolRequestDto;
@@ -261,6 +262,55 @@ class PoolCreateServiceTest {
         Mockito.verify(poolRequestRepository, Mockito.times(1)).save(Mockito.any());
         Mockito.verify(poolHistoryRepository, Mockito.times(1)).save(Mockito.any());
         Mockito.verify(jurorHistoryRepository, Mockito.times(1)).saveAll(Mockito.any());
+    }
+
+    @Test
+    void createPoolRecordsActualBureauDeferralsUsed() throws SQLException {
+        PoolCreateRequestDto request = setupCreatePoolDigitalByDefaultTest(false, false);
+        request.setBureauDeferrals(3);
+        Mockito.when(manageDeferralsService.useBureauDeferrals(Mockito.any(), Mockito.eq(3), Mockito.anyString()))
+            .thenReturn(2);
+
+        poolCreateService.createPool(buildPayload("400"), request);
+
+        ArgumentCaptor<PoolHistory> historyCaptor = ArgumentCaptor.forClass(PoolHistory.class);
+        Mockito.verify(poolHistoryRepository, Mockito.times(2)).save(historyCaptor.capture());
+        assertThat(historyCaptor.getAllValues())
+            .filteredOn(history -> history.getHistoryCode() == HistoryCode.PHDI)
+            .extracting(PoolHistory::getOtherInformation)
+            .containsExactly("2 (New Pool Request)");
+    }
+
+    @Test
+    void summonAdditionalCitizensRecordsActualBureauDeferralsUsed() throws SQLException {
+        PoolCreateRequestDto request = setupCreatePoolDigitalByDefaultTest(false, false);
+        PoolAdditionalSummonsDto additionalSummons = createAdditionalSummonsRequest(request);
+        additionalSummons.setBureauDeferrals(3);
+        Mockito.when(manageDeferralsService.useBureauDeferrals(Mockito.any(), Mockito.eq(3), Mockito.anyString()))
+            .thenReturn(2);
+
+        poolCreateService.summonAdditionalCitizens(buildPayload("400"), additionalSummons);
+
+        ArgumentCaptor<PoolHistory> historyCaptor = ArgumentCaptor.forClass(PoolHistory.class);
+        Mockito.verify(poolHistoryRepository, Mockito.times(2)).save(historyCaptor.capture());
+        assertThat(historyCaptor.getAllValues())
+            .filteredOn(history -> history.getHistoryCode() == HistoryCode.PHDI)
+            .extracting(PoolHistory::getOtherInformation)
+            .containsExactly("2 (Add Pool Request)");
+    }
+
+    @Test
+    void createPoolDoesNotRecordBureauDeferralsWhenNoneAreUsed() throws SQLException {
+        PoolCreateRequestDto request = setupCreatePoolDigitalByDefaultTest(false, false);
+        request.setBureauDeferrals(3);
+        Mockito.when(manageDeferralsService.useBureauDeferrals(Mockito.any(), Mockito.eq(3), Mockito.anyString()))
+            .thenReturn(0);
+
+        poolCreateService.createPool(buildPayload("400"), request);
+
+        ArgumentCaptor<PoolHistory> historyCaptor = ArgumentCaptor.forClass(PoolHistory.class);
+        Mockito.verify(poolHistoryRepository).save(historyCaptor.capture());
+        assertThat(historyCaptor.getValue().getHistoryCode()).isEqualTo(HistoryCode.PHSI);
     }
 
     @Test
@@ -786,6 +836,18 @@ class PoolCreateServiceTest {
         poolCreateRequestDto.setPostcodes(postcodes);
 
         return poolCreateRequestDto;
+    }
+
+    private PoolAdditionalSummonsDto createAdditionalSummonsRequest(PoolCreateRequestDto request) {
+        PoolAdditionalSummonsDto additionalSummons = new PoolAdditionalSummonsDto();
+        additionalSummons.setPoolNumber(request.getPoolNumber());
+        additionalSummons.setNoRequested(request.getNoRequested());
+        additionalSummons.setCitizensToSummon(request.getCitizensToSummon());
+        additionalSummons.setCitizensSummoned(0);
+        additionalSummons.setCatchmentArea(request.getCatchmentArea());
+        additionalSummons.setPostcodes(request.getPostcodes());
+        additionalSummons.setPreviousJurorCount(request.getPreviousJurorCount());
+        return additionalSummons;
     }
 
     private PoolCreateRequestDto setupCreatePoolDigitalByDefaultTest(boolean featureFlagEnabled,

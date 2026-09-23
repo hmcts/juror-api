@@ -33,11 +33,13 @@ import uk.gov.hmcts.juror.api.moj.controller.response.SummonsFormResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.CoronerPool;
 import uk.gov.hmcts.juror.api.moj.domain.CoronerPoolDetail;
 import uk.gov.hmcts.juror.api.moj.domain.FilterPoolMember;
+import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
+import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
@@ -47,6 +49,7 @@ import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolDetailRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.PoolHistoryRepository;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -94,6 +97,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Autowired
     private JurorRepository jurorRepository;
+    @Autowired
+    private PoolHistoryRepository poolHistoryRepository;
 
     @Before
     public void setUp() {
@@ -471,6 +476,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(deferredJurorLetters).isEqualTo(1);
         long letterCount = bulkPrintDataRepository.count();
         assertThat(letterCount).isEqualTo(9); // 8 summons and 1 confirmation letter
+        assertDeferralsInHistory("1 (New Pool Request)");
     }
 
     @Test
@@ -596,8 +602,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             .build());
 
         PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
-        //Update Bureau deferrals to use as there is one available
-        poolCreateRequest.setBureauDeferrals(1);
+        poolCreateRequest.setBureauDeferrals(0);
 
         final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
 
@@ -608,8 +613,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         PoolAdditionalSummonsDto poolAdditionalSummons = setUpPoolAdditionalSummonsDto();
-        poolAdditionalSummons.setBureauDeferrals(0);
-        poolAdditionalSummons.setPreviousJurorCount(9);
+        poolAdditionalSummons.setBureauDeferrals(1);
+        poolAdditionalSummons.setPreviousJurorCount(8);
         final URI uri2 = URI.create("/api/v1/moj/pool-create/additional-summons");
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
@@ -620,6 +625,18 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         long letterCount = bulkPrintDataRepository.count();
         assertThat(letterCount).isEqualTo(11); // 10 summons and 1 confirmation letters
+        assertDeferralsInHistory("1 (Add Pool Request)");
+    }
+
+    private void assertDeferralsInHistory(String expectedInformation) {
+        List<PoolHistory> deferralsIn = poolHistoryRepository.findByPoolNumberOrderByHistoryDateDesc("415221201")
+            .stream()
+            .filter(history -> history.getHistoryCode() == HistoryCode.PHDI)
+            .toList();
+
+        assertThat(deferralsIn)
+            .extracting(PoolHistory::getOtherInformation)
+            .containsExactly(expectedInformation);
     }
 
     @Test
