@@ -874,9 +874,10 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
      * @param newPool         a Pool Request instance, owned by the Bureau
      * @param bureauDeferrals the number of bureau deferrals requested to be used in this Pool
      * @param userId          the current user's username (for auditing in history tables)
+     * @param isNewPool       whether the deferrals are being used for a new pool, or added to an existing pool
      */
     @Override
-    public int useBureauDeferrals(PoolRequest newPool, int bureauDeferrals, String userId) {
+    public int useBureauDeferrals(PoolRequest newPool, int bureauDeferrals, String userId, boolean isNewPool) {
         String owner = newPool.getOwner();
         String courtLocation = newPool.getCourtLocation().getLocCode();
         LocalDate attendanceDate = newPool.getReturnDate();
@@ -884,7 +885,8 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         Iterator<CurrentlyDeferred> bureauDeferralsIterator = currentlyDeferredRepository
             .findAll(filterByCourtAndDate(owner, courtLocation, attendanceDate)).iterator();
 
-        int deferralsUsed = processBureauDeferredJurors(bureauDeferrals, bureauDeferralsIterator, newPool, userId);
+        int deferralsUsed = processBureauDeferredJurors(bureauDeferrals, bureauDeferralsIterator, newPool, userId,
+                                                        isNewPool);
         log.info("{} deferred juror(s) have been added to Pool: {}", deferralsUsed,
                                newPool.getPoolNumber()
         );
@@ -1082,9 +1084,9 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
 
     private int processBureauDeferredJurors(int deferralsRequested,
                                             Iterator<CurrentlyDeferred> bureauDeferralsIterator,
-                                            PoolRequest poolRequest, String userId) {
+                                            PoolRequest poolRequest, String userId, boolean isNewPool) {
         int deferralsUsed = processDeferredJurors(deferralsRequested, bureauDeferralsIterator, poolRequest, userId);
-        updatePoolHistory(poolRequest, deferralsUsed, userId);
+        updatePoolHistory(poolRequest, deferralsUsed, userId, isNewPool);
         return deferralsUsed;
     }
 
@@ -1184,10 +1186,12 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         }
     }
 
-    private void updatePoolHistory(PoolRequest newPool, int deferralsUsed, String userId) {
+    private void updatePoolHistory(PoolRequest newPool, int deferralsUsed, String userId, boolean isNewPool) {
         if (deferralsUsed > 0) {
             poolHistoryRepository.save(new PoolHistory(newPool.getPoolNumber(), LocalDateTime.now(), HistoryCode.PHDI,
-                                                       userId, deferralsUsed + PoolHistory.NEW_POOL_REQUEST_SUFFIX));
+                                                       userId, deferralsUsed + (isNewPool
+                                                           ? PoolHistory.NEW_POOL_REQUEST_SUFFIX
+                                                           : PoolHistory.ADD_POOL_REQUEST_SUFFIX)));
         }
     }
 
