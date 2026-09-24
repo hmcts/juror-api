@@ -50,10 +50,9 @@ feature-flags:
     digital-by-default: ${DIGITAL_BY_DEFAULT:false}
 server:
   error:
-    include-message: never
-    include-exception: false
-    include-binding-errors: never
-    include-stacktrace: never
+    include-message: always
+    include-exception: true
+    include-binding-errors: always
   tomcat:
     basedir: "my-tomcat"
     accesslog:
