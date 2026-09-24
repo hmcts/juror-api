@@ -18,13 +18,6 @@ public interface ResponseExcusalService {
     List<ResponseExcusalController.ExcusalCodeDto> getExcusalReasons();
 
     /**
-     * Excuse Juror with specified code.
-     *
-     * @return Boolean representing whether excusal was successful
-     */
-    boolean excuseJuror(String jurorId, ExcusalCodeDto excusalCodeDto, String login);
-
-    /**
      * Reject Jurors excusal request with specified code.
      *
      * @return Boolean representing whether rejection was successful
