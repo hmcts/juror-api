@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseMergeService;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -18,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -459,7 +459,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             // update Juror
             jurorDetails.getJuror().setResponded(true);
             jurorDetails.getJuror().setDisqualifyDate(LocalDate.now());
-            jurorDetails.getJuror().setDisqualifyCode(DisCode.AGE);
+            jurorDetails.getJuror().setDisqualifyCode(DisqualifyCode.A.getCode());
             jurorDetails.setUserEdtq(AUTO_USER);
             jurorDetails.setStatus(
                 RepositoryUtils.retrieveFromDatabase(IJurorStatus.DISQUALIFIED, jurorStatusRepository));

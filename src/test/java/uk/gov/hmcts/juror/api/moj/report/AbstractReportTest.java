@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestConstants;
-import uk.gov.hmcts.juror.api.bureau.domain.QBureauJurorCjs;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
@@ -25,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QJurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
@@ -750,7 +750,7 @@ class AbstractReportTest {
                 .defaultAnswer(RETURNS_SELF));
 
             DataType dataType = mock(DataType.class);
-            when(dataType.getRequiredTables()).thenReturn(List.of(QBureauJurorCjs.bureauJurorCjs));
+            when(dataType.getRequiredTables()).thenReturn(List.of(QJurorResponseCjsEmployment.jurorResponseCjsEmployment));
 
             MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
                 () -> createReport(
@@ -759,7 +759,7 @@ class AbstractReportTest {
                 ).addJoins(query),
                 "Expected exception to be thrown when primary join is not found");
 
-            assertThat(exception.getMessage()).isEqualTo("No join found for bureauJurorCjs");
+            assertThat(exception.getMessage()).isEqualTo("No join found for jurorResponseCjsEmployment");
             assertThat(exception.getCause()).isNull();
         }
 

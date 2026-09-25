@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
@@ -56,35 +55,35 @@ import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.
 import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.ReasonableAdjustmentsDto;
 import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.ThirdPartyJurorDetailsDto;
 import static uk.gov.hmcts.juror.api.bureau.domain.ReasonableAdjustmentQueries.byJurorNumberAndCode;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.ALT_PHONE_NUMBER;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.BAIL;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.BAIL_DETAILS;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.CONVICTIONS;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.CONVICTIONS_DETAILS;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.DEFERRAL_DATE;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.DEFERRAL_REASON;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.DOB;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.EMAIL;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.EXCUSAL_REASON;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.FIRST_NAME;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.JUROR_EMAIL_DETAILS;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.JUROR_PHONE_DETAILS;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.LAST_NAME;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.MENTAL_HEALTH_ACT;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.MENTAL_HEALTH_ACT_DETAILS;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.PHONE_NUMBER;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.POSTCODE;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.RELATIONSHIP;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.RESIDENCY;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.RESIDENCY_DETAIL;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.THIRD_PARTY_EMAIL_ADDRESS;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.THIRD_PARTY_FIRST_NAME;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.THIRD_PARTY_LAST_NAME;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.THIRD_PARTY_MAIN_PHONE;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.THIRD_PARTY_OTHER_PHONE;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.THIRD_PARTY_OTHER_REASON;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.THIRD_PARTY_REASON;
-import static uk.gov.hmcts.juror.api.juror.domain.JurorResponse.TITLE;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.ALT_PHONE_NUMBER;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.BAIL;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.BAIL_DETAILS;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.CONVICTIONS;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.CONVICTIONS_DETAILS;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.DEFERRAL_DATE;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.DEFERRAL_REASON;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.DOB;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.EMAIL;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.EXCUSAL_REASON;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.FIRST_NAME;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.JUROR_EMAIL_DETAILS;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.JUROR_PHONE_DETAILS;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.LAST_NAME;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.MENTAL_HEALTH_ACT;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.MENTAL_HEALTH_ACT_DETAILS;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.PHONE_NUMBER;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.POSTCODE;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.RELATIONSHIP;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.RESIDENCY;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.RESIDENCY_DETAIL;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.THIRD_PARTY_EMAIL_ADDRESS;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.THIRD_PARTY_FIRST_NAME;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.THIRD_PARTY_LAST_NAME;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.THIRD_PARTY_MAIN_PHONE;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.THIRD_PARTY_OTHER_PHONE;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.THIRD_PARTY_OTHER_REASON;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.THIRD_PARTY_REASON;
+import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.TITLE;
 
 @Slf4j
 @Service
@@ -739,8 +738,8 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     /**
      * Apply optimistic locking. Throws a {@link BureauOptimisticLockingException} if the
      * UI supplied version does not match the database version during the transaction. Also force an update to
-     * the version field of the parent {@link JurorResponse} via {@link EntityManager#lock(Object, LockModeType)} on the
-     * next save.
+     * the version field of the parent {@link DigitalResponse} via {@link EntityManager#lock(Object, LockModeType)}
+     * on the next save.
      *
      * @param domain    Juror response to apply locking to
      * @param uiVersion Version supplied by the UI

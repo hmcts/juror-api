@@ -110,8 +110,6 @@ public class User implements Serializable {
     @NotEmpty
     private String updatedBy;
 
-
-    @Deprecated(forRemoval = true)
     public Boolean isTeamLeader() {
         return getUserType() == UserType.BUREAU && hasRole(Role.MANAGER);
     }

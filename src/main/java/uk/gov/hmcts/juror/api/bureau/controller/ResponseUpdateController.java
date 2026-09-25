@@ -608,7 +608,9 @@ public class ResponseUpdateController {
         private String other;
 
         /**
-         * Maps to {@link uk.gov.hmcts.juror.api.juror.domain.JurorResponse#specialNeedsArrangements}.
+         * Maps to
+         * {@link uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse
+         * #getReasonableAdjustmentsArrangements()}.
          */
         @Length(max = 1000)
         @Schema(description = "Details about required special arrangements")

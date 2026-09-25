@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
-import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.service.BureauService;
 import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -83,6 +82,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -1435,7 +1435,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             log.debug("Juror {} is ineligible disqualifying for police check", jurorNumber);
             jurorPool.setStatus(
                 RepositoryUtils.retrieveFromDatabase(IJurorStatus.DISQUALIFIED, jurorStatusRepository));
-            juror.setDisqualifyCode(DisCode.ELECTRONIC_POLICE_CHECK_FAILURE);
+            juror.setDisqualifyCode(DisqualifyCode.E.getCode());
             juror.setDisqualifyDate(LocalDate.now(clock));
 
             jurorHistoryService.createPoliceCheckDisqualifyHistory(jurorPool);

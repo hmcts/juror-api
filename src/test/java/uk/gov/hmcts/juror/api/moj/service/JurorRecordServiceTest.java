@@ -27,7 +27,6 @@ import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
@@ -74,6 +73,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
@@ -1786,7 +1786,7 @@ class JurorRecordServiceTest {
 
         jurorPools.get(0).setStatus(jurorStatus);
 
-        JurorResponse response = new JurorResponse();
+        DigitalResponse response = new DigitalResponse();
         response.setJurorNumber(jurorNumber);
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
