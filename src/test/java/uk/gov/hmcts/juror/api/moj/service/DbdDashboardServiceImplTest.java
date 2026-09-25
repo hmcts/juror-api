@@ -47,6 +47,7 @@ class DbdDashboardServiceImplTest {
 
         DbdDashboardResponseDto.LocationMetrics result = getFirstLocationMetrics();
 
+        assertThat(result.getTotalResponses()).isEqualTo(14);
         assertThat(result.getResponseRatePercent()).isEqualTo(61);
         assertThat(result.getDigitalResponsesPercent()).isEqualTo(57);
     }
