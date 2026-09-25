@@ -132,6 +132,7 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
             .notRespondedTotal(notResponded)
             .onlineResponseTotal(online)
             .paperResponseTotal(paper)
+            .totalResponses(responded)
             // TODO: thirdPartyTotal isn't sourced from dbd_response_stats - wire in once the
             // pilot-scoped third-party table/proc exists, following the same fetch-once pattern.
             .thirdPartyTotal(null)

@@ -86,6 +86,9 @@ public class DbdDashboardResponseDto implements Serializable {
         @Schema(description = "Total paper responses for the period.")
         private Integer paperResponseTotal;
 
+        @Schema(description = "Total responses for the period: onlineResponseTotal + paperResponseTotal.")
+        private Integer totalResponses;
+
         @Schema(description = "Responded jurors as a percentage of all jurors summoned "
             + "((online + paper) / (online + paper + notResponded) * 100), rounded to the nearest whole number. "
             + "Null if nothing was summoned.")
