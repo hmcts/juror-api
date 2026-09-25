@@ -8,6 +8,11 @@ DECLARE
     v_timestamp         BIGINT;
     v_deactivated_count INT;
 BEGIN
+    IF p_inactivity_months < 6 THEN
+        RAISE EXCEPTION
+            'p_inactivity_months (%) is below the minimum allowed threshold of 6 months', p_inactivity_months;
+    END IF;
+
     CREATE TEMP TABLE tmp_deactivated ON COMMIT DROP AS
     WITH updated AS (
         UPDATE juror_mod.users u
@@ -23,7 +28,7 @@ BEGIN
                         FROM juror_mod.users_audit ua
                         JOIN juror_mod.rev_info ri ON ri.revision_number = ua.revision
                         WHERE ua.username = u.username
-                          AND ua.rev_type = 0   -- Envers RevisionType.ADD
+                          AND ua.rev_type = 0
                           AND to_timestamp(ri.revision_timestamp / 1000.0)
                               < (CURRENT_TIMESTAMP - (p_inactivity_months || ' months')::interval)
                     )
