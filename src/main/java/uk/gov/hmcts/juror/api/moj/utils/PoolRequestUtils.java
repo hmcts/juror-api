@@ -28,9 +28,9 @@ public final class PoolRequestUtils {
     public static PoolRequest getActivePoolRecord(PoolRequestRepository poolRequestRepository, String poolNumber) {
         Optional<PoolRequest> poolRequestOpt = poolRequestRepository.findByPoolNumber(poolNumber);
         log.debug("Retrieving active pool record for pool number {}", poolNumber);
-        if (!poolRequestOpt.isPresent()) {
+        if (poolRequestOpt.isEmpty()) {
             throw new MojException.NotFound(
-                String.format("No Pool Record found for Pool Number: %s", poolNumber),
+                "No Pool Record found for Pool Number: %s".formatted(poolNumber),
                 null
             );
         }

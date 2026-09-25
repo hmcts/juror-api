@@ -553,7 +553,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
         // read the next juror sequence number and assign to the juror
         Long jurorNumber = jurorRepository.getJurorSequenceNumber();
-        juror.setJurorNumber(String.format("%09d", jurorNumber));
+        juror.setJurorNumber("%09d".formatted(jurorNumber));
 
         juror.setPollNumber(voter.getPollNumber());
         juror.setTitle(voter.getTitle());
@@ -703,14 +703,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         if (bureauDeferrals > 0) {
             String poolNumber = poolCreateRequestDto.getPoolNumber();
             PoolRequest poolRequest = RepositoryUtils.retrieveFromDatabase(poolNumber, poolRequestRepository);
-            int deferralsUsed = manageDeferralsService.useBureauDeferrals(poolRequest, bureauDeferrals, userId);
-            if (deferralsUsed > 0) {
-                updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, deferralsUsed,
-                    isNewPool
-                        ? PoolHistory.NEW_POOL_REQUEST_SUFFIX
-                        : PoolHistory.ADD_POOL_REQUEST_SUFFIX,
-                    HistoryCode.PHDI);
-            }
+            manageDeferralsService.useBureauDeferrals(poolRequest, bureauDeferrals, userId, isNewPool);
         }
     }
 
@@ -832,7 +825,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         poolRequest.setTotalNoRequired(totalJurorsRequired);
         poolRequestRepository.saveAndFlush(poolRequest);
 
-        String otherInformation = String.format("%s (Pool Total Update)", totalJurorsRequired);
+        String otherInformation = "%s (Pool Total Update)".formatted(totalJurorsRequired);
         updatePoolHistory(poolNumber, payload.getLogin(), otherInformation);
 
         processCourtDeferrals(poolRequest, poolRequestDto.getDeferralsUsed(), payload.getLogin());
@@ -1045,7 +1038,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
         // read the next juror sequence number and assign to the juror
         Long jurorNumber = jurorRepository.getJurorSequenceNumber();
-        coronerPoolDetail.setJurorNumber(String.format("%09d", jurorNumber));
+        coronerPoolDetail.setJurorNumber("%09d".formatted(jurorNumber));
 
         coronerPoolDetail.setTitle(voter.getTitle());
         coronerPoolDetail.setFirstName(voter.getFirstName());

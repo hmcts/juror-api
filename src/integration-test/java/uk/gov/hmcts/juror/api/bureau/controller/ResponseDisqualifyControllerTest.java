@@ -66,7 +66,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
             HttpMethod.GET, URI.create("/api/v1/bureau/juror/disqualify")), DisqualifyReasonsDto.class);
 
         assertThat(responseEntity).isNotNull();
-        assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.OK.value());
+        assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.OK.value());
         assertThat(responseEntity.getBody()).isNotNull();
 
         List<DisqualifyCodeDto> data = responseEntity.getBody().getData();
@@ -112,7 +112,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
 
         // response assertions
         softly.assertThat(responseEntity).isNotNull();
-        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.OK.value());
+        softly.assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.OK.value());
         softly.assertThat(responseEntity.getBody()).isNull();
 
         // assert differences were merged from JUROR_RESPONSE to POOL
@@ -234,7 +234,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
 
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(responseEntity).isNotNull();
-        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.OK.value());
+        softly.assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.OK.value());
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.bulk_print_data WHERE "
                 + "juror_no = '644892530' AND form_type = '5224' AND digital_comms = true "
                 + "AND extracted_flag = true AND communication_channel = ? AND email_status = ? "
@@ -290,7 +290,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
         // response assertions
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(responseEntity).isNotNull();
-        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.OK.value());
+        softly.assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.OK.value());
         softly.assertThat(responseEntity.getBody()).isNull();
 
         // database assertions
@@ -380,7 +380,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
         // response assertions
         SoftAssertions softly = new SoftAssertions();
         softly.assertThat(responseEntity).isNotNull();
-        softly.assertThat(responseEntity.getStatusCodeValue()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        softly.assertThat(responseEntity.getStatusCode().value()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         softly.assertThat(responseEntity.getBody()).isNotNull();
 
         // database assertions

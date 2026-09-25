@@ -61,7 +61,7 @@ public class SwaggerConfig {
         final String versionInfo = phase + " " + softwareVersion + "\n(Git: [" + gitCommitId + "] " + branchName + ")";
         String description;
         try {
-            description = Files.toString(descriptionFile.getFile(), Charset.defaultCharset());
+            description = Files.asCharSource(descriptionFile.getFile(), Charset.defaultCharset()).read();
         } catch (FileNotFoundException fnfe) {
             log.warn("Description file not found: {}", fnfe.getMessage());
             description = "RESTful API for Juror Response and administration operations.";

@@ -143,7 +143,7 @@ public class ITrialRepositoryImpl implements ITrialRepository {
         if (query.isEmpty()) {
             return 0;
         } else {
-            return query.get(0).get(PANEL.empanelledDate.count()).intValue();
+            return query.getFirst().get(PANEL.empanelledDate.count()).intValue();
         }
     }
 }

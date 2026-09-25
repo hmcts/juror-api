@@ -10,7 +10,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class JurorServiceModImpl implements JurorServiceMod {
 
     private final JurorRepository jurorRepository;

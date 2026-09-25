@@ -48,7 +48,6 @@ public class PrintDataServiceImpl implements PrintDataService {
     private final WelshCourtLocationRepository welshCourtLocationRepository;
 
     public static final String BUREAU_LOC_CODE = "400";
-    private final JurorHistoryService jurorHistoryService;
 
     @Override
     public void bulkPrintSummonsLetter(List<JurorPool> jurorPools) {
@@ -91,13 +90,11 @@ public class PrintDataServiceImpl implements PrintDataService {
     @Override
     public void reprintSummonsLetter(JurorPool jurorPool) {
         bulkPrintSummonsLetter(List.of(jurorPool));
-        jurorHistoryService.createSummonLetterReprintedHistory(jurorPool);
     }
 
     @Override
     public void reprintDbdSummonsLetter(JurorPool jurorPool) {
         bulkPrintDbdSummonsLetter(List.of(jurorPool));
-        jurorHistoryService.createSummonLetterReprintedHistory(jurorPool);
     }
 
     @Override
@@ -248,7 +245,7 @@ public class PrintDataServiceImpl implements PrintDataService {
                 "Attempted to reprint request info letter for juror with no existing request info letter", null);
         }
 
-        BulkPrintData bulkPrintData = bulkPrintDataList.get(0);
+        BulkPrintData bulkPrintData = bulkPrintDataList.getFirst();
         BulkPrintData newBulkPrintData = BulkPrintData.builder()
             .creationDate(LocalDate.now())
             .formAttribute(bulkPrintData.getFormAttribute())

@@ -18,7 +18,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class JurorAuditServiceImpl implements JurorAuditService {
 
     @PersistenceContext
@@ -65,7 +65,7 @@ public class JurorAuditServiceImpl implements JurorAuditService {
         if (data.isEmpty()) {
             return null;
         }
-        return data.get(0);
+        return data.getFirst();
     }
 
     @Override

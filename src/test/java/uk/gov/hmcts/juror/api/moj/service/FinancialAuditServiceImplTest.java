@@ -63,10 +63,11 @@ public class FinancialAuditServiceImplTest {
     }
 
     @Nested
-    @DisplayName("public FinancialAuditDetails createFinancialAuditDetail(String jurorNumber,\n"
-        + "                                                            String courtLocationCode,\n"
-        + "                                                            FinancialAuditDetails.Type type,\n"
-        + "                                                            List<Appearance> appearances)")
+    @DisplayName("""
+        public FinancialAuditDetails createFinancialAuditDetail(String jurorNumber,
+                                                                    String courtLocationCode,
+                                                                    FinancialAuditDetails.Type type,
+                                                                    List<Appearance> appearances)""")
     class CreateFinancialAuditDetail {
         private MockedStatic<SecurityUtil> securityUtilMockedStatic;
         private static final String USER_NAME = "username123";

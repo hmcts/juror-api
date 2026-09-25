@@ -131,6 +131,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -219,33 +220,14 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         final JurorPool myJurorPool = JurorPoolUtils.getActiveJurorPoolForUser(
             jurorPoolRepository, jurorNumber, payload.getOwner());
 
-        //Track changes to address fields
-        boolean addressChanged = false;
+        final boolean addressChanged = hasAddressChanged(juror, requestDto);
 
-        if (!Objects.equals(juror.getAddressLine1(), requestDto.getAddressLineOne())) {
-            juror.setAddressLine1(requestDto.getAddressLineOne());
-            addressChanged = true;
-        }
-        if (!Objects.equals(juror.getAddressLine2(), requestDto.getAddressLineTwo())) {
-            juror.setAddressLine2(requestDto.getAddressLineTwo());
-            addressChanged = true;
-        }
-        if (!Objects.equals(juror.getAddressLine3(), requestDto.getAddressLineThree())) {
-            juror.setAddressLine3(requestDto.getAddressLineThree());
-            addressChanged = true;
-        }
-        if (!Objects.equals(juror.getAddressLine4(), requestDto.getAddressTown())) {
-            juror.setAddressLine4(requestDto.getAddressTown());
-            addressChanged = true;
-        }
-        if (!Objects.equals(juror.getAddressLine5(), requestDto.getAddressCounty())) {
-            juror.setAddressLine5(requestDto.getAddressCounty());
-            addressChanged = true;
-        }
-        if (!Objects.equals(juror.getPostcode(), requestDto.getAddressPostcode())) {
-            juror.setPostcode(requestDto.getAddressPostcode());
-            addressChanged = true;
-        }
+        juror.setAddressLine1(requestDto.getAddressLineOne());
+        juror.setAddressLine2(requestDto.getAddressLineTwo());
+        juror.setAddressLine3(requestDto.getAddressLineThree());
+        juror.setAddressLine4(requestDto.getAddressTown());
+        juror.setAddressLine5(requestDto.getAddressCounty());
+        juror.setPostcode(requestDto.getAddressPostcode());
 
         juror.setTitle(requestDto.getTitle());
         juror.setFirstName(requestDto.getFirstName());
@@ -347,7 +329,9 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     private void removeRsupHistory(String jurorNumber, FormCode formCode) {
         // Need to remove any unnecessary RSUP history entries
         if (formCode == FormCode.ENG_SUMMONS
-            || formCode == FormCode.BI_SUMMONS) {
+            || formCode == FormCode.BI_SUMMONS
+            || formCode == FormCode.ENG_DBD_SUMMONS
+            || formCode == FormCode.BI_DBD_SUMMONS) {
             List<JurorHistory> jurorHistories = jurorHistoryRepository
                 .findByJurorNumberAndDateCreatedGreaterThanEqual(
                     jurorNumber,
@@ -359,6 +343,37 @@ public class JurorRecordServiceImpl implements JurorRecordService {
                     .findFirst().ifPresent(jurorHistoryRepository::delete);
             }
         }
+    }
+
+    private boolean hasAddressChanged(Juror juror, EditJurorRecordRequestDto requestDto) {
+        return !sameAddressValue(juror.getAddressLine1(), requestDto.getAddressLineOne())
+            || !sameAddressValue(juror.getAddressLine2(), requestDto.getAddressLineTwo())
+            || !sameAddressValue(juror.getAddressLine3(), requestDto.getAddressLineThree())
+            || !sameAddressValue(juror.getAddressLine4(), requestDto.getAddressTown())
+            || !sameAddressValue(juror.getAddressLine5(), requestDto.getAddressCounty())
+            || !samePostcode(juror.getPostcode(), requestDto.getAddressPostcode());
+    }
+
+    private boolean sameAddressValue(String existingValue, String requestedValue) {
+        return Objects.equals(normalizeAddressValue(existingValue), normalizeAddressValue(requestedValue));
+    }
+
+    private String normalizeAddressValue(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return value.trim();
+    }
+
+    private boolean samePostcode(String existingPostcode, String requestedPostcode) {
+        return Objects.equals(normalizePostcode(existingPostcode), normalizePostcode(requestedPostcode));
+    }
+
+    private String normalizePostcode(String postcode) {
+        if (postcode == null || postcode.trim().isEmpty()) {
+            return null;
+        }
+        return postcode.replaceAll("\\s+", "").toUpperCase(Locale.ROOT);
     }
 
     private void updateJurorReasonableAdjustments(EditJurorRecordRequestDto requestDto, String jurorNumber) {
@@ -375,8 +390,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         } else {
             List<JurorReasonableAdjustment> jurorReasonableAdjustment =
                 jurorReasonableAdjustmentRepository.findByJurorNumber(jurorNumber);
-            jurorReasonableAdjustment.get(0).setReasonableAdjustmentDetail(requestDto.getSpecialNeedMessage());
-            jurorReasonableAdjustment.get(0).setReasonableAdjustment(reasonableAdjustments);
+            jurorReasonableAdjustment.getFirst().setReasonableAdjustmentDetail(requestDto.getSpecialNeedMessage());
+            jurorReasonableAdjustment.getFirst().setReasonableAdjustment(reasonableAdjustments);
             jurorReasonableAdjustmentRepository.saveAll(jurorReasonableAdjustment);
         }
     }
@@ -1011,8 +1026,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         poolHistoryRepository.save(
             new PoolHistory(poolRequest.getPoolNumber(), LocalDateTime.now(), HistoryCode.PREQ,
-                            payload.getLogin(), String.format("Pool Request %s created for pending Juror",
-                                                              poolRequest.getPoolNumber()
+                            payload.getLogin(), "Pool Request %s created for pending Juror".formatted(
+                poolRequest.getPoolNumber()
             )));
 
         return poolRequest;
@@ -1141,8 +1156,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         final String owner = payload.getOwner();
 
         Juror juror = jurorRepository.findById(jurorNumber).orElseThrow(() ->
-            new MojException.NotFound(String.format("Unable to find valid juror record for Juror Number: %s",
-                                                                        jurorNumber), null));
+            new MojException.NotFound("Unable to find valid juror record for Juror Number: %s".formatted(
+                jurorNumber), null));
 
         // only allow access if the owner of record is same as users owner
         JurorUtils.checkOwnershipForCurrentUser(juror, owner);
@@ -1201,8 +1216,8 @@ public class JurorRecordServiceImpl implements JurorRecordService {
         JurorPoolUtils.checkMultipleRecordReadAccess(jurorPoolRepository, jurorNumber, owner);
 
         ModJurorDetail jurorDetails = jurorDetailRepositoryMod.findById(jurorNumber)
-            .orElseThrow(() -> new MojException.NotFound(String.format("Could not find juror details for %s",
-                                                                       jurorNumber), null));
+            .orElseThrow(() -> new MojException.NotFound("Could not find juror details for %s".formatted(
+            jurorNumber), null));
 
         BureauJurorDetailDto responseDto = bureauService.mapJurorDetailsToDto(jurorDetails);
         responseDto.setWelshCourt(jurorDetails.isWelshCourt());

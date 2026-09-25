@@ -96,7 +96,7 @@ public final class JurorUtils {
         log.debug("Retrieving juror record for juror number {}", jurorNumber);
 
         Juror juror = jurorRepository.findById(jurorNumber).orElseThrow(() ->
-            new MojException.NotFound(String.format("Unable to find valid juror record for Juror Number: %s",
+            new MojException.NotFound("Unable to find valid juror record for Juror Number: %s".formatted(
                 jurorNumber), null));
 
         log.debug("retrieved juror record for juror number {}", jurorNumber);

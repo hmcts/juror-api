@@ -55,10 +55,13 @@ import uk.gov.hmcts.juror.api.moj.controller.response.PaymentDetails;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.ContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactEnquiryCode;
 import uk.gov.hmcts.juror.api.moj.domain.ContactLog;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
+import uk.gov.hmcts.juror.api.moj.domain.FormAttribute;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.IContactCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -565,6 +568,74 @@ class JurorRecordServiceTest {
             any(), any(), any(), eq("Communication preference changed"));
     }
 
+    @Test
+    void testEditJurorRecordDateOfBirthOnlyDoesNotUpdateQueuedDbdSummons() {
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
+        requestDto.setDateOfBirth(LocalDate.parse("1990-01-01"));
+        requestDto.setDbdPreference("Digital");
+        requestDto.setAddressLineTwo(" ");
+        requestDto.setAddressLineThree("addressLineThree ");
+
+        JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+        Juror juror = jurorPool.getJuror();
+        setJurorDetailsFromRequest(juror, requestDto);
+        juror.setDateOfBirth(LocalDate.parse("1980-01-01"));
+        juror.setAddressLine2(null);
+        juror.setAddressLine3("addressLineThree");
+        juror.setPostcode("M244BP");
+        setDigitalByDefaultJuror(jurorPool);
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+        doReturn(Optional.of(juror)).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+
+        ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        reasonableAdjustments.setDescription("Vision impairment");
+        reasonableAdjustments.setCode("V");
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+
+        jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
+
+        verifyNoInteractions(printDataService);
+        verify(jurorHistoryRepository, never()).delete(any());
+        verify(jurorHistoryService, never()).createEditChangeOfPersonalDetailsHistory(
+            any(), any(), any(), eq("Address Changed"));
+    }
+
+    @Test
+    void testEditJurorRecordAddressChangedRemovesDbdSummonsReprintHistory() {
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto();
+        requestDto.setDbdPreference("Digital");
+
+        JurorPool jurorPool = createValidJurorPool(VALID_JUROR_NUMBER, BUREAU_OWNER);
+        Juror juror = jurorPool.getJuror();
+        setJurorDetailsFromRequest(juror, requestDto);
+        juror.setAddressLine1("old address line");
+        setDigitalByDefaultJuror(jurorPool);
+
+        final BulkPrintData queuedDbdSummons = createBulkPrintData(FormCode.ENG_DBD_SUMMONS);
+        JurorHistory summonsReprintedHistory = new JurorHistory();
+        summonsReprintedHistory.setHistoryCode(HistoryCodeMod.SUMMONS_REPRINTED);
+
+        doReturn(Collections.singletonList(jurorPool)).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(VALID_JUROR_NUMBER, true);
+        doReturn(Optional.of(juror)).when(jurorRepository).findById(VALID_JUROR_NUMBER);
+        doReturn(List.of(queuedDbdSummons)).when(printDataService).getLettersQueuedForJuror(VALID_JUROR_NUMBER);
+        doReturn(List.of(summonsReprintedHistory)).when(jurorHistoryRepository)
+            .findByJurorNumberAndDateCreatedGreaterThanEqual(eq(VALID_JUROR_NUMBER), any(LocalDateTime.class));
+
+        ReasonableAdjustments reasonableAdjustments = new ReasonableAdjustments();
+        reasonableAdjustments.setDescription("Vision impairment");
+        reasonableAdjustments.setCode("V");
+        doReturn(Optional.of(reasonableAdjustments)).when(reasonableAdjustmentsRepository).findById(any());
+
+        jurorRecordService.editJurorDetails(buildPayload(BUREAU_OWNER), requestDto, VALID_JUROR_NUMBER);
+
+        verify(printDataService).removeQueuedLetterForJuror(jurorPool, List.of(FormCode.ENG_DBD_SUMMONS));
+        verify(printDataService).reprintDbdSummonsLetter(jurorPool);
+        verify(jurorHistoryRepository).delete(summonsReprintedHistory);
+    }
+
 
 
     @Test
@@ -782,12 +853,12 @@ class JurorRecordServiceTest {
         hist.setHistoryCode(HistoryCodeMod.RESPONDED_POSITIVELY);
         jurorHistoryList.add(hist);
 
-        jurorPools.get(0).getJuror().setWelsh(welshFlag);
+        jurorPools.getFirst().getJuror().setWelsh(welshFlag);
         doReturn(jurorHistoryList).when(jurorHistoryRepository)
             .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(LOC_CODE);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto expectedResponse = new JurorOverviewResponseDto();
@@ -837,7 +908,7 @@ class JurorRecordServiceTest {
             .as("Expect there to be one juror record in the result list")
             .singleElement();
 
-        JurorRecordSearchDto.JurorRecordSearchDataDto jurorSearchRecord = dataDto.get(0);
+        JurorRecordSearchDto.JurorRecordSearchDataDto jurorSearchRecord = dataDto.getFirst();
 
         assertThat(jurorSearchRecord.getJurorNumber())
             .as("Expect the juror number to be 416010101")
@@ -878,7 +949,7 @@ class JurorRecordServiceTest {
             .as("Expect there to be one juror record in the result list")
             .singleElement();
 
-        JurorRecordSearchDto.JurorRecordSearchDataDto jurorSearchRecord = dataDto.get(0);
+        JurorRecordSearchDto.JurorRecordSearchDataDto jurorSearchRecord = dataDto.getFirst();
 
         assertThat(jurorSearchRecord.getJurorNumber())
             .as("Expect the juror number to be 416010101")
@@ -956,7 +1027,7 @@ class JurorRecordServiceTest {
         assertThat(contactLogListDto.getData())
             .as("Expect one contact log data item to be mapped in to the DTO").hasSize(1);
 
-        ContactLogListDto.ContactLogDataDto contactLogDataDto = contactLogListDto.getData().get(0);
+        ContactLogListDto.ContactLogDataDto contactLogDataDto = contactLogListDto.getData().getFirst();
         verifyContactLogData(contactLogDataDto, contactLog);
     }
 
@@ -980,7 +1051,7 @@ class JurorRecordServiceTest {
         assertThat(contactLogListDto.getData())
             .as("Expect one contact log data item to be mapped in to the DTO").hasSize(1);
 
-        ContactLogListDto.ContactLogDataDto contactLogDataDto = contactLogListDto.getData().get(0);
+        ContactLogListDto.ContactLogDataDto contactLogDataDto = contactLogListDto.getData().getFirst();
         verifyContactLogData(contactLogDataDto, contactLog);
     }
 
@@ -1052,7 +1123,7 @@ class JurorRecordServiceTest {
         assertThat(contactLogListDto.getData())
             .as("Expect two contact log data items to be mapped in to the DTO").hasSize(2);
 
-        ContactLogListDto.ContactLogDataDto contactLogDataDto1 = contactLogListDto.getData().get(0);
+        ContactLogListDto.ContactLogDataDto contactLogDataDto1 = contactLogListDto.getData().getFirst();
         ContactLogListDto.ContactLogDataDto contactLogDataDto2 = contactLogListDto.getData().get(1);
         verifyContactLogData(contactLogDataDto1, contactLog1);
         verifyContactLogData(contactLogDataDto2, contactLog2);
@@ -1385,7 +1456,7 @@ class JurorRecordServiceTest {
         String notes = "Some example notes";
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(jurorNumber, owner));
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         Juror juror = jurorPool.getJuror();
         juror.setNotes(notes);
 
@@ -1406,7 +1477,7 @@ class JurorRecordServiceTest {
         String notes = "Some example notes";
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(jurorNumber, "415"));
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         Juror juror = jurorPool.getJuror();
         juror.setNotes(notes);
 
@@ -1461,7 +1532,7 @@ class JurorRecordServiceTest {
         String notes = "Some example notes";
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(jurorNumber, owner));
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         Juror juror = jurorPool.getJuror();
         juror.setNotes(notes);
 
@@ -1498,7 +1569,7 @@ class JurorRecordServiceTest {
         String notes = "Some example notes";
         List<JurorPool> jurorPools = new ArrayList<>();
         jurorPools.add(createValidJurorPool(jurorNumber, "416"));
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         Juror juror = jurorPool.getJuror();
         juror.setNotes(notes);
 
@@ -1660,10 +1731,10 @@ class JurorRecordServiceTest {
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
 
-        jurorPools.get(0).setStatus(createJurorStatus(IJurorStatus.RESPONDED));
-        Juror juror = jurorPools.get(0).getJuror();
+        jurorPools.getFirst().setStatus(createJurorStatus(IJurorStatus.RESPONDED));
+        Juror juror = jurorPools.getFirst().getJuror();
         juror.setPoliceCheck(policeCheck);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
@@ -1685,14 +1756,14 @@ class JurorRecordServiceTest {
         courtLocation.setLocCode(locCode);
 
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
 
         Juror juror = jurorPool.getJuror();
         juror.setPoliceCheck(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED);
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
@@ -1715,14 +1786,14 @@ class JurorRecordServiceTest {
         courtLocation.setLocCode(locCode);
 
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
 
         Juror juror = jurorPool.getJuror();
         juror.setPoliceCheck(policeCheck);
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
@@ -1749,14 +1820,14 @@ class JurorRecordServiceTest {
 
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
 
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         jurorPool.setStatus(createJurorStatus(IJurorStatus.RESPONDED));
 
         Juror juror = jurorPool.getJuror();
         juror.setPoliceCheck(PoliceCheck.ELIGIBLE);
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
@@ -1784,13 +1855,13 @@ class JurorRecordServiceTest {
         JurorStatus jurorStatus = new JurorStatus();
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
 
-        jurorPools.get(0).setStatus(jurorStatus);
+        jurorPools.getFirst().setStatus(jurorStatus);
 
         JurorResponse response = new JurorResponse();
         response.setJurorNumber(jurorNumber);
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         jurorRecordService.getJurorOverview(buildPayload("400"),
@@ -1810,11 +1881,11 @@ class JurorRecordServiceTest {
         courtLocation.setLocCode(locCode);
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, "400");
 
-        Juror juror = jurorPools.get(0).getJuror();
+        Juror juror = jurorPools.getFirst().getJuror();
         juror.setPoliceCheck(PoliceCheck.INELIGIBLE);
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         JurorOverviewResponseDto jurorOverviewResponseDto = jurorRecordService.getJurorOverview(buildPayload("400"),
@@ -1847,12 +1918,12 @@ class JurorRecordServiceTest {
         JurorStatus jurorStatus = new JurorStatus();
         jurorStatus.setStatus(IJurorStatus.RESPONDED);
 
-        jurorPools.get(0).setStatus(jurorStatus);
+        jurorPools.getFirst().setStatus(jurorStatus);
         doReturn(jurorHistoryList).when(jurorHistoryRepository)
             .findByJurorNumberAndDateCreatedGreaterThanEqual(anyString(), any(LocalDate.class));
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
-        doReturn(jurorPools.get(0)).when(jurorPoolRepository)
+        doReturn(jurorPools.getFirst()).when(jurorPoolRepository)
             .findByJurorNumberAndIsActiveAndCourt(jurorNumber, true, courtLocation);
 
         jurorRecordService.getJurorOverview(buildPayload("400"), jurorNumber, locCode);
@@ -2564,6 +2635,38 @@ class JurorRecordServiceTest {
         editJurorRecordRequestDto.setPendingLastName("Pending Last Name");
 
         return editJurorRecordRequestDto;
+    }
+
+    private void setJurorDetailsFromRequest(Juror juror, EditJurorRecordRequestDto requestDto) {
+        juror.setTitle(requestDto.getTitle());
+        juror.setFirstName(requestDto.getFirstName());
+        juror.setLastName(requestDto.getLastName());
+        juror.setAddressLine1(requestDto.getAddressLineOne());
+        juror.setAddressLine2(requestDto.getAddressLineTwo());
+        juror.setAddressLine3(requestDto.getAddressLineThree());
+        juror.setAddressLine4(requestDto.getAddressTown());
+        juror.setAddressLine5(requestDto.getAddressCounty());
+        juror.setPostcode(requestDto.getAddressPostcode());
+        juror.setDateOfBirth(requestDto.getDateOfBirth());
+        juror.setPhoneNumber(requestDto.getPrimaryPhone());
+        juror.setAltPhoneNumber(requestDto.getSecondaryPhone());
+        juror.setEmail(requestDto.getEmailAddress());
+        juror.setReasonableAdjustmentCode(requestDto.getSpecialNeed());
+        juror.setReasonableAdjustmentMessage(requestDto.getSpecialNeedMessage());
+        juror.setOpticRef(requestDto.getOpticReference());
+        juror.setPendingTitle(requestDto.getPendingTitle());
+        juror.setPendingFirstName(requestDto.getPendingFirstName());
+        juror.setPendingLastName(requestDto.getPendingLastName());
+    }
+
+    private BulkPrintData createBulkPrintData(FormCode formCode) {
+        FormAttribute formAttribute = new FormAttribute();
+        formAttribute.setFormType(formCode.getCode());
+
+        BulkPrintData bulkPrintData = new BulkPrintData();
+        bulkPrintData.setJurorNo(VALID_JUROR_NUMBER);
+        bulkPrintData.setFormAttribute(formAttribute);
+        return bulkPrintData;
     }
 
     private JurorStatus createJurorStatus(int statusCode) {

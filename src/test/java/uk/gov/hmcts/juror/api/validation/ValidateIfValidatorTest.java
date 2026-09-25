@@ -58,12 +58,12 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
         assertEquals(1, validator.fieldsToValidate.size(),
             "fieldsToValidate should have 1 entry");
 
-        ValidateIfValidator.FieldIf fieldIf = validator.fieldsToValidate.get(0);
+        ValidateIfValidator.FieldIf fieldIf = validator.fieldsToValidate.getFirst();
         assertEquals("getField1", fieldIf.getFieldToValidate().getName(),
             "Field name should be correct");
         assertEquals(2, fieldIf.getFieldsToCheck().size(),
             "fieldsToCheck should have 2 entries");
-        assertEquals("getField2", fieldIf.getFieldsToCheck().get(0).getName(),
+        assertEquals("getField2", fieldIf.getFieldsToCheck().getFirst().getName(),
             "Field name should be correct");
         assertEquals("getField3", fieldIf.getFieldsToCheck().get(1).getName(),
             "Field name should be correct");

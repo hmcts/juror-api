@@ -103,19 +103,19 @@ public class BureauOfficerAllocatedRepliesControllerTest extends AbstractIntegra
             exchange.getBody().getData().stream().filter(r -> "carneson".equals(r.getLogin()))
                 .toList();
         assertThat(carneson.size()).isEqualTo(1);
-        assertThat(carneson.get(0).getName()).isEqualToIgnoringCase("Chad Arneson");
-        assertThat(carneson.get(0).getAllReplies()).isEqualTo(8);
-        assertThat(carneson.get(0).getUrgent()).isEqualTo(6);
-        assertThat(carneson.get(0).getNonUrgent()).isEqualTo(2);
+        assertThat(carneson.getFirst().getName()).isEqualToIgnoringCase("Chad Arneson");
+        assertThat(carneson.getFirst().getAllReplies()).isEqualTo(8);
+        assertThat(carneson.getFirst().getUrgent()).isEqualTo(6);
+        assertThat(carneson.getFirst().getNonUrgent()).isEqualTo(2);
 
         List<BureauOfficerAllocatedData> mruby =
             exchange.getBody().getData().stream().filter(r -> "mruby".equals(r.getLogin()))
                 .toList();
         assertThat(mruby.size()).isEqualTo(1);
-        assertThat(mruby.get(0).getName()).isEqualToIgnoringCase("Martin Ruby");
-        assertThat(mruby.get(0).getAllReplies()).isEqualTo(4);
-        assertThat(mruby.get(0).getUrgent()).isEqualTo(2);
-        assertThat(mruby.get(0).getNonUrgent()).isEqualTo(2);
+        assertThat(mruby.getFirst().getName()).isEqualToIgnoringCase("Martin Ruby");
+        assertThat(mruby.getFirst().getAllReplies()).isEqualTo(4);
+        assertThat(mruby.getFirst().getUrgent()).isEqualTo(2);
+        assertThat(mruby.getFirst().getNonUrgent()).isEqualTo(2);
 
         exchange.getBody().getData()
             .stream()

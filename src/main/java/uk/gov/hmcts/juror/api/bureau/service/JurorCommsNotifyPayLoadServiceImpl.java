@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLoadService {
 
@@ -56,7 +56,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     private static final DateTimeFormatter ENGLISH_DATE_TIME_FORMATTER =
         DateTimeFormatter.ofPattern(DATE_FORMAT);
     private static final DateTimeFormatter WELSH_DATE_TIME_FORMATTER =
-        DateTimeFormatter.ofPattern(DATE_FORMAT, new Locale("en", "GB"));
+        DateTimeFormatter.ofPattern(DATE_FORMAT, Locale.of("en", "GB"));
     private static final String TAUNTON_LOC_CODE = "459";
 
     private final NotifyTemplateFieldRepositoryMod notifyTemplateFieldRepositoryMod;

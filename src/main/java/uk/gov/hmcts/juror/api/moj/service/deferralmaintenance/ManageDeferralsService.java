@@ -36,7 +36,7 @@ public interface ManageDeferralsService {
 
     int useCourtDeferrals(PoolRequest target, int deferralsRequested, String userId);
 
-    int useBureauDeferrals(PoolRequest newPool, int deferrals, String userId);
+    int useBureauDeferrals(PoolRequest newPool, int deferrals, String userId, boolean isNewPool);
 
     DeferralOptionsDto findActivePoolsForDates(DeferralDatesRequestDto deferralDatesRequestDto,
                                                String jurorNumber, BureauJwtPayload payload);

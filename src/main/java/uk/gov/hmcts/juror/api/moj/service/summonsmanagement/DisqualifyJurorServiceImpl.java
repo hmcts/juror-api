@@ -262,11 +262,11 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
         log.trace("Juror {} - Service method checkJurorResponseStatus() invoked", jurorResponse.getJurorNumber());
 
         if (jurorResponse.isProcessingComplete().equals(Boolean.TRUE)) {
-            final String message = String.format(
-                "Juror: %s - Juror cannot be disqualified because the response was completed on %s",
-                jurorResponse.getJurorNumber(),
-                jurorResponse.getCompletedAt()
-            );
+            final String message =
+                "Juror: %s - Juror cannot be disqualified because the response was completed on %s".formatted(
+                    jurorResponse.getJurorNumber(),
+                    jurorResponse.getCompletedAt()
+                );
             throw new MojException.BadRequest(message, null);
         }
     }

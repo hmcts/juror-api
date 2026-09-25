@@ -79,7 +79,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                 for (String result : results) {
 
                     List<String> res = List.of(result.split(","));
-                    LocalDate date = LocalDate.parse(res.get(0), DateTimeFormatter.ISO_LOCAL_DATE);
+                    LocalDate date = LocalDate.parse(res.getFirst(), DateTimeFormatter.ISO_LOCAL_DATE);
 
                     int workingDays = Integer.parseInt(res.get(1));
                     if (workingDays == 0 && (date.getDayOfWeek() == DayOfWeek.SATURDAY
@@ -465,7 +465,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
             stats = managementDashboardService.adjustedStatsForCommas(stats);
 
             try {
-                String locCode = stats.get(0);
+                String locCode = stats.getFirst();
                 String locName = stats.get(1);
 
                 if (!courtLocCodes.isEmpty() && !courtLocCodes.contains(locCode)) {

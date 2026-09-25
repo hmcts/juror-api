@@ -269,12 +269,12 @@ public class UploadControllerITest extends AbstractIntegrationTest {
                 .hasSizeLessThanOrEqualTo(10);
 
             // Verify first upload is the most recent (sorted by upload_date DESC)
-            assertThat(historyDto.getRecentUploads().get(0).getUploadDate())
+            assertThat(historyDto.getRecentUploads().getFirst().getUploadDate())
                 .as("First upload should be the most recent")
                 .isAfterOrEqualTo(historyDto.getRecentUploads().get(1).getUploadDate());
 
             // Verify upload details
-            assertThat(historyDto.getRecentUploads().get(0).getUploadedBy())
+            assertThat(historyDto.getRecentUploads().getFirst().getUploadedBy())
                 .as("Uploaded by should match test user")
                 .isEqualTo("test_user1@la1.council.uk");
         }
@@ -379,7 +379,7 @@ public class UploadControllerITest extends AbstractIntegrationTest {
 
             assertThat(response.getStatusCode())
                 .as("HTTP status should be BAD_REQUEST for invalid format")
-                .isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+                .isEqualTo(HttpStatus.BAD_REQUEST);
         }
     }
 

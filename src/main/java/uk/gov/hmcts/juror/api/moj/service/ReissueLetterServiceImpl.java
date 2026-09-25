@@ -19,6 +19,8 @@ import uk.gov.hmcts.juror.api.moj.domain.HistoryCode;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
@@ -83,6 +85,32 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         FormCode.BI_SUMMONS_REMINDER.getCode(),
         FormCode.ENG_DBD_SUMMONS_REM.getCode(),
         FormCode.BI_DBD_SUMMONS_REM.getCode());
+    private static final Set<FormCode> SUMMONS_REISSUE_CODES = Set.of(
+        FormCode.ENG_SUMMONS,
+        FormCode.BI_SUMMONS,
+        FormCode.ENG_DBD_SUMMONS,
+        FormCode.BI_DBD_SUMMONS);
+    private static final Map<FormCode, HistoryCodeMod> RESEND_LETTER_HISTORY_CODES = Map.ofEntries(
+        Map.entry(FormCode.ENG_EXCUSAL, HistoryCodeMod.RESEND_EXCUSAL_LETTER),
+        Map.entry(FormCode.BI_EXCUSAL, HistoryCodeMod.RESEND_EXCUSAL_LETTER),
+        Map.entry(FormCode.ENG_EXCUSALDENIED, HistoryCodeMod.RESEND_NON_EXCUSED_LETTER),
+        Map.entry(FormCode.BI_EXCUSALDENIED, HistoryCodeMod.RESEND_NON_EXCUSED_LETTER),
+        Map.entry(FormCode.ENG_DBD_RESPONSE, HistoryCodeMod.RESEND_RESPONSE_PACK),
+        Map.entry(FormCode.BI_DBD_RESPONSE, HistoryCodeMod.RESEND_RESPONSE_PACK),
+        Map.entry(FormCode.ENG_SUMMONS_REMINDER, HistoryCodeMod.RESEND_NON_RESPONDED_LETTER),
+        Map.entry(FormCode.BI_SUMMONS_REMINDER, HistoryCodeMod.RESEND_NON_RESPONDED_LETTER),
+        Map.entry(FormCode.ENG_DBD_SUMMONS_REM, HistoryCodeMod.RESEND_NON_RESPONDED_LETTER),
+        Map.entry(FormCode.BI_DBD_SUMMONS_REM, HistoryCodeMod.RESEND_NON_RESPONDED_LETTER),
+        Map.entry(FormCode.ENG_CONFIRMATION, HistoryCodeMod.RESEND_RESPONDED_LETTER),
+        Map.entry(FormCode.BI_CONFIRMATION, HistoryCodeMod.RESEND_RESPONDED_LETTER),
+        Map.entry(FormCode.ENG_DEFERRAL, HistoryCodeMod.RESEND_DEFERRED_LETTER),
+        Map.entry(FormCode.BI_DEFERRAL, HistoryCodeMod.RESEND_DEFERRED_LETTER),
+        Map.entry(FormCode.ENG_DEFERRALDENIED, HistoryCodeMod.RESEND_NON_DEFERRED_LETTER),
+        Map.entry(FormCode.BI_DEFERRALDENIED, HistoryCodeMod.RESEND_NON_DEFERRED_LETTER),
+        Map.entry(FormCode.ENG_POSTPONE, HistoryCodeMod.RESEND_POSTPONED_LETTER),
+        Map.entry(FormCode.BI_POSTPONE, HistoryCodeMod.RESEND_POSTPONED_LETTER),
+        Map.entry(FormCode.ENG_WITHDRAWAL, HistoryCodeMod.RESEND_WITHDRAWAL_LETTER),
+        Map.entry(FormCode.BI_WITHDRAWAL, HistoryCodeMod.RESEND_WITHDRAWAL_LETTER));
 
     // This list will include the summons and reminder letters that are ineligible for digital by default jurors
     private static final Set<FormCode> INELIGIBLE_DIGITAL_BY_DEFAULT_LETTER_REISSUE_CODES = Set.of(
@@ -278,7 +306,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
     }
 
     private void createPoolHistory(ReissueLetterRequestDto request, Map<String, Integer> poolLetterCount) {
-        if (SUMMONS_REMINDER_CODES.contains(request.getLetters().get(0).getFormCode())) {
+        if (SUMMONS_REMINDER_CODES.contains(request.getLetters().getFirst().getFormCode())) {
 
             poolLetterCount.keySet().forEach(poolNumber -> {
                 // create pool history
@@ -298,11 +326,12 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         log.debug("Printing letter for juror number {} with form code {}", jurorNumber, formCode);
 
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
+        boolean initialSummonsReminderLetter = isInitialSummonsReminderLetter(letter, formCode);
 
         printLetter(jurorNumber, jurorPool, formCode);
 
         // create letter history
-        createLetterHistory(letter);
+        createLetterHistory(formCode, jurorPool, initialSummonsReminderLetter);
     }
 
     private void reissueLetterOrEmail(ReissueLetterRequestDto.@NotNull ReissueLetterRequestData letter,
@@ -317,6 +346,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             && !DIGITAL_BY_DEFAULT_LETTER_ONLY_REISSUE_CODES.contains(formCode)) {
             if (emailDataService.emailReissueLetter(jurorPool, formCode)) {
                 log.info("Email resent for juror number {} with form code {}", jurorNumber, formCode);
+                createLetterHistory(formCode, jurorPool, false, CommunicationChannel.EMAIL);
                 return;
             }
             // something went wrong with sending out email, it could be a letter
@@ -327,8 +357,9 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             }
         }
 
+        boolean initialSummonsReminderLetter = isInitialSummonsReminderLetter(letter, formCode);
         printLetter(jurorNumber, jurorPool, formCode);
-        createLetterHistory(letter);
+        createLetterHistory(formCode, jurorPool, initialSummonsReminderLetter);
     }
 
     private void printLetter(String jurorNumber, JurorPool jurorPool, FormCode formCode) {
@@ -398,7 +429,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         String login = SecurityUtil.getActiveUsersBureauPayload().getLogin();
         log.debug("Delete pending letter request received from Bureau user {}", login);
 
-        ReissueLetterRequestDto.ReissueLetterRequestData letter = request.getLetters().get(0);
+        ReissueLetterRequestDto.ReissueLetterRequestData letter = request.getLetters().getFirst();
         if (!deletePendingLetter(letter.getJurorNumber(), letter.getFormCode())) {
             throw new MojException.NotFound(
                 "Bulk print data not found for juror %s " + letter.getJurorNumber(),
@@ -496,8 +527,8 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             Optional<BulkPrintData> printedLetter = bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(
                 letter.getJurorNumber(), letter.getFormCode(), letter.getDatePrinted());
             if (printedLetter.isEmpty()) {
-                throw new MojException.NotFound(String.format("Bulk print data not found for juror %s ",
-                                                              letter.getJurorNumber()), null);
+                throw new MojException.NotFound("Bulk print data not found for juror %s ".formatted(
+                    letter.getJurorNumber()), null);
             }
         }
 
@@ -505,29 +536,57 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
         bulkPrintDataRepository.findByJurorNumberFormCodeAndPending(
                 letter.getJurorNumber(), letter.getFormCode())
             .ifPresent(bulkPrintData -> {
-                throw new MojException.BadRequest(String.format("Letter already pending reprint for juror %s",
-                                                                letter.getJurorNumber()), null);
+                throw new MojException.BadRequest("Letter already pending reprint for juror %s".formatted(
+                    letter.getJurorNumber()), null);
             });
 
         if (Set.of(FormCode.ENG_DBD_SUMMONS_REM.getCode(), FormCode.BI_DBD_SUMMONS_REM.getCode())
             .contains(letter.getFormCode())) {
             Juror juror = jurorRepository.findByJurorNumber(letter.getJurorNumber());
             if (!isDbdSummonsReminderEligible(juror)) {
-                throw new MojException.BadRequest(String.format(
-                    "DBD summons reminder not valid for juror %s", letter.getJurorNumber()), null);
+                throw new MojException.BadRequest("DBD summons reminder not valid for juror %s".formatted(
+                    letter.getJurorNumber()), null);
             }
         }
     }
 
-    private void createLetterHistory(ReissueLetterRequestDto.ReissueLetterRequestData letter) {
-        if (SUMMONS_REMINDER_CODES.contains(letter.getFormCode())) {
+    private void createLetterHistory(FormCode formCode, JurorPool jurorPool, boolean initialSummonsReminderLetter) {
+        createLetterHistory(formCode, jurorPool, initialSummonsReminderLetter, CommunicationChannel.LETTER);
+    }
 
-            JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(letter.getJurorNumber());
-
-            jurorPool.setReminderSent(true);
-
-            jurorHistoryService.createSummonsReminderLetterHistory(jurorPool);
+    private void createLetterHistory(FormCode formCode, JurorPool jurorPool, boolean initialSummonsReminderLetter,
+                                     CommunicationChannel communicationChannel) {
+        if (SUMMONS_REISSUE_CODES.contains(formCode)) {
+            jurorHistoryService.createSummonLetterReprintedHistory(jurorPool, formCode);
+            return;
         }
+
+        HistoryCodeMod historyCode = RESEND_LETTER_HISTORY_CODES.get(formCode);
+        if (historyCode == null) {
+            return;
+        }
+        if (HistoryCodeMod.RESEND_NON_RESPONDED_LETTER == historyCode) {
+            jurorPool.setReminderSent(true);
+            if (initialSummonsReminderLetter) {
+                jurorHistoryService.createSummonsReminderLetterHistory(jurorPool);
+                return;
+            }
+        }
+        if (communicationChannel == CommunicationChannel.EMAIL) {
+            jurorHistoryService.createResendLetterHistory(jurorPool, historyCode, communicationChannel);
+            return;
+        }
+        jurorHistoryService.createResendLetterHistory(jurorPool, historyCode);
+    }
+
+    private boolean isInitialSummonsReminderLetter(ReissueLetterRequestDto.ReissueLetterRequestData letter,
+                                                  FormCode formCode) {
+        if (!SUMMONS_REMINDER_CODES.contains(formCode.getCode())) {
+            return false;
+        }
+        return letter.getDatePrinted() == null
+            || bulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(
+                letter.getJurorNumber(), letter.getFormCode(), letter.getDatePrinted()).isEmpty();
     }
 
     private boolean isDbdSummonsReminderEligible(Juror juror) {

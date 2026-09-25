@@ -145,6 +145,7 @@ public class ResponseUpdateServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void comparisonHash() {
         final String testNote = "I am a test note.";
         final String comparisonHash = ResponseUpdateServiceImpl.comparisonHash(testNote);
@@ -158,6 +159,7 @@ public class ResponseUpdateServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
     public void comparisonHash_nullNotesString() {
         final String testNote = null;
         final String comparisonHash = ResponseUpdateServiceImpl.comparisonHash(testNote);
