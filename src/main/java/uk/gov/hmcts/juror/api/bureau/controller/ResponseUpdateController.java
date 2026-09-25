@@ -217,7 +217,7 @@ public class ResponseUpdateController {
         assertJurorNumberPathVariable(jurorId);
 
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
-        responseUpdateService.updateSpecialNeeds(reasonableAdjustmentsDto, jurorId, jwtPayload.getLogin());
+        responseUpdateService.updateReasonableAdjustments(reasonableAdjustmentsDto, jurorId, jwtPayload.getLogin());
         log.info("Updated update special needs section for juror {}", jurorId);
         return ResponseEntity.noContent().build();
     }

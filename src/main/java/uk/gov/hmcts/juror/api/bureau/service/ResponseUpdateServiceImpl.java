@@ -335,7 +335,8 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
 
     @Transactional
     @Override
-    public void updateSpecialNeeds(final ReasonableAdjustmentsDto dto, final String jurorId, final String login) {
+    public void updateReasonableAdjustments(final ReasonableAdjustmentsDto dto, final String jurorId,
+                                            final String login) {
         log.debug("Reasonable adjustment juror {} edit", jurorId);
         final DigitalResponse domain = responseRepository.findByJurorNumber(jurorId);
         final User staff = userRepository.findByUsername(login);

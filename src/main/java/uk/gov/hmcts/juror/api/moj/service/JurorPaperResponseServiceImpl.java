@@ -62,7 +62,8 @@ import java.util.List;
 public class JurorPaperResponseServiceImpl implements JurorPaperResponseService {
 
     private static final String INVALID_CJS_EMPLOYMENT_ERROR_MESSAGE = "Invalid CJS Employment supplied for Juror {}";
-    private static final String INVALID_SPECIAL_NEED_ERROR_MESSAGE = "Invalid special need supplied for Juror {}";
+    private static final String INVALID_REASONABLE_ADJUSTMENT_ERROR_MESSAGE =
+                                                                "Invalid reasonable adjustment supplied for Juror {}";
     static final String RESPONSE_UPDATED_LOG = "Paper response for Juror {} will be updated with new value for {}";
     private final JurorPaperResponseRepositoryMod paperResponseRepository;
     private final JurorResponseCjsEmploymentRepositoryMod jurorResponseCjsEmploymentRepository;
@@ -530,7 +531,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                     addedReasonableAdjustment.add(type);
                     log.debug("Adding a special need for Juror {} with code {}", jurorNumber, type);
                 } else {
-                    log.error(INVALID_SPECIAL_NEED_ERROR_MESSAGE, jurorPaperResponseDto.getJurorNumber());
+                    log.error(INVALID_REASONABLE_ADJUSTMENT_ERROR_MESSAGE, jurorPaperResponseDto.getJurorNumber());
                     throw new JurorPaperResponseException.InvalidSpecialNeedEntry();
                 }
                 reasonableAdjustmentsToAdd.add(jurorPaperResponseReasonableAdjustment);
@@ -676,7 +677,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
 
                 // cant update the same special need more than once
                 if (addedReasonableAdjustments.contains(assistanceType)) {
-                    log.error(INVALID_SPECIAL_NEED_ERROR_MESSAGE, jurorNumber);
+                    log.error(INVALID_REASONABLE_ADJUSTMENT_ERROR_MESSAGE, jurorNumber);
                     throw new JurorPaperResponseException.InvalidSpecialNeedEntry();
                 }
 
@@ -693,7 +694,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
                 } else {
 
                     if (!reasonableAdjustmentTypes.contains(assistanceType)) {
-                        log.error(INVALID_SPECIAL_NEED_ERROR_MESSAGE, jurorNumber);
+                        log.error(INVALID_REASONABLE_ADJUSTMENT_ERROR_MESSAGE, jurorNumber);
                         throw new JurorPaperResponseException.InvalidSpecialNeedEntry();
                     }
                     jurorPaperResponseReasonableAdjustment = new JurorReasonableAdjustment();
