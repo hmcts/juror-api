@@ -127,9 +127,6 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
         int responded = online + paper;
         int summoned = responded + notResponded;
 
-        Float responseRatePercent = summoned > 0 ? (responded * 100f) / summoned : null;
-        Float digitalResponsesPercent = responded > 0 ? (online * 100f) / responded : null;
-
         return LocationMetrics.builder()
             .locationCode(locationCode)
             .notRespondedTotal(notResponded)
@@ -138,8 +135,8 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
             // TODO: thirdPartyTotal isn't sourced from dbd_response_stats - wire in once the
             // pilot-scoped third-party table/proc exists, following the same fetch-once pattern.
             .thirdPartyTotal(null)
-            .responseRatePercent(responseRatePercent)
-            .digitalResponsesPercent(digitalResponsesPercent)
+            .responseRatePercent(percentage(responded, summoned))
+            .digitalResponsesPercent(percentage(online, responded))
             .onlineResponseTimes(bucketByResponsePeriod(rows, ONLINE))
             .paperResponseTimes(bucketByResponsePeriod(rows, PAPER))
             .ageGroupBreakdown(ageGroupBreakdown)
@@ -167,5 +164,9 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
             .filter(filter)
             .mapToInt(DbdResponseStats::getJurorCount)
             .sum();
+    }
+
+    private Integer percentage(int numerator, int denominator) {
+        return denominator > 0 ? Math.round((numerator * 100f) / denominator) : null;
     }
 }
