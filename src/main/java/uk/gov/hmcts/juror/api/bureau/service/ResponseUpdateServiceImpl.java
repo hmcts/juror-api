@@ -5,6 +5,7 @@ import com.google.common.hash.Hashing;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.ContactCodeRepository;
 import uk.gov.hmcts.juror.api.moj.repository.ContactLogRepository;
@@ -44,7 +46,6 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.CjsEmploymentDetailsDto;
 import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.DeferralExcusalDto;
@@ -54,7 +55,6 @@ import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.
 import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.JurorPhoneLogDto;
 import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.ReasonableAdjustmentsDto;
 import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.ThirdPartyJurorDetailsDto;
-import static uk.gov.hmcts.juror.api.bureau.domain.ReasonableAdjustmentQueries.byJurorNumberAndCode;
 import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.ALT_PHONE_NUMBER;
 import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.BAIL;
 import static uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseConstants.BAIL_DETAILS;
@@ -99,7 +99,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     private final JurorDigitalResponseRepositoryMod responseRepository;
     private final UserRepository userRepository;
     private final EntityManager entityManager;
-    private final JurorReasonableAdjustmentRepository bureauJurorSpecialNeedsRepository;
+    private final JurorReasonableAdjustmentRepository jurorReasonableAdjustmentRepository;
     private final ReasonableAdjustmentsRepository reasonableAdjustmentsRepository;
     private final JurorResponseCjsEmploymentRepositoryMod cjsRepository;
     private final AssignOnUpdateService assignOnUpdateService;
@@ -345,12 +345,12 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
 
         // perform the updates
         updateAndLog("reasonableAdjustmentsArrangements", domain, dto.getSpecialArrangements());
-        updateAndLogSpecialNeed(jurorId, SpecNeed.LIMITED_MOBILITY, dto.getLimitedMobility());
-        updateAndLogSpecialNeed(jurorId, SpecNeed.HEARING_IMPAIRMENT, dto.getHearingImpairment());
-        updateAndLogSpecialNeed(jurorId, SpecNeed.DIABETIC, dto.getDiabetes());
-        updateAndLogSpecialNeed(jurorId, SpecNeed.SIGHT_IMPAIRMENT, dto.getSightImpairment());
-        updateAndLogSpecialNeed(jurorId, SpecNeed.LEARNING_DISABILITY, dto.getLearningDisability());
-        updateAndLogSpecialNeed(jurorId, SpecNeed.OTHER, dto.getOther());
+        updateAndLogAdjustment(jurorId, ReasonableAdjustment.LIMITED_MOBILITY, dto.getLimitedMobility());
+        updateAndLogAdjustment(jurorId, ReasonableAdjustment.HEARING_IMPAIRMENT, dto.getHearingImpairment());
+        updateAndLogAdjustment(jurorId, ReasonableAdjustment.DIABETIC, dto.getDiabetes());
+        updateAndLogAdjustment(jurorId, ReasonableAdjustment.SIGHT_IMPAIRMENT, dto.getSightImpairment());
+        updateAndLogAdjustment(jurorId, ReasonableAdjustment.LEARNING_DISABILITY, dto.getLearningDisability());
+        updateAndLogAdjustment(jurorId, ReasonableAdjustment.OTHER, dto.getOther());
 
         // JDB-2685: if no staff assigned, assign current login
         if (null == domain.getStaff()) {
@@ -480,10 +480,11 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     /**
      * Enumerated data class for valid Reasonable adjustment types. Used for queries and audit during update.
      *
-     * @see #updateAndLogSpecialNeed(String, SpecNeed, String)
+     * @see #updateAndLogAdjustment(String, ReasonableAdjustment, String)
      */
+    @Getter
     @SuppressWarnings("PMD.PublicMemberInNonPublicType")
-    private enum SpecNeed {
+    private enum ReasonableAdjustment {
         LIMITED_MOBILITY("L", "Limited Mobility"),
         HEARING_IMPAIRMENT("H", "Hearing Impairment"),
         DIABETIC("I", "Diabetes"),
@@ -495,31 +496,14 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
         OTHER("O", OTHER_1);
 
         private final String code;
+
         private final String description;
 
-        SpecNeed(String code, String description) {
+        ReasonableAdjustment(String code, String description) {
             this.code = code;
             this.description = description;
         }
 
-        /**
-         * Code for the special need.
-         *
-         * @return The employer key value
-         * @see SpecNeed#code for domain primary key.
-         */
-        public String getCode() {
-            return code;
-        }
-
-        /**
-         * Human readable description of the special need.
-         *
-         * @return Description text
-         */
-        public String getDescription() {
-            return description;
-        }
     }
 
     /**
@@ -564,42 +548,48 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
     }
 
     /**
-     * Update a single special need entry with a new value if that value has changed, creating a changelog entry of
-     * the event if the
-     * value was different.
+     * Update a single reasonable adjustment entry with a new value if that value has changed,
+     * creating a changelog entry of the event if the value was different.
      *
-     * @param jurorId      Juror id whose special needs are being edited
-     * @param specNeedType Enumerated type of the special need being updated
-     * @param value        Value being set for the special need in the domain object
+     * @param jurorId      Juror id whose reasonable adjustments are being edited
+     * @param reasonableAdjustmentType Enumerated type of the reasonable adjustment being updated
+     * @param value        Value being set for the reasonable adjustment in the domain object
      */
-    private void updateAndLogSpecialNeed(final String jurorId, final SpecNeed specNeedType, final String value) {
-        // find existing special need of type
-        final String key = specNeedType.getCode();
-        final String description = specNeedType.getDescription();
-        Optional<JurorReasonableAdjustment> optSpNeeds = bureauJurorSpecialNeedsRepository.findOne(
-            byJurorNumberAndCode(jurorId, key));
-        final JurorReasonableAdjustment existingSpecNeed = optSpNeeds.orElse(null);
+    private void updateAndLogAdjustment(final String jurorId,
+                                        final ReasonableAdjustment reasonableAdjustmentType, final String value) {
+        // find existing reasonable adjustment of type
+        final String key = reasonableAdjustmentType.getCode();
+        final String description = reasonableAdjustmentType.getDescription();
+
+        ReasonableAdjustments reasonableAdjustment = reasonableAdjustmentsRepository.findByCode(key);
+        if (reasonableAdjustment == null) {
+            log.error("Reasonable adjustment not found for code {}", key);
+            throw new MojException.NotFound("Reasonable adjustment not found for code " + key, null);
+        }
+
+        JurorReasonableAdjustment existingAdjustment = jurorReasonableAdjustmentRepository
+            .findByJurorNumberAndReasonableAdjustment(jurorId, reasonableAdjustment);
+
         if (null != value) {
-            log.debug("Updating special need employer '{}'", key);
-            JurorReasonableAdjustment savedSpecialNeed;
-            if (null != existingSpecNeed) {
-                log.debug("Updating existing special need {}", existingSpecNeed);
-                existingSpecNeed.setReasonableAdjustmentDetail(value);
-                savedSpecialNeed = bureauJurorSpecialNeedsRepository.save(existingSpecNeed);
+            log.debug("Updating reasonable adjustment employer '{}'", key);
+            JurorReasonableAdjustment savedAdjustment;
+            if (null != existingAdjustment) {
+                log.debug("Updating existing reasonable adjustment {}", existingAdjustment);
+                existingAdjustment.setReasonableAdjustmentDetail(value);
+                savedAdjustment = jurorReasonableAdjustmentRepository.save(existingAdjustment);
             } else {
                 // insert new need
-
-                savedSpecialNeed = bureauJurorSpecialNeedsRepository.save(JurorReasonableAdjustment.builder()
+                savedAdjustment = jurorReasonableAdjustmentRepository.save(JurorReasonableAdjustment.builder()
                     .reasonableAdjustmentDetail(value)
                     .jurorNumber(jurorId)
                     .reasonableAdjustment(reasonableAdjustmentsRepository.findByCode(key))
                     .build());
             }
-            log.debug("Saved {}", savedSpecialNeed);
+            log.debug("Saved {}", savedAdjustment);
         } else {
-            if (null != existingSpecNeed) {
+            if (null != existingAdjustment) {
                 log.debug("Deleting {}", description);
-                bureauJurorSpecialNeedsRepository.delete(existingSpecNeed);
+                jurorReasonableAdjustmentRepository.delete(existingAdjustment);
                 log.info("Deleted existing {} '{}'", description, key);
             } else {
                 log.trace("No {} employer '{}' to update", description, key);
@@ -612,7 +602,7 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      * the event if the value was different.
      *
      * @param jurorId           Juror id whose CJS employment details are being edited
-     * @param cjsEmploymentType Enumerated type of the special need being updated
+     * @param cjsEmploymentType Enumerated type of the reasonable adjustment being updated
      * @param value             Value being set for the CJS detail in the domain object
      */
     @SuppressWarnings({"PMD.AvoidDeeplyNestedIfStmts"})

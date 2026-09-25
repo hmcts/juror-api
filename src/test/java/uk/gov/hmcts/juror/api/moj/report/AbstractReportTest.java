@@ -750,7 +750,8 @@ class AbstractReportTest {
                 .defaultAnswer(RETURNS_SELF));
 
             DataType dataType = mock(DataType.class);
-            when(dataType.getRequiredTables()).thenReturn(List.of(QJurorResponseCjsEmployment.jurorResponseCjsEmployment));
+            when(dataType.getRequiredTables()).thenReturn(List.of(
+                QJurorResponseCjsEmployment.jurorResponseCjsEmployment));
 
             MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
                 () -> createReport(

@@ -20,7 +20,7 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.SpringBootErrorResponse;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalCodeDto;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalReasonsDto;
-import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 
 import java.net.URI;
@@ -160,7 +160,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                     + "juror_number='644892530'",
                 Long.class))
             .as("Juror's pool entry should have STATUS set to 5, meaning Excused")
-            .isEqualTo(IPoolStatus.EXCUSED);
+            .isEqualTo(IJurorStatus.EXCUSED);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT NEXT_DATE FROM juror_mod.juror_pool WHERE "
                     + "juror_number='644892530'",
                 Timestamp.class))
@@ -278,7 +278,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                     + "juror_number='644892530'",
                 Long.class))
             .as("Juror's pool entry should have STATUS set to 5, meaning Excused")
-            .isEqualTo(IPoolStatus.EXCUSED);
+            .isEqualTo(IJurorStatus.EXCUSED);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT NEXT_DATE FROM juror_mod.juror_pool WHERE "
                     + "juror_number='644892530'",
                 Timestamp.class))
@@ -374,7 +374,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                     + "juror_number='644892530'",
                 Long.class))
             .as("Juror's pool entry should have STATUS set to 1, meaning Summoned")
-            .isEqualTo(IPoolStatus.SUMMONED);
+            .isEqualTo(IJurorStatus.SUMMONED);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT NEXT_DATE FROM juror_mod.juror_pool WHERE "
                     + "juror_number='644892530'",
                 Timestamp.class))
@@ -508,7 +508,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                     + "juror_number='644892530'",
                 Long.class))
             .as("Juror's pool entry should have STATUS set to 1, meaning Summoned")
-            .isEqualTo(IPoolStatus.SUMMONED);
+            .isEqualTo(IJurorStatus.SUMMONED);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT NEXT_DATE FROM juror_mod.juror_pool WHERE "
                     + "juror_number='644892530'",
                 Timestamp.class))
@@ -587,7 +587,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                     + "juror_number='644892530'",
                 Long.class))
             .as("Juror's pool entry should have STATUS set to 1, meaning Summoned")
-            .isEqualTo(IPoolStatus.SUMMONED);
+            .isEqualTo(IJurorStatus.SUMMONED);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT NEXT_DATE FROM juror_mod.juror_pool WHERE "
                     + "juror_number='644892530'",
                 Timestamp.class))
@@ -694,7 +694,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                     + "juror_number='644892530'",
                 Long.class))
             .as("Juror's pool entry status should be set to 2, meaning responded")
-            .isEqualTo(IPoolStatus.RESPONDED);
+            .isEqualTo(IJurorStatus.RESPONDED);
         softly.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history WHERE "
                 + "juror_number='644892530'", Integer.class))
             .as("Juror should have 2 PART_HIST entries (plus 3 for the merges)")

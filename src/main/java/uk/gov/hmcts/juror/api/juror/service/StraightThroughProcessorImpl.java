@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseMergeService;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -423,7 +422,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             }
 
             //JDB-91 c. the status of the summons on the Juror application must still be Summoned
-            if (jurorDetails.getStatus().getStatus() != IPoolStatus.SUMMONED) {
+            if (jurorDetails.getStatus().getStatus() != IJurorStatus.SUMMONED) {
                 throw new StraightThroughProcessingServiceException.AgeExcusal(
                     "The status of the summons must still be Summoned");
             }
