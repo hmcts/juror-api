@@ -62,7 +62,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
     "PMD.TooManyMethods",
     "PMD.ExcessiveImports",
     "PMD.AvoidInstantiatingObjectsInLoops",
-    "PMD.CouplingBetweenObjects"
+    "PMD.CouplingBetweenObjects",
+    "PMD.CyclomaticComplexity"
 })
 public class JurorManagementServiceImpl implements JurorManagementService {
 
@@ -86,7 +87,12 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @SuppressWarnings({"PMD.ExceptionAsFlowControl", "PMD.CyclomaticComplexity", "PMD.CognitiveComplexity"})
+    @SuppressWarnings({
+        "PMD.ExceptionAsFlowControl",
+        "PMD.CyclomaticComplexity",
+        "PMD.CognitiveComplexity",
+        "PMD.NPathComplexity"
+    })
     public ReassignPoolMembersResultDto reassignJurors(BureauJwtPayload payload,
                                                        JurorManagementRequestDto jurorManagementRequestDto) {
         log.trace("Entered reassignJurors method");
@@ -226,7 +232,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         }
 
         // remove a target pool created for court users if no jurors were reassigned into it
-        if (reassignedJurorsCount == 0 && !owner.equals(JurorDigitalApplication.JUROR_OWNER)
+        if (reassignedJurorsCount == 0 && !JurorDigitalApplication.JUROR_OWNER.equals(owner)
             && targetPoolRequest.getLastUpdate().isAfter(LocalDateTime.now().minusMinutes(1))
             && targetPoolRequest.getNumberRequested() == null) {
             poolRequestRepository.delete(targetPoolRequest);
@@ -239,6 +245,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         return new ReassignPoolMembersResultDto(reassignedJurorsCount, targetPoolNumber, ageDisqualifiedJurorDtoList);
     }
 
+    @SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
     private void processLetters(JurorPool targetJurorPool, String jurorNumber) {
         if (SecurityUtil.isBureau()) {
             if (targetJurorPool.getStatus().getStatus() == IJurorStatus.RESPONDED

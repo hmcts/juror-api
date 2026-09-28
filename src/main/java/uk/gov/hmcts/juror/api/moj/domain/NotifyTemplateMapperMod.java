@@ -93,6 +93,7 @@ public enum NotifyTemplateMapperMod {
     @Getter
     @Setter
     @Builder
+    @SuppressWarnings("PMD.TooManyFields")
     public static class Context {
         Juror juror;
         JurorPool jurorPool;

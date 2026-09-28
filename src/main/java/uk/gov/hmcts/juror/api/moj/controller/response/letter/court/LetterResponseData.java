@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @Getter
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@SuppressWarnings("PMD.AbstractClassWithoutAbstractMethod")
 public abstract class LetterResponseData {
 
     String jurorNumber;

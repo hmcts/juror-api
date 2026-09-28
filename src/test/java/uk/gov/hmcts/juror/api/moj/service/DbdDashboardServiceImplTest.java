@@ -37,7 +37,7 @@ class DbdDashboardServiceImplTest {
     }
 
     @Test
-    void getGroupStatisticsRoundsPercentagesToNearestWholeNumber() {
+    void shouldRoundPercentagesToNearestWholeNumber() {
         when(dbdResponseStatsRepository.findByLocCodeInAndSummonsDateBetween(
             anyLocCodes(), eq(START_DATE), eq(END_DATE)))
             .thenReturn(List.of(
@@ -54,7 +54,7 @@ class DbdDashboardServiceImplTest {
     }
 
     @Test
-    void getGroupStatisticsReturnsNullPercentagesWhenThereIsNoDenominator() {
+    void shouldReturnNullPercentagesWhenThereIsNoDenominator() {
         when(dbdResponseStatsRepository.findByLocCodeInAndSummonsDateBetween(
             anyLocCodes(), eq(START_DATE), eq(END_DATE)))
             .thenReturn(List.of());
@@ -66,7 +66,7 @@ class DbdDashboardServiceImplTest {
     }
 
     @Test
-    void getGroupStatisticsSumsLocationsWhenRequested() {
+    void shouldSumLocationsWhenRequested() {
         when(dbdResponseStatsRepository.findByLocCodeInAndSummonsDateBetween(
             anyLocCodes(), eq(START_DATE), eq(END_DATE)))
             .thenReturn(List.of(
@@ -103,7 +103,7 @@ class DbdDashboardServiceImplTest {
     }
 
     @Test
-    void getGroupStatisticsReturnsPeriodBWhenSecondDateRangeProvided() {
+    void shouldReturnPeriodBWhenSecondDateRangeProvided() {
         LocalDate periodBStartDate = LocalDate.of(2026, 2, 1);
         LocalDate periodBEndDate = LocalDate.of(2026, 2, 28);
 

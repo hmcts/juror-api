@@ -208,7 +208,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    @SuppressWarnings({"PMD.NcssCount", "PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void editJurorDetails(BureauJwtPayload payload, EditJurorRecordRequestDto requestDto, String jurorNumber) {
         log.info("Juror: {}. Start updating details by user {}", jurorNumber, payload.getLogin());
 

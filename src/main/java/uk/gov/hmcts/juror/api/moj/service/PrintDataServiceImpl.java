@@ -111,6 +111,7 @@ public class PrintDataServiceImpl implements PrintDataService {
         ));
     }
 
+    @Override
     public void printDbdSummonsReminderLetter(JurorPool jurorPool) {
         if (jurorPool == null) {
             throw new MojException.InternalServerError(

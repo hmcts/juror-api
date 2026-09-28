@@ -3,11 +3,13 @@ package uk.gov.hmcts.juror.api.moj.service;
 import uk.gov.hmcts.juror.api.moj.controller.request.DbdDashboardRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto;
 
+@FunctionalInterface
 public interface DbdDashboardService {
 
     /**
      * Get take-up statistics for the requested court groups and date range(s).
      *
+     * <p>
      * Implementations should resolve the distinct set of locations across all requested
      * groups in a single pass, fetch each underlying stats table once per date range
      * (filtered to that combined location set), and perform group-level aggregation

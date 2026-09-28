@@ -17,6 +17,7 @@ import java.util.Map;
 /**
  * Response DTO for the Digital by Default pilot dashboard.
  *
+ * <p>
  * Reuses DashboardMandatoryKpiData.ResponseMethod for the response-time buckets so the
  * within7/14/21/over21 shape stays consistent with the existing dashboard rather than
  * duplicating it.

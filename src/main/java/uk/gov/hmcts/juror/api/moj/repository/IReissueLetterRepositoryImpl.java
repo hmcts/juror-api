@@ -112,7 +112,7 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
                 query.where(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
                     .map(FormCode::getCode).toList()));
             }
-            query.where(isPending());
+            query.where(pendingFilter());
         } else if (request.getJurorName() != null) {
             query.where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
                 .likeIgnoreCase("%" + request.getJurorName().toLowerCase(Settings.LOCALE) + "%"));
@@ -147,7 +147,7 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         JPAQuery<BulkPrintData> query = queryFactory.selectFrom(BULK_PRINT_DATA)
             .where(BULK_PRINT_DATA.jurorNo.eq(jurorNumber))
             .where(BULK_PRINT_DATA.formAttribute.formType.eq(formCode))
-            .where(isPending());
+            .where(pendingFilter());
 
         return Optional.ofNullable(query.fetchOne());
     }
@@ -188,13 +188,13 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         JPAQuery<BulkPrintData> query = queryFactory.selectFrom(BULK_PRINT_DATA)
             .where(BULK_PRINT_DATA.jurorNo.eq(jurorNumber))
             .where(BULK_PRINT_DATA.formAttribute.formType.eq(formCode))
-            .where(isPending())
+            .where(pendingFilter())
             .orderBy(BULK_PRINT_DATA.creationDate.desc());
 
         return Optional.ofNullable(query.fetchFirst());
     }
 
-    private static BooleanExpression isPending() {
+    private static BooleanExpression pendingFilter() {
         return BULK_PRINT_DATA.extractedFlag.isNull()
             .or(BULK_PRINT_DATA.extractedFlag.eq(false))
             .or(BULK_PRINT_DATA.emailStatus.eq(EmailStatus.PENDING));

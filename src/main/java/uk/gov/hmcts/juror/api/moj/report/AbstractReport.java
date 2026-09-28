@@ -545,7 +545,7 @@ public abstract class AbstractReport<T> implements IReport {
                 .map(dataType -> getDataFromReturnType(tuple, dataType))
                 .filter(entry -> {
                     Object value = entry.getValue();
-                    return value != null && !(value instanceof Map<?, ?> m && m.isEmpty());
+                    return value != null && !(value instanceof Map<?, ?> map && map.isEmpty());
                 })
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> b, LinkedHashMap::new))
             ).toList());
