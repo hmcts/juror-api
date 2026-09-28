@@ -168,6 +168,6 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
     }
 
     private Integer percentage(int numerator, int denominator) {
-        return denominator > 0 ? Math.round((numerator * 100f) / denominator) : null;
+        return denominator > 0 ? Math.round(numerator * 100f / denominator) : null;
     }
 }

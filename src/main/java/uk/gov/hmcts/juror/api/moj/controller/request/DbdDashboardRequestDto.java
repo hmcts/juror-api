@@ -17,6 +17,7 @@ import java.util.List;
 /**
  * Request DTO for the Digital by Default pilot dashboard.
  *
+ * <p>
  * Unlike DashboardRequestDto, this supports:
  *  - one or more caller-defined court groups (arbitrary, per-request groupings of pilot courts)
  *  - a mandatory comparison period (dateRangeA) plus an optional second period (dateRangeB)
@@ -69,4 +70,3 @@ public class DbdDashboardRequestDto implements Serializable {
         private LocalDate endDate;
     }
 }
-

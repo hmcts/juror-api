@@ -968,6 +968,7 @@ public class ManageDeferralsServiceImpl implements ManageDeferralsService {
         }
     }
 
+    @SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
     private void printConfirmationLetter(String owner, JurorPool jurorPool) {
         if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
             printDataService.removeQueuedLetterForJuror(jurorPool, List.of(FormCode.ENG_CONFIRMATION,

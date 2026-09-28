@@ -17,15 +17,18 @@ import java.time.LocalDate;
 /**
  * Read-only mapping for juror_dashboard.dbd_response_stats (JS-1050).
  *
+ * <p>
  * summons_date/response_date are `date` columns (not timestamp) per the
  * current DDL, mapped as LocalDate accordingly.
  *
+ * <p>
  * Uses the surrogate `id` column as a simple @Id rather than a composite
  * key over the six business columns - a composite id including the
  * nullable response_date column previously corrupted other field values
  * on affected rows (loc_code coming back null), which is why the DDL
  * moved to a surrogate key + separate unique constraint.
  *
+ * <p>
  * Populated entirely by a scheduled stored procedure; never written to
  * by the application.
  */

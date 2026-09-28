@@ -1,7 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.moj.controller.request.DbdDashboardRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto;
 import uk.gov.hmcts.juror.api.moj.service.DbdDashboardService;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 
 @Slf4j
 @RestController
