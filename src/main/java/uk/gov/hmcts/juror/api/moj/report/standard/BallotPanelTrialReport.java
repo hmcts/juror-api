@@ -39,7 +39,7 @@ public class BallotPanelTrialReport extends AbstractStandardReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
-        query.where(QPanel.panel.trial.courtLocation.locCode.in(SecurityUtil.getCourts()));
+    query.where(QPanel.panel.trial.courtLocation.locCode.eq(request.getLocCode()));
 
         if (Boolean.TRUE.equals(request.getCurrentJurorsOnly())) {
             query.where(QPanel.panel.result.isNull()
