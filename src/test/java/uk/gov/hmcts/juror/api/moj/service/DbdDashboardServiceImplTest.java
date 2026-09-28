@@ -17,6 +17,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,6 +63,83 @@ class DbdDashboardServiceImplTest {
 
         assertThat(result.getResponseRatePercent()).isNull();
         assertThat(result.getDigitalResponsesPercent()).isNull();
+    }
+
+    @Test
+    void getGroupStatisticsSumsLocationsWhenRequested() {
+        when(dbdResponseStatsRepository.findByLocCodeInAndSummonsDateBetween(
+            anyLocCodes(), eq(START_DATE), eq(END_DATE)))
+            .thenReturn(List.of(
+                responseStats("415", "Online", 8),
+                responseStats("415", "Paper", 6),
+                responseStats("416", "Online", 3),
+                responseStats("416", "None", 5)
+            ));
+
+        DbdDashboardResponseDto response = dbdDashboardService.getGroupStatistics(
+            DbdDashboardRequestDto.builder()
+                .courtGroups(List.of(DbdDashboardRequestDto.CourtGroupDto.builder()
+                                         .groupName("Test group")
+                                         .groupLocations(List.of(415, 416))
+                                         .build()))
+                .dateRangeA(DbdDashboardRequestDto.DateRangeDto.builder()
+                                .startDate(START_DATE)
+                                .endDate(END_DATE)
+                                .build())
+                .sumGroups(true)
+                .build()
+        );
+
+        DbdDashboardResponseDto.LocationMetrics result =
+            response.getCourtGroups().get(0).getPeriodA().getLocations().get(0);
+
+        assertThat(result.getLocationCode()).isNull();
+        assertThat(result.getOnlineResponseTotal()).isEqualTo(11);
+        assertThat(result.getPaperResponseTotal()).isEqualTo(6);
+        assertThat(result.getNotRespondedTotal()).isEqualTo(5);
+        assertThat(result.getTotalResponses()).isEqualTo(17);
+        assertThat(result.getResponseRatePercent()).isEqualTo(77);
+        assertThat(result.getDigitalResponsesPercent()).isEqualTo(65);
+    }
+
+    @Test
+    void getGroupStatisticsReturnsPeriodBWhenSecondDateRangeProvided() {
+        LocalDate periodBStartDate = LocalDate.of(2026, 2, 1);
+        LocalDate periodBEndDate = LocalDate.of(2026, 2, 28);
+
+        when(dbdResponseStatsRepository.findByLocCodeInAndSummonsDateBetween(
+            anyLocCodes(), eq(START_DATE), eq(END_DATE)))
+            .thenReturn(List.of(responseStats("415", "Online", 8)));
+        when(dbdResponseStatsRepository.findByLocCodeInAndSummonsDateBetween(
+            anyLocCodes(), eq(periodBStartDate), eq(periodBEndDate)))
+            .thenReturn(List.of(responseStats("415", "Paper", 4)));
+
+        DbdDashboardResponseDto response = dbdDashboardService.getGroupStatistics(
+            DbdDashboardRequestDto.builder()
+                .courtGroups(List.of(DbdDashboardRequestDto.CourtGroupDto.builder()
+                                         .groupName("Test group")
+                                         .groupLocations(List.of(415))
+                                         .build()))
+                .dateRangeA(DbdDashboardRequestDto.DateRangeDto.builder()
+                                .startDate(START_DATE)
+                                .endDate(END_DATE)
+                                .build())
+                .dateRangeB(DbdDashboardRequestDto.DateRangeDto.builder()
+                                .startDate(periodBStartDate)
+                                .endDate(periodBEndDate)
+                                .build())
+                .build()
+        );
+
+        assertThat(response.getCourtGroups().get(0).getPeriodA().getLocations().get(0).getOnlineResponseTotal())
+            .isEqualTo(8);
+        assertThat(response.getCourtGroups().get(0).getPeriodB().getLocations().get(0).getPaperResponseTotal())
+            .isEqualTo(4);
+
+        verify(dbdResponseStatsRepository).findByLocCodeInAndSummonsDateBetween(
+            anyLocCodes(), eq(START_DATE), eq(END_DATE));
+        verify(dbdResponseStatsRepository).findByLocCodeInAndSummonsDateBetween(
+            anyLocCodes(), eq(periodBStartDate), eq(periodBEndDate));
     }
 
     private DbdDashboardResponseDto.LocationMetrics getFirstLocationMetrics() {
