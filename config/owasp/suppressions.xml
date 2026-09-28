@@ -84,16 +84,20 @@
    Jenkins dependency-check finding for Spring Security 6.5.11 modules.
    CVE-2026-47841 (WebAuthn user verification bypass via session serialization) and
    CVE-2026-47842 (deterministic AES/CBC encryption in AesBytesEncryptor) added.
+   CVE-2026-41707 affects Spring Security 6.5.0-6.5.11; fix version 6.5.12 is
+   Enterprise Support Only.
    Fix (6.5.12) is Enterprise Support Only; no OSS release available. Suppressed pending
    OSS fix or Spring Boot BOM upgrade beyond 3.5.16. Review and remove once resolved.
    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-(config|core|crypto|web)@6\.5\.11$</packageUrl>
+    <packageUrl regex="true">^pkg:maven/org\.springframework\.security/spring-security-(config|core|crypto|oauth2-jose|web)@6\.5\.11$</packageUrl>
+    <cve>CVE-2026-41707</cve>
     <cve>CVE-2026-59270</cve>
     <cve>CVE-2026-47841</cve>
     <cve>CVE-2026-47842</cve>
     <cve>CVE-2026-59276</cve>
     <cve>CVE-2026-47841</cve>
     <cve>CVE-2026-47842</cve>
+    <cve>CVE-2026-41707</cve>
   </suppress>
 
   <suppress>

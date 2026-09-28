@@ -51,7 +51,7 @@ import java.util.stream.Stream;
  */
 @Service
 @Slf4j
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ = @Autowired)
 @SuppressWarnings("PMD")
 public class BureauServiceImpl implements BureauService {
     private static final String TODO = "todo";

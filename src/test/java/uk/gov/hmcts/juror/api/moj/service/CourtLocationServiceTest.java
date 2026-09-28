@@ -184,10 +184,10 @@ class CourtLocationServiceTest {
         assertThat(firstHalfOfPostcodeCaptor.getValue()).isEqualTo("MK49");
 
         assertThat(courtLocationsDto).hasSize(1);
-        assertThat(courtLocationsDto.get(0).getLocationCode()).isEqualTo("440");
-        assertThat(courtLocationsDto.get(0).getLocationName()).isEqualTo("Inner London");
-        assertThat(courtLocationsDto.get(0).getAttendanceTime()).isEqualTo("");
-        assertThat(courtLocationsDto.get(0).getOwner()).isEqualTo("440");
+        assertThat(courtLocationsDto.getFirst().getLocationCode()).isEqualTo("440");
+        assertThat(courtLocationsDto.getFirst().getLocationName()).isEqualTo("Inner London");
+        assertThat(courtLocationsDto.getFirst().getAttendanceTime()).isEqualTo("");
+        assertThat(courtLocationsDto.getFirst().getOwner()).isEqualTo("440");
     }
 
     @Test

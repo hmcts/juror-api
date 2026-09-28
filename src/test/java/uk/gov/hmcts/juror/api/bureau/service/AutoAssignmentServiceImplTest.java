@@ -172,7 +172,7 @@ public class AutoAssignmentServiceImplTest {
                 .collect(Collectors.toList());
             assertThat(itemAudit).hasSize(1);
 
-            UserJurorResponseAudit audit = itemAudit.get(0);
+            UserJurorResponseAudit audit = itemAudit.getFirst();
             assertThat(audit.getAssignedBy().getUsername()).isEqualTo("testUser");
             assertThat(audit.getAssignedTo().getUsername()).isEqualTo(backlogItem.getStaff().getUsername());
         }
