@@ -58,7 +58,7 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QReportsJurorPayments.reportsJurorPayments.trialNumber.eq(request.getTrialNumber()));
-        query.where(QReportsJurorPayments.reportsJurorPayments.locCode.eq(SecurityUtil.getLocCode()));
+        query.where(QReportsJurorPayments.reportsJurorPayments.locCode.eq(request.getLocCode()));
 
         if (Boolean.TRUE.equals(request.getCurrentJurorsOnly())) {
             query.where(QReportsJurorPayments.reportsJurorPayments.jurorNumber.in(
