@@ -374,7 +374,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
         assertThat(bureauSummoning.getRequestedFromBureau())
             .as("Requested from bureau should be mapped from the NO_REQUESTED value in the POOL_REQUEST view and "
                 + "represents the number of jurors requested from the Bureau (total required - court supply)")
-            .isEqualTo(9);
+            .isEqualTo(0); // This number cannot go negative as per JS-1086
         assertThat(bureauSummoning.getUnavailable())
             .as("Unavailable should be mapped from the UNAVAILABLE value in the POOL_STATS view and represents the "
                 + "number of bureau owned members in  a pool with a status that is NOT: 'Responded', 'Summoned', or "
