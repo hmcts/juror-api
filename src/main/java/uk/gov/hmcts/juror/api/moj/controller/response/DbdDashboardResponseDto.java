@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,6 +24,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Data
 @Schema(description = "Digital by Default pilot dashboard results, grouped by requested court group.")
@@ -33,6 +35,7 @@ public class DbdDashboardResponseDto implements Serializable {
 
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Builder
     @Data
@@ -51,6 +54,7 @@ public class DbdDashboardResponseDto implements Serializable {
 
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Builder
     @Data
@@ -64,6 +68,7 @@ public class DbdDashboardResponseDto implements Serializable {
 
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Builder
     @Data
