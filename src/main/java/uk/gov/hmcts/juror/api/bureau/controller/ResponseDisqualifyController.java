@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.jsonwebtoken.lang.Assert;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Max;
@@ -18,24 +17,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
-import uk.gov.hmcts.juror.api.bureau.exception.DisqualifyException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseDisqualifyService;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
 
 import java.util.List;
 import java.util.Objects;
-
-import static uk.gov.hmcts.juror.api.bureau.controller.ResponseUpdateController.assertJurorNumberPathVariable;
 
 @Slf4j
 @RestController
@@ -65,33 +55,6 @@ public class ResponseDisqualifyController {
             DisCode.ELECTRONIC_POLICE_CHECK_FAILURE.equals(disqualifyCode.getDisqualifyCode()));
 
         return ResponseEntity.ok().body(new DisqualifyReasonsDto(disqualifyReasons));
-    }
-
-    /*
-    @throws DisqualifyException
-     */
-    @PostMapping("/{jurorId}")
-    @Operation(summary = "disqualification for a specific juror",
-        description = "Mark a single juror with a certain disqualification code by their juror number")
-    public ResponseEntity<Void> disqualifyJuror(
-        @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
-        BureauJwtAuthentication jwt,
-        @Validated @RequestBody DisqualifyCodeDto disqualifyCodeDto) {
-        assertJurorNumberPathVariable(jurorId);
-        if (null == disqualifyCodeDto.getDisqualifyCode() || null == disqualifyCodeDto.getVersion()) {
-            // there is either no body or no version present in the request
-            throw new DisqualifyException.RequestIsMissingDetails(jurorId);
-        }
-
-        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
-        log.info(
-            "Attempting to disqualify juror {} using code {}, by user {}",
-            jurorId,
-            disqualifyCodeDto.getDisqualifyCode(),
-            jwtPayload.getLogin()
-        );
-        responseDisqualifyService.disqualifyJuror(jurorId, disqualifyCodeDto, jwtPayload.getLogin());
-        return ResponseEntity.ok().build();
     }
 
     /**
