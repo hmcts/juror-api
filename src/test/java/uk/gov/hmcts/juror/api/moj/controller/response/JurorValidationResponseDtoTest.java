@@ -118,7 +118,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
             assertExpectViolations(
                 createJurorValidationResponseDto(
                     "123456789",
-                    RandomStringUtils.randomAlphabetic(21),
+                    RandomStringUtils.insecure().nextAlphabetic(21),
                     "Smith"
                 ),
                 new Violation("firstName", "length must be between 0 and 20")
@@ -173,7 +173,7 @@ class JurorValidationResponseDtoTest extends AbstractValidatorTest<JurorValidati
                 createJurorValidationResponseDto(
                     "123456789",
                     "John",
-                    RandomStringUtils.randomAlphabetic(26)
+                    RandomStringUtils.insecure().nextAlphabetic(26)
                 ),
                 new Violation("lastName", "length must be between 0 and 25")
             );

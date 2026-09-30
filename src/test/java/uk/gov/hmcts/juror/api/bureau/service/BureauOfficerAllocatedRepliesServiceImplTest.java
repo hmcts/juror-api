@@ -62,10 +62,10 @@ public class BureauOfficerAllocatedRepliesServiceImplTest {
 
     @Test
     public void assigned_assigned_staff_status_todo() {
-        assertThat(allocatedRepliesService.getBackLogData().getData().get(0).getName()).isEqualTo("Staff 1");
-        assertThat(allocatedRepliesService.getBackLogData().getData().get(0).getNonUrgent()).isEqualTo(10L);
-        assertThat(allocatedRepliesService.getBackLogData().getData().get(0).getUrgent()).isEqualTo(15L);
-        assertThat(allocatedRepliesService.getBackLogData().getData().get(0).getAllReplies()).isEqualTo(25L);
+        assertThat(allocatedRepliesService.getBackLogData().getData().getFirst().getName()).isEqualTo("Staff 1");
+        assertThat(allocatedRepliesService.getBackLogData().getData().getFirst().getNonUrgent()).isEqualTo(10L);
+        assertThat(allocatedRepliesService.getBackLogData().getData().getFirst().getUrgent()).isEqualTo(15L);
+        assertThat(allocatedRepliesService.getBackLogData().getData().getFirst().getAllReplies()).isEqualTo(25L);
 
 
         assertThat(allocatedRepliesService.getBackLogData().getData().get(1).getName()).isEqualTo("Staff 2");

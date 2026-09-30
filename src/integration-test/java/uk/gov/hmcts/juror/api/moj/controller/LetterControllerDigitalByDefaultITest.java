@@ -106,7 +106,7 @@ class LetterControllerDigitalByDefaultITest extends AbstractIntegrationTest {
         assertThat(data).hasSize(2);
 
         Map<String, List<Object>> rowsByJurorNumber = data.stream()
-            .collect(Collectors.toMap(row -> row.get(0).toString(), Function.identity()));
+            .collect(Collectors.toMap(row -> row.getFirst().toString(), Function.identity()));
 
         assertDbdSummonsRow(rowsByJurorNumber.get("555555561"), "415241001", ENGLISH_DBD_SUMMONS_DATE,
                             "FNAMEFIVEFOURZERO", "LNAMEFIVEFOURZERO", "CH1 2AN", FormCode.ENG_DBD_SUMMONS);
@@ -162,7 +162,7 @@ class LetterControllerDigitalByDefaultITest extends AbstractIntegrationTest {
         assertThat(data).hasSize(2);
 
         Map<String, List<Object>> rowsByJurorNumber = data.stream()
-            .collect(Collectors.toMap(row -> row.get(0).toString(), Function.identity()));
+            .collect(Collectors.toMap(row -> row.getFirst().toString(), Function.identity()));
 
         assertDbdSummonsRow(rowsByJurorNumber.get("555555561"), "415241001", ENGLISH_DBD_SUMMONS_DATE,
                             "FNAMEFIVEFOURZERO", "LNAMEFIVEFOURZERO", "CH1 2AN", FormCode.ENG_DBD_RESPONSE);

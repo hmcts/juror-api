@@ -1240,7 +1240,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .findByJurorNumber("123456789");
         assertThat(reasonableAdjustments.size()).isEqualTo(1);  // we need a record to be present
 
-        JurorReasonableAdjustment reasonableAdjustmentDB = reasonableAdjustments.get(0);
+        JurorReasonableAdjustment reasonableAdjustmentDB = reasonableAdjustments.getFirst();
         assertThat(reasonableAdjustmentDB.getReasonableAdjustment().getCode()).isEqualTo(
             reasonableAdjustment.getAssistanceType());
         assertThat(reasonableAdjustmentDB.getReasonableAdjustmentDetail()).isEqualTo(
@@ -1303,7 +1303,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .findByJurorNumber("987654321");
         assertThat(reasonableAdjustmentList.size()).isEqualTo(1);  // we need a record to be present
 
-        JurorReasonableAdjustment reasonableAdjustmentDB = reasonableAdjustmentList.get(0);
+        JurorReasonableAdjustment reasonableAdjustmentDB = reasonableAdjustmentList.getFirst();
         assertThat(reasonableAdjustmentDB.getReasonableAdjustment().getCode()).isEqualTo(
             reasonableAdjustment.getAssistanceType());
         assertThat(reasonableAdjustmentDB.getReasonableAdjustmentDetail()).isEqualTo(
@@ -1418,7 +1418,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .findByJurorNumber("123456789");
         assertThat(cjsEmploymentListDB.size()).isEqualTo(1);  // we need a record to be present
 
-        JurorResponseCjsEmployment cjsEmploymentDB = cjsEmploymentListDB.get(0);
+        JurorResponseCjsEmployment cjsEmploymentDB = cjsEmploymentListDB.getFirst();
         assertThat(cjsEmploymentDB.getCjsEmployer()).isEqualTo(cjsEmployment.getCjsEmployer());
         assertThat(cjsEmploymentDB.getCjsEmployerDetails()).isEqualTo(cjsEmployment.getCjsEmployerDetails());
 
@@ -1452,7 +1452,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             .findByJurorNumber("987654321");
         assertThat(cjsEmploymentListDB.size()).isEqualTo(1);  // we need a record to be present
 
-        JurorResponseCjsEmployment cjsEmploymentDB = cjsEmploymentListDB.get(0);
+        JurorResponseCjsEmployment cjsEmploymentDB = cjsEmploymentListDB.getFirst();
         assertThat(cjsEmploymentDB.getCjsEmployer()).isEqualTo(cjsEmployment.getCjsEmployer());
         assertThat(cjsEmploymentDB.getCjsEmployerDetails()).isEqualTo(cjsEmployment.getCjsEmployerDetails());
 
@@ -1907,7 +1907,7 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
                 jurorPoolRepository.findByJurorJurorNumberAndIsActive("555555555", true);
 
             assertThat(jurorPoolList.size()).isGreaterThan(0);
-            JurorPool jurorPool = jurorPoolList.get(0);
+            JurorPool jurorPool = jurorPoolList.getFirst();
             Juror juror = jurorPool.getJuror();
 
             PaperResponse summonsReplyData = jurorPaperResponseRepository.findByJurorNumber(
@@ -1977,8 +1977,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             List<JurorResponseCjsEmployment> cjsEmployments =
                 jurorPaperResponseCjsRepository.findByJurorNumber(responseDetailDto.getJurorNumber());
             if (cjsEmployments != null && !cjsEmployments.isEmpty()) {
-                JurorResponseCjsEmployment actualCjs = cjsEmployments.get(0);
-                JurorPaperResponseDetailDto.CjsEmployment expectedCjs = responseDetailDto.getCjsEmployment().get(0);
+                JurorResponseCjsEmployment actualCjs = cjsEmployments.getFirst();
+                JurorPaperResponseDetailDto.CjsEmployment expectedCjs = responseDetailDto.getCjsEmployment().getFirst();
                 assertThat(expectedCjs.getCjsEmployer()).isEqualTo(actualCjs.getCjsEmployer());
                 assertThat(expectedCjs.getCjsEmployerDetails()).isEqualTo(actualCjs.getCjsEmployerDetails());
             }
@@ -1986,9 +1986,9 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
             List<JurorReasonableAdjustment> reasonableAdjustments =
                 jurorReasonableAdjustmentRepository.findByJurorNumber(responseDetailDto.getJurorNumber());
             if (reasonableAdjustments != null && !reasonableAdjustments.isEmpty()) {
-                JurorReasonableAdjustment actualReasonableAdjustment = reasonableAdjustments.get(0);
+                JurorReasonableAdjustment actualReasonableAdjustment = reasonableAdjustments.getFirst();
                 JurorPaperResponseDetailDto.ReasonableAdjustment expectedSpecialNeeds =
-                    responseDetailDto.getReasonableAdjustments().get(0);
+                    responseDetailDto.getReasonableAdjustments().getFirst();
                 assertThat(expectedSpecialNeeds.getAssistanceType()).isEqualTo(
                     actualReasonableAdjustment.getReasonableAdjustment().getCode());
                 assertThat(expectedSpecialNeeds.getAssistanceTypeDetails()).isEqualTo(
@@ -2109,8 +2109,8 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         List<JurorResponseCjsEmployment> cjsEmployments =
             jurorPaperResponseCjsRepository.findByJurorNumber(requestDto.getJurorNumber());
         if (cjsEmployments.size() == 1) {
-            JurorResponseCjsEmployment actualCjsEmployment = cjsEmployments.get(0);
-            JurorPaperResponseDto.CjsEmployment expectedCjsEmployment = requestDto.getCjsEmployment().get(0);
+            JurorResponseCjsEmployment actualCjsEmployment = cjsEmployments.getFirst();
+            JurorPaperResponseDto.CjsEmployment expectedCjsEmployment = requestDto.getCjsEmployment().getFirst();
             assertThat(actualCjsEmployment.getCjsEmployer()).isEqualTo(expectedCjsEmployment.getCjsEmployer());
             assertThat(actualCjsEmployment.getCjsEmployerDetails()).isEqualTo(
                 expectedCjsEmployment.getCjsEmployerDetails());
@@ -2118,9 +2118,9 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
         List<JurorReasonableAdjustment> specialNeeds =
             jurorReasonableAdjustmentRepository.findByJurorNumber(requestDto.getJurorNumber());
         if (specialNeeds.size() == 1) {
-            JurorReasonableAdjustment actualSpecialNeed = specialNeeds.get(0);
+            JurorReasonableAdjustment actualSpecialNeed = specialNeeds.getFirst();
             JurorPaperResponseDto.ReasonableAdjustment expectedSpecialNeed =
-                requestDto.getReasonableAdjustments().get(0);
+                requestDto.getReasonableAdjustments().getFirst();
             assertThat(actualSpecialNeed.getReasonableAdjustment().getCode()).isEqualTo(
                 expectedSpecialNeed.getAssistanceType());
             assertThat(actualSpecialNeed.getReasonableAdjustmentDetail()).isEqualTo(

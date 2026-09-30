@@ -21,7 +21,7 @@ public class JurorSequenceException extends RuntimeException {
     public static class SequenceNextValNotFound extends JurorSequenceException {
 
         public SequenceNextValNotFound(String sequenceName) {
-            super(String.format("Unable to retrieve the next value for the sequence: %s", sequenceName));
+            super("Unable to retrieve the next value for the sequence: %s".formatted(sequenceName));
         }
 
     }
