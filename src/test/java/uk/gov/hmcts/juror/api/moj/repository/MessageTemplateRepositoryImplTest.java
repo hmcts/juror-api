@@ -131,7 +131,7 @@ class MessageTemplateRepositoryImplTest {
         assertThat(result).isNotNull();
         assertThat(result.getData()).isNotNull();
         assertThat(result.getTotalItems()).isEqualTo(3);
-        assertThat(result.getData().get(0)).isInstanceOf(JurorToSendMessageBureau.class);
+        assertThat(result.getData().getFirst()).isInstanceOf(JurorToSendMessageBureau.class);
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
         verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
@@ -208,7 +208,7 @@ class MessageTemplateRepositoryImplTest {
         assertThat(result).isNotNull();
         assertThat(result.getData()).isNotNull();
         assertThat(result.getTotalItems()).isEqualTo(3);
-        assertThat(result.getData().get(0)).isInstanceOf(JurorToSendMessageBureau.class);
+        assertThat(result.getData().getFirst()).isInstanceOf(JurorToSendMessageBureau.class);
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
         verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
@@ -302,7 +302,7 @@ class MessageTemplateRepositoryImplTest {
         assertThat(result).isNotNull();
         assertThat(result.getData()).isNotNull();
         assertThat(result.getTotalItems()).isEqualTo(3);
-        assertThat(result.getData().get(0)).isInstanceOf(JurorToSendMessageCourt.class);
+        assertThat(result.getData().getFirst()).isInstanceOf(JurorToSendMessageCourt.class);
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
         verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
@@ -383,7 +383,7 @@ class MessageTemplateRepositoryImplTest {
         assertThat(result).isNotNull();
         assertThat(result.getData()).isNotNull();
         assertThat(result.getTotalItems()).isEqualTo(3);
-        assertThat(result.getData().get(0)).isInstanceOf(JurorToSendMessageCourt.class);
+        assertThat(result.getData().getFirst()).isInstanceOf(JurorToSendMessageCourt.class);
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
         verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));
@@ -486,7 +486,7 @@ class MessageTemplateRepositoryImplTest {
         assertThat(result).isNotNull();
         assertThat(result.getData()).isNotNull();
         assertThat(result.getTotalItems()).isEqualTo(3);
-        assertThat(result.getData().get(0)).isInstanceOf(JurorToSendMessageCourt.class);
+        assertThat(result.getData().getFirst()).isInstanceOf(JurorToSendMessageCourt.class);
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
         verify(jpaQuery, times(1)).on(JUROR.eq(JUROR_POOL.juror));

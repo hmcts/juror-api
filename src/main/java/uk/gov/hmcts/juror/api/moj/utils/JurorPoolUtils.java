@@ -146,7 +146,7 @@ public final class JurorPoolUtils {
         }
 
         log.debug("{} records retrieved for juror number {}", jurorPools.size(), jurorNumber);
-        return jurorPools.get(0);
+        return jurorPools.getFirst();
     }
 
     /**

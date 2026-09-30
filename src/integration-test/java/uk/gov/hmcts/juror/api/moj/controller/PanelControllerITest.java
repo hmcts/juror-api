@@ -360,7 +360,7 @@ class PanelControllerITest extends AbstractIntegrationTest {
                         List<JurorHistory> jurorHistories =
                             jurorHistoryRepository.findByJurorNumberOrderById(panelMember.getJurorNumber());
                         assertThat(jurorHistories.size()).as("Expected history items to be one").isEqualTo(1);
-                        assertThat(jurorHistories.get(0).getHistoryCode().getCode()).as(
+                        assertThat(jurorHistories.getFirst().getHistoryCode().getCode()).as(
                                 "Expected history code to be TADD")
                             .isEqualTo("TADD");
                         jurorCount++;
@@ -402,7 +402,7 @@ class PanelControllerITest extends AbstractIntegrationTest {
         List<JurorHistory> jurorHistories =
             jurorHistoryRepository.findByJurorNumberOrderById(panelMember.getJurorNumber());
         assertThat(jurorHistories.size()).as("Expected history items to be one").isEqualTo(1);
-        assertThat(jurorHistories.get(0).getHistoryCode().getCode()).as(
+        assertThat(jurorHistories.getFirst().getHistoryCode().getCode()).as(
                 "Expected history code to be VRET")
             .isEqualTo("VRET");
         Appearance appearance =
@@ -448,7 +448,7 @@ class PanelControllerITest extends AbstractIntegrationTest {
     void empanelJurorsNoResultSet() {
 
         JurorListRequestDto dto = createEmpanelledListRequestDto();
-        dto.getJurors().get(0).setResult(null);
+        dto.getJurors().getFirst().setResult(null);
 
         RequestEntity<JurorListRequestDto> requestEntity =
             new RequestEntity<>(
@@ -889,7 +889,7 @@ class PanelControllerITest extends AbstractIntegrationTest {
     private void assertAvailableJurorsData(AvailableJurorsDto dto, int count) {
 
         assertThat(dto.getAvailableJurors())
-            .as(String.format("%d responded jurors associated with this pool are checked in today", count))
+            .as("%d responded jurors associated with this pool are checked in today".formatted(count))
             .isEqualTo(count);
         assertThat(dto.getServiceStartDate())
             .as("Pool was requested for today")

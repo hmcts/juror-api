@@ -87,7 +87,7 @@ public class JurySummoningMonitorReportServiceImpl implements JurySummoningMonit
     }
 
     private void setupResponse(JurySummoningMonitorReportResponse response, List<String> result) {
-        response.setTotalJurorsNeeded(Integer.parseInt(result.get(0)));
+        response.setTotalJurorsNeeded(Integer.parseInt(result.getFirst()));
         response.setBureauDeferralsIncluded(Integer.parseInt(result.get(1)));
 
         response.setBureauToSupply(response.getTotalJurorsNeeded() - response.getBureauDeferralsIncluded());

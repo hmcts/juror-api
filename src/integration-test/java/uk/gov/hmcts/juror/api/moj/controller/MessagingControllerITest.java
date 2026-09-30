@@ -999,21 +999,31 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     MessageType.SendType.EMAIL_AND_SMS);
 
                 addTest(MessageType.SENTENCING_INVITE_COURT,
-                    "The defendant in the trial in which you were a juror is being sentenced on <sentence_date>.\n\n"
-                        + "Please contact the court if you wish to attend on <court_phone>.\n\n"
-                        + "Alternatively contact the court after the hearing date quoting reference number <trial_no>"
-                        + " if you would like to know the sentence.\n\n"
-                        + "Please note that jurors do not have a role in sentencing, and as such your attendance is "
-                        + "entirely voluntary and travel and subsistence payments cannot be claimed.\n\n"
-                        + "Please do not reply to this email as this mailbox is unmonitored.",
-                    "Bydd y diffynnydd yn y treial yr oeddech yn rheithiwr ynddo yn cael ei ddedfrydu ar "
-                        + "<sentence_date>.\n\n"
-                        + "Cysylltwch â'r llys os ydych yn dymuno bod yn bresennol drwy ffonio <court_phone>.\n\n"
-                        + "Fel arall, cysylltwch â'r llys ar ôl dyddiad y gwrandawiad, gan ddyfynnu'r cyfeirnod "
-                        + "<trial_no> os hoffech wybod beth oedd y ddedfryd.\n\n"
-                        + "Noder, nid oes gan reithwyr rôl i'w chwarae wrth ddedfrydu diffynyddion ac felly mae eich "
-                        + "presenoldeb yn gyfan gwbl wirfoddol ac ni allwch hawlio costau teithio a chynhaliaeth.\n\n"
-                        + "Peidiwch ag ymateb i'r neges e-bost hon oherwydd nid yw'r mewnflwch hwn yn cael ei fonitro.",
+                    """
+                    The defendant in the trial in which you were a juror is being sentenced on <sentence_date>.
+                    
+                    Please contact the court if you wish to attend on <court_phone>.
+                    
+                    Alternatively contact the court after the hearing date quoting reference number <trial_no>\
+                     if you would like to know the sentence.
+                    
+                    Please note that jurors do not have a role in sentencing, and as such your attendance is \
+                    entirely voluntary and travel and subsistence payments cannot be claimed.
+                    
+                    Please do not reply to this email as this mailbox is unmonitored.""",
+                    """
+                    Bydd y diffynnydd yn y treial yr oeddech yn rheithiwr ynddo yn cael ei ddedfrydu ar \
+                    <sentence_date>.
+                    
+                    Cysylltwch â'r llys os ydych yn dymuno bod yn bresennol drwy ffonio <court_phone>.
+                    
+                    Fel arall, cysylltwch â'r llys ar ôl dyddiad y gwrandawiad, gan ddyfynnu'r cyfeirnod \
+                    <trial_no> os hoffech wybod beth oedd y ddedfryd.
+                    
+                    Noder, nid oes gan reithwyr rôl i'w chwarae wrth ddedfrydu diffynyddion ac felly mae eich \
+                    presenoldeb yn gyfan gwbl wirfoddol ac ni allwch hawlio costau teithio a chynhaliaeth.
+                    
+                    Peidiwch ag ymateb i'r neges e-bost hon oherwydd nid yw'r mewnflwch hwn yn cael ei fonitro.""",
                     List.of(
                         TestData.Placeholder.SENTENCE_DATE.toPlaceholder(),
                         TestData.Placeholder.ENGLISH_COURT_PHONE.toPlaceholder(),
@@ -1027,15 +1037,21 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     MessageType.SendType.EMAIL);
 
                 addTest(MessageType.SENTENCING_DATE_COURT,
-                    "The defendant in the trial in which you were a juror is being sentenced on <sentence_date>.\n\n"
-                        + "Please contact the court after the hearing date on <court_phone> quoting reference number "
-                        + "<trial_no> if you would like to know the sentence.\n\n"
-                        + "Please do not reply to this email as this mailbox is unmonitored.",
-                    "Bydd y diffynnydd yn y treial yr oeddech yn rheithiwr ynddo yn cael ei ddedfrydu ar "
-                        + "<sentence_date>.\n\n"
-                        + "Cysylltwch â'r Llys ar ôl dyddiad y gwrandawiad drwy ffonio <court_phone> a dyfynnu'r "
-                        + "cyfeirnod <trial_no> os hoffech wybod beth oedd y ddedfryd.\n\n"
-                        + "Peidiwch ag ymateb i'r neges e-bost hon oherwydd nid yw'r mewnflwch hwn yn cael ei fonitro.",
+                    """
+                    The defendant in the trial in which you were a juror is being sentenced on <sentence_date>.
+                    
+                    Please contact the court after the hearing date on <court_phone> quoting reference number \
+                    <trial_no> if you would like to know the sentence.
+                    
+                    Please do not reply to this email as this mailbox is unmonitored.""",
+                    """
+                    Bydd y diffynnydd yn y treial yr oeddech yn rheithiwr ynddo yn cael ei ddedfrydu ar \
+                    <sentence_date>.
+                    
+                    Cysylltwch â'r Llys ar ôl dyddiad y gwrandawiad drwy ffonio <court_phone> a dyfynnu'r \
+                    cyfeirnod <trial_no> os hoffech wybod beth oedd y ddedfryd.
+                    
+                    Peidiwch ag ymateb i'r neges e-bost hon oherwydd nid yw'r mewnflwch hwn yn cael ei fonitro.""",
                     List.of(
                         TestData.Placeholder.SENTENCE_DATE.toPlaceholder(),
                         TestData.Placeholder.ENGLISH_COURT_PHONE.toPlaceholder(),
@@ -2649,7 +2665,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                                   String poolNumber) {
                 List<Message> messages = messagesRepository.findAllByJurorNumber(jurorNumber);
                 assertThat(messages).isNotNull().hasSize(1);
-                Message message = messages.get(0);
+                Message message = messages.getFirst();
                 final String otherInfo;
                 if (ENGLISH_JUROR_NUMBER_WELSH_FLAG_FALSE.equals(jurorNumber)) {
                     validateEnglishJurorNumberWelshFlagFalse(
@@ -2690,7 +2706,7 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
 
                 List<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-                JurorHistory historyItem = history.get(history.size() - 1);
+                JurorHistory historyItem = history.getLast();
                 assertThat(historyItem).isNotNull();
                 assertThat(historyItem.getHistoryCode()).isEqualTo(HistoryCodeMod.NOTIFY_MESSAGE_REQUESTED);
                 assertThat(historyItem.getJurorNumber()).isEqualTo(jurorNumber);
@@ -3279,49 +3295,73 @@ class MessagingControllerITest extends AbstractIntegrationTest {
 
                 addTests(
                     MessageType.SENTENCING_INVITE_COURT,
-                    "The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.\n"
-                        + "\nPlease contact the court if you wish to attend on 01244 356726.\n"
-                        + "\nAlternatively contact the court after the hearing date quoting reference number "
-                        + "T123456789 if you would like to know the sentence.\n"
-                        + "\nPlease note that jurors do not have a role in sentencing, and as such your attendance is"
-                        + " entirely voluntary and travel and subsistence payments cannot be claimed.\n"
-                        + "\nPlease do not reply to this email as this mailbox is unmonitored.",
+                    """
+                    The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.
+                    
+                    Please contact the court if you wish to attend on 01244 356726.
+                    
+                    Alternatively contact the court after the hearing date quoting reference number \
+                    T123456789 if you would like to know the sentence.
+                    
+                    Please note that jurors do not have a role in sentencing, and as such your attendance is\
+                     entirely voluntary and travel and subsistence payments cannot be claimed.
+                    
+                    Please do not reply to this email as this mailbox is unmonitored.""",
 
-                    "The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.\n"
-                        + "\nPlease contact the court if you wish to attend on 01792 637000.\n"
-                        + "\nAlternatively contact the court after the hearing date quoting reference number "
-                        + "T123456789 if you would like to know the sentence.\n"
-                        + "\nPlease note that jurors do not have a role in sentencing, and as such your attendance is"
-                        + " entirely voluntary and travel and subsistence payments cannot be claimed.\n"
-                        + "\nPlease do not reply to this email as this mailbox is unmonitored.",
-                    "Bydd y diffynnydd yn y treial yr oeddech yn rheithiwr ynddo yn cael ei ddedfrydu ar 02/01/2023.\n"
-                        + "\nCysylltwch â'r llys os ydych yn dymuno bod yn bresennol drwy ffonio 01792 637000.\n"
-                        + "\nFel arall, cysylltwch â'r llys ar ôl dyddiad y gwrandawiad, gan ddyfynnu'r cyfeirnod "
-                        + "T123456789 os hoffech wybod beth oedd y ddedfryd.\n"
-                        + "\nNoder, nid oes gan reithwyr rôl i'w chwarae wrth ddedfrydu diffynyddion ac felly mae "
-                        + "eich presenoldeb yn gyfan gwbl wirfoddol ac ni allwch hawlio costau teithio a chynhaliaeth"
-                        + ".\n"
-                        + "\nPeidiwch ag ymateb i'r neges e-bost hon oherwydd nid yw'r mewnflwch hwn yn cael ei "
-                        + "fonitro.",
+                    """
+The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.
+
+Please contact the court if you wish to attend on 01792 637000.
+
+Alternatively contact the court after the hearing date quoting reference number \
+T123456789 if you would like to know the sentence.
+
+Please note that jurors do not have a role in sentencing, and as such your attendance is\
+ entirely voluntary and travel and subsistence payments cannot be claimed.
+
+Please do not reply to this email as this mailbox is unmonitored.""",
+                    """
+                    Bydd y diffynnydd yn y treial yr oeddech yn rheithiwr ynddo yn cael ei ddedfrydu ar 02/01/2023.
+                    
+                    Cysylltwch â'r llys os ydych yn dymuno bod yn bresennol drwy ffonio 01792 637000.
+                    
+                    Fel arall, cysylltwch â'r llys ar ôl dyddiad y gwrandawiad, gan ddyfynnu'r cyfeirnod \
+                    T123456789 os hoffech wybod beth oedd y ddedfryd.
+                    
+                    Noder, nid oes gan reithwyr rôl i'w chwarae wrth ddedfrydu diffynyddion ac felly mae \
+                    eich presenoldeb yn gyfan gwbl wirfoddol ac ni allwch hawlio costau teithio a chynhaliaeth\
+                    .
+                    
+                    Peidiwch ag ymateb i'r neges e-bost hon oherwydd nid yw'r mewnflwch hwn yn cael ei \
+                    fonitro.""",
                     Map.of("<sentence_date>", "2023-01-02",
                         "<trial_no>", "T123456789"),
                     MessageType.SendType.EMAIL
                 );
                 addTests(
                     MessageType.SENTENCING_DATE_COURT,
-                    "The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.\n"
-                        + "\nPlease contact the court after the hearing date on 01244 356726 quoting reference number"
-                        + " T123456789 if you would like to know the sentence.\n"
-                        + "\nPlease do not reply to this email as this mailbox is unmonitored.",
-                    "The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.\n"
-                        + "\nPlease contact the court after the hearing date on 01792 637000 quoting reference number"
-                        + " T123456789 if you would like to know the sentence.\n"
-                        + "\nPlease do not reply to this email as this mailbox is unmonitored.",
-                    "Bydd y diffynnydd yn y treial yr oeddech yn rheithiwr ynddo yn cael ei ddedfrydu ar 02/01/2023.\n"
-                        + "\nCysylltwch â'r Llys ar ôl dyddiad y gwrandawiad drwy ffonio 01792 637000 a dyfynnu'r "
-                        + "cyfeirnod T123456789 os hoffech wybod beth oedd y ddedfryd.\n"
-                        + "\nPeidiwch ag ymateb i'r neges e-bost hon oherwydd nid yw'r mewnflwch hwn yn cael ei "
-                        + "fonitro.",
+                    """
+                    The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.
+                    
+                    Please contact the court after the hearing date on 01244 356726 quoting reference number\
+                     T123456789 if you would like to know the sentence.
+                    
+                    Please do not reply to this email as this mailbox is unmonitored.""",
+                    """
+                    The defendant in the trial in which you were a juror is being sentenced on 02/01/2023.
+                    
+                    Please contact the court after the hearing date on 01792 637000 quoting reference number\
+                     T123456789 if you would like to know the sentence.
+                    
+                    Please do not reply to this email as this mailbox is unmonitored.""",
+                    """
+                    Bydd y diffynnydd yn y treial yr oeddech yn rheithiwr ynddo yn cael ei ddedfrydu ar 02/01/2023.
+                    
+                    Cysylltwch â'r Llys ar ôl dyddiad y gwrandawiad drwy ffonio 01792 637000 a dyfynnu'r \
+                    cyfeirnod T123456789 os hoffech wybod beth oedd y ddedfryd.
+                    
+                    Peidiwch ag ymateb i'r neges e-bost hon oherwydd nid yw'r mewnflwch hwn yn cael ei \
+                    fonitro.""",
                     Map.of("<sentence_date>", "2023-01-02",
                         "<trial_no>", "T123456789"),
                     MessageType.SendType.EMAIL
@@ -3563,15 +3603,16 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     .payload(payload)
                     .triggerValid()
                     .assertEquals(
-                        "Juror Number,Title,First Name,Last Name,Email,Main Phone,Other Phone,Work Phone,Address Line"
-                            + " 1,Address Line 2,Address Line 3,Address Line 4,Address Line 5,Postcode,Welsh language,"
-                            + "Status,Pool Number,Next due at court date,Date deferred to,Completion date\n"
-                            + "641500023,T3,FName3,LName3,email3@email.com,1234567893,1234567883,1234567873,address1 "
-                            + "3,address2 3,address3 3,address4 3,address5 3,CF10 3AA,true,Panel,415230103,,03/02/2023"
-                            + ",03/01/2023\n"
-                            + "641500024,T4,FName4,LName4,email4@email.com,1234567894,1234567884,1234567874,address1 "
-                            + "4,address2 4,address3 4,address4 4,address5 4,CF10 4AA,false,Juror,415230103,04/01/2023"
-                            + ",,04/01/2023"
+                        """
+                        Juror Number,Title,First Name,Last Name,Email,Main Phone,Other Phone,Work Phone,Address Line\
+                         1,Address Line 2,Address Line 3,Address Line 4,Address Line 5,Postcode,Welsh language,\
+                        Status,Pool Number,Next due at court date,Date deferred to,Completion date
+                        641500023,T3,FName3,LName3,email3@email.com,1234567893,1234567883,1234567873,address1 \
+                        3,address2 3,address3 3,address4 3,address5 3,CF10 3AA,true,Panel,415230103,,03/02/2023\
+                        ,03/01/2023
+                        641500024,T4,FName4,LName4,email4@email.com,1234567894,1234567884,1234567874,address1 \
+                        4,address2 4,address3 4,address4 4,address5 4,CF10 4AA,false,Juror,415230103,04/01/2023\
+                        ,,04/01/2023"""
                     );
 
             }
@@ -3586,9 +3627,10 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                 testBuilder()
                     .payload(payload)
                     .triggerValid()
-                    .assertEquals("Juror Number,First Name,Last Name\n"
-                        + "641500023,FName3,LName3\n"
-                        + "641500024,FName4,LName4"
+                    .assertEquals("""
+                        Juror Number,First Name,Last Name
+                        641500023,FName3,LName3
+                        641500024,FName4,LName4"""
                     );
             }
 
@@ -3613,15 +3655,16 @@ class MessagingControllerITest extends AbstractIntegrationTest {
                     .jwt(getBureauJwt())
                     .triggerValid()
                     .assertEquals(
-                        "Juror Number,Title,First Name,Last Name,Email,Main Phone,Other Phone,Work Phone,Address Line"
-                            + " 1,Address Line 2,Address Line 3,Address Line 4,Address Line 5,Postcode,Welsh language,"
-                            + "Status,Pool Number,Next due at court date,Date deferred to,Completion date\n"
-                            + "641500021,T1,FName1,LName1,email1@email.com,1234567891,1234567881,1234567871,address1 "
-                            + "1,address2 1,address3 1,address4 1,address5 1,CF10 1AA,false,Summoned,415230101,02/01/2023,,"
-                            + "01/01/2023\n"
-                            + "641500025,T5,FName5,LName5,email5@email.com,1234567896,1234567885,1234567875,address1 "
-                            + "5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,Excused,415230104,"
-                            + ",05/02/2023,05/01/2023");
+                        """
+                        Juror Number,Title,First Name,Last Name,Email,Main Phone,Other Phone,Work Phone,Address Line\
+                         1,Address Line 2,Address Line 3,Address Line 4,Address Line 5,Postcode,Welsh language,\
+                        Status,Pool Number,Next due at court date,Date deferred to,Completion date
+                        641500021,T1,FName1,LName1,email1@email.com,1234567891,1234567881,1234567871,address1 \
+                        1,address2 1,address3 1,address4 1,address5 1,CF10 1AA,false,Summoned,415230101,02/01/2023,,\
+                        01/01/2023
+                        641500025,T5,FName5,LName5,email5@email.com,1234567896,1234567885,1234567875,address1 \
+                        5,address2 5,address3 5,address4 5,address5 5,CF10 5AA,false,Excused,415230104,\
+                        ,05/02/2023,05/01/2023""");
             }
 
 

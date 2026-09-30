@@ -430,7 +430,7 @@ public abstract class AbstractValidatorTest<T> {
 
 
         protected void addMaxLengthTest(int maxLength, FieldTestSupport fieldTestSupport) {
-            addMaxLengthTest(RandomStringUtils.randomAlphabetic(maxLength + 1), maxLength, fieldTestSupport);
+            addMaxLengthTest(RandomStringUtils.insecure().nextAlphabetic(maxLength + 1), maxLength, fieldTestSupport);
         }
 
         protected void addMaxLengthTest(String invalidValue, int maxLength, FieldTestSupport fieldTestSupport) {
@@ -440,8 +440,8 @@ public abstract class AbstractValidatorTest<T> {
         protected void addLengthTest(int minLength, int maxLength,
                                      FieldTestSupport fieldTestSupport) {
             addLengthTest(
-                RandomStringUtils.randomAlphabetic(minLength > 0 ? minLength - 1 : 0),
-                RandomStringUtils.randomAlphabetic(maxLength + 1),
+                RandomStringUtils.insecure().nextAlphabetic(minLength > 0 ? minLength - 1 : 0),
+                RandomStringUtils.insecure().nextAlphabetic(maxLength + 1),
                 minLength, maxLength, fieldTestSupport);
         }
 
