@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.jsonwebtoken.lang.Assert;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.ValidationException;
@@ -21,25 +19,10 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.OptimisticLockingFailureException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.bureau.controller.request.BureauResponseStatusUpdateDto;
-import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
-import uk.gov.hmcts.juror.api.bureau.service.ResponseAlreadyMergedException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseUpdateService;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
-import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.validation.LocalDateOfBirth;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
@@ -58,7 +41,6 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/bureau/juror/{jurorId}", produces = MediaType.APPLICATION_JSON_VALUE)
-@SuppressWarnings("PMD")
 @Tag(name = "Bureau Response Edit API", description = "Bureau operations relating to editing a juror response.")
 public class ResponseUpdateController {
     private final ResponseUpdateService responseUpdateService;
@@ -68,212 +50,6 @@ public class ResponseUpdateController {
         Assert.notNull(responseUpdateService, "ResponseUpdateService cannot be null");
         this.responseUpdateService = responseUpdateService;
     }
-
-    @GetMapping("/notes")
-    @Operation(summary = "Get notes for a specific juror response",
-        description = "Retrieve notes of a single juror response by their juror number")
-    public ResponseEntity<JurorNoteDto> jurorNoteByJurorNumber(
-        @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId) {
-        assertJurorNumberPathVariable(jurorId);
-
-        final JurorNoteDto notesDto = responseUpdateService.notesByJurorNumber(jurorId);
-        return ResponseEntity.ok().body(notesDto);
-    }
-
-    @PutMapping("/notes")
-    @Operation(summary = "notes for a specific juror response",
-        description = "Update notes of a single juror response by their juror number")
-    public ResponseEntity<Void> updateNoteByJurorNumber(
-        @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
-        @Parameter(hidden = true) BureauJwtAuthentication jwt,
-        @Validated @RequestBody JurorNoteDto noteDto) {
-        assertJurorNumberPathVariable(jurorId);
-
-        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
-        responseUpdateService.updateNote(noteDto, jurorId, jwtPayload.getLogin());
-        log.info("Updated notes for juror {}", jurorId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/phone")
-    @Operation(summary = "phone log entry for specific juror response",
-        description = "Insert new phone log to a single juror response by their juror number")
-    public ResponseEntity<Void> updatePhoneLogByJurorNumber(
-        @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
-        @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
-        @Validated @RequestBody JurorPhoneLogDto phoneLogDto) {
-        assertJurorNumberPathVariable(jurorId);
-        responseUpdateService.updatePhoneLog(phoneLogDto, jurorId, payload.getLogin());
-        log.info("Updated phone log for juror {}", jurorId);
-        return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * Response update for a first person response - juror details section.
-     *
-     * @param jurorId                    Juror response to update
-     * @param jwt                        Spring supplied security principal
-     * @param firstPersonJurorDetailsDto Updated content
-     * @return {@link org.springframework.http.HttpStatus#NO_CONTENT}
-     * @throws BureauOptimisticLockingException Response was updated previously and the data in this request is stale.
-     * @throws ResponseAlreadyMergedException   Response has been merged to Juror previously - not allowed to edit.
-     */
-    @PostMapping("/details/first-person")
-    @Operation(summary = "changes to juror response - first "
-        + "person juror details",
-        description = "Juror Details (first person) edit")
-    public ResponseEntity<Void> updateJurorDetailsFirstPerson(
-        @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
-        @Parameter(hidden = true) BureauJwtAuthentication jwt,
-        @Validated @RequestBody FirstPersonJurorDetailsDto firstPersonJurorDetailsDto)
-        throws ResponseAlreadyMergedException {
-        assertJurorNumberPathVariable(jurorId);
-
-        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
-        responseUpdateService.updateJurorDetailsFirstPerson(firstPersonJurorDetailsDto, jurorId, jwtPayload
-            .getLogin());
-        log.info("Updated first person juror details section for juror {}", jurorId);
-        return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * Response update for a third party response - juror details section.
-     *
-     * @param jurorId                   Juror response to update
-     * @param jwt                       Spring supplied security principal
-     * @param thirdPartyJurorDetailsDto Updated content
-     * @return {@link org.springframework.http.HttpStatus#NO_CONTENT}
-     * @throws BureauOptimisticLockingException Response was updated previously and the data in this request is stale.
-     * @throws ResponseAlreadyMergedException   Response has been merged to Juror previously - not allowed to edit.
-     */
-    @PostMapping("/details/third-party")
-    @Operation(summary = "changes to juror response - third party "
-        + "juror details",
-        description = "Juror Details (third party) edit")
-    public ResponseEntity<Void> updateJurorDetailsThirdParty(
-        @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
-        @Parameter(hidden = true) BureauJwtAuthentication jwt,
-        @Validated @RequestBody ThirdPartyJurorDetailsDto thirdPartyJurorDetailsDto)
-        throws ResponseAlreadyMergedException {
-        assertJurorNumberPathVariable(jurorId);
-
-        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
-        responseUpdateService.updateJurorDetailsThirdParty(thirdPartyJurorDetailsDto, jurorId, jwtPayload.getLogin());
-        log.info("Updated third party juror details section for juror {}", jurorId);
-        return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * Response update for response - juror eligibility details section.
-     *
-     * @param jurorId             Juror response to update
-     * @param jwt                 Spring supplied security principal
-     * @param jurorEligibilityDto Updated content
-     * @return {@link org.springframework.http.HttpStatus#NO_CONTENT}
-     * @throws BureauOptimisticLockingException Response was updated previously and the data in this request is stale.
-     * @throws ResponseAlreadyMergedException   Response has been merged to Juror previously - not allowed to edit.
-     */
-    @PostMapping("/details/eligibility")
-    @Operation(summary = "changes to juror response - juror "
-        + "eligibility",
-        description = "Juror Eligibility edit")
-    public ResponseEntity<Void> updateJurorEligibility(
-        @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
-        @Parameter(hidden = true) BureauJwtAuthentication jwt,
-        @Validated @RequestBody JurorEligibilityDto jurorEligibilityDto) {
-        assertJurorNumberPathVariable(jurorId);
-
-        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
-        responseUpdateService.updateJurorEligibility(jurorEligibilityDto, jurorId, jwtPayload.getLogin());
-        log.info("Updated third party juror eligibility for juror {}", jurorId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/details/excusal")
-    @Operation(summary = "changes to juror response - excusal/deferral",
-        description = "Excusal/Deferral edit")
-    public ResponseEntity<Void> updateDeferralExcusal(
-        @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
-        @Parameter(hidden = true) BureauJwtAuthentication jwt,
-        @Validated @RequestBody DeferralExcusalDto deferralExcusalDto)
-        throws ResponseAlreadyMergedException {
-        assertJurorNumberPathVariable(jurorId);
-
-        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
-        responseUpdateService.updateExcusalDeferral(deferralExcusalDto, jurorId, jwtPayload.getLogin());
-        log.info("Updated update excusal/deferral section for juror {}", jurorId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/details/special-needs")
-    @Operation(summary = "changes to juror response - reasonable"
-        + " adjustments (special needs)",
-        description = "Reasonable adjustments (special needs) edit")
-    public ResponseEntity<Void> updateSpecialNeeds(
-        @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
-        @Parameter(hidden = true) BureauJwtAuthentication jwt,
-        @Validated @RequestBody ReasonableAdjustmentsDto reasonableAdjustmentsDto)
-        throws ResponseAlreadyMergedException {
-        assertJurorNumberPathVariable(jurorId);
-
-        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
-        responseUpdateService.updateSpecialNeeds(reasonableAdjustmentsDto, jurorId, jwtPayload.getLogin());
-        log.info("Updated update special needs section for juror {}", jurorId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/details/cjs")
-    @Operation(summary = "changes to juror response - CJS employee details"
-        + " edit",
-        description = "CJS employee details edit")
-    public ResponseEntity<Void> updateCjs(
-        @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
-        @Parameter(hidden = true) BureauJwtAuthentication jwt,
-        @Validated @RequestBody CjsEmploymentDetailsDto cjsEmploymentDetailsDto)
-        throws ResponseAlreadyMergedException {
-        assertJurorNumberPathVariable(jurorId);
-
-        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
-        responseUpdateService.updateCjs(cjsEmploymentDetailsDto, jurorId, jwtPayload.getLogin());
-        log.info("Updated CJS employee section for juror {}", jurorId);
-        return ResponseEntity.noContent().build();
-    }
-
-
-    /**
-     * Update the juror response, if the Pool status has already been updated in legacy and response is not perocessed.
-     *
-     * @param jurorId           Juror number of response to process
-     * @param updateResponseDto Update information
-     * @param principal         Currently authenticated bureau officer details
-     * @return HTTP 202 accepted - no body content
-     * @throws BureauOptimisticLockingException Response data from the UI is outdated. Version mismatch with DB.
-     */
-    @PostMapping("/response/status")
-    @Operation(summary = "Update juror response if legacy status changed",
-        description = "Update and process juror response")
-    public ResponseEntity<Object> updateResponseStatus(
-        @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
-        @Parameter(description = "Status update details") @RequestBody BureauResponseStatusUpdateDto updateResponseDto,
-        @Parameter(hidden = true) BureauJwtAuthentication principal)
-        throws BureauOptimisticLockingException {
-
-        final BureauJwtPayload jwtPayload = (BureauJwtPayload) principal.getPrincipal();
-
-        try {
-            responseUpdateService.updateResponseStatus(jurorId, updateResponseDto.getStatus(),
-                updateResponseDto.getVersion(), jwtPayload.getLogin()
-            );
-        } catch (OptimisticLockingFailureException olfe) {
-            log.info("Juror {} response was updated by another user!", jurorId);
-            throw new BureauOptimisticLockingException(olfe);
-        }
-
-        log.info("Status updated successfully");
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-            .build();
-    }
-
 
     /**
      * Validate a juror number path variable matches {@link ValidationConstants#JUROR_NUMBER}.
