@@ -33,7 +33,6 @@ import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolHistory;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
-import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CurrentlyDeferredRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -81,8 +80,6 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     private PoolHistoryRepository poolHistoryRepository;
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
-    @Autowired
-    private ConfirmationLetterRepository confirmLetterRepository;
 
     private HttpHeaders httpHeaders;
     @Autowired
