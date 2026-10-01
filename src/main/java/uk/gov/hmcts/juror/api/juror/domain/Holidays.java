@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 
 /**
- * JUROR_DIGITAL_USER.HOLIDAYS.
+ * JUROR_MOD.HOLIDAY.
  */
 
 @Entity
