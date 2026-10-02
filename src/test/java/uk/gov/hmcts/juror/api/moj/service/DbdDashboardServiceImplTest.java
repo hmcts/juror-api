@@ -149,15 +149,15 @@ class DbdDashboardServiceImplTest {
         assertThat(response.getCourtGroups().get(0).getPeriodB().getLocations().get(0).getResponseTimesPercent()
                        .getWithin7DaysPercent()).isEqualTo(100);
         assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getTotalResponses())
-            .isEqualTo(4);
-        assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getOnlineResponseTotal())
-            .isEqualTo(8);
-        assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getPaperResponseTotal())
             .isEqualTo(-4);
+        assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getOnlineResponseTotal())
+            .isEqualTo(-8);
+        assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getPaperResponseTotal())
+            .isEqualTo(4);
         assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getResponseRatePercent())
             .isEqualTo(0);
         assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getDigitalResponsesPercent())
-            .isEqualTo(100);
+            .isEqualTo(-100);
         assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getResponseTimesPercent()
                        .getWithin7DaysPercent()).isEqualTo(0);
 

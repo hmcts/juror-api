@@ -49,9 +49,10 @@ public class DbdDashboardResponseDto implements Serializable {
         @Schema(description = "Results for dateRangeB. Null if dateRangeB was not supplied in the request.")
         private PeriodResult periodB;
 
-        @Schema(description = "periodA minus periodB, metric by metric, one entry per location in the same "
-            + "order as periodA/periodB (or one summed entry when sumGroups=true). Null if dateRangeB was "
-            + "not supplied in the request.")
+        @Schema(description = "periodB minus periodA, metric by metric, one entry per location in the same "
+            + "order as periodA/periodB (or one summed entry when sumGroups=true) - a positive value means "
+            + "periodB is higher than periodA (e.g. response rate trending up). Null if dateRangeB was not "
+            + "supplied in the request.")
         private PeriodResult change;
     }
 
