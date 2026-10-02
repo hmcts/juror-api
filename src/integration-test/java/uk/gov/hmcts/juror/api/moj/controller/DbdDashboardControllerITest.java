@@ -132,28 +132,28 @@ public class DbdDashboardControllerITest extends AbstractIntegrationTest {
             .isEqualTo(33);
         assertJsonInt(response.getBody(),
                       "$.court_groups[0].period_b.locations[0].age_group_breakdown_percent['35-44']", 50);
-        assertThatJson(response.getBody()).node("court_groups[0].change.locations[0].total_responses").isEqualTo(8);
+        assertThatJson(response.getBody()).node("court_groups[0].change.locations[0].total_responses").isEqualTo(-8);
         assertThatJson(response.getBody()).node("court_groups[0].change.locations[0].not_responded_total")
-            .isEqualTo(3);
+            .isEqualTo(-3);
         assertThatJson(response.getBody()).node("court_groups[0].change.locations[0].online_response_total")
-            .isEqualTo(4);
+            .isEqualTo(-4);
         assertThatJson(response.getBody()).node("court_groups[0].change.locations[0].paper_response_total")
-            .isEqualTo(4);
+            .isEqualTo(-4);
         assertThatJson(response.getBody()).node("court_groups[0].change.locations[0].response_rate_percent")
-            .isEqualTo(11);
+            .isEqualTo(-11);
         assertThatJson(response.getBody()).node("court_groups[0].change.locations[0].digital_responses_percent")
-            .isEqualTo(-10);
+            .isEqualTo(10);
         assertThatJson(response.getBody())
             .node("court_groups[0].change.locations[0].response_times_percent.within7_days_percent")
-            .isEqualTo(-10);
+            .isEqualTo(10);
         assertThatJson(response.getBody())
             .node("court_groups[0].change.locations[0].response_times_percent.within14_days_percent")
-            .isEqualTo(43);
+            .isEqualTo(-43);
         assertThatJson(response.getBody())
             .node("court_groups[0].change.locations[0].response_times_percent.within21_days_percent")
-            .isEqualTo(-33);
+            .isEqualTo(33);
         assertJsonInt(response.getBody(),
-                      "$.court_groups[0].change.locations[0].age_group_breakdown_percent['18-24']", 2);
+                      "$.court_groups[0].change.locations[0].age_group_breakdown_percent['18-24']", -2);
     }
 
     private ResponseEntity<String> postStatistics(Map<String, Object> request) {
