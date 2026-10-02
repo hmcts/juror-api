@@ -10,6 +10,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto.CourtGroupResult;
 import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto.LocationMetrics;
 import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto.PeriodResult;
+import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto.ResponseTimesPercent;
 import uk.gov.hmcts.juror.api.moj.domain.DbdResponseStats;
 import uk.gov.hmcts.juror.api.moj.repository.DbdResponseStatsRepository;
 
@@ -116,9 +117,9 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
 
     private LocationMetrics toLocationMetrics(Integer locationCode, List<DbdResponseStats> rows) {
 
-        int notResponded = sumWhere(rows, row -> NOT_RESPONDED.equals(row.getResponseMethod()));
-        int online = sumWhere(rows, row -> ONLINE.equals(row.getResponseMethod()));
-        int paper = sumWhere(rows, row -> PAPER.equals(row.getResponseMethod()));
+        int notResponded = sumJurorCountWhere(rows, row -> NOT_RESPONDED.equals(row.getResponseMethod()));
+        int online = sumJurorCountWhere(rows, row -> ONLINE.equals(row.getResponseMethod()));
+        int paper = sumJurorCountWhere(rows, row -> PAPER.equals(row.getResponseMethod()));
 
         Map<String, Integer> ageGroupBreakdown = rows.stream()
             .collect(Collectors.groupingBy(DbdResponseStats::getAgeGroup,
@@ -127,47 +128,105 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
         int responded = online + paper;
         int summoned = responded + notResponded;
 
+        Float responseRatePercent = summoned > 0 ? (responded * 100f) / summoned : null;
+        Float digitalResponsesPercent = responded > 0 ? (online * 100f) / responded : null;
+
+        Map<String, Float> ageGroupBreakdownPercent =
+            expressCountsAsPercentageOfTotal(ageGroupBreakdown, summoned);
+
+        DashboardMandatoryKpiData.ResponseMethod onlineResponseTimes = countResponsesByResponsePeriod(rows, ONLINE);
+        DashboardMandatoryKpiData.ResponseMethod paperResponseTimes = countResponsesByResponsePeriod(rows, PAPER);
+        ResponseTimesPercent responseTimesPercent =
+            combineOnlineAndPaperResponsePeriodsAsPercentages(onlineResponseTimes, paperResponseTimes, responded);
+
         return LocationMetrics.builder()
             .locationCode(locationCode)
             .notRespondedTotal(notResponded)
             .onlineResponseTotal(online)
             .paperResponseTotal(paper)
-            .totalResponses(responded)
             // TODO: thirdPartyTotal isn't sourced from dbd_response_stats - wire in once the
             // pilot-scoped third-party table/proc exists, following the same fetch-once pattern.
             .thirdPartyTotal(null)
-            .responseRatePercent(percentage(responded, summoned))
-            .digitalResponsesPercent(percentage(online, responded))
-            .onlineResponseTimes(bucketByResponsePeriod(rows, ONLINE))
-            .paperResponseTimes(bucketByResponsePeriod(rows, PAPER))
+            .responseRatePercent(responseRatePercent)
+            .digitalResponsesPercent(digitalResponsesPercent)
+            .onlineResponseTimes(onlineResponseTimes)
+            .paperResponseTimes(paperResponseTimes)
+            .responseTimesPercent(responseTimesPercent)
             .ageGroupBreakdown(ageGroupBreakdown)
+            .ageGroupBreakdownPercent(ageGroupBreakdownPercent)
             .build();
     }
 
-    private DashboardMandatoryKpiData.ResponseMethod bucketByResponsePeriod(
+    /**
+     * Counts, for one response method (online or paper), how many jurors fall into each
+     * response_period (within7days/within14days/within21days/over21days) already assigned
+     * by the dbd_responses stored procedure - no day-range math happens here.
+     */
+    private DashboardMandatoryKpiData.ResponseMethod countResponsesByResponsePeriod(
         List<DbdResponseStats> rows, String responseMethod) {
 
-        Map<String, Integer> byPeriod = rows.stream()
+        Map<String, Integer> jurorCountByResponsePeriod = rows.stream()
             .filter(row -> responseMethod.equals(row.getResponseMethod()))
             .collect(Collectors.groupingBy(DbdResponseStats::getResponsePeriod,
                                            Collectors.summingInt(DbdResponseStats::getJurorCount)));
 
         return DashboardMandatoryKpiData.ResponseMethod.builder()
-            .within7days(byPeriod.getOrDefault(WITHIN_7_DAYS, 0))
-            .within14days(byPeriod.getOrDefault(WITHIN_14_DAYS, 0))
-            .within21days(byPeriod.getOrDefault(WITHIN_21_DAYS, 0))
-            .over21days(byPeriod.getOrDefault(OVER_21_DAYS, 0))
+            .within7days(jurorCountByResponsePeriod.getOrDefault(WITHIN_7_DAYS, 0))
+            .within14days(jurorCountByResponsePeriod.getOrDefault(WITHIN_14_DAYS, 0))
+            .within21days(jurorCountByResponsePeriod.getOrDefault(WITHIN_21_DAYS, 0))
+            .over21days(jurorCountByResponsePeriod.getOrDefault(OVER_21_DAYS, 0))
             .build();
     }
 
-    private int sumWhere(List<DbdResponseStats> rows, Predicate<DbdResponseStats> filter) {
+    /**
+     * Adds the online and paper counts for each response_period together and expresses that
+     * combined figure as a percentage of all responses received (online + paper) - one shared set
+     * of response_period percentages, matching the single "Response times by court" %-column set
+     * in the dashboard, rather than separate online-% and paper-% breakdowns.
+     */
+    private ResponseTimesPercent combineOnlineAndPaperResponsePeriodsAsPercentages(
+        DashboardMandatoryKpiData.ResponseMethod onlineResponseTimes,
+        DashboardMandatoryKpiData.ResponseMethod paperResponseTimes,
+        int totalResponded) {
+
+        if (totalResponded == 0) {
+            return ResponseTimesPercent.builder().build();
+        }
+
+        return ResponseTimesPercent.builder()
+            .within7DaysPercent(calculatePercentage(
+                onlineResponseTimes.getWithin7days() + paperResponseTimes.getWithin7days(), totalResponded))
+            .within14DaysPercent(calculatePercentage(
+                onlineResponseTimes.getWithin14days() + paperResponseTimes.getWithin14days(), totalResponded))
+            .within21DaysPercent(calculatePercentage(
+                onlineResponseTimes.getWithin21days() + paperResponseTimes.getWithin21days(), totalResponded))
+            .over21DaysPercent(calculatePercentage(
+                onlineResponseTimes.getOver21days() + paperResponseTimes.getOver21days(), totalResponded))
+            .build();
+    }
+
+    /**
+     * Re-expresses a map of raw counts (e.g. jurors per age group) as a percentage of the given
+     * total, keeping the same keys so the percentage map lines up one-to-one with the count map.
+     */
+    private Map<String, Float> expressCountsAsPercentageOfTotal(Map<String, Integer> countsByKey, int total) {
+        if (total == 0) {
+            return countsByKey.keySet().stream()
+                .collect(Collectors.toMap(key -> key, key -> 0f));
+        }
+
+        return countsByKey.entrySet().stream()
+            .collect(Collectors.toMap(Map.Entry::getKey, entry -> calculatePercentage(entry.getValue(), total)));
+    }
+
+    private Float calculatePercentage(int part, int total) {
+        return total > 0 ? (part * 100f) / total : null;
+    }
+
+    private int sumJurorCountWhere(List<DbdResponseStats> rows, Predicate<DbdResponseStats> filter) {
         return rows.stream()
             .filter(filter)
             .mapToInt(DbdResponseStats::getJurorCount)
             .sum();
-    }
-
-    private Integer percentage(int numerator, int denominator) {
-        return denominator > 0 ? Math.round(numerator * 100f / denominator) : null;
     }
 }
