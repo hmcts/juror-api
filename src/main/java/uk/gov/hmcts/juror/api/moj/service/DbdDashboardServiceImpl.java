@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -88,11 +90,102 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
             .map(loc -> String.format("%03d", loc))
             .toList();
 
+        PeriodResult periodA = buildPeriodResult(groupLocCodes, periodAData, sumGroups);
+        PeriodResult periodB = periodBData != null
+            ? buildPeriodResult(groupLocCodes, periodBData, sumGroups)
+            : null;
+
         return CourtGroupResult.builder()
             .groupName(group.getGroupName())
-            .periodA(buildPeriodResult(groupLocCodes, periodAData, sumGroups))
-            .periodB(periodBData != null ? buildPeriodResult(groupLocCodes, periodBData, sumGroups) : null)
+            .periodA(periodA)
+            .periodB(periodB)
+            .change(periodB != null ? buildChangeResult(periodA, periodB) : null)
             .build();
+    }
+
+    /**
+     * periodA and periodB are always built from the same groupLocCodes list in the same order (see
+     * buildPeriodResult), so their location lists line up index-for-index - no locationCode matching
+     * needed here.
+     */
+    private PeriodResult buildChangeResult(PeriodResult periodA, PeriodResult periodB) {
+        List<LocationMetrics> changes = IntStream.range(0, periodA.getLocations().size())
+            .mapToObj(i -> diffLocationMetrics(periodA.getLocations().get(i), periodB.getLocations().get(i)))
+            .toList();
+
+        return PeriodResult.builder().locations(changes).build();
+    }
+
+    // periodA minus periodB, metric by metric. A metric missing (null) on either side is treated as
+    // 0 for the subtraction, except where both sides are null - then the difference is null too,
+    // since "no data minus no data" isn't meaningfully zero.
+    private LocationMetrics diffLocationMetrics(LocationMetrics periodA, LocationMetrics periodB) {
+        return LocationMetrics.builder()
+            .locationCode(periodA.getLocationCode())
+            .totalResponses(diffInt(periodA.getTotalResponses(), periodB.getTotalResponses()))
+            .notRespondedTotal(diffInt(periodA.getNotRespondedTotal(), periodB.getNotRespondedTotal()))
+            .thirdPartyTotal(diffInt(periodA.getThirdPartyTotal(), periodB.getThirdPartyTotal()))
+            .onlineResponseTotal(diffInt(periodA.getOnlineResponseTotal(), periodB.getOnlineResponseTotal()))
+            .paperResponseTotal(diffInt(periodA.getPaperResponseTotal(), periodB.getPaperResponseTotal()))
+            .responseRatePercent(diffFloat(periodA.getResponseRatePercent(), periodB.getResponseRatePercent()))
+            .digitalResponsesPercent(
+                diffFloat(periodA.getDigitalResponsesPercent(), periodB.getDigitalResponsesPercent()))
+            .onlineResponseTimes(diffResponseMethod(periodA.getOnlineResponseTimes(), periodB.getOnlineResponseTimes()))
+            .paperResponseTimes(diffResponseMethod(periodA.getPaperResponseTimes(), periodB.getPaperResponseTimes()))
+            .responseTimesPercent(
+                diffResponseTimesPercent(periodA.getResponseTimesPercent(), periodB.getResponseTimesPercent()))
+            .ageGroupBreakdown(diffIntMap(periodA.getAgeGroupBreakdown(), periodB.getAgeGroupBreakdown()))
+            .ageGroupBreakdownPercent(
+                diffFloatMap(periodA.getAgeGroupBreakdownPercent(), periodB.getAgeGroupBreakdownPercent()))
+            .build();
+    }
+
+    private DashboardMandatoryKpiData.ResponseMethod diffResponseMethod(
+        DashboardMandatoryKpiData.ResponseMethod periodA, DashboardMandatoryKpiData.ResponseMethod periodB) {
+
+        return DashboardMandatoryKpiData.ResponseMethod.builder()
+            .within7days(periodA.getWithin7days() - periodB.getWithin7days())
+            .within14days(periodA.getWithin14days() - periodB.getWithin14days())
+            .within21days(periodA.getWithin21days() - periodB.getWithin21days())
+            .over21days(periodA.getOver21days() - periodB.getOver21days())
+            .build();
+    }
+
+    private ResponseTimesPercent diffResponseTimesPercent(ResponseTimesPercent periodA, ResponseTimesPercent periodB) {
+        return ResponseTimesPercent.builder()
+            .within7DaysPercent(diffFloat(periodA.getWithin7DaysPercent(), periodB.getWithin7DaysPercent()))
+            .within14DaysPercent(diffFloat(periodA.getWithin14DaysPercent(), periodB.getWithin14DaysPercent()))
+            .within21DaysPercent(diffFloat(periodA.getWithin21DaysPercent(), periodB.getWithin21DaysPercent()))
+            .over21DaysPercent(diffFloat(periodA.getOver21DaysPercent(), periodB.getOver21DaysPercent()))
+            .build();
+    }
+
+    private Map<String, Integer> diffIntMap(Map<String, Integer> periodA, Map<String, Integer> periodB) {
+        return Stream.concat(periodA.keySet().stream(), periodB.keySet().stream())
+            .distinct()
+            .collect(Collectors.toMap(key -> key,
+                                      key -> diffInt(periodA.get(key), periodB.get(key))));
+    }
+
+    private Map<String, Float> diffFloatMap(Map<String, Float> periodA, Map<String, Float> periodB) {
+        return Stream.concat(periodA.keySet().stream(), periodB.keySet().stream())
+            .distinct()
+            .collect(Collectors.toMap(key -> key,
+                                      key -> diffFloat(periodA.get(key), periodB.get(key))));
+    }
+
+    private Integer diffInt(Integer periodA, Integer periodB) {
+        if (periodA == null && periodB == null) {
+            return null;
+        }
+        return (periodA != null ? periodA : 0) - (periodB != null ? periodB : 0);
+    }
+
+    private Float diffFloat(Float periodA, Float periodB) {
+        if (periodA == null && periodB == null) {
+            return null;
+        }
+        return (periodA != null ? periodA : 0f) - (periodB != null ? periodB : 0f);
     }
 
     private PeriodResult buildPeriodResult(
@@ -141,6 +234,7 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
 
         return LocationMetrics.builder()
             .locationCode(locationCode)
+            .totalResponses(responded)
             .notRespondedTotal(notResponded)
             .onlineResponseTotal(online)
             .paperResponseTotal(paper)

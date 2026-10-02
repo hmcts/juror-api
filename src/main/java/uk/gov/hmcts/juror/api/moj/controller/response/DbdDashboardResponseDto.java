@@ -47,6 +47,11 @@ public class DbdDashboardResponseDto implements Serializable {
 
         @Schema(description = "Results for dateRangeB. Null if dateRangeB was not supplied in the request.")
         private PeriodResult periodB;
+
+        @Schema(description = "periodA minus periodB, metric by metric, one entry per location in the same "
+            + "order as periodA/periodB (or one summed entry when sumGroups=true). Null if dateRangeB was "
+            + "not supplied in the request.")
+        private PeriodResult change;
     }
 
     @AllArgsConstructor
@@ -72,6 +77,9 @@ public class DbdDashboardResponseDto implements Serializable {
 
         @Schema(description = "Court location code. Null when this row represents a summed group total.")
         private Integer locationCode;
+
+        @Schema(description = "All responses received for the period (online + paper).")
+        private Integer totalResponses;
 
         @Schema(description = "Not-responded total for the period.")
         private Integer notRespondedTotal;
