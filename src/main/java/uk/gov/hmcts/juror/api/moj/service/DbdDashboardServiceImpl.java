@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 
 @Slf4j
 @Service
+@SuppressWarnings("PMD.TooManyMethods")
 public class DbdDashboardServiceImpl implements DbdDashboardService {
 
     private static final String ONLINE = "Online";
@@ -127,16 +128,16 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
             .thirdPartyTotal(diffInt(periodA.getThirdPartyTotal(), periodB.getThirdPartyTotal()))
             .onlineResponseTotal(diffInt(periodA.getOnlineResponseTotal(), periodB.getOnlineResponseTotal()))
             .paperResponseTotal(diffInt(periodA.getPaperResponseTotal(), periodB.getPaperResponseTotal()))
-            .responseRatePercent(diffFloat(periodA.getResponseRatePercent(), periodB.getResponseRatePercent()))
+            .responseRatePercent(diffInt(periodA.getResponseRatePercent(), periodB.getResponseRatePercent()))
             .digitalResponsesPercent(
-                diffFloat(periodA.getDigitalResponsesPercent(), periodB.getDigitalResponsesPercent()))
+                diffInt(periodA.getDigitalResponsesPercent(), periodB.getDigitalResponsesPercent()))
             .onlineResponseTimes(diffResponseMethod(periodA.getOnlineResponseTimes(), periodB.getOnlineResponseTimes()))
             .paperResponseTimes(diffResponseMethod(periodA.getPaperResponseTimes(), periodB.getPaperResponseTimes()))
             .responseTimesPercent(
                 diffResponseTimesPercent(periodA.getResponseTimesPercent(), periodB.getResponseTimesPercent()))
             .ageGroupBreakdown(diffIntMap(periodA.getAgeGroupBreakdown(), periodB.getAgeGroupBreakdown()))
             .ageGroupBreakdownPercent(
-                diffFloatMap(periodA.getAgeGroupBreakdownPercent(), periodB.getAgeGroupBreakdownPercent()))
+                diffIntMap(periodA.getAgeGroupBreakdownPercent(), periodB.getAgeGroupBreakdownPercent()))
             .build();
     }
 
@@ -153,10 +154,10 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
 
     private ResponseTimesPercent diffResponseTimesPercent(ResponseTimesPercent periodA, ResponseTimesPercent periodB) {
         return ResponseTimesPercent.builder()
-            .within7DaysPercent(diffFloat(periodA.getWithin7DaysPercent(), periodB.getWithin7DaysPercent()))
-            .within14DaysPercent(diffFloat(periodA.getWithin14DaysPercent(), periodB.getWithin14DaysPercent()))
-            .within21DaysPercent(diffFloat(periodA.getWithin21DaysPercent(), periodB.getWithin21DaysPercent()))
-            .over21DaysPercent(diffFloat(periodA.getOver21DaysPercent(), periodB.getOver21DaysPercent()))
+            .within7DaysPercent(diffInt(periodA.getWithin7DaysPercent(), periodB.getWithin7DaysPercent()))
+            .within14DaysPercent(diffInt(periodA.getWithin14DaysPercent(), periodB.getWithin14DaysPercent()))
+            .within21DaysPercent(diffInt(periodA.getWithin21DaysPercent(), periodB.getWithin21DaysPercent()))
+            .over21DaysPercent(diffInt(periodA.getOver21DaysPercent(), periodB.getOver21DaysPercent()))
             .build();
     }
 
@@ -167,25 +168,11 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
                                       key -> diffInt(periodA.get(key), periodB.get(key))));
     }
 
-    private Map<String, Float> diffFloatMap(Map<String, Float> periodA, Map<String, Float> periodB) {
-        return Stream.concat(periodA.keySet().stream(), periodB.keySet().stream())
-            .distinct()
-            .collect(Collectors.toMap(key -> key,
-                                      key -> diffFloat(periodA.get(key), periodB.get(key))));
-    }
-
     private Integer diffInt(Integer periodA, Integer periodB) {
         if (periodA == null && periodB == null) {
             return null;
         }
         return (periodA != null ? periodA : 0) - (periodB != null ? periodB : 0);
-    }
-
-    private Float diffFloat(Float periodA, Float periodB) {
-        if (periodA == null && periodB == null) {
-            return null;
-        }
-        return (periodA != null ? periodA : 0f) - (periodB != null ? periodB : 0f);
     }
 
     private PeriodResult buildPeriodResult(
@@ -221,10 +208,10 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
         int responded = online + paper;
         int summoned = responded + notResponded;
 
-        Float responseRatePercent = summoned > 0 ? (responded * 100f) / summoned : null;
-        Float digitalResponsesPercent = responded > 0 ? (online * 100f) / responded : null;
+        Integer responseRatePercent = calculatePercentage(responded, summoned);
+        Integer digitalResponsesPercent = calculatePercentage(online, responded);
 
-        Map<String, Float> ageGroupBreakdownPercent =
+        Map<String, Integer> ageGroupBreakdownPercent =
             expressCountsAsPercentageOfTotal(ageGroupBreakdown, summoned);
 
         DashboardMandatoryKpiData.ResponseMethod onlineResponseTimes = countResponsesByResponsePeriod(rows, ONLINE);
@@ -303,18 +290,18 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
      * Re-expresses a map of raw counts (e.g. jurors per age group) as a percentage of the given
      * total, keeping the same keys so the percentage map lines up one-to-one with the count map.
      */
-    private Map<String, Float> expressCountsAsPercentageOfTotal(Map<String, Integer> countsByKey, int total) {
+    private Map<String, Integer> expressCountsAsPercentageOfTotal(Map<String, Integer> countsByKey, int total) {
         if (total == 0) {
             return countsByKey.keySet().stream()
-                .collect(Collectors.toMap(key -> key, key -> 0f));
+                .collect(Collectors.toMap(key -> key, key -> 0));
         }
 
         return countsByKey.entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, entry -> calculatePercentage(entry.getValue(), total)));
     }
 
-    private Float calculatePercentage(int part, int total) {
-        return total > 0 ? (part * 100f) / total : null;
+    private Integer calculatePercentage(int part, int total) {
+        return total > 0 ? Math.round(part * 100f / total) : null;
     }
 
     private int sumJurorCountWhere(List<DbdResponseStats> rows, Predicate<DbdResponseStats> filter) {

@@ -15,14 +15,12 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
 class DbdDashboardServiceImplTest {
 
     private static final LocalDate START_DATE = LocalDate.of(2026, 1, 1);
@@ -39,7 +37,7 @@ class DbdDashboardServiceImplTest {
     }
 
     @Test
-    void shouldCalculateRawPercentagesAndBreakdowns() {
+    void shouldCalculateRoundedPercentagesAndBreakdowns() {
         when(dbdResponseStatsRepository.findByLocCodeInAndSummonsDateBetween(
             anyLocCodes(), eq(START_DATE), eq(END_DATE)))
             .thenReturn(List.of(
@@ -50,15 +48,15 @@ class DbdDashboardServiceImplTest {
 
         DbdDashboardResponseDto.LocationMetrics result = getFirstLocationMetrics();
 
-        assertThat(result.getResponseRatePercent()).isCloseTo(60.869565f, within(0.0001f));
-        assertThat(result.getDigitalResponsesPercent()).isCloseTo(57.142857f, within(0.0001f));
-        assertThat(result.getResponseTimesPercent().getWithin7DaysPercent()).isCloseTo(57.142857f, within(0.0001f));
-        assertThat(result.getResponseTimesPercent().getWithin14DaysPercent()).isCloseTo(42.857143f, within(0.0001f));
+        assertThat(result.getResponseRatePercent()).isEqualTo(61);
+        assertThat(result.getDigitalResponsesPercent()).isEqualTo(57);
+        assertThat(result.getResponseTimesPercent().getWithin7DaysPercent()).isEqualTo(57);
+        assertThat(result.getResponseTimesPercent().getWithin14DaysPercent()).isEqualTo(43);
         assertThat(result.getResponseTimesPercent().getWithin21DaysPercent()).isZero();
         assertThat(result.getResponseTimesPercent().getOver21DaysPercent()).isZero();
-        assertThat(result.getAgeGroupBreakdownPercent().get("18-24")).isCloseTo(34.782608f, within(0.0001f));
-        assertThat(result.getAgeGroupBreakdownPercent().get("25-34")).isCloseTo(26.086956f, within(0.0001f));
-        assertThat(result.getAgeGroupBreakdownPercent().get("35-44")).isCloseTo(39.130436f, within(0.0001f));
+        assertThat(result.getAgeGroupBreakdownPercent().get("18-24")).isEqualTo(35);
+        assertThat(result.getAgeGroupBreakdownPercent().get("25-34")).isEqualTo(26);
+        assertThat(result.getAgeGroupBreakdownPercent().get("35-44")).isEqualTo(39);
     }
 
     @Test
@@ -110,8 +108,9 @@ class DbdDashboardServiceImplTest {
         assertThat(result.getOnlineResponseTotal()).isEqualTo(11);
         assertThat(result.getPaperResponseTotal()).isEqualTo(6);
         assertThat(result.getNotRespondedTotal()).isEqualTo(5);
-        assertThat(result.getResponseRatePercent()).isCloseTo(77.27273f, within(0.0001f));
-        assertThat(result.getDigitalResponsesPercent()).isCloseTo(64.70588f, within(0.0001f));
+        assertThat(result.getTotalResponses()).isEqualTo(17);
+        assertThat(result.getResponseRatePercent()).isEqualTo(77);
+        assertThat(result.getDigitalResponsesPercent()).isEqualTo(65);
     }
 
     @Test
@@ -148,7 +147,19 @@ class DbdDashboardServiceImplTest {
         assertThat(response.getCourtGroups().get(0).getPeriodB().getLocations().get(0).getPaperResponseTotal())
             .isEqualTo(4);
         assertThat(response.getCourtGroups().get(0).getPeriodB().getLocations().get(0).getResponseTimesPercent()
-                       .getWithin7DaysPercent()).isCloseTo(100f, within(0.0001f));
+                       .getWithin7DaysPercent()).isEqualTo(100);
+        assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getTotalResponses())
+            .isEqualTo(4);
+        assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getOnlineResponseTotal())
+            .isEqualTo(8);
+        assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getPaperResponseTotal())
+            .isEqualTo(-4);
+        assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getResponseRatePercent())
+            .isEqualTo(0);
+        assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getDigitalResponsesPercent())
+            .isEqualTo(100);
+        assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getResponseTimesPercent()
+                       .getWithin7DaysPercent()).isEqualTo(0);
 
         verify(dbdResponseStatsRepository).findByLocCodeInAndSummonsDateBetween(
             anyLocCodes(), eq(START_DATE), eq(END_DATE));
