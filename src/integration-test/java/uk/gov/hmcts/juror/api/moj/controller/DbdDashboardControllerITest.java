@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
+import com.jayway.jsonpath.JsonPath;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,10 +24,12 @@ import java.util.Map;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql({"/db/mod/truncate.sql", "/db/DbdDashboardControllerITest.sql"})
+@SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
 public class DbdDashboardControllerITest extends AbstractIntegrationTest {
 
     private static final URI STATISTICS_URI = URI.create("/api/v1/moj/dbd-dashboard/statistics");
@@ -65,19 +68,35 @@ public class DbdDashboardControllerITest extends AbstractIntegrationTest {
             .isEqualTo(6);
         assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].not_responded_total")
             .isEqualTo(9);
-        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].total_responses")
-            .isEqualTo(14);
-        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].response_rate_percent")
-            .isEqualTo(61);
-        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].digital_responses_percent")
-            .isEqualTo(57);
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].total_responses").isAbsent();
+        assertJsonFloat(response.getBody(),
+                        "$.court_groups[0].period_a.locations[0].response_rate_percent", 60.869565f);
+        assertJsonFloat(response.getBody(),
+                        "$.court_groups[0].period_a.locations[0].digital_responses_percent", 57.142857f);
         assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].online_response_times")
             .isObject();
         assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].paper_response_times")
             .isObject();
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].response_times_percent")
+            .isObject();
+        assertJsonFloat(response.getBody(),
+                        "$.court_groups[0].period_a.locations[0].response_times_percent.within7_days_percent",
+                        57.142857f);
+        assertJsonFloat(response.getBody(),
+                        "$.court_groups[0].period_a.locations[0].response_times_percent.within14_days_percent",
+                        42.857143f);
         assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].age_group_breakdown")
             .isObject();
-        assertThatJson(response.getBody()).node("court_groups[0].period_b").isAbsent();
+        assertJsonFloat(response.getBody(),
+                        "$.court_groups[0].period_a.locations[0].age_group_breakdown_percent['18-24']",
+                        34.782608f);
+        assertJsonFloat(response.getBody(),
+                        "$.court_groups[0].period_a.locations[0].age_group_breakdown_percent['25-34']",
+                        26.086956f);
+        assertJsonFloat(response.getBody(),
+                        "$.court_groups[0].period_a.locations[0].age_group_breakdown_percent['35-44']",
+                        39.130436f);
+        assertJsonNull(response.getBody(), "$.court_groups[0].period_b");
     }
 
     @Test
@@ -99,15 +118,21 @@ public class DbdDashboardControllerITest extends AbstractIntegrationTest {
         ));
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].location_code").isAbsent();
-        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].total_responses")
-            .isEqualTo(14);
-        assertThatJson(response.getBody()).node("court_groups[0].period_b.locations[0].total_responses")
-            .isEqualTo(6);
-        assertThatJson(response.getBody()).node("court_groups[0].period_b.locations[0].response_rate_percent")
-            .isEqualTo(50);
-        assertThatJson(response.getBody()).node("court_groups[0].period_b.locations[0].digital_responses_percent")
-            .isEqualTo(67);
+        assertJsonNull(response.getBody(), "$.court_groups[0].period_a.locations[0].location_code");
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].total_responses").isAbsent();
+        assertThatJson(response.getBody()).node("court_groups[0].period_b.locations[0].total_responses").isAbsent();
+        assertJsonFloat(response.getBody(),
+                        "$.court_groups[0].period_b.locations[0].response_rate_percent", 50f);
+        assertJsonFloat(response.getBody(),
+                        "$.court_groups[0].period_b.locations[0].digital_responses_percent", 66.666664f);
+        assertJsonFloat(response.getBody(),
+                        "$.court_groups[0].period_b.locations[0].response_times_percent.within7_days_percent",
+                        66.666664f);
+        assertJsonFloat(response.getBody(),
+                        "$.court_groups[0].period_b.locations[0].response_times_percent.within21_days_percent",
+                        33.333332f);
+        assertJsonFloat(response.getBody(),
+                        "$.court_groups[0].period_b.locations[0].age_group_breakdown_percent['35-44']", 50f);
     }
 
     private ResponseEntity<String> postStatistics(Map<String, Object> request) {
@@ -115,5 +140,15 @@ public class DbdDashboardControllerITest extends AbstractIntegrationTest {
             new RequestEntity<>(request, httpHeaders, HttpMethod.POST, STATISTICS_URI),
             String.class
         );
+    }
+
+    private void assertJsonFloat(String responseBody, String path, float expected) {
+        Number value = JsonPath.read(responseBody, path);
+        assertThat(value.floatValue()).isCloseTo(expected, within(0.0001f));
+    }
+
+    private void assertJsonNull(String responseBody, String path) {
+        Object value = JsonPath.read(responseBody, path);
+        assertThat(value).isNull();
     }
 }
