@@ -66,7 +66,7 @@ from (
                               and h2.history_code <> 'RSUP' -- JDB-5374 : ignore Summons Reissue
                               and h2.history_code <> 'PUND' -- JDB-4621 : ignore Undeliverable
                               and h2.history_code <> 'PREA' -- JDB-5349 : ignore pool reassignment
-                              and h2.history_code <> 'RCPK' -- JS-1152 : ignore Issue Response Pack
+                              and h2.history_code <> 'RPCK' -- JS-1152 : ignore Issue Response Pack
                               and h2.history_code <> 'RLPK' -- JS-1152 : ignore Reissue Response Pack
                               and h2.history_code <> 'RLNR' -- JS-1152 : ignore Reissue Non Responsed Letter (Reminder)
                               and h2.history_code <> 'RMES' -- JS-1152 : ignore Contact Details Export
