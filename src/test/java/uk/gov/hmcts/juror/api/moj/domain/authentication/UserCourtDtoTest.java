@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 
 class UserCourtDtoTest extends AbstractValidatorTest<UserCourtDto> {
 
-    public static UserCourtDto getValidObject() {
+    static UserCourtDto getValidObject() {
         return UserCourtDto.builder()
             .primaryCourt(
                 CourtDto.builder().locCode("001").build())
@@ -55,7 +55,6 @@ class UserCourtDtoTest extends AbstractValidatorTest<UserCourtDto> {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     void positiveConstructorJustHasSatellite() {
         UserCourtDto userCourtDto = new UserCourtDto(List.of(
             mockCourtLocation("name1", "001", CourtType.MAIN),

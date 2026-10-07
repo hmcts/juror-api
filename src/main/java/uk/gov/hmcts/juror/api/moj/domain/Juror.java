@@ -61,6 +61,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REG
 @AuditOverride(forClass = Address.class)
 @ToString(exclude = {"jurorResponse"})
 @EqualsAndHashCode(callSuper = true, exclude = {"associatedPools", "jurorResponse"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyFields"})
 public class Juror extends Address implements Serializable {
 
     @Id
@@ -220,6 +221,15 @@ public class Juror extends Address implements Serializable {
     private Integer contactPreference;
 
     @NotAudited
+    @Column(name = "digital_by_default")
+    private boolean digitalByDefault;
+
+    @Column(name = "dbd_preference")
+    @Length(max = 7)
+    @Pattern(regexp = "Paper|Digital")
+    private String dbdPreference;
+
+    @NotAudited
     @Column(name = "notifications")
     private int notifications;
 
@@ -316,6 +326,14 @@ public class Juror extends Address implements Serializable {
     @JoinColumn(name = "juror_number")
     @NotAudited
     private JurorThirdParty thirdParty;
+
+    @Column(name = "date_summoned")
+    @NotAudited
+    private LocalDate summonedDate;
+
+    @Column(name = "hash_id")
+    @NotAudited
+    private Long hashId;
 
     @PrePersist
     @SuppressWarnings("PMD.UnusedPrivateMethod")

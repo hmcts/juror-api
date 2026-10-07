@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -35,7 +34,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
-public class ExemptionCertificateServiceTest {
+class ExemptionCertificateServiceTest {
     @Mock
     private PanelRepository panelRepository;
     @Mock
@@ -86,7 +85,7 @@ public class ExemptionCertificateServiceTest {
 
         TestUtils.setUpMockAuthentication("415", "TEST_COURT", "1", List.of("415"));
 
-        Mockito.doReturn(setupPanel(setupTrial().get(0)))
+        doReturn(setupPanel(setupTrial().get(0)))
             .when(panelRepository)
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(caseNumber, courtLocation);
 

@@ -27,6 +27,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@SuppressWarnings({"PMD.TooManyFields"})
 public class StandardReportRequest {
 
     @NotBlank(groups = AbstractReport.Validators.AbstractRequestValidator.class)
@@ -83,7 +84,8 @@ public class StandardReportRequest {
         "UnconfirmedAttendanceReport",
         "CompletionOfServiceReport",
         "PoolStatisticsReport",
-        "TrialAttendanceReport"
+        "TrialAttendanceReport",
+        "BallotPanelTrialRepost"
     })
     private String reportType;
 
@@ -152,4 +154,6 @@ public class StandardReportRequest {
 
     @NotNull(groups = AbstractReport.Validators.RequireRevisionNumber.class)
     private Long revisionNumber;
+
+    private Boolean currentJurorsOnly;
 }

@@ -50,6 +50,7 @@ public class DailyUtilisationReportResponse {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class TableData {
         private List<Heading> headings;
         private List<Week> weeks;
@@ -67,6 +68,7 @@ public class DailyUtilisationReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Heading {
             private UtilisationReportService.TableHeading id;
             private String name;
@@ -76,6 +78,7 @@ public class DailyUtilisationReportResponse {
         @Data
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Week {
             /**
              * A week is usually from Monday to Friday but could include weekends as well.
@@ -91,6 +94,7 @@ public class DailyUtilisationReportResponse {
             @Builder
             @NoArgsConstructor
             @AllArgsConstructor
+            @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
             public static class Day {
                 private LocalDate date;
                 private int jurorWorkingDays;

@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 
 import java.util.List;
 
+@FunctionalInterface
 public interface UndeliverableResponseService {
     /**
      * Mark a Juror as Undeliverable with specific code.

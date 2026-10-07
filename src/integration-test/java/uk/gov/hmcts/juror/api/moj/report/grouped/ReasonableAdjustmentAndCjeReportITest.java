@@ -24,11 +24,10 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/ReasonableAdjustmentAndCJEReportITest_typical.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class ReasonableAdjustmentAndCjeReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
-    public ReasonableAdjustmentAndCjeReportITest(TestRestTemplate template) {
+    ReasonableAdjustmentAndCjeReportITest(TestRestTemplate template) {
         super(template, ReasonableAdjustmentAndCjeReport.class);
     }
 
@@ -264,7 +263,7 @@ class ReasonableAdjustmentAndCjeReportITest extends AbstractGroupedReportControl
             .build();
     }
 
-    public GroupByResponse getTypicalGroupByResponse() {
+    GroupByResponse getTypicalGroupByResponse() {
         return GroupByResponse.builder()
             .name(DataType.COURT_LOCATION_NAME_AND_CODE.name())
             .nested(null)

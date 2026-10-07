@@ -19,7 +19,10 @@
 .settings
 .springBeans
 .vscode
-/bin/
+bin/
+!bin/
+bin/*
+!bin/codex-local-pipeline.sh
 /build/
 /classes/
 /out

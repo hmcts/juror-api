@@ -46,7 +46,7 @@ public class StaffController {
         description = "Update staff assignment to juror response")
     public ResponseEntity<StaffAssignmentResponseDto> changeStaffAssignment(
         @RequestBody @Validated StaffAssignmentRequestDto requestDto,
-        @Parameter(hidden = true) BureauJwtAuthentication principal) throws BureauOptimisticLockingException {
+        @Parameter(hidden = true) BureauJwtAuthentication principal) {
         log.info("Processing assignment {} by '{}'", requestDto, principal);
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) principal.getPrincipal();
         try {
@@ -58,7 +58,7 @@ public class StaffController {
             return ResponseEntity.ok()
                 .body(responseDto);
         } catch (OptimisticLockingFailureException olfe) {
-            log.warn("Failed to change assignment: {}.  Updated by another user!", olfe.getMessage());
+            log.info("Failed to change assignment: {}.  Updated by another user!", olfe.getMessage());
             throw new BureauOptimisticLockingException(olfe);
         }
     }

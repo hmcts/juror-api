@@ -7,12 +7,15 @@ import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ValidateReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 
@@ -20,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -34,6 +38,8 @@ public interface ReissueLetterService {
     ReissueLetterListResponseDto reissueLetterList(ReissueLetterListRequestDto request);
 
     ReissueLetterReponseDto reissueLetter(ReissueLetterRequestDto request);
+
+    ValidateReissueLetterListResponseDto validateReissueLetterRequest(ReissueLetterRequestDto request);
 
     void deletePendingLetter(ReissueLetterRequestDto request);
 
@@ -102,12 +108,31 @@ public interface ReissueLetterService {
         EXTRACTED_FLAG(Boolean.class, "hidden_extracted_flag", QBulkPrintData.bulkPrintData.extractedFlag
             .as("extracted_flag"),
             List.of(QBulkPrintData.class),
-            flag -> {
-                if (flag == null) {
-                    return false;
+            flag -> Objects.requireNonNullElse(flag, false)),
+        COMMUNICATION_CHANNEL(
+            CommunicationChannel.class, "Original sent by", QBulkPrintData.bulkPrintData.communicationChannel
+            .as("original_sent_by"), List.of(QBulkPrintData.class), commChannel -> {
+                if (commChannel == null) {
+                    return null;
                 }
-                return flag;
-            });
+                return CommunicationChannel.valueOf(commChannel.toString()).getDescription();
+            }),
+        JUROR_PREFERENCE(String.class, "Current preference", QJuror.juror.dbdPreference.as("current_preference"),
+            List.of(QJuror.class), preference -> {
+                if ("Digital".equals(preference)) {
+                    return "EMAIL";
+                }
+                return "LETTER";
+            }),
+        EMAIL_STATUS(EmailStatus.class, "hidden_email_status",
+            QBulkPrintData.bulkPrintData.emailStatus.as("email_status"), List.of(QBulkPrintData.class),
+            emailStatus -> {
+                if (emailStatus == null) {
+                    return null;
+                }
+                return EmailStatus.valueOf(emailStatus.toString()).getDescription();
+            })
+        ;
 
         private final Class<?> classType;
         private final String displayText;
@@ -145,6 +170,10 @@ public interface ReissueLetterService {
 
         public String getDataType() {
             if (String.class.equals(classType)) {
+                return "string";
+            }
+
+            if (Enum.class.isAssignableFrom(classType)) {
                 return "string";
             }
 

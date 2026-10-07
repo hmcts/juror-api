@@ -18,10 +18,9 @@ import java.util.List;
     "/db/mod/truncate.sql",
     "/db/mod/reports/BallotPanelTrIalITest.sql"
 })
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
 class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest {
     @Autowired
-    public BallotPanelTrialReportITest(TestRestTemplate template) {
+    BallotPanelTrialReportITest(TestRestTemplate template) {
         super(template, BallotPanelTrialReport.class);
     }
 
@@ -40,6 +39,19 @@ class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest 
     @Test
     void positiveTypicalCourt() {
         testBuilder()
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveReportCreated)
+            .assertEquals(getTypicalResponse());
+    }
+
+
+
+    @Test
+    void positiveCurrentJurorsOnlyFalse() {
+        StandardReportRequest request = getValidPayload();
+        request.setCurrentJurorsOnly(false);
+        testBuilder()
+            .payload(request)
             .triggerValid()
             .responseConsumer(this::verifyAndRemoveReportCreated)
             .assertEquals(getTypicalResponse());
@@ -79,33 +91,7 @@ class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest 
             .headings(new ReportHashMap<>())
             .tableData(
                 StandardReportResponse.TableData.<StandardTableData>builder()
-                    .headings(
-                        List.of(
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("juror_number")
-                                .name("Juror Number")
-                                .dataType("String")
-                                .headings(null)
-                                .build(),
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("first_name")
-                                .name("First Name")
-                                .dataType("String")
-                                .headings(null)
-                                .build(),
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("last_name")
-                                .name("Last Name")
-                                .dataType("String")
-                                .headings(null)
-                                .build(),
-                            StandardReportResponse.TableData.Heading.builder()
-                                .id("juror_postcode")
-                                .name("Postcode")
-                                .dataType("String")
-                                .headings(null)
-                                .build()
-                        ))
+                    .headings(getStandardHeadings())
                     .data(StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
                             .add("juror_number", "200000001")
@@ -121,7 +107,22 @@ class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest 
                             .add("juror_number", "200000003")
                             .add("first_name", "John3")
                             .add("last_name", "Smith3")
-                            .add("juror_postcode", "AD3 2HP")
+                            .add("juror_postcode", "AD3 2HP"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "200000007")
+                            .add("first_name", "John7")
+                            .add("last_name", "Smith7")
+                            .add("juror_postcode", "AD7 2HP"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "200000008")
+                            .add("first_name", "John8")
+                            .add("last_name", "Smith8")
+                            .add("juror_postcode", "AD8 2HP"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("juror_number", "200000009")
+                            .add("first_name", "John9")
+                            .add("last_name", "Smith9")
+                            .add("juror_postcode", "AD9 2HP")
                     ))
                     .build())
             .build();
@@ -151,5 +152,34 @@ class BallotPanelTrialReportITest extends AbstractStandardReportControllerITest 
                     ))
                     .build())
             .build();
+    }
+
+    private List<StandardReportResponse.TableData.Heading> getStandardHeadings() {
+        return List.of(
+            StandardReportResponse.TableData.Heading.builder()
+                .id("juror_number")
+                .name("Juror Number")
+                .dataType("String")
+                .headings(null)
+                .build(),
+            StandardReportResponse.TableData.Heading.builder()
+                .id("first_name")
+                .name("First Name")
+                .dataType("String")
+                .headings(null)
+                .build(),
+            StandardReportResponse.TableData.Heading.builder()
+                .id("last_name")
+                .name("Last Name")
+                .dataType("String")
+                .headings(null)
+                .build(),
+            StandardReportResponse.TableData.Heading.builder()
+                .id("juror_postcode")
+                .name("Postcode")
+                .dataType("String")
+                .headings(null)
+                .build()
+        );
     }
 }

@@ -35,6 +35,7 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
 
     @Override
     @Transactional(readOnly = true)
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public DigitalSummonsRepliesReportResponse getDigitalSummonsRepliesReport(LocalDate month) {
 
         List<Tuple> results = jurorDigitalResponseRepositoryMod.getDigitalSummonsRepliesForMonth(month);
@@ -123,6 +124,7 @@ public class SummonsRepliesReportServiceImpl implements SummonsRepliesReportServ
 
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private List<ResponsesCompletedReportResponse.TableData.DataRow> getDataRows(LocalDate monthStartDate,
                  List<CompletedResponseRecord> completedResponses, Map<LocalDate, Integer> totalResponsesByDate) {
         List<ResponsesCompletedReportResponse.TableData.DataRow> dataRows = new ArrayList<>();

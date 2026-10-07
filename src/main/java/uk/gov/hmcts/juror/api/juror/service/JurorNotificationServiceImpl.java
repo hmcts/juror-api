@@ -14,10 +14,10 @@ import uk.gov.hmcts.juror.api.moj.repository.AppSettingRepository;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,9 +45,15 @@ public class JurorNotificationServiceImpl implements JurorNotificationService {
     }
 
 
+    /**
+     * Sends response receipt.
+     * @param digitalResponse      Response to send the notification for.
+     * @param notifyTemplateType Template type to use for the message
+     * @throws NotificationServiceException if the notification cannot be sent.
+     */
     @Override
-    public void sendResponseReceipt(final DigitalResponse digitalResponse, final NotifyTemplateType notifyTemplateType)
-        throws NotificationServiceException {
+    public void sendResponseReceipt(final DigitalResponse digitalResponse,
+                                    final NotifyTemplateType notifyTemplateType) {
         final EmailNotification emailNotification = createEmailNotification(digitalResponse, notifyTemplateType);
 
         try {
@@ -71,6 +77,7 @@ public class JurorNotificationServiceImpl implements JurorNotificationService {
      * @return Email notification payload
      */
     @Override
+    @SuppressWarnings({"PMD.ExceptionAsFlowControl"}) // appropriate here.
     public EmailNotification createEmailNotification(final DigitalResponse digitalResponse,
                                                      final NotifyTemplateType notifyTemplateType) {
         try {
@@ -112,7 +119,7 @@ public class JurorNotificationServiceImpl implements JurorNotificationService {
      * @since 2.0
      */
     private Map<String, String> extractMessageValues(final DigitalResponse digitalResponse) {
-        final Map<String, String> map = new HashMap<>();
+        final Map<String, String> map = new ConcurrentHashMap<>();
         map.put(KEY_JUROR_NUMBER, digitalResponse.getJurorNumber());
 
         //strip null values

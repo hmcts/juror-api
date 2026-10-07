@@ -36,15 +36,12 @@ import static uk.gov.hmcts.juror.api.TestConstants.VALID_COURT_LOCATION;
     "/db/mod/truncate.sql",
     "/db/mod/reports/CompletionOfServiceReportITest_typical.sql"
 })
-@SuppressWarnings({
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive
-})
 class CompletionOfServiceReportITest extends AbstractGroupedReportControllerITest {
 
-    public static final String COMPLETION_DATE_KEY = "completion_date";
+    static final String COMPLETION_DATE_KEY = "completion_date";
 
     @Autowired
-    public CompletionOfServiceReportITest(TestRestTemplate template) {
+    CompletionOfServiceReportITest(TestRestTemplate template) {
         super(template, CompletionOfServiceReport.class);
     }
 

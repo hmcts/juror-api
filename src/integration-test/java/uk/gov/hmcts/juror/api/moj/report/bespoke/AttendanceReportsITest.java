@@ -34,12 +34,13 @@ class AttendanceReportsITest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    public static final String URL_BASE = "/api/v1/moj/reports";
+    static final String URL_BASE = "/api/v1/moj/reports";
 
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         initHeaders();
     }
 
@@ -68,7 +69,7 @@ class AttendanceReportsITest extends AbstractIntegrationTest {
         void weekendAttendanceReportBureauUserHappy() {
 
             ResponseEntity<WeekendAttendanceReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(URL_BASE + "/weekend-attendance")),
                                       WeekendAttendanceReportResponse.class);
 
@@ -85,7 +86,7 @@ class AttendanceReportsITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
 
             ResponseEntity<WeekendAttendanceReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                                                               URI.create(URL_BASE + "/weekend-attendance")),
                                       WeekendAttendanceReportResponse.class);
 

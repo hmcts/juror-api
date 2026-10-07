@@ -47,7 +47,6 @@ public class PoolNumbersListDtoTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     public void test_PoolNumbersListDto() {
         CourtLocation courtLocation = createCourtLocation("410",
             "CHESTER", "09:15");

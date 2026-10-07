@@ -53,5 +53,6 @@ public interface JurorCommsNotificationService {
                                           JurorCommsNotifyTemplateType jurorCommsNotifyTemplateType,
                                           String templateId, Map<String, String> payLoad);
 
+    void sendJurorEmailComms(JurorPool jurorDetails, String templateName);
 
 }

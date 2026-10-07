@@ -61,7 +61,7 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
             UserService userService,
             JurorAudit afterChangeJuror, JurorAudit beforeChangeJuror) {
             List<JurorAmendmentReportRow> changes = new ArrayList<>();
-            for (Changed changed : Changed.values()) {
+            for (Changed changed : values()) {
                 Object afterChangeValue = changed.getValue(afterChangeJuror);
                 Object beforeChangeValue = changed.getValue(beforeChangeJuror);
                 if (afterChangeValue == null && beforeChangeValue == null) {

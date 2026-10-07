@@ -43,7 +43,6 @@ public class UserRepositoryTest extends AbstractIntegrationTest {
     @Sql("/db/UserRepositoryTest.userRepository_happy_findStaffMember.sql")
     @Test
     @Transactional
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")//False positive
     public void userRepository_happy_findStaffMember() {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM juror_mod.users", Integer.class)).isEqualTo(4);
 
@@ -86,7 +85,7 @@ public class UserRepositoryTest extends AbstractIntegrationTest {
     public void findByActiveOrderByNameAsc_active() {
         final List<User> active = Lists.newArrayList(userRepository.findAll(active(), QUser.user.name.asc()));
         assertThat(active).hasSize(6).isSortedAccordingTo(Comparator.comparing(User::getName))
-            .allMatch(staff -> staff.isActive())
+            .allMatch(User::isActive)
             .extracting("name").containsOnly(
                 "Joanna Powers",
                 "Todd Sanchez",

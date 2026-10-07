@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-@SuppressWarnings("PMD.UselessParentheses") // false positive
 public class DeferredListByCourtReport extends AbstractGroupedReport {
 
     @Autowired

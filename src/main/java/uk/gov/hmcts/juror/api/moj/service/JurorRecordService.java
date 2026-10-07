@@ -34,11 +34,12 @@ import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorHistoryResponse
 import uk.gov.hmcts.juror.api.moj.controller.response.juror.JurorPaymentsResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.FilterJurorRecord;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
+import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PendingJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoliceCheck;
 
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessiveImports"})
 public interface JurorRecordService {
 
     JurorDetailsResponseDto getJurorDetails(BureauJwtPayload payload, String jurorNumber, String locCode);
@@ -112,4 +113,9 @@ public interface JurorRecordService {
     void createJurorManual(JurorManualCreationRequestDto jurorCreateRequestDto);
 
     JurorSimpleDetailsResponseDto getJurorSimpleDetails(JurorSimpleDetailsRequestDto request);
+
+    void updateJurorAddressFromResponse(JurorPool jurorPool);
+
+    void sendPaperResponsePack(String jurorNumber);
+
 }

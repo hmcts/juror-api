@@ -30,6 +30,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.CouplingBetweenObjects"})
 public class CourtDashboardServiceImpl implements CourtDashboardService {
 
     private final PendingJurorRepository pendingJurorRepository;
@@ -79,14 +80,19 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
 
         CourtAdminInfoDto courtAdminInfoDto = getUnpaidAttendancesInfo(locCode);
 
-        getUtilisationInfo(locCode, courtAdminInfoDto);
+        setUtilisationInfoForCourtAdminInfoDto(locCode, courtAdminInfoDto);
 
         return courtAdminInfoDto;
     }
 
     private CourtAdminInfoDto getUnpaidAttendancesInfo(String locCode) {
         log.info("Retrieving unpaid attendances for location code: {}", locCode);
-        List<Appearance> unpaidAttendances = appearanceService.getUnpaidAttendancesAtCourt(locCode);
+        List<Appearance> allUnpaidAttendances = appearanceService.getUnpaidAttendancesAtCourt(locCode);
+
+        // need keep unpaid attendances less than a year old - JS-891
+        List<Appearance> unpaidAttendances = allUnpaidAttendances.stream().filter(
+            a -> a.getAttendanceDate().isAfter(LocalDate.now().minusYears(1)))
+            .toList();
 
         CourtAdminInfoDto courtAdminInfoDto = CourtAdminInfoDto.builder()
             .unpaidAttendances(unpaidAttendances.size()).build();
@@ -107,9 +113,8 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
                     unpaidAttendances.stream()
                         .filter(a -> a.getAttendanceDate().equals(date))
                         .findFirst()
-                        .ifPresent(appearance -> {
-                            courtAdminInfoDto.setOldestUnpaidJurorNumber(appearance.getJurorNumber());
-                        });
+                        .ifPresent(appearance ->
+                            courtAdminInfoDto.setOldestUnpaidJurorNumber(appearance.getJurorNumber()));
                 });
 
         }
@@ -258,13 +263,15 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
         return courtAttendanceInfoDto;
     }
 
-    private void getUtilisationInfo(String locCode, CourtAdminInfoDto courtAdminInfoDto) {
+    private void setUtilisationInfoForCourtAdminInfoDto(String locCode, CourtAdminInfoDto courtAdminInfoDto) {
         log.info("Retrieving utilisation info for location code: {}", locCode);
         // get the last run utilisation report for the court
         List<UtilisationStats> utilisationStats = utilisationStatsRepository
             .findTop12ByLocCodeOrderByMonthStartDesc(locCode);
 
-        if (!utilisationStats.isEmpty()) {
+        if (utilisationStats.isEmpty()) {
+            log.info("No utilisation stats found for location code: {}", locCode);
+        } else {
             UtilisationStats lastUtilisationStats = utilisationStats.get(0);
             courtAdminInfoDto.setUtilisationReportDate(lastUtilisationStats.getLastUpdate());
 
@@ -275,8 +282,6 @@ public class CourtDashboardServiceImpl implements CourtDashboardService {
 
             courtAdminInfoDto.setUtilisationPercentage(overallUtilisation);
 
-        } else {
-            log.info("No utilisation stats found for location code: {}", locCode);
         }
     }
 

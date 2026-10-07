@@ -34,6 +34,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.CourtLetterLis
 import uk.gov.hmcts.juror.api.moj.controller.request.letter.court.PrintLettersRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ValidateReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.LetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDataResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.trial.JurorForExemptionListDto;
@@ -59,7 +60,7 @@ import java.util.List;
 @Validated
 @Tag(name = "Summons Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class LetterController {
 
     @NonNull
@@ -131,6 +132,15 @@ public class LetterController {
         return ResponseEntity.ok("Letters reissued");
     }
 
+    @PostMapping("/validate-reissue-letter")
+    @Operation(description = "Validate reissue letter request as Bureau officer")
+    @IsBureauUser
+    public ResponseEntity<ValidateReissueLetterListResponseDto> validateReissueLetter(
+        @RequestBody @Valid @NotNull ReissueLetterRequestDto request) {
+        ValidateReissueLetterListResponseDto response = reissueLetterService.validateReissueLetterRequest(request);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping(path = "/court-letter-list")
     @Operation(summary = "GET With Body - Court letter list", description = "Request a list of jurors eligible "
         + "for court letters to be issued/re-issued.")
@@ -152,7 +162,7 @@ public class LetterController {
         @PathVariable(name = "letter_type") CourtLetterType letterType,
         @PathVariable(name = "include_printed") Boolean includePrinted) {
 
-        if (CourtLetterType.FAILED_TO_ATTEND.equals(letterType) || CourtLetterType.SHOW_CAUSE.equals(letterType)) {
+        if (letterType == CourtLetterType.FAILED_TO_ATTEND || letterType == CourtLetterType.SHOW_CAUSE) {
             CourtLetterListRequestDto courtLetterListRequestDto = CourtLetterListRequestDto.builder()
                 .letterType(letterType)
                 .includePrinted(includePrinted)

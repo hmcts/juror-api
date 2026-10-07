@@ -34,9 +34,8 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings({
-    "PMD.TooManyMethods"
-})
+@SuppressWarnings({"PMD.CouplingBetweenObjects",
+    "PMD.TooManyMethods"})
 public abstract class AbstractValidatorTest<T> {
 
     protected ValidatorFactory validatorFactory;
@@ -110,7 +109,7 @@ public abstract class AbstractValidatorTest<T> {
     }
 
 
-    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+
     protected void assertExpectViolations(T objectToValidate, FieldTestSupport fieldTestSupport,
                                           List<Violation> expectedViolations) {
         assertExpectViolations(objectToValidate, expectedViolations, getGroups(fieldTestSupport), false);
@@ -166,7 +165,6 @@ public abstract class AbstractValidatorTest<T> {
         private Violation[] violations;
         private Class<?>[] groups;
 
-        @SuppressWarnings("PMD.LinguisticNaming")
         public FieldTestSupport setGroups(Class<?>... groups) {
             this.groups = groups.clone();
             return this;
@@ -269,7 +267,7 @@ public abstract class AbstractValidatorTest<T> {
 
 
         @TestFactory
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         Stream<DynamicTest> tests() {
             return tests.stream();
         }

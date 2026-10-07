@@ -143,7 +143,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
 
             Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
             List<BulkPrintData> bulkPrintData = new ArrayList<>();
-            bulkPrintDataIterable.forEach((data) -> {
+            bulkPrintDataIterable.forEach(data -> {
                 if (data.getFormAttribute().getFormType().equals(FormCode.BI_EXCUSALDENIED.getCode())
                     || data.getFormAttribute().getFormType().equals(FormCode.ENG_EXCUSALDENIED.getCode())) {
                     bulkPrintData.add(data);
@@ -269,7 +269,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
             validateRefuseExcusal(jurorPool, excusalDecisionDto, login);
             Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
             List<BulkPrintData> bulkPrintData = new ArrayList<>();
-            bulkPrintDataIterable.forEach((data) -> {
+            bulkPrintDataIterable.forEach(data -> {
                 if (data.getFormAttribute().getFormType().equals(FormCode.BI_EXCUSALDENIED.getCode())
                     || data.getFormAttribute().getFormType().equals(FormCode.ENG_EXCUSALDENIED.getCode())) {
                     bulkPrintData.add(data);
@@ -602,7 +602,7 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
         executeInTransaction(() -> {
             Iterable<BulkPrintData> bulkPrintDataIterable = bulkPrintDataRepository.findAll();
             List<BulkPrintData> bulkPrintData = new ArrayList<>();
-            bulkPrintDataIterable.forEach((data) -> {
+            bulkPrintDataIterable.forEach(data -> {
                 if (data.getFormAttribute().getFormType().equals(FormCode.BI_EXCUSALDENIED.getCode())
                     || data.getFormAttribute().getFormType().equals(FormCode.ENG_EXCUSALDENIED.getCode())) {
                     bulkPrintData.add(data);

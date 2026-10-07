@@ -70,9 +70,10 @@ class ErDashboardServiceImplTest {
         when(deadlineRepository.getCurrentDeadline())
             .thenReturn(Optional.empty());
 
-        MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
-                                                 () -> erDashboardService.getErDashboardStats(),
-               "Expected exception to be thrown when no deadline data is found");
+        MojException.InternalServerError exception = assertThrows(
+            MojException.InternalServerError.class,
+            erDashboardService::getErDashboardStats,
+            "Expected exception to be thrown when no deadline data is found");
 
         assertEquals("Upload deadline data not found - it should always exist", exception.getMessage(),
                      "Expected exception message to be Upload deadline data not found - it should always exist");

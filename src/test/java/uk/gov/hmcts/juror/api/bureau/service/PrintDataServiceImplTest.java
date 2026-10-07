@@ -13,6 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormAttribute;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
@@ -40,6 +41,7 @@ import static org.mockito.Mockito.verify;
 
 
 @ExtendWith(SpringExtension.class)
+@SuppressWarnings("PMD.TooManyMethods")
 class PrintDataServiceImplTest {
     private MockedStatic<RepositoryUtils> mockRepositoryUtils;
     @Mock
@@ -87,7 +89,7 @@ class PrintDataServiceImplTest {
     @Test
     void bulkPrintSummonsLetterThrowsWithEmptyList() {
         assertThatExceptionOfType(MojException.InternalServerError.class).isThrownBy(() ->
-            printDataService.bulkPrintSummonsLetter(new ArrayList<JurorPool>()));
+            printDataService.bulkPrintSummonsLetter(new ArrayList<>()));
     }
 
     @Test
@@ -183,6 +185,7 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void printPostponeLetterCallsCommit() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
@@ -219,6 +222,37 @@ class PrintDataServiceImplTest {
     }
 
     @Test
+    void printDbdResponseLetterThrowsWithNullJurorPool() {
+        assertThatExceptionOfType(MojException.InternalServerError.class)
+            .isThrownBy(() -> printDataService.printDbdResponseLetter(null));
+    }
+
+    @Test
+    void printDbdResponseLetterCallsCommitWithEnglishResponseFormCode() {
+        mockFormAttributeLookup(FormCode.ENG_DBD_RESPONSE);
+        doReturn(null).when(welshCourtLocationRepository).findByLocCode(any());
+
+        printDataService.printDbdResponseLetter(LetterTestUtils.testJurorPool(LocalDate.of(2017, Month.FEBRUARY, 6)));
+
+        ArgumentCaptor<BulkPrintData> committedRecord = ArgumentCaptor.forClass(BulkPrintData.class);
+        verify(bulkPrintDataRepository).save(committedRecord.capture());
+
+        assertThat(committedRecord.getValue().getFormAttribute()).isEqualTo(formAttribute);
+    }
+
+    @Test
+    void printDbdResponseLetterCallsCommitWithWelshResponseFormCode() {
+        mockFormAttributeLookup(FormCode.BI_DBD_RESPONSE);
+
+        printDataService.printDbdResponseLetter(LetterTestUtils.testJurorPool(LocalDate.of(2017, Month.FEBRUARY, 6)));
+
+        ArgumentCaptor<BulkPrintData> committedRecord = ArgumentCaptor.forClass(BulkPrintData.class);
+        verify(bulkPrintDataRepository).save(committedRecord.capture());
+
+        assertThat(committedRecord.getValue().getFormAttribute()).isEqualTo(formAttribute);
+    }
+
+    @Test
     void commitDataWritesLetterData() {
         doReturn("test-letter-string").when(letterBase).getLetterString();
         doReturn("123456789").when(letterBase).getJurorNumber();
@@ -234,5 +268,12 @@ class PrintDataServiceImplTest {
         assertThat(committedRecord.getValue().getDetailRec()).isEqualTo("test-letter-string");
         assertThat(committedRecord.getValue().getCreationDate()).isEqualTo(LocalDate.now());
 
+    }
+
+    private void mockFormAttributeLookup(FormCode formCode) {
+        mockRepositoryUtils.when(() -> RepositoryUtils.retrieveFromDatabase(
+                eq(formCode.getCode()),
+                (FormAttributeRepository) any()))
+            .thenReturn(formAttribute);
     }
 }

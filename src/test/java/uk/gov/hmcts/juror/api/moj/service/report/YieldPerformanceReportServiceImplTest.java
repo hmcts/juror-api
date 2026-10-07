@@ -7,7 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.moj.controller.reports.request.YieldPerformanceReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtsAndDatesReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -44,7 +44,7 @@ class YieldPerformanceReportServiceImplTest {
     private final CourtQueriesRepository courtQueriesRepository;
     private final YieldPerformanceReportService yieldPerformanceReportService;
 
-    public YieldPerformanceReportServiceImplTest() {
+    private  YieldPerformanceReportServiceImplTest() {
         this.jurorPoolRepository = mock(JurorPoolRepository.class);
         this.poolCommentRepository = mock(IPoolCommentRepository.class);
         this.courtQueriesRepository = mock(CourtQueriesRepository.class);
@@ -59,7 +59,6 @@ class YieldPerformanceReportServiceImplTest {
 
     @Nested
     @DisplayName("Yield Performance report tests")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") //false positive
     class YieldPerformanceReportTests {
 
         @Test
@@ -69,7 +68,7 @@ class YieldPerformanceReportServiceImplTest {
             final LocalDate reportFromDate = LocalDate.of(2024, 4, 20);
             final LocalDate reportToDate = LocalDate.of(2024, 5, 13);
 
-            YieldPerformanceReportRequest yieldPerformanceReportRequest = YieldPerformanceReportRequest.builder()
+            CourtsAndDatesReportRequest courtsAndDatesReportRequest = CourtsAndDatesReportRequest.builder()
                 .fromDate(reportFromDate)
                 .toDate(reportToDate)
                 .allCourts(true)
@@ -86,7 +85,7 @@ class YieldPerformanceReportServiceImplTest {
                 .thenReturn(List.of());
 
             YieldPerformanceReportResponse response = yieldPerformanceReportService.viewYieldPerformanceReport(
-                yieldPerformanceReportRequest
+                    courtsAndDatesReportRequest
             );
 
             assertThat(response.getHeadings()).isNotNull();
@@ -174,7 +173,7 @@ class YieldPerformanceReportServiceImplTest {
             final LocalDate reportFromDate = LocalDate.of(2024, 4, 20);
             final LocalDate reportToDate = LocalDate.of(2024, 5, 13);
 
-            YieldPerformanceReportRequest yieldPerformanceReportRequest = YieldPerformanceReportRequest.builder()
+            CourtsAndDatesReportRequest courtsAndDatesReportRequest = CourtsAndDatesReportRequest.builder()
                 .fromDate(reportFromDate)
                 .toDate(reportToDate)
                 .allCourts(false)
@@ -184,7 +183,7 @@ class YieldPerformanceReportServiceImplTest {
             MojException.BadRequest exception =
                 assertThrows(MojException.BadRequest.class, () ->
                         yieldPerformanceReportService.viewYieldPerformanceReport(
-                            yieldPerformanceReportRequest),
+                                courtsAndDatesReportRequest),
                     "Should throw an exception");
             assertEquals("No court locations provided", exception.getMessage(),
                 "Message should match");

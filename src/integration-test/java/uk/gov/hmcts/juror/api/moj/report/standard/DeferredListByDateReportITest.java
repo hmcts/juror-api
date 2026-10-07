@@ -22,7 +22,7 @@ import java.util.List;
 class DeferredListByDateReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public DeferredListByDateReportITest(TestRestTemplate template) {
+    DeferredListByDateReportITest(TestRestTemplate template) {
         super(template, DeferredListByDateReport.class);
     }
 
@@ -39,7 +39,6 @@ class DeferredListByDateReportITest extends AbstractStandardReportControllerITes
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -48,7 +47,6 @@ class DeferredListByDateReportITest extends AbstractStandardReportControllerITes
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -58,7 +56,6 @@ class DeferredListByDateReportITest extends AbstractStandardReportControllerITes
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalBureauOwnedOnly() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -71,7 +68,6 @@ class DeferredListByDateReportITest extends AbstractStandardReportControllerITes
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveNotFound() {
         testBuilder()
             .jwt(getCourtJwt("414"))

@@ -10,7 +10,7 @@ import uk.gov.hmcts.juror.api.moj.domain.UserType;
  * QueryDSL queries for {@link uk.gov.hmcts.juror.api.moj.domain.User}.
  */
 @Deprecated(forRemoval = true)
-public class UserQueries {
+public final class UserQueries {
 
     private static final QUser USER = QUser.user;
 
@@ -26,6 +26,7 @@ public class UserQueries {
         return isBureau().and(active());
     }
 
+    @SuppressWarnings({"PMD.LinguisticNaming"})
     public static BooleanExpression isBureau() {
         return USER.userType.eq(UserType.BUREAU);
     }

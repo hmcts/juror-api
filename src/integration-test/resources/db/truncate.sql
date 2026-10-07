@@ -8,6 +8,7 @@ DELETE FROM JUROR_MOD.user_roles;
 DELETE FROM JUROR_MOD.user_courts;
 DELETE FROM JUROR_MOD.users;
 DELETE FROM juror_mod.app_setting;
+DELETE FROM juror_mod.bulk_print_data;
 DELETE FROM juror_mod.notify_template_field;
 DELETE FROM juror_mod.notify_template_mapping;
 DELETE FROM juror_mod.expense_rates_public;

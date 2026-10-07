@@ -43,15 +43,13 @@ public class HistoryTemplateServiceImpl implements HistoryTemplateService {
         template = replace(template, "other_info_reference", item.getOtherInformationRef());
         template = replace(template, "other_information_support", item.getOtherInformationSupport());
 
-        template = replaceRegex(template, "\\{other_info_date:(.*?)\\}", matcher -> {
+        return replaceRegex(template, "\\{other_info_date:(.*?)\\}", matcher -> {
             if (item.getOtherInformationDate() != null) {
                 final String dateFormat = matcher.group(1);
                 return DateTimeFormatter.ofPattern(dateFormat).format(item.getOtherInformationDate());
             }
             return null;
         });
-
-        return template;
     }
 
     private String replace(String template, String key, String value) {

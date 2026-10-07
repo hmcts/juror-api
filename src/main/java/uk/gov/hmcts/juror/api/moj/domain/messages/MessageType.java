@@ -36,7 +36,7 @@ public enum MessageType {
         EMAIL, SMS, EMAIL_AND_SMS;
 
         public boolean supports(SendType sendType) {
-            return EMAIL_AND_SMS.equals(this) || EMAIL_AND_SMS.equals(sendType) || this.equals(sendType);
+            return this == EMAIL_AND_SMS || sendType == EMAIL_AND_SMS || this == sendType;
         }
     }
 }

@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.WithdrawalLetterList;
 
 import java.util.List;
 
+@FunctionalInterface
 public interface IWithdrawalLetterListRepository {
 
     List<WithdrawalLetterList> findJurorsEligibleForWithdrawalLetter(CourtLetterSearchCriteria searchCriteria,

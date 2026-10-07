@@ -50,7 +50,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.juror.api.TestUtils.asJsonString;
 
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods"
+})
+
 @RunWith(SpringRunner.class)
 @WebMvcTest(controllers = JurorManagementController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ContextConfiguration(classes = {JurorManagementController.class})
@@ -66,7 +70,7 @@ class JurorManagementControllerTest {
 
     @Before
     @BeforeEach
-    public void setupMocks() {
+    void setupMocks() {
         mockMvc = MockMvcBuilders
             .standaloneSetup(new JurorManagementController(jurorAppearanceService))
             .setCustomArgumentResolvers(new CustomArgumentResolver())

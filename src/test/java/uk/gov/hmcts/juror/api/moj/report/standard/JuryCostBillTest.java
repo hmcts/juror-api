@@ -40,7 +40,7 @@ class JuryCostBillTest extends AbstractStandardReportTestSupport<JuryCostBill> {
     private CourtLocationRepository courtLocationRepository;
     private TrialRepository trialRepository;
 
-    public JuryCostBillTest() {
+    JuryCostBillTest() {
         super(QReportsJurorPayments.reportsJurorPayments,
               JuryCostBill.RequestValidator.class,
               ReportsJurorPaymentsDataTypes.ATTENDANCE_DATE,
@@ -56,19 +56,19 @@ class JuryCostBillTest extends AbstractStandardReportTestSupport<JuryCostBill> {
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.courtLocationRepository = mock(CourtLocationRepository.class);
         this.trialRepository = mock(TrialRepository.class);
         super.beforeEach();
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         TestUtils.afterAll();
     }
 
     @Override
-    public JuryCostBill createReport(PoolRequestRepository poolRequestRepository) {
+    protected JuryCostBill createReport(PoolRequestRepository poolRequestRepository) {
         return new JuryCostBill(this.trialRepository);
     }
 
@@ -81,7 +81,7 @@ class JuryCostBillTest extends AbstractStandardReportTestSupport<JuryCostBill> {
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         TestUtils.mockSecurityUtil(BureauJwtPayload.builder()
                                        .locCode(TestConstants.VALID_COURT_LOCATION)
                                        .owner(TestConstants.VALID_COURT_LOCATION)

@@ -13,7 +13,6 @@ import java.util.Map;
 
 @Data
 @NoArgsConstructor
-@SuppressWarnings("PMD.ShortClassName")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ResponsesCompletedReportResponse {
 
@@ -30,6 +29,7 @@ public class ResponsesCompletedReportResponse {
     @NoArgsConstructor
     @ToString
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class TableData {
         private List<Heading> headings;
         private List<DataRow> data;
@@ -42,11 +42,13 @@ public class ResponsesCompletedReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Heading {
             private int id;
             private String name;
             private String dataType;
 
+            @SuppressWarnings({"PMD.ShortMethodName"})
             public static Heading of(int id, String name, String dataType) {
                 Heading heading = new Heading();
                 heading.setId(id);
@@ -60,11 +62,13 @@ public class ResponsesCompletedReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class DataRow {
             private String staffName;
             private List<Integer> dailyTotals; // list of totals for each day in the month
             private Integer staffTotal;
 
+            @SuppressWarnings({"PMD.ShortMethodName"})
             public static DataRow of(String staffName, List<Integer> dailyTotals, int staffTotal) {
                 DataRow row = new DataRow();
                 row.setStaffName(staffName);

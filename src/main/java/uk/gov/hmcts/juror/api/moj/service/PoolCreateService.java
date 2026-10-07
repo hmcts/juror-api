@@ -30,7 +30,7 @@ public interface PoolCreateService {
 
     int getBureauDeferrals(String locationCode, LocalDate deferredTo);
 
-    void createPool(BureauJwtPayload payload, PoolCreateRequestDto poolCreateRequestDto) throws Exception;
+    void createPool(BureauJwtPayload payload, PoolCreateRequestDto poolCreateRequestDto);
 
     PaginatedList<FilterPoolMember> getJurorPoolsList(BureauJwtPayload payload, PoolMemberFilterRequestQuery search);
 

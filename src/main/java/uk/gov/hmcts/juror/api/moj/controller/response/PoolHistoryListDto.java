@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -22,6 +24,7 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "List of pool history relating to a specific pool request")
 public class PoolHistoryListDto {
 
@@ -33,6 +36,7 @@ public class PoolHistoryListDto {
     @AllArgsConstructor
     @NoArgsConstructor
     @Getter
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "Pool History data")
     @ToString
     public static class PoolHistoryDataDto {
@@ -43,32 +47,38 @@ public class PoolHistoryListDto {
 
         @JsonProperty("poolNumber")
         @Schema(name = "Pool number", description = "The unique number for a pool request")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String poolNumber;
 
         @JsonProperty("datePart")
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm", shape = JsonFormat.Shape.STRING)
         @Schema(name = "History Date", description = "The history date recorded")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private LocalDateTime historyDate;
 
         @JsonProperty("historyCode")
         @Schema(name = "History Code", description = "The ID for a type of history event on a pool request")
         @Enumerated(EnumType.STRING)
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private HistoryCode historyCode;
 
         @JsonProperty("userId")
         @Schema(name = "User Id", description = "The ID of the current user")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String userId;
 
         @JsonProperty("otherInformation")
         @Schema(name = "Other Information", description = "Additional information relating to the history event")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String otherInformation;
 
         @JsonProperty("historyDescription")
         @Schema(name = "history description", description = "The description of the history code")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String historyDescription;
 
         /**
-         * Initialise an instance of this DTO class using a PoolHistory.PoolHistoryId object to populate its properties
+         * Initialise an instance of this DTO class using a PoolHistory.PoolHistoryId object to populate its properties.
          *
          * @param poolHistory an object representation of a ContactLog record from the database
          */

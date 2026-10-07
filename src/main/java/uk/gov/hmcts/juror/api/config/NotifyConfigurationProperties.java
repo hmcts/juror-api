@@ -19,7 +19,7 @@ import java.net.Proxy.Type;
 @Setter
 @ToString(exclude = "key")
 public class NotifyConfigurationProperties {
-    private boolean disabled = false;
+    private boolean disabled;
     private String key;
     private Proxy proxy;
 
@@ -31,7 +31,7 @@ public class NotifyConfigurationProperties {
     @ToString
     @ConfigurationProperties(prefix = "notify.proxy")
     public static class Proxy {
-        private boolean enabled = false;
+        private boolean enabled;
         private String host;
         private String port;
         private Type type;

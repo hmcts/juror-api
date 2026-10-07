@@ -73,6 +73,7 @@ class NotifyAdapterImplTest extends ContainerTest {
     private JurorNotificationServiceImpl utilService;
 
     @BeforeEach
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     void setUp() throws Exception {
         utilService = new JurorNotificationServiceImpl(mockNotifyAdapter, responseInspector, appSettingRepository);
     }

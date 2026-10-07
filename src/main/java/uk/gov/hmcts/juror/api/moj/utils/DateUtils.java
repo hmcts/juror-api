@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 @Slf4j
-public class DateUtils {
+public final class DateUtils {
     public static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
 
     private DateUtils() {
@@ -43,7 +43,7 @@ public class DateUtils {
     public static LocalDate getStartOfWeekFromDate(LocalDate date) {
         log.debug("Enter getStartOfWeekFromDate for date {}", date);
 
-        if (date.getDayOfWeek().equals(DayOfWeek.MONDAY)) {
+        if (date.getDayOfWeek() == DayOfWeek.MONDAY) {
             log.debug("Provided date {} is already a Monday (start of the working week)", date);
             return date;
         }
@@ -76,7 +76,7 @@ public class DateUtils {
      */
     public static List<LocalDate> getNumberOfStartingWeeks(int numberOfWeeks, LocalDate startDate) {
         List<LocalDate> dates = new ArrayList<>();
-        LocalDate weekCommencing = DateUtils.getStartOfWeekFromDate(startDate);
+        LocalDate weekCommencing = getStartOfWeekFromDate(startDate);
         for (int i = 0;
              i < numberOfWeeks;
              i++) {

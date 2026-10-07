@@ -50,7 +50,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
 @SuppressWarnings({
     "PMD.GodClass",
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.CouplingBetweenObjects"
 })
 public class MessagingServiceImpl implements MessagingService {
 
@@ -226,7 +227,7 @@ public class MessagingServiceImpl implements MessagingService {
             .existsByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(trialNumber, locCode, jurorNumber);
     }
 
-    @SuppressWarnings("PMD.CyclomaticComplexity")
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.CognitiveComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     Message createMessage(MessageSendRequest.JurorAndSendType jurorAndSendType,
                           MessageType messageType,
                           CourtLocation courtLocation,
@@ -237,12 +238,12 @@ public class MessagingServiceImpl implements MessagingService {
                 + messageType.getSendType(), INVALID_SEND_TYPE);
         }
         final String username = SecurityUtil.getActiveLogin();
-        log.debug(String.format("User %s created a %s message of type %s for juror %s in pool %s",
+        log.debug("User {} created a {} message of type {} for juror {} in pool {}",
             username,
             jurorAndSendType.getType(),
             messageType,
             jurorAndSendType.getJurorNumber(),
-            jurorAndSendType.getPoolNumber()));
+            jurorAndSendType.getPoolNumber());
 
         Juror juror = getJuror(jurorAndSendType.getJurorNumber());
         Message message = Message.builder()
@@ -253,8 +254,8 @@ public class MessagingServiceImpl implements MessagingService {
             .poolNumber(jurorAndSendType.getPoolNumber())
             .build();
 
-        boolean both = MessageType.SendType.EMAIL_AND_SMS.equals(jurorAndSendType.getType());
-        if (both || MessageType.SendType.EMAIL.equals(jurorAndSendType.getType())) {
+        boolean both = jurorAndSendType.getType() == MessageType.SendType.EMAIL_AND_SMS;
+        if (both || jurorAndSendType.getType() == MessageType.SendType.EMAIL) {
             if (juror.getEmail() == null) {
                 throw new MojException.BusinessRuleViolation(
                     "Email is required for juror: " + juror.getJurorNumber(),
@@ -265,7 +266,7 @@ public class MessagingServiceImpl implements MessagingService {
 
 
 
-        if (both || MessageType.SendType.SMS.equals(jurorAndSendType.getType())) {
+        if (both || jurorAndSendType.getType() == MessageType.SendType.SMS) {
             if (juror.getPhoneNumberCombined() == null) {
                 throw new MojException.BusinessRuleViolation(
                     "Phone number is required for juror: " + juror.getJurorNumber(),

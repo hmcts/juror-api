@@ -66,7 +66,7 @@ class CreatePoolControllerTest {
 
         @Test
         void positiveTypical() throws Exception {
-            Mockito.doReturn(new ArrayList<String>()).when(poolCreateService).getThinJurorPoolsList("415240501", "415");
+            Mockito.doReturn(new ArrayList<>()).when(poolCreateService).getThinJurorPoolsList("415240501", "415");
 
             securityUtilMockedStatic.when(SecurityUtil::getActiveOwner).thenReturn("415");
 

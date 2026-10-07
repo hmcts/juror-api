@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @ToString
 @Table(name = "expense_rates", schema = "juror_mod")
-@SuppressWarnings("PMD.TooManyFields")
 public class ExpenseRates {
 
     @Column(name = "id")

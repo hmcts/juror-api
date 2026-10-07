@@ -35,7 +35,7 @@ class PaymentDetailsTest extends AbstractValidatorTest<PaymentDetails> {
         verifyNoMoreInteractions(juror);
     }
 
-    public static PaymentDetails createPaymentDetailsDto() {
+    static PaymentDetails createPaymentDetailsDto() {
         return PaymentDetails.builder()
             .sortCode("112233")
             .bankAccountName("Bank Name")

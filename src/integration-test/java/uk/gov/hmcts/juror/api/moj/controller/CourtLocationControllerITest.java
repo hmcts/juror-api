@@ -37,6 +37,7 @@ import static org.springframework.http.HttpMethod.GET;
 /**
  * Integration tests for the API endpoints defined in {@link CourtLocationController}.
  */
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CourtLocationControllerITest extends AbstractIntegrationTest {
@@ -50,11 +51,13 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
 
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         initHeaders();
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void initHeaders() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
@@ -67,6 +70,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()
@@ -80,7 +84,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     @Test
     void testGetCourtLocationsBureauUser() {
         ResponseEntity<CourtLocationListDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
                 URI.create("/api/v1/moj/court-location/all-court-locations")), CourtLocationListDto.class);
 
         assertThat(responseEntity.getStatusCode())
@@ -101,7 +105,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     void testGetCourtLocationsCourtUser() throws Exception {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Arrays.asList("415", "462", "767", "774")));
         ResponseEntity<CourtLocationListDto> responseEntity =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
                 URI.create("/api/v1/moj/court-location/all-court-locations")), CourtLocationListDto.class);
 
         assertThat(responseEntity.getStatusCode())
@@ -146,7 +150,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//Assertion done in nested method
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void testGetAllCourtLocationsByPostcodeBadRequestException() {
         //Invoke service.
         templateExchangeAllCourtLocationsByPostcode("SE1236LA", BUREAU_USER, "400", HttpStatus.BAD_REQUEST);
@@ -178,13 +182,14 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     @Sql(executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD,
         statements = {"delete from juror_mod.court_location where loc_code in ('001')"})
     class GetCourtRates {
-        public static final String URL = BASE_URL + "/{loc_code}/rates";
+        static final String URL = BASE_URL + "/{loc_code}/rates";
 
         private String toUrl(String locCode) {
             return URL
                 .replace("{loc_code}", locCode);
         }
 
+        @SuppressWarnings("PMD.SignatureDeclareThrowsException")
         @DisplayName("Positive")
         @Nested
         class Positive {
@@ -201,7 +206,6 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
                 return response;
             }
 
-
             @Test
             void typical() throws Exception {
                 ResponseEntity<CourtRates> response = triggerValid("001");
@@ -216,6 +220,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
         @DisplayName("Negative")
         @Nested
         class Negative {
+            @SuppressWarnings("PMD.SignatureDeclareThrowsException")
             protected ResponseEntity<String> triggerInvalid(String locCode) throws Exception {
                 final String jwt = createBureauJwt(COURT_USER, "415", locCode);
                 httpHeaders.set(HttpHeaders.AUTHORIZATION, jwt);

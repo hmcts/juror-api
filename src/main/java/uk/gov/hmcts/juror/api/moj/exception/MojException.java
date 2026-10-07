@@ -13,6 +13,7 @@ import java.util.Map;
  */
 
 @Slf4j
+@SuppressWarnings({"PMD.ExcessivePublicCount"})
 public class MojException extends RuntimeException {
 
     private MojException(String customErrorMessage, Throwable rootException) {
@@ -98,6 +99,7 @@ public class MojException extends RuntimeException {
             CANNOT_DEFER_TO_EXISTING_POOL,
             CANNOT_DEFER_JUROR_WITH_APPEARANCE,
             CANNOT_PROCESS_EMPANELLED_JUROR,
+            PANEL_MEMBER_ALREADY_PROCESSED,
             CANNOT_UPDATE_CONFIRMED_ATTENDANCE,
             CANNOT_RE_ADD_JUROR_TO_PANEL,
             UNCONFIRMED_ATTENDANCE_EXISTS,
@@ -106,7 +108,9 @@ public class MojException extends RuntimeException {
             INVALID_JUROR_POOL_LOCATION,
             JUROR_MUST_UNDELIVERABLE,
             MISSING_ELIGIBILITY_DETAILS,
-            CANNOT_REINSTATE_JUROR_TO_TRIAL
+            CANNOT_REINSTATE_JUROR_TO_TRIAL,
+            JUROR_AGE_DISQUALIFICATION,
+            INVALID_COURT_LOCATION
         }
     }
 

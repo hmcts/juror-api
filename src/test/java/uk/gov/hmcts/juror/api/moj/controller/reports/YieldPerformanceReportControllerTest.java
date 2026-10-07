@@ -14,13 +14,14 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import uk.gov.hmcts.juror.api.TestUtils;
-import uk.gov.hmcts.juror.api.moj.controller.reports.request.YieldPerformanceReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtsAndDatesReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.JurySummoningMonitorReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
+import uk.gov.hmcts.juror.api.moj.service.report.SittingDaysReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.YieldPerformanceReportService;
@@ -46,9 +47,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
+
 @DisplayName("Controller: " + YieldPerformanceReportControllerTest.BASE_URL)
 class YieldPerformanceReportControllerTest {
-    public static final String BASE_URL = "/api/v1/moj/reports";
+    static final String BASE_URL = "/api/v1/moj/reports";
 
     @Autowired
     private MockMvc mockMvc;
@@ -74,13 +76,16 @@ class YieldPerformanceReportControllerTest {
     @MockBean
     private AttendanceReportService attendanceReportService;
 
+    @MockBean
+    private SittingDaysReportService sittingDaysReportService;
+
     @Nested
     @DisplayName("POST (GET) " + ViewYieldReportHappy.URL)
     class ViewYieldReportHappy {
-        public static final String URL = "/yield-performance";
+        static final String URL = "/yield-performance";
 
-        private YieldPerformanceReportRequest getValidPayload() {
-            return YieldPerformanceReportRequest.builder()
+        private CourtsAndDatesReportRequest getValidPayload() {
+            return CourtsAndDatesReportRequest.builder()
                 .courtLocCodes(List.of("415230701", "415230702"))
                 .toDate(LocalDate.now())
                 .fromDate(LocalDate.now().minusDays(1))
@@ -96,7 +101,7 @@ class YieldPerformanceReportControllerTest {
 
         @Test
         void validSearchByCourt() throws Exception {
-            YieldPerformanceReportRequest request = getValidPayload();
+            CourtsAndDatesReportRequest request = getValidPayload();
             YieldPerformanceReportResponse response = getValidResponse();
 
             doReturn(response).when(yieldPerformanceReportService).viewYieldPerformanceReport(request);
@@ -114,7 +119,7 @@ class YieldPerformanceReportControllerTest {
 
         @Test
         void negativeSearchByCourtButNoFromDate() throws Exception {
-            YieldPerformanceReportRequest request = getValidPayload();
+            CourtsAndDatesReportRequest request = getValidPayload();
             request.setFromDate(null);
             mockMvc.perform(post(BASE_URL + URL)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -126,7 +131,7 @@ class YieldPerformanceReportControllerTest {
 
         @Test
         void negativeSearchByCourtButNoToDate() throws Exception {
-            YieldPerformanceReportRequest request = getValidPayload();
+            CourtsAndDatesReportRequest request = getValidPayload();
             request.setToDate(null);
             mockMvc.perform(post(BASE_URL + URL)
                     .contentType(MediaType.APPLICATION_JSON)

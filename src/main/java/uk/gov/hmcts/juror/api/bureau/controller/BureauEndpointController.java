@@ -84,7 +84,7 @@ public class BureauEndpointController {
                 updateDto.getVersion(), jwtPayload.getLogin()
             );
         } catch (OptimisticLockingFailureException olfe) {
-            log.warn("Juror {} response was updated by another user!", jurorNumber);
+            log.info("Juror {} response was updated by another user!", jurorNumber);
             throw new BureauOptimisticLockingException(olfe);
         }
 

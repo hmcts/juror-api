@@ -59,7 +59,8 @@ import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
 @ContextConfiguration(classes = {TrialController.class})
 @SuppressWarnings({
     "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.TooManyMethods",
+    "PMD.SingularField"
 })
 class TrialControllerTest {
     private static final String BASE_URL = "/api/v1/moj/trial";
@@ -80,7 +81,7 @@ class TrialControllerTest {
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;
 
     @BeforeEach
-    public void setupMocks() {
+    void setupMocks() {
         jwtPayload = null;
         mockMvc = MockMvcBuilders
             .standaloneSetup(new TrialController(trialService,jurorAppearanceService))
@@ -205,9 +206,6 @@ class TrialControllerTest {
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void testReturnJury() {
         final String methodUrl = "/return-jury?trial_number=T10000000&location_code=415";
 
@@ -223,9 +221,7 @@ class TrialControllerTest {
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void testReturnJuryEmptyTimes() throws Exception {
         final String methodUrl = "/return-jury?trial_number=T10000000&location_code=415";
 
@@ -245,9 +241,6 @@ class TrialControllerTest {
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void testReturnPanel() {
         final String methodUrl = "/return-panel?trial_number=T10000000&location_code=415";
 

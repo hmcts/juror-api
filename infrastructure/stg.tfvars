@@ -1,0 +1,15 @@
+pgsql_server_configuration_extra = [
+  {
+    name  = "random_page_cost"
+    value = "1.1"
+  },
+  {
+    name  = "effective_io_concurrency"
+    value = "200"
+  },
+  {
+    name  = "maintenance_work_mem"
+    value = "1048576"
+  },
+]
+

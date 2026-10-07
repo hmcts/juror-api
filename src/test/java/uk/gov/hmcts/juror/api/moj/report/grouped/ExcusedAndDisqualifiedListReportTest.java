@@ -28,7 +28,7 @@ class ExcusedAndDisqualifiedListReportTest extends AbstractGroupedReportTestSupp
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public ExcusedAndDisqualifiedListReportTest() {
+    ExcusedAndDisqualifiedListReportTest() {
         super(QJurorPool.jurorPool,
             ExcusedAndDisqualifiedListReport.RequestValidator.class,
             ReportGroupBy.builder()
@@ -44,7 +44,7 @@ class ExcusedAndDisqualifiedListReportTest extends AbstractGroupedReportTestSupp
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         super.beforeEach();
     }
@@ -55,7 +55,7 @@ class ExcusedAndDisqualifiedListReportTest extends AbstractGroupedReportTestSupp
     }
 
     @Override
-    public ExcusedAndDisqualifiedListReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected ExcusedAndDisqualifiedListReport createReport(PoolRequestRepository poolRequestRepository) {
         return new ExcusedAndDisqualifiedListReport(poolRequestRepository);
     }
 
@@ -68,7 +68,7 @@ class ExcusedAndDisqualifiedListReportTest extends AbstractGroupedReportTestSupp
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         securityUtilMockedStatic.when(SecurityUtil::getActiveOwner)
             .thenReturn(TestConstants.VALID_COURT_LOCATION);

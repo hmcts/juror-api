@@ -45,11 +45,12 @@ public interface IAppearanceRepository {
 
     long countPendingApproval(String locCode, boolean isCash);
 
-    Optional<Appearance> findByJurorNumberAndLocCodeAndAttendanceDateAndVersion(
+    Optional<Appearance> findByJurorNumberAndLocCodeAndAttendanceDateAndVersionAndFinancialAudit(
         String jurorNumber,
         String locCode,
         LocalDate attendanceDate,
-        long appearanceVersion);
+        long appearanceVersion,
+        long financialAudit);
 
     List<Tuple> getTrialsWithAttendanceCount(String locationCode, LocalDate attendanceDate);
 
@@ -61,6 +62,8 @@ public interface IAppearanceRepository {
     List<Tuple> getUnpaidAttendancesAtCourt(String locCode);
 
     int getUnconfirmedAttendanceCountAtCourt(String locCode);
+
+    int getUnconfirmedAttendanceCountForJurorsAtCourt(List<String> jurorNumbers, String locCode);
 
     int getConfirmedAttendanceCountAtCourt(String locCode, LocalDate attendanceDate,
                                            boolean includeNonAttendance, boolean includeOnTrial);

@@ -8,6 +8,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 
 import java.util.Map;
 
+@SuppressWarnings("PMD.UseObjectForClearerAPI")
 public interface JurorAuditChangeService {
 
 

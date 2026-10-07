@@ -14,9 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
+import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.DeceasedJuror;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
@@ -35,6 +38,7 @@ import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDateTime;
@@ -49,7 +53,10 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class JurorServiceImpl implements JurorService {
+    private static final String DIGITAL_BY_DEFAULT_FEATURE_FLAG = "digital-by-default";
+
     private final ReplyTypeRepository replyTypeRepository;
 
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
@@ -61,6 +68,7 @@ public class JurorServiceImpl implements JurorService {
     private final JurorRepository jurorRepository;
     private final JurorPoolService jurorPoolService;
     private final JurorHistoryService jurorHistoryService;
+    private final FeatureFlagConfigurationProperties featureFlags;
 
 
     @Override
@@ -104,6 +112,40 @@ public class JurorServiceImpl implements JurorService {
         return builder.build();
     }
 
+    @Override
+    public DbdInformationResponseDto getDbdInformation(final String jurorNumber) {
+        log.debug("Getting DBD information for juror {}", jurorNumber);
+        JurorPool jurorDetails = jurorPoolService.getJurorPoolFromUser(jurorNumber);
+
+        if (jurorDetails == null) {
+            log.debug("Pool entry not found for {}", jurorNumber);
+            return null;
+        }
+
+        if (!featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+            || !JurorPoolUtils.isDigitalByDefault(jurorDetails)) {
+            log.debug("Juror {} is not eligible for DBD information", jurorNumber);
+            return null;
+        }
+
+        return DbdInformationResponseDto.builder()
+            .courtName(jurorDetails.getCourt().getLocCourtName())
+            .serviceStartDate(jurorDetails.getReturnDate())
+            .courtAttendTime(DateUtils.TIME_FORMAT.format(getAttendTime(jurorDetails)))
+            .courtAddress1(jurorDetails.getCourt().getAddress1())
+            .courtAddress2(jurorDetails.getCourt().getAddress2())
+            .courtAddress3(jurorDetails.getCourt().getAddress3())
+            .courtAddress4(jurorDetails.getCourt().getAddress4())
+            .courtAddress5(jurorDetails.getCourt().getAddress5())
+            .courtPostcode(jurorDetails.getCourt().getPostcode())
+            .build();
+    }
+
+    @Override
+    public List<DeceasedJuror> getDeceasedJurors(List<String> postcodes) {
+        return jurorRepository.findDeceasedJurors(postcodes);
+    }
+
     /**
      * Gets the attendance time for a summons
      * If the attend time in juror_mod.pool is populated, this value will be returned. Otherwise the 'default' attend
@@ -133,6 +175,7 @@ public class JurorServiceImpl implements JurorService {
 
     @Transactional
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public DigitalResponse saveResponse(final JurorResponseDto responseDto) {
         //checks
         if (jurorResponseRepository.findByJurorNumber(responseDto.getJurorNumber()) != null) {
@@ -227,6 +270,7 @@ public class JurorServiceImpl implements JurorService {
      * @return Persisted entity of the response
      */
     @Transactional(propagation = Propagation.MANDATORY)
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.CognitiveComplexity", "PMD.NPathComplexity"})
     public DigitalResponse convertJurorResponseDtoToEntity(JurorResponseDto dto) {
         if (log.isTraceEnabled()) {
             log.trace("Consuming: {}", dto);

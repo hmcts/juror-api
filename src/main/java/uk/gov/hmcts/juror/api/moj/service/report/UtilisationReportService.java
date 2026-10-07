@@ -39,8 +39,8 @@ public interface UtilisationReportService {
         DATE_LAST_RUN("Date Last Run", LocalDate.class.getSimpleName()),
         DAYS_ELAPSED("Days Elapsed", Integer.class.getSimpleName());
 
-        private String displayName;
-        private String dataType;
+        private final String displayName;
+        private final String dataType;
 
         TableHeading(String displayName, String dataType) {
             this.displayName = displayName;

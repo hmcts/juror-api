@@ -1,0 +1,28 @@
+package uk.gov.hmcts.juror.api.moj.enumeration;
+
+public enum DigitalByDefaultEmailTemplate {
+    DEFERRAL_GRANTED_ENGLISH("DBD_DEF_GRANTED_ENG"),
+    DEFERRAL_GRANTED_WELSH("DBD_DEF_GRANTED_CY"),
+    DEFERRAL_DENIED_ENGLISH("DBD_DEF_DENIED_ENG"),
+    DEFERRAL_DENIED_WELSH("DBD_DEF_DENIED_CY"),
+    EXCUSAL_GRANTED_ENGLISH("DBD_EXC_GRANTED_ENG"),
+    EXCUSAL_GRANTED_WELSH("DBD_EXC_GRANTED_CY"),
+    EXCUSAL_DENIED_ENGLISH("DBD_EXC_DENIED_ENG"),
+    EXCUSAL_DENIED_WELSH("DBD_EXC_DENIED_CY"),
+    POSTPONEMENT_ENGLISH("DBD_POSTPONE_ENG"),
+    POSTPONEMENT_WELSH("DBD_POSTPONE_CY"),
+    CONFIRMATION_ENGLISH("DBD_CONFIRM_ENG"),
+    CONFIRMATION_WELSH("DBD_CONFIRM_CY"),
+    WITHDRAWAL_ENGLISH("DBD_WITHDRAWAL_ENG"),
+    WITHDRAWAL_WELSH("DBD_WITHDRAWAL_CY");
+
+    private final String templateName;
+
+    DigitalByDefaultEmailTemplate(String templateName) {
+        this.templateName = templateName;
+    }
+
+    public String getTemplateName() {
+        return templateName;
+    }
+}

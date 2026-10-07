@@ -20,12 +20,12 @@ public abstract class AbstractGroupedReport extends AbstractReport<GroupedTableD
 
     final IReportGroupBy groupBy;
 
-    public AbstractGroupedReport(EntityPath<?> from, IReportGroupBy groupBy, IDataType... dataType) {
+    protected AbstractGroupedReport(EntityPath<?> from, IReportGroupBy groupBy, IDataType... dataType) {
         this(null, from, groupBy, dataType);
     }
 
 
-    public AbstractGroupedReport(PoolRequestRepository poolRequestRepository,
+    protected AbstractGroupedReport(PoolRequestRepository poolRequestRepository,
                                  EntityPath<?> from, IReportGroupBy groupBy, IDataType... dataType) {
         super(poolRequestRepository, from, combine(groupBy, dataType));
         this.groupBy = groupBy;

@@ -23,9 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.config.security.IsBureauUser;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtUtilisationStatsReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtsAndDatesReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.JurySummoningMonitorReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
-import uk.gov.hmcts.juror.api.moj.controller.reports.request.YieldPerformanceReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.CourtUtilisationStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.DailyUtilisationReportJurorsResponse;
@@ -36,12 +36,14 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.JurySummoningMonit
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.MonthlyUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.OverdueUtilisationReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.ResponsesCompletedReportResponse;
+import uk.gov.hmcts.juror.api.moj.controller.reports.response.SittingDaysStatsReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.WeekendAttendanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.JurySummoningMonitorReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
+import uk.gov.hmcts.juror.api.moj.service.report.SittingDaysReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.YieldPerformanceReportService;
@@ -56,6 +58,7 @@ import static uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails.F_AUDIT_PR
 @RequestMapping(value = "/api/v1/moj/reports", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Reports")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class ReportController {
 
     private final ReportService reportService;
@@ -65,6 +68,7 @@ public class ReportController {
     private final YieldPerformanceReportService yieldPerformanceReportService;
     private final SummonsRepliesReportService summonsRepliesReportService;
     private final AttendanceReportService attendanceReportService;
+    private final SittingDaysReportService sittingDaysReportService;
 
     @PostMapping("/standard")
     @Operation(summary = "View a given report")
@@ -93,8 +97,8 @@ public class ReportController {
     @IsCourtUser
     public ResponseEntity<DailyUtilisationReportResponse> viewDailyUtilisationReport(
         @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode,
-        @RequestParam(value = "reportFromDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportFromDate,
-        @RequestParam(value = "reportToDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportToDate
+        @RequestParam("reportFromDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportFromDate,
+        @RequestParam("reportToDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportToDate
     ) {
 
         return ResponseEntity.ok(utilisationReportService.viewDailyUtilisationReport(locCode, reportFromDate,
@@ -107,7 +111,7 @@ public class ReportController {
     @IsCourtUser
     public ResponseEntity<DailyUtilisationReportJurorsResponse> viewDailyUtilisationJurors(
         @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode,
-        @RequestParam(value = "reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate
+        @RequestParam("reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate
     ) {
 
         return ResponseEntity.ok(utilisationReportService.viewDailyUtilisationJurors(locCode, reportDate));
@@ -119,7 +123,7 @@ public class ReportController {
     @IsCourtUser
     public ResponseEntity<MonthlyUtilisationReportResponse> generateMonthlyUtilisationReport(
         @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode,
-        @RequestParam(value = "reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate
+        @RequestParam("reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate
     ) {
         return ResponseEntity.ok(utilisationReportService.generateMonthlyUtilisationReport(locCode, reportDate));
     }
@@ -130,7 +134,7 @@ public class ReportController {
     @IsCourtUser
     public ResponseEntity<MonthlyUtilisationReportResponse> viewMonthlyUtilisationReport(
         @P("locCode") @PathVariable("locCode") @CourtLocationCode @Valid String locCode,
-        @RequestParam(value = "reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate,
+        @RequestParam("reportDate") @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid LocalDate reportDate,
         @RequestParam(value = "previousMonths", required = false) @Valid boolean previousMonths
     ) {
         return ResponseEntity.ok(utilisationReportService.viewMonthlyUtilisationReport(locCode, reportDate,
@@ -194,10 +198,10 @@ public class ReportController {
     @IsBureauUser
     public ResponseEntity<YieldPerformanceReportResponse> viewYieldPerformanceReport(
         @RequestBody
-        @Valid YieldPerformanceReportRequest yieldPerformanceReportRequest
+        @Valid CourtsAndDatesReportRequest courtsAndDatesReportRequest
     ) {
         return ResponseEntity.ok(yieldPerformanceReportService
-            .viewYieldPerformanceReport(yieldPerformanceReportRequest));
+            .viewYieldPerformanceReport(courtsAndDatesReportRequest));
     }
 
     @GetMapping("/weekend-attendance")
@@ -215,6 +219,15 @@ public class ReportController {
     public ResponseEntity<ResponsesCompletedReportResponse> getResponsesCompletedReport(
         @P("month") @PathVariable("month") LocalDate monthStartDate) {
         return ResponseEntity.ok(summonsRepliesReportService.getResponsesCompletedReport(monthStartDate));
+    }
+
+    @PostMapping("/sitting-days-stats")
+    @Operation(summary = "Get with Body, Get a table of sitting days stats for specified months for specified courts")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<SittingDaysStatsReportResponse> getSittingDaysStatsReport(
+        @RequestBody
+        @Valid CourtsAndDatesReportRequest courtsAndDatesReportRequest) {
+        return ResponseEntity.ok(sittingDaysReportService.getSittingDaysStats(courtsAndDatesReportRequest));
     }
 
 }

@@ -263,7 +263,7 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
             public String field2 = "abc";
             public String field3 = "abc";
 
-            public String field4 = null;
+            public String field4;
 
         }
 
@@ -287,8 +287,8 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
                     type = ValidateIf.Type.REQUIRE,
                     fields = {"field5", "field6"})
                 public String field4 = "abc";
-                public String field5 = null;
-                public String field6 = null;
+                public String field5;
+                public String field6;
             }
 
             @Test
@@ -360,16 +360,16 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
                 @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
                     type = ValidateIf.Type.EXCLUDE,
                     fields = {"field2", "field3"})
-                public String field1 = null;
+                public String field1;
                 public String field2 = "abc";
                 public String field3 = "abc";
 
                 @ValidateIf(condition = ValidateIf.Condition.NONE_PRESENT,
                     type = ValidateIf.Type.EXCLUDE,
                     fields = {"field5", "field6"})
-                public String field4 = null;
-                public String field5 = null;
-                public String field6 = null;
+                public String field4;
+                public String field5;
+                public String field6;
             }
 
             @Test
@@ -449,7 +449,7 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
         @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
             type = ValidateIf.Type.REQUIRE,
             fields = {"unknownField", "field3"})
-        public String field1 = null;
+        public String field1;
         public String field2 = "abc";
         public String field3 = "abc";
     }
@@ -462,7 +462,7 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
             type = ValidateIf.Type.REQUIRE,
             fields = {"field2", "field3"},
             message = "Some message that I have overridden")
-        public String field1 = null;
+        public String field1;
         public String field2 = "abc";
         public String field3 = "abc";
     }
@@ -475,7 +475,7 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
             type = ValidateIf.Type.REQUIRE,
             fields = {"field2", "field3"},
             message = "Some message that I have overridden")
-        private String field1 = null;
+        private String field1;
         private String field2 = "abc";
         private String field3 = "abc";
     }
@@ -488,7 +488,7 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
             type = ValidateIf.Type.REQUIRE,
             fields = {"field2", "field3"},
             message = "Some message that I have overridden")
-        private String field1 = null;
+        private String field1;
         private String field2 = "abc";
         private String field3 = "abc";
 
@@ -497,7 +497,6 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
         }
     }
 
-    @SuppressWarnings("PMD.RedundantFieldInitializer")
     public static class NotFoundMethodTestObject {
         @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
             type = ValidateIf.Type.REQUIRE,

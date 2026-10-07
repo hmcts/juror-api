@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {})
 @Min(0)
-@Max(1000000)
+@Max(1_000_000)
 public @interface ExpenseNumericLimit {
 
     String message() default "{uk.gov.hmcts.juror.api.validation.ExpenseBigDecimalLimit.message}";

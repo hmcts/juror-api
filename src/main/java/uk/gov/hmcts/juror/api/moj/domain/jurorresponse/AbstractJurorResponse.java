@@ -10,7 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -42,13 +42,12 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.NO_PIPES_REGEX;
 
 @MappedSuperclass
-@Table(name = "juror_response", schema = "juror_mod")
 @Getter
 @SuperBuilder
 @Setter
 @ToString(exclude = {"reasonableAdjustments", "cjsEmployments", "juror"})// lazy init fields
 @EqualsAndHashCode(callSuper = true, exclude = {"cjsEmployments", "reasonableAdjustments", "staff", "juror"})
-@SuppressWarnings("PMD.TooManyFields")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyFields"})
 public class AbstractJurorResponse extends Address implements Serializable {
 
     @Id
@@ -86,6 +85,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
     @Column(name = "processing_status")
     @Enumerated(EnumType.STRING)
     @Setter(AccessLevel.NONE)
+    @Builder.Default
     private ProcessingStatus processingStatus = ProcessingStatus.TODO;
 
     @LocalDateOfBirth
@@ -185,6 +185,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
     private String reasonableAdjustmentsArrangements;
 
     @Column(name = "processing_complete")
+    @Builder.Default
     private Boolean processingComplete = Boolean.FALSE;
 
     @Column(name = "completed_at")
@@ -196,25 +197,27 @@ public class AbstractJurorResponse extends Address implements Serializable {
     @JoinColumn(name = "staff_login")
     private User staff;
 
-
     /**
      * Contact log for the juror of this response.
      */
     @OneToMany(mappedBy = "jurorNumber")
+    @Builder.Default
     private List<ContactLog> contactLog = new ArrayList<>();
-
 
     /**
      * List of {@link JurorReasonableAdjustment} entities associated with this entity.
      */
     @OneToMany(mappedBy = "jurorNumber")
+    @Builder.Default
     private List<JurorReasonableAdjustment> reasonableAdjustments = new ArrayList<>();
 
     /**
      * List of {@link JurorResponseCjsEmployment} entities associated with this entity.
      */
     @OneToMany(mappedBy = "jurorNumber")
+    @Builder.Default
     private List<JurorResponseCjsEmployment> cjsEmployments = new ArrayList<>();
+
     /**
      * Flag that this response is urgent.
      */
@@ -225,6 +228,7 @@ public class AbstractJurorResponse extends Address implements Serializable {
      * Flag this response as welsh language.
      */
     @Column(name = "welsh")
+    @Builder.Default
     private Boolean welsh = Boolean.FALSE;
 
     @Version
@@ -242,11 +246,36 @@ public class AbstractJurorResponse extends Address implements Serializable {
     private ReplyType replyType;
 
     protected AbstractJurorResponse() {
+        super();
         // This constructor is intentionally empty. Nothing special is needed here.
     }
 
+    public Boolean isProcessingComplete() {
+        return processingComplete == null ? Boolean.FALSE : processingComplete;
+    }
+
+    public ProcessingStatus getProcessingStatus() {
+        return processingStatus == null ? ProcessingStatus.TODO : processingStatus;
+    }
+
+    public Boolean isWelsh() {
+        return welsh == null ? Boolean.FALSE : welsh;
+    }
+
+    public List<JurorResponseCjsEmployment> getCjsEmployments() {
+        return cjsEmployments == null ? new ArrayList<>() : cjsEmployments;
+    }
+
+    public List<JurorReasonableAdjustment> getReasonableAdjustments() {
+        return reasonableAdjustments == null ? new ArrayList<>() : reasonableAdjustments;
+    }
+
+    public List<ContactLog> getContactLog() {
+        return contactLog == null ? new ArrayList<>() : contactLog;
+    }
+
     public boolean isClosed() {
-        return getProcessingStatus().equals(ProcessingStatus.CLOSED);
+        return getProcessingStatus() == ProcessingStatus.CLOSED;
     }
 
     public void setProcessingStatus(JurorResponseAuditRepositoryMod jurorResponseAuditRepository,
@@ -264,5 +293,19 @@ public class AbstractJurorResponse extends Address implements Serializable {
             .newProcessingStatus(processingStatus)
             .build());
         this.processingStatus = processingStatus;
+    }
+
+    @PrePersist
+    @SuppressWarnings({"PMD.UnusedPrivateMethod"}) // will be used by @PrePersist annotation.
+    private void ensureDefaults() {
+        if (processingStatus == null) {
+            processingStatus = ProcessingStatus.TODO;
+        }
+        if (processingComplete == null) {
+            processingComplete = Boolean.FALSE;
+        }
+        if (welsh == null) {
+            welsh = Boolean.FALSE;
+        }
     }
 }

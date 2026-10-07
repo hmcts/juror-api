@@ -36,6 +36,7 @@ public class SecurityConfigEndpoints {
      */
     @Bean
     @Order(1)
+    @SuppressWarnings({"PMD.SignatureDeclareThrowsException"}) // .build() throws Exception
     public SecurityFilterChain publicApiJwtSecurityConfigurationFilterChain(HttpSecurity http) throws Exception {
         return buildSecurityFilterChainBase(
             http,
@@ -50,7 +51,7 @@ public class SecurityConfigEndpoints {
      */
     @Bean
     @Order(1)
-    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
+    @SuppressWarnings({"PMD.SignatureDeclareThrowsException"}) // .build() throws Exception
     public SecurityFilterChain bureauApiJwtSecurityConfigurationFilterChain(HttpSecurity http) throws Exception {
         return buildSecurityFilterChainBase(
             http,
@@ -67,6 +68,7 @@ public class SecurityConfigEndpoints {
      */
     @Bean
     @Order(1)
+    @SuppressWarnings({"PMD.SignatureDeclareThrowsException"}) // .build() throws Exception
     public SecurityFilterChain jurorErJwtSecurityConfigurationFilterChain(HttpSecurity http) throws Exception {
         return buildSecurityFilterChainBase(
             http,
@@ -82,6 +84,7 @@ public class SecurityConfigEndpoints {
      */
     @Bean
     @Order(1)
+    @SuppressWarnings({"PMD.SignatureDeclareThrowsException"}) // .build() throws Exception
     public SecurityFilterChain authenticationEndpointHmacSecurityConfigurationFilterChain(
         HttpSecurity http) throws Exception {
         return buildSecurityFilterChainBase(
@@ -99,6 +102,7 @@ public class SecurityConfigEndpoints {
             .build();
     }
 
+    @SuppressWarnings({"PMD.SignatureDeclareThrowsException"}) // .build() throws Exception
     public HttpSecurity buildSecurityFilterChainBase(HttpSecurity http, Filter filter)
         throws Exception {
         return http
@@ -113,6 +117,7 @@ public class SecurityConfigEndpoints {
      */
     @Bean
     @Order(2)
+    @SuppressWarnings({"PMD.SignatureDeclareThrowsException"}) // .build() throws Exception
     public SecurityFilterChain permitErrorConfigurationFilterChain(HttpSecurity http) throws Exception {
         return http
             .securityMatcher(ERROR)
@@ -124,11 +129,12 @@ public class SecurityConfigEndpoints {
     }
 
     @Autowired
-    protected void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    protected void configureGlobal(AuthenticationManagerBuilder auth) {
         //no-op
     }
 
     @Bean
+    @SuppressWarnings({"PMD.SignatureDeclareThrowsException"}) // .build() throws Exception
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
             .authorizeHttpRequests(auths -> auths.anyRequest().denyAll())

@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,6 +19,7 @@ import java.util.Locale;
  */
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Getter
 @Schema(description = "List of contact logs relating to a specific juror record")
 public class ContactLogListDto {
@@ -37,18 +40,22 @@ public class ContactLogListDto {
 
         @JsonProperty("username")
         @Schema(name = "Username", description = "System user identifier")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String username;
 
         @JsonProperty("logDate")
         @Schema(name = "Date of log", description = "Date the contact log was originally recorded")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String logDate;
 
         @JsonProperty("enquiryType")
         @Schema(name = "Enquiry type", description = "Enquiry type description")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String enquiryType;
 
         @JsonProperty("notes")
         @Schema(name = "Notes", description = "Contact log notes/content")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String notes;
 
         /**

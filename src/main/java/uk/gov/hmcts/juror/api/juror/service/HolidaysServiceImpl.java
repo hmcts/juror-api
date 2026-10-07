@@ -45,9 +45,9 @@ public class HolidaysServiceImpl implements HolidaysService {
         JurorHolidaysResponseDto.MatchingHolidayDates matchingHolidayDates =
             new JurorHolidaysResponseDto.MatchingHolidayDates();
         final List<Holidays> publicHolidaysDates = new ArrayList<>();
-        final Date[] dates = new Date[]{firstCheckDate, secondCheckDate, thirdCheckDate};
-        for (int i = 0; i < dates.length; i++) {
-            publicHolidaysDates.addAll(holidaysDateService.getHolidayDates(dates[i]));
+        final Date[] dates = {firstCheckDate, secondCheckDate, thirdCheckDate};
+        for (Date date : dates) {
+            publicHolidaysDates.addAll(holidaysDateService.getHolidayDates(date));
         }
         matchingHolidayDates.setPublicHolidayDates(JurorHolidaysResponseDto.Holidays.from(publicHolidaysDates));
 

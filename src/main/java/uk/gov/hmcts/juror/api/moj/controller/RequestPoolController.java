@@ -49,6 +49,7 @@ import java.time.LocalDate;
 @RequestMapping(value = "/api/v1/moj/pool-request", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Pool Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class RequestPoolController {
 
     @NonNull
@@ -141,7 +142,7 @@ public class RequestPoolController {
                                               @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") @Valid
                                               LocalDate attendanceDate) {
         DayType dayType = poolRequestService.checkAttendanceDate(attendanceDate, locationCode);
-        log.debug(String.format("Proposed attendance date %s is a %s", attendanceDate, dayType));
+        log.debug("Proposed attendance date {} is a {}", attendanceDate, dayType);
         return ResponseEntity.ok().body(dayType);
     }
 

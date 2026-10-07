@@ -56,7 +56,7 @@ import java.util.List;
 @Tag(name = "Pool Management")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @PreAuthorize("isAuthenticated()")
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 public class CreatePoolController {
 
     private final PoolCreateService poolCreateService;

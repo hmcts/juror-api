@@ -6,15 +6,15 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
 
-public class PostgresqlContainer extends PostgreSQLContainer<PostgresqlContainer> {
+public final class PostgresqlContainer extends PostgreSQLContainer<PostgresqlContainer> {
 
-    private static final DockerImageName dockerImageName = DockerImageName
+    private static final DockerImageName DOCKER_IMAGE_NAME = DockerImageName
         .parse("hmctsprod.azurecr.io/imported/postgres:16-alpine")
         .asCompatibleSubstituteFor("postgres");
     private static PostgresqlContainer container;
 
     private PostgresqlContainer() {
-        super(dockerImageName);
+        super(DOCKER_IMAGE_NAME);
         setup();
     }
 

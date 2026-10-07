@@ -64,6 +64,7 @@ public class PrintLetterDataResponseDto implements Serializable {
     @Builder
     @Getter
     @Setter
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class AttendanceData {
         private Boolean nonAttendance;

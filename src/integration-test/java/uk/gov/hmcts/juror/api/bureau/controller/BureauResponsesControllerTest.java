@@ -79,7 +79,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
         ResponseEntity<BureauResponseSummaryWrapper> responseEntity =
-            template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/bureau"
+            template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/bureau"
                 + "/responses/todo")), BureauResponseSummaryWrapper.class);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -113,7 +113,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
         ResponseEntity<BureauResponseSummaryWrapper> responseEntity =
-            template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/bureau"
+            template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/bureau"
                 + "/responses/pending")), BureauResponseSummaryWrapper.class);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -148,7 +148,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
         ResponseEntity<BureauResponseSummaryWrapper> responseEntity =
-            template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/bureau"
+            template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/bureau"
                 + "/responses/completedToday")), BureauResponseSummaryWrapper.class);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -182,7 +182,7 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
         ResponseEntity<BureauResponseOverviewDto> responseEntity =
-            template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/bureau"
+            template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/bureau"
                 + "/responses/overview/ncrawford")), BureauResponseOverviewDto.class);
 
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);

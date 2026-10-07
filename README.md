@@ -7,7 +7,7 @@ managing jurors.
 
 ## Prerequisites
 
-- [Java 17](https://www.oracle.com/java)
+- [Java 21](https://www.oracle.com/java)
 - [Docker](https://www.docker.com)
 
 ### Environment variables
@@ -125,7 +125,7 @@ You should get a response similar to this:
   "readinessState":{"status":"UP"}},"groups":["liveness","readiness"]}%
 ```
 
-It is possible to debug the application through Intellij selecting the appropriate run configuration or through gradle.
+It is possible to debug the application through Intellij selecting the appropriate run configuration or through Gradle.
 
 ### Swagger UI
 

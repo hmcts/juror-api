@@ -13,8 +13,8 @@ import uk.gov.hmcts.juror.api.validation.PoolNumber;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@SuperBuilder
 public class JurorNumberAndPoolNumberDto {
 
     @JurorNumber

@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 /**
  * Operations for assigning officers to responses in backlog whenever a change/update is made.
  */
+@FunctionalInterface
 public interface AssignOnUpdateService {
 
     /**

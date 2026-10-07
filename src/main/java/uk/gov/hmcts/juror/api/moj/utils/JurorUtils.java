@@ -5,10 +5,15 @@ import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.JurorRecordException;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
 import java.time.LocalDate;
@@ -18,7 +23,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsService.AGE_DISQUALIFICATION_THRESHOLD;
+
 @Slf4j
+@SuppressWarnings("PMD")
 public final class JurorUtils {
 
     private JurorUtils() {
@@ -60,7 +68,7 @@ public final class JurorUtils {
     public static void checkOwnershipForCurrentUser(Juror juror, String owner, boolean bureauAlwaysAllowed) {
         log.trace("Enter checkOwnershipForCurrentUser");
         log.debug("Check if current user (owner = {}) owns juror record: {}", owner, juror.getJurorNumber());
-        if (bureauAlwaysAllowed && owner.equals(SecurityUtil.BUREAU_OWNER)) {
+        if (bureauAlwaysAllowed && SecurityUtil.BUREAU_OWNER.equals(owner)) {
             log.debug("Bureau user is always allowed to edit juror records");
             return;
         }
@@ -126,6 +134,7 @@ public final class JurorUtils {
      * @return integer representation of age in whole years
      * @throws IllegalArgumentException thrown if either argument is null
      */
+    @SuppressWarnings("PMD.AvoidUncheckedExceptionsInSignatures")
     public static int getJurorAgeAtHearingDate(final LocalDate dateOfBirth,
                                                final LocalDate serviceStartDate) throws IllegalArgumentException {
         log.debug("Calculate Juror age using date of birth {} and service start date {}", dateOfBirth,
@@ -158,6 +167,54 @@ public final class JurorUtils {
 
         return jurorRepository.findByJurorNumberInAndIsActiveAndPoolNumberAndCourtAndStatusIn(jurorNumbers,
             true, poolNumber, courtLocation, validSourceStatusList);
+    }
+
+
+    public static boolean isAgeDisqualified(LocalDate dateOfBirth, LocalDate serviceStartDate) {
+        if (dateOfBirth == null || serviceStartDate == null) {
+            return false;
+        }
+        return Period.between(dateOfBirth, serviceStartDate).getYears() >= AGE_DISQUALIFICATION_THRESHOLD;
+    }
+
+    public static LocalDate resolveDateOfBirth(Juror juror,
+                                        JurorDigitalResponseRepositoryMod digitalResponseRepository,
+                                        JurorPaperResponseRepositoryMod paperResponseRepository,
+                                        ReplyMethod replyMethod) {
+        if (replyMethod != null) {
+            if (replyMethod == ReplyMethod.DIGITAL) {
+                DigitalResponse digital = digitalResponseRepository.findByJurorNumber(
+                    juror.getJurorNumber());
+                if (digital != null && digital.getDateOfBirth() != null) {
+                    return digital.getDateOfBirth();
+                }
+            } else if (replyMethod == ReplyMethod.PAPER) {
+                PaperResponse paper = paperResponseRepository.findByJurorNumber(
+                    juror.getJurorNumber());
+                if (paper != null && paper.getDateOfBirth() != null) {
+                    return paper.getDateOfBirth();
+                }
+            }
+        }
+        // null replyMethod or response record has no DOB — fall back to juror entity,
+        // then digital, then paper
+        LocalDate dob = juror.getDateOfBirth();
+        if (dob != null) {
+            return dob;
+        }
+        DigitalResponse digital = digitalResponseRepository.findByJurorNumber(juror.getJurorNumber());
+        if (digital != null && digital.getDateOfBirth() != null) {
+            return digital.getDateOfBirth();
+        }
+        PaperResponse paper = paperResponseRepository.findByJurorNumber(juror.getJurorNumber());
+        if (paper != null && paper.getDateOfBirth() != null) {
+            return paper.getDateOfBirth();
+        }
+        return null;
+    }
+
+    public static boolean isDigitalPreference(Juror juror) {
+        return ReplyMethod.DIGITAL.getDescription().equalsIgnoreCase(juror.getDbdPreference());
     }
 
 }

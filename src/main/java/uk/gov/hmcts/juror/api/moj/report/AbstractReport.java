@@ -58,7 +58,9 @@ import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIn
 @Slf4j
 @SuppressWarnings({
     "PMD.TooManyMethods",
-    "PMD.ExcessiveImports"
+    "PMD.ExcessiveImports",
+    "PMD.CouplingBetweenObjects",
+    "PMD.GodClass"
 })
 public abstract class AbstractReport<T> implements IReport {
     static final Map<EntityPath<?>, Map<EntityPath<?>, Predicate[]>> CLASS_TO_JOIN;
@@ -119,15 +121,15 @@ public abstract class AbstractReport<T> implements IReport {
     final Set<EntityPath<?>> requiredTables;
     final List<IDataType> effectiveDataTypes;
     final EntityPath<?> from;
-    final Map<EntityPath<?>, Map<EntityPath<?>, JoinOverrideDetails>> classToJoinOverrides = new HashMap<>();
+    final Map<EntityPath<?>, Map<EntityPath<?>, JoinOverrideDetails>> classToJoinOverrides = new ConcurrentHashMap<>();
 
     final List<Consumer<StandardReportRequest>> authenticationConsumers;
 
-    public AbstractReport(EntityPath<?> from, IDataType... dataType) {
+    protected AbstractReport(EntityPath<?> from, IDataType... dataType) {
         this(null, from, dataType);
     }
 
-    public AbstractReport(PoolRequestRepository poolRequestRepository,
+    protected AbstractReport(PoolRequestRepository poolRequestRepository,
                           EntityPath<?> from, IDataType... dataType) {
         this.poolRequestRepository = poolRequestRepository;
         this.from = from;
@@ -203,6 +205,7 @@ public abstract class AbstractReport<T> implements IReport {
         return getRequestValidatorClass();
     }
 
+    @Override
     public AbstractReportResponse<T> getStandardReportResponse(StandardReportRequest request) {
         authenticationConsumers.forEach(consumer -> consumer.accept(request));
         List<Tuple> data = getData(request);
@@ -222,7 +225,7 @@ public abstract class AbstractReport<T> implements IReport {
         return report;
     }
 
-
+    @SuppressWarnings({"PMD.EmptyMethodInAbstractClassShouldBeAbstract"}) // would force every subclass to implement
     protected void postProcessTableData(StandardReportRequest request, AbstractReportResponse.TableData<T> tableData) {
         //This method does noting unless overridden
     }
@@ -306,6 +309,7 @@ public abstract class AbstractReport<T> implements IReport {
                 .toArray(Expression[]::new)).from(from);
     }
 
+    @SuppressWarnings({"PMD.CognitiveComplexity"})
     void addJoins(JPAQuery<Tuple> query) {
         requiredTables.forEach(requiredTable -> {
             if (from.equals(requiredTable)) {
@@ -457,7 +461,7 @@ public abstract class AbstractReport<T> implements IReport {
         StandardReportRequest request, TrialRepository trialRepository, boolean addTrialStartDate) {
 
         Trial trial = getTrial(request.getTrialNumber(), trialRepository);
-        Map<String, AbstractReportResponse.DataTypeValue> trialHeaders = new HashMap<>(Map.of(
+        Map<String, AbstractReportResponse.DataTypeValue> trialHeaders = new ConcurrentHashMap<>(Map.of(
             "trial_number", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Trial Number")
                 .dataType(String.class.getSimpleName())

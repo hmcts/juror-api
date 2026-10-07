@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.PostponedLetterList;
 
 import java.util.List;
 
+@FunctionalInterface
 public interface PostponementLetterListRepository {
     List<PostponedLetterList> findJurorsEligibleForPostponementLetter(CourtLetterSearchCriteria searchCriteria);
 }

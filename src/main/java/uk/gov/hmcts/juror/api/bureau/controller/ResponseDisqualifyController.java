@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.bureau.controller;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.jsonwebtoken.lang.Assert;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -49,10 +51,13 @@ public class ResponseDisqualifyController {
         this.responseDisqualifyService = responseDisqualifyService;
     }
 
+    /*
+    @throws DisqualifyException
+     */
     @GetMapping
     @Operation(summary = "list of potential disqualification reasons",
         description = "Retrieve list of potential disqualification reasons")
-    public ResponseEntity<DisqualifyReasonsDto> getDisqualifyReasons() throws DisqualifyException {
+    public ResponseEntity<DisqualifyReasonsDto> getDisqualifyReasons() {
         List<DisqualifyCodeDto> disqualifyReasons = responseDisqualifyService.getDisqualifyReasons();
 
         // JDB-1458: We need to remove "E - Electronic Police Check Failure" from the list
@@ -62,20 +67,23 @@ public class ResponseDisqualifyController {
         return ResponseEntity.ok().body(new DisqualifyReasonsDto(disqualifyReasons));
     }
 
+    /*
+    @throws DisqualifyException
+     */
     @PostMapping("/{jurorId}")
     @Operation(summary = "disqualification for a specific juror",
         description = "Mark a single juror with a certain disqualification code by their juror number")
     public ResponseEntity<Void> disqualifyJuror(
         @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
         BureauJwtAuthentication jwt,
-        @Validated @RequestBody DisqualifyCodeDto disqualifyCodeDto) throws DisqualifyException {
+        @Validated @RequestBody DisqualifyCodeDto disqualifyCodeDto) {
         assertJurorNumberPathVariable(jurorId);
-        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         if (null == disqualifyCodeDto.getDisqualifyCode() || null == disqualifyCodeDto.getVersion()) {
             // there is either no body or no version present in the request
             throw new DisqualifyException.RequestIsMissingDetails(jurorId);
         }
 
+        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
         log.info(
             "Attempting to disqualify juror {} using code {}, by user {}",
             jurorId,
@@ -93,6 +101,7 @@ public class ResponseDisqualifyController {
      */
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Data
     @Schema(description = "List of Disqualification Reasons")
     public static class DisqualifyReasonsDto {
@@ -108,6 +117,7 @@ public class ResponseDisqualifyController {
      */
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Data
     @Schema(description = "Disqualification Reason")
     public static class DisqualifyCodeDto {

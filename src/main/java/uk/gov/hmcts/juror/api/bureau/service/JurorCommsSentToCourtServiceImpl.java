@@ -46,7 +46,8 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
      * Processes entries in the Juror table and sends the appropriate email notifications to
      * the juror for juror where they have been transferred to court.
      */
-    @SuppressWarnings("checkstyle:LineLength") // false positive
+    @SuppressWarnings({"checkstyle:LineLength", "PMD.NcssCount", "PMD.CognitiveComplexity",
+        "PMD.CyclomaticComplexity", "PMD.NPathComplexity"}) // false positive
     @Override
     @Transactional
     public SchedulerServiceClient.Result process() {
@@ -264,11 +265,10 @@ public class JurorCommsSentToCourtServiceImpl implements BureauProcessService {
             jurorRepository.save(jurorDetails);
             log.trace("Updating Juror notification as sent ({})... ", jurorDetails.getJuror().getNotifications());
         } catch (TransactionSystemException e) {
-            Throwable cause = e.getRootCause();
             throw new JurorCommsNotificationServiceException(
                 "Failed to update db to "
                     + jurorDetails.getJuror().getNotifications() + ". Manual update required. ",
-                cause
+                e
             );
         }
     }

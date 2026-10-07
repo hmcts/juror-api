@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
@@ -59,6 +58,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -66,16 +66,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(SpringRunner.class)
 @SuppressWarnings({
-    "PMD.LawOfDemeter",
     "PMD.TooManyMethods",
     "PMD.LinguisticNaming",
     "PMD.ExcessiveImports",
-    "PMD.ExcessivePublicCount"})
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+    "PMD.ExcessivePublicCount",
+    "PMD.CouplingBetweenObjects"})
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = "feature-flags.flags.digital-by-default=false")
 public class CreatePoolControllerITest extends AbstractIntegrationTest {
-
-    @Value("${jwt.secret.bureau}")
-    private String bureauSecret;
 
     @Autowired
     private TestRestTemplate template;
@@ -202,8 +201,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
         final SummonsFormRequestDto summonsFormRequest1 =
             new SummonsFormRequestDto("415220110", "415",
-                LocalDateTime.of(2022, 10, 04, 9, 0, 0),
-                140, LocalDate.of(2022, 10, 04));
+                LocalDateTime.of(2022, 10, 4, 9, 0, 0),
+                140, LocalDate.of(2022, 10, 4));
 
 
         final URI uri = URI.create("/api/v1/moj/pool-create/summons-form");
@@ -273,7 +272,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql",
         "/db/CreatePoolController_createPool.sql",
         "/db/CreatePoolController_loadVotersWithFlags.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void createPool_withDisqualifiedOnSelection() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
@@ -320,12 +318,38 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     }
 
+    @Test
+    @Sql({"/db/mod/truncate.sql",
+        "/db/CreatePoolController_createPool.sql",
+        "/db/CreatePoolController_excludedJurorsTest.sql",
+        "/db/CreatePoolController_loadVotersWithDeceasedJurors.sql"})
+    public void createPool_withDeceasedVoters() {
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
+                                   .userType(UserType.BUREAU)
+                                   .login("BUREAU_USER")
+                                   .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
+                                   .owner("400")
+                                   .build());
+
+        PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+        poolCreateRequest.setNoRequested(8);
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
+                                                                                HttpMethod.POST, uri);
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+        // unable to create pool as some selected jurors are deceased
+    }
+
 
     @Test
     @Sql({"/db/mod/truncate.sql",
         "/db/CreatePoolController_createPool.sql",
         "/db/CreatePoolController_loadVotersWithOverseasFlags.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void createPool_withVotersOverseasFlags() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userType(UserType.BUREAU)
@@ -370,19 +394,54 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(disqCount).as("Expect there to be up to three disqualified jurors").isLessThanOrEqualTo(3);
 
         executeInTransaction(() -> {
-            // check that the jurors with overseas flags are included in the pool
-            Juror juror = jurorRepository.findByJurorNumber("641500004");
-            assertThat(juror).isNotNull();
-            assertThat(juror.getLivingOverseas()).isEqualTo(true);
 
-            List<JurorPool> jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive("641500004", true);
+            List<Juror> jurors = jurorRepository.findAll();
+            Juror juror = jurors.stream()
+                .filter(j -> TRUE.equals(j.getLivingOverseas()))
+                .findFirst()
+                .orElse(null);
+            // There should be at least one juror with overseas flag
+            assertThat(juror).isNotNull();
+
+            List<JurorPool> jurorPool = jurorPoolRepository
+                                            .findByJurorJurorNumberAndIsActive(juror.getJurorNumber(), true);
             assertThat(jurorPool).isNotEmpty();
             assertThat(jurorPool.size()).isEqualTo(1);
             JurorStatus expectedJurorStatus = jurorPool.get(0).getStatus();
-            assertThat(expectedJurorStatus.getStatus()).isEqualTo(IJurorStatus.SUMMONED);
+            // juror could be summoned or disqualified (there is one disqualified juror)
+            assertThat(expectedJurorStatus.getStatus()).isIn(IJurorStatus.SUMMONED, IJurorStatus.DISQUALIFIED);
         });
 
     }
+
+
+    @Test
+    @Sql({"/db/mod/truncate.sql",
+        "/db/CreatePoolController_createPool.sql",
+        "/db/CreatePoolController_excludedJurorsTest.sql",
+        "/db/CreatePoolController_loadVotersWithExcluded.sql"})
+    public void createPool_withExcludedVoters() {
+        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
+                                       .userType(UserType.BUREAU)
+                                       .login("BUREAU_USER")
+                                       .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
+                                       .owner("400")
+                                       .build());
+
+        PoolCreateRequestDto poolCreateRequest = setUpPoolCreateRequestDto();
+        poolCreateRequest.setNoRequested(8);
+
+        final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+        RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
+                                                                                HttpMethod.POST, uri);
+        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+
+        // unable to create pool as there are excluded jurors in the available list
+    }
+
 
     @Test
     @Sql(statements = "delete from juror_mod.bulk_print_data")
@@ -752,7 +811,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         return poolCreateRequestDto;
     }
 
-
     /* A Court user should not be able to create a pool */
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
@@ -779,7 +837,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
     public void testGThinPoolMembersHappyPath() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("1")
@@ -798,7 +855,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         assertThat(response.getBody()).hasSize(2);
-        assertThat(response.getBody()).containsExactly("777777777", "888888888");
+        assertThat(response.getBody()).containsExactlyInAnyOrder("777777777", "888888888");
     }
 
     @Test

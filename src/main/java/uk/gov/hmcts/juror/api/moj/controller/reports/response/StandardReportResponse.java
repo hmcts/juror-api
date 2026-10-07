@@ -12,6 +12,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @ToString(callSuper = true)
 @SuperBuilder
+@SuppressWarnings("unchecked")
 @NoArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class StandardReportResponse extends

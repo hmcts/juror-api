@@ -60,12 +60,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     JwtServiceImpl.class,
     ApplicationBeans.class
 })
+@SuppressWarnings({
+    "PMD.MutableStaticState",
+    "PMD.ExcessiveImports",
+    "PMD.UnitTestShouldIncludeAssert"
+})
+
 @ActiveProfiles({"development", "test"})
-@SuppressWarnings("PMD.MutableStaticState")
 class SecurityConfigTest {
 
     @MockBean
     private CourtLocationRepository courtLocationRepository;
+
+    @Autowired
+    private MockMvc mockMvc;
 
     protected static String bureauSecret;
     protected static String publicSecret;
@@ -73,27 +81,25 @@ class SecurityConfigTest {
     protected static String erportalSecret;
 
     @Value("${jwt.secret.bureau}")
-    public void setBureauSecret(String secret) {
+    void setBureauSecret(String secret) {
         bureauSecret = secret;
     }
 
     @Value("${jwt.secret.public}")
-    public void setPublicSecret(String secret) {
+    void setPublicSecret(String secret) {
         publicSecret = secret;
     }
 
     @Value("${jwt.secret.hmac}")
-    public void setHmacSecret(String secret) {
+    void setHmacSecret(String secret) {
         hmacSecret = secret;
     }
 
     @Value("${jwt.secret.er-portal}")
-    public void setErportalSecret(String secret) {
+    void setErportalSecret(String secret) {
         erportalSecret = secret;
     }
 
-    @Autowired
-    private MockMvc mockMvc;
 
     @ParameterizedTest(name = "[{index}] Authorised request using JWT Type: {0} for url {1}")
     @MethodSource("authorisedRequests")
@@ -108,12 +114,11 @@ class SecurityConfigTest {
     @ParameterizedTest(name = "[{index}] Unauthorised request expected JWT Type: {0} but got JWT Type {1} for url {2}")
     @MethodSource("unauthorisedRequests")
     void unauthorised(String expectedJwtType, String actualJwtType, String url, String jwt) throws Exception {
-        assertThrows(InvalidJwtAuthenticationException.class, () -> {
+        assertThrows(InvalidJwtAuthenticationException.class, () ->
             mockMvc.perform(get(url)
                     .header(HttpHeaders.AUTHORIZATION, jwt)
                     .contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(status().isUnauthorized());
-        });
+                .andExpect(status().isUnauthorized()));
     }
 
     private Stream<Arguments> unauthorisedRequests() {
@@ -163,10 +168,10 @@ class SecurityConfigTest {
         }
 
         private enum JwtType {
-            HMAC(SecurityConfigTest.hmacSecret, JwtType::getHmacClaimMap),
-            PUBLIC(SecurityConfigTest.publicSecret, JwtType::getPublicClaimMap),
-            BUREAU(SecurityConfigTest.bureauSecret, JwtType::getBureauClaimMap),
-            JURORER(SecurityConfigTest.erportalSecret, JwtType::getJurorErClaimMap);
+            HMAC(hmacSecret, JwtType::getHmacClaimMap),
+            PUBLIC(publicSecret, JwtType::getPublicClaimMap),
+            BUREAU(bureauSecret, JwtType::getBureauClaimMap),
+            JURORER(erportalSecret, JwtType::getJurorErClaimMap);
 
             private final String secret;
             private final Supplier<Map<String, Object>> jwtClaimMapSupplier;
@@ -176,15 +181,15 @@ class SecurityConfigTest {
                 this.jwtClaimMapSupplier = jwtClaimMapSupplier;
             }
 
-            public Map<String, Object> getClaimMap() {
+            Map<String, Object> getClaimMap() {
                 return jwtClaimMapSupplier.get();
             }
 
-            public String getValidToken() {
+            String getValidToken() {
                 return getJwt(secret, getClaimMap());
             }
 
-            public String getInvalidToken() {
+            String getInvalidToken() {
                 return getJwt(secret + "Invalid", jwtClaimMapSupplier.get());
             }
 
@@ -235,7 +240,7 @@ class SecurityConfigTest {
                 return claimsMap;
             }
 
-            public static String getJwt(String secret, Map<String, Object> claimsMap) {
+            static String getJwt(String secret, Map<String, Object> claimsMap) {
                 claimsMap.put(Claims.EXPIRATION, Date.from(Instant.now().plus(100L * 365L, ChronoUnit.DAYS)));
                 claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
                 return Jwts.builder()
@@ -244,14 +249,14 @@ class SecurityConfigTest {
                     .compact();
             }
 
-            public Object getJwtWithClaimMap(Map<String, Object> claimMap) {
+            Object getJwtWithClaimMap(Map<String, Object> claimMap) {
                 return getJwt(secret, claimMap);
             }
         }
     }
 
     @RestController
-    public static class SecurityConfigControllerTest {
+    static class SecurityConfigControllerTest {
         @GetMapping({
             "/api/v1/public/test",
             "/api/v1/bureau/test",
@@ -263,7 +268,7 @@ class SecurityConfigTest {
             "/api/v1/auth/juror-er/test",
             "/api/v1/auth/settings/test"
         })
-        public ResponseEntity<Map<String, Boolean>> validResponse() {
+        ResponseEntity<Map<String, Boolean>> validResponse() {
             return ResponseEntity.ok(Collections.singletonMap("isValid", true));
         }
     }

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller.request.summonsmanagement;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -20,14 +21,13 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 @Builder
 @Getter
 @Data
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Disqualify juror payload")
 public class DisqualifyJurorDto {
-    @JsonProperty("replyMethod")
     @Schema(description = "Reply method type (PAPER or DIGITAL)")
     @NotNull(message = "Reply method is missing")
     public ReplyMethod replyMethod;
 
-    @JsonProperty("code")
     @Schema(description = "Disqualification code")
     @NotNull(message = "Disqualify code is missing")
     private DisqualifyCodeEnum code;

@@ -18,11 +18,13 @@ import uk.gov.hmcts.juror.api.moj.service.JwtService;
 import uk.gov.hmcts.juror.api.moj.service.JwtServiceImpl;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,7 +37,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-@SuppressWarnings("PMD.TooManyMethods") // test class with multiple test cases
 class LaUserServiceImplTest {
 
     @Mock
@@ -51,7 +52,6 @@ class LaUserServiceImplTest {
     private LaUserServiceImpl laUserService;
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     void testGetLocalAuthoritiesHappy() {
 
         String email = "testemail@localauth1.gov.uk";
@@ -67,7 +67,7 @@ class LaUserServiceImplTest {
                 .localAuthority(localAuthority)
                 .build());
 
-        when(userRepository.findByUsername(email)).thenReturn(laUsers);
+        when(userRepository.findByUsernameIgnoreCase(email)).thenReturn(laUsers);
 
         List<LocalAuthority> localAuthorities = laUserService.getLocalAuthorities(email);
 
@@ -82,7 +82,7 @@ class LaUserServiceImplTest {
 
         String email = "testemail@localauth1.gov.uk";
 
-        when(userRepository.findByUsername(email)).thenReturn(List.of());
+        when(userRepository.findByUsernameIgnoreCase(email)).thenReturn(List.of());
 
         MojException.NotFound exception =
             assertThrows(
@@ -94,12 +94,11 @@ class LaUserServiceImplTest {
         assertThat(exception).isNotNull();
         assertThat(exception.getMessage()).contains("User not found");
 
-        verify(userRepository).findByUsername(email);
+        verify(userRepository).findByUsernameIgnoreCase(email);
 
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     void createJwtHappy() {
 
         String email = "testemail@localauth1.gov.uk";
@@ -116,7 +115,7 @@ class LaUserServiceImplTest {
                 .localAuthority(localAuthority)
                 .build();
 
-        when(userRepository.findByUsername(email))
+        when(userRepository.findByUsernameIgnoreCase(email))
             .thenReturn(List.of(laUser));
         when(jwtService.getSigningKey(anyString())).thenReturn(null);
 
@@ -127,12 +126,16 @@ class LaUserServiceImplTest {
                                              anyMap())).thenReturn("jwt-token");
 
 
+            LocalDateTime before = LocalDateTime.now();
             LaJwtDto dto = laUserService.createJwt(email, "001");
+            LocalDateTime after = LocalDateTime.now();
+
             assertNotNull(dto);
             assertEquals("jwt-token", dto.getJwt());
+            assertThat(laUser.getLastLoggedIn()).isBetween(before, after);
         }
 
-        verify(userRepository).findByUsername(email);
+        verify(userRepository).findByUsernameIgnoreCase(email);
         verify(jwtService).getSigningKey(null);
 
         Map<String, Object> expectedClaims = Map.of(
@@ -152,7 +155,7 @@ class LaUserServiceImplTest {
 
         String email = "testemail@localauth1.gov.uk";
 
-        when(userRepository.findByUsername(email)).thenReturn(List.of());
+        when(userRepository.findByUsernameIgnoreCase(email)).thenReturn(List.of());
 
         MojException.NotFound exception =
             assertThrows(
@@ -164,7 +167,7 @@ class LaUserServiceImplTest {
         assertThat(exception).isNotNull();
         assertThat(exception.getMessage()).contains("User not found");
 
-        verify(userRepository).findByUsername(email);
+        verify(userRepository).findByUsernameIgnoreCase(email);
         verifyNoInteractions(jwtService);
     }
 
@@ -185,7 +188,7 @@ class LaUserServiceImplTest {
                 .localAuthority(localAuthority)
                 .build());
 
-        when(userRepository.findByUsername(email)).thenReturn(laUsers);
+        when(userRepository.findByUsernameIgnoreCase(email)).thenReturn(laUsers);
 
         List<LaUser> laUserList = laUserService.findUserByUsername(email);
 
@@ -194,7 +197,7 @@ class LaUserServiceImplTest {
         assertThat(laUserList.get(0).getUsername()).isEqualTo(email);
         assertThat(laUserList.get(0).getLocalAuthority().getLaCode()).isEqualTo("001");
 
-        verify(userRepository).findByUsername(email);
+        verify(userRepository).findByUsernameIgnoreCase(email);
     }
 
     @Test
@@ -213,12 +216,13 @@ class LaUserServiceImplTest {
                 .localAuthority(localAuthority)
                 .build();
 
-        when(userRepository.findByUsernameAndLocalAuthority(email, localAuthority)).thenReturn(Optional.of(laUser));
+        when(userRepository.findByUsernameIgnoreCaseAndLocalAuthority(email, localAuthority))
+            .thenReturn(Optional.of(laUser));
         when(localAuthorityRepository.findByLaCode("001")).thenReturn(Optional.of(localAuthority));
 
         laUserService.findUserByUsernameAndLa(email, "001");
 
-        verify(userRepository).findByUsernameAndLocalAuthority(email, localAuthority);
+        verify(userRepository).findByUsernameIgnoreCaseAndLocalAuthority(email, localAuthority);
         verify(localAuthorityRepository).findByLaCode("001");
 
     }
@@ -281,11 +285,86 @@ class LaUserServiceImplTest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
-    void testGetAllLaEmailAddresses() {
+    void getAllLaEmailAddressesActiveOnlySortsLocalAuthoritiesAndActiveEmailAddresses() {
+        LocalAuthority westminster = localAuthority("003", "Westminster", true);
+        LocalAuthority birmingham = localAuthority("001", "Birmingham", true);
+        LocalAuthority aberdeen = localAuthority("002", "Aberdeen", false);
 
-        when(localAuthorityRepository.findAll()).thenReturn(List.of());
-        ExportLaEmailAddressResponseDto exportLaEmailAddressResponseDto = laUserService.getAllLaEmailAddresses(true);
-        assertNotNull(exportLaEmailAddressResponseDto);
+        when(localAuthorityRepository.findAll()).thenReturn(List.of(westminster, birmingham, aberdeen));
+        when(userRepository.findByLocalAuthority(aberdeen)).thenReturn(List.of(
+            laUser("zuser@aberdeen.gov.uk", true, aberdeen),
+            laUser("auser@aberdeen.gov.uk", true, aberdeen),
+            laUser("inactive@aberdeen.gov.uk", false, aberdeen)
+        ));
+        when(userRepository.findByLocalAuthority(birmingham)).thenReturn(List.of(
+            laUser("zuser@birmingham.gov.uk", true, birmingham),
+            laUser("inactive@birmingham.gov.uk", false, birmingham),
+            laUser("auser@birmingham.gov.uk", true, birmingham)
+        ));
+        when(userRepository.findByLocalAuthority(westminster)).thenReturn(List.of(
+            laUser("inactive@westminster.gov.uk", false, westminster)
+        ));
+
+        ExportLaEmailAddressResponseDto response = laUserService.getAllLaEmailAddresses(true);
+
+        assertThat(response.getLocalAuthorities())
+            .extracting(ExportLaEmailAddressResponseDto.LocalAuthorityEmailsDto::getLaName)
+            .containsExactly("Aberdeen", "Birmingham", "Westminster");
+
+        ExportLaEmailAddressResponseDto.LocalAuthorityEmailsDto aberdeenEmails =
+            response.getLocalAuthorities().get(0);
+        assertThat(aberdeenEmails.getLaCode()).isEqualTo("002");
+        assertThat(aberdeenEmails.getIsActive()).isFalse();
+        assertThat(aberdeenEmails.getEmailAddresses())
+            .extracting(ExportLaEmailAddressResponseDto.EmailAddressDto::getUsername)
+            .containsExactly("auser@aberdeen.gov.uk", "zuser@aberdeen.gov.uk");
+        assertThat(aberdeenEmails.getEmailAddresses())
+            .extracting(ExportLaEmailAddressResponseDto.EmailAddressDto::getActive)
+            .containsExactly(true, true);
+
+        assertThat(response.getLocalAuthorities().get(1).getEmailAddresses())
+            .extracting(ExportLaEmailAddressResponseDto.EmailAddressDto::getUsername)
+            .containsExactly("auser@birmingham.gov.uk", "zuser@birmingham.gov.uk");
+        assertThat(response.getLocalAuthorities().get(2).getEmailAddresses()).isEmpty();
+    }
+
+    @Test
+    void getAllLaEmailAddressesIncludesInactiveUsersWhenActiveOnlyIsFalse() {
+        LocalAuthority localAuthority = localAuthority("001", "Birmingham", true);
+
+        when(localAuthorityRepository.findAll()).thenReturn(List.of(localAuthority));
+        when(userRepository.findByLocalAuthority(localAuthority)).thenReturn(List.of(
+            laUser("zuser@birmingham.gov.uk", false, localAuthority),
+            laUser("auser@birmingham.gov.uk", true, localAuthority)
+        ));
+
+        ExportLaEmailAddressResponseDto response = laUserService.getAllLaEmailAddresses(false);
+
+        assertThat(response.getLocalAuthorities()).hasSize(1);
+        assertThat(response.getLocalAuthorities().get(0).getEmailAddresses())
+            .extracting(
+                ExportLaEmailAddressResponseDto.EmailAddressDto::getUsername,
+                ExportLaEmailAddressResponseDto.EmailAddressDto::getActive
+            )
+            .containsExactly(
+                tuple("auser@birmingham.gov.uk", true),
+                tuple("zuser@birmingham.gov.uk", false)
+            );
+    }
+
+    private LocalAuthority localAuthority(String laCode, String laName, boolean active) {
+        return LocalAuthority.builder()
+            .laCode(laCode)
+            .laName(laName)
+            .active(active)
+            .build();
+    }
+
+    private LaUser laUser(String username, boolean active, LocalAuthority localAuthority) {
+        return LaUser.builder()
+            .username(username)
+            .active(active)
+            .localAuthority(localAuthority)
+            .build();
     }
 }

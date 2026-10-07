@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,6 +22,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PendingJurorRepository;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -31,6 +34,7 @@ import java.util.Optional;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Juror detail common information for the Juror Record")
 public class JurorDetailsCommonResponseDto {
 
@@ -38,7 +42,6 @@ public class JurorDetailsCommonResponseDto {
     private String owner;
 
     @Schema(name = "LocCode", description = "Current locCode")
-    @JsonProperty("loc_code")
     private String locCode;
 
     @Length(max = 10)
@@ -56,68 +59,55 @@ public class JurorDetailsCommonResponseDto {
     private String lastName;
 
     @NotNull
-    @JsonProperty("jurorNumber")
     @Schema(name = "Juror number", description = "Jurors Number")
     private String jurorNumber;
 
     @NotNull
-    @JsonProperty("jurorStatus")
     @Schema(name = "Juror Status", description = "Jurors status")
     private String jurorStatus;
 
     @NotNull
-    @JsonProperty("poolNumber")
     @Schema(name = "Pool number", description = "The Pool number Juror belongs to")
     private String poolNumber;
 
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @JsonProperty("startDate")
     @Schema(name = "Start Date", description = "Service Start Date")
     private LocalDate startDate;
 
     @NotNull
-    @JsonProperty("courtName")
     @Schema(name = "Court name", description = "Name of court Juror will attend")
     private String courtName;
 
     @JsonProperty("is_welsh_court")
     private boolean isWelshCourt;
 
-    @JsonProperty("excusalRejected")
+
     @Schema(name = "Excusal Rejected flag", description = "Flag to indicate if an excusal was rejected for juror")
     private String excusalRejected;
 
-    @JsonProperty("excusalCode")
     @Schema(name = "Excusal Code", description = "Excusal code indicating reason selected by the user")
     private String excusalCode;
 
-    @JsonProperty("excusalDescription")
     @Schema(name = "Excusal description", description = "Description of excusal code", example = "Student")
     private String excusalDescription;
 
-    @JsonProperty("deferredTo")
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Schema(name = "Deferred to date", description = "The date that the juror was deferred to")
     private LocalDate deferredTo;
 
-    @JsonProperty("noDeferrals")
     @Schema(name = "Number of deferrals", description = "No. Deferrals")
     private Integer noDeferrals;
 
-    @JsonProperty("deferralDate")
     @Schema(name = "Deferral date", description = "Deferral date")
     private LocalDate deferralDate;
 
-    @JsonProperty("deferral_code")
     @Schema(name = "Deferral Code", description = "Code indicating deferral reason selected by the user")
     private String deferralCode;
 
-    @JsonProperty("disqualify_code")
     @Schema(name = "Disqualification Code", description = "Code indicating disqualification reason")
     private String disqualifyCode;
 
-    @JsonProperty("police_check")
     @Enumerated(EnumType.STRING)
     @Schema(name = "Police Check Status")
     private PoliceCheck policeCheck;
@@ -137,17 +127,22 @@ public class JurorDetailsCommonResponseDto {
     @Schema(description = "check for juror manually created")
     private boolean manuallyCreated;
 
-    @JsonProperty("response_entered")
     @Schema(name = "Response Entered", description = "Flag to indicate if a response has been entered for the juror")
     private boolean responseEntered;
 
     private LocalDate bureauTransferDate;
 
+    @Schema(name = "Digital by Default", description = "Flag to indicate if the juror is digital by default")
+    private boolean digitalByDefault;
+
+    @Schema (name = "dbd_preference",description = "If the juror prefers Paper or Digital")
+    private String dbdPreference;
     /**
      * Initialise an instance of this DTO class using a JurorPool object to populate its properties.
      *
      * @param jurorPool an object representation of a JurorPool association record
      */
+
     @Autowired
     public JurorDetailsCommonResponseDto(JurorPool jurorPool,
                                          JurorStatusRepository jurorStatusRepository,
@@ -174,6 +169,7 @@ public class JurorDetailsCommonResponseDto {
         this.bureauTransferDate = juror.getBureauTransferDate();
         this.responseEntered = juror.isResponseEntered();
 
+
         if (this.excusalCode != null) {
             this.excusalDescription = ExcusalCodeEnum.fromCode(this.excusalCode).getDescription();
         }
@@ -198,6 +194,10 @@ public class JurorDetailsCommonResponseDto {
 
         this.policeCheck = juror.getPoliceCheck();
         setPendingNameChange(juror);
+
+        this.digitalByDefault = JurorPoolUtils.isDigitalByDefault(jurorPool);
+
+        this.dbdPreference = juror.getDbdPreference();
 
         this.manuallyCreated = pendingJurorRepository.findById(jurorPool.getJurorNumber()).isPresent();
     }

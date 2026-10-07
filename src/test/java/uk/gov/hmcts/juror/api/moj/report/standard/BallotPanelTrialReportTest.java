@@ -29,7 +29,7 @@ class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<Ballo
 
     private TrialRepository trialRepository;
 
-    public BallotPanelTrialReportTest() {
+    BallotPanelTrialReportTest() {
         super(
             QPanel.panel,
             BallotPanelTrialReport.RequestValidator.class,
@@ -42,20 +42,20 @@ class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<Ballo
     }
 
     @Override
-    public BallotPanelTrialReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected BallotPanelTrialReport createReport(PoolRequestRepository poolRequestRepository) {
         return new BallotPanelTrialReport(trialRepository);
     }
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         securityUtilMockedStatic = Mockito.mockStatic(SecurityUtil.class);
         this.trialRepository = Mockito.mock(TrialRepository.class);
         super.beforeEach();
     }
 
     @AfterEach
-    public void afterEach() {
+    void afterEach() {
         TestUtils.afterAll();
         securityUtilMockedStatic.close();
     }
@@ -69,7 +69,7 @@ class BallotPanelTrialReportTest extends AbstractStandardReportTestSupport<Ballo
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
 
         request.setTrialNumber(TestConstants.VALID_TRIAL_NUMBER);
         securityUtilMockedStatic.when(SecurityUtil::getCourts).thenReturn(List.of(TestConstants.VALID_COURT_LOCATION));

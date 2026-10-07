@@ -54,7 +54,7 @@ public class ModifyConfirmedAttendanceDto {
         ATTENDANCE,
         NON_ATTENDANCE,
         ABSENCE,
-        DELETE;
+        DELETE
     }
 
 }

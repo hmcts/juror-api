@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -477,7 +478,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             jurorHistoryRepository.save(retrieveJurorHistory);
 
             // audit pool second entry
-            jurorHistoryService.createWithdrawHistory(jurorDetails,null,"A");
+            jurorHistoryService.createWithdrawHistory(jurorDetails, null, "A", CommunicationChannel.LETTER);
 
             // disq_lett table entry
             printDataService.printWithdrawalLetter(jurorDetails);

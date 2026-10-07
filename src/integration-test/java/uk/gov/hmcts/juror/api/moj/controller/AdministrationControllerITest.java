@@ -52,20 +52,22 @@ import static org.springframework.http.HttpMethod.PUT;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AdministrationControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.ExcessiveImports")
-public class AdministrationControllerITest extends AbstractIntegrationTest {
-    public static final String BASE_URL = "/api/v1/moj/administration";
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
+class AdministrationControllerITest extends AbstractIntegrationTest {
+    static final String BASE_URL = "/api/v1/moj/administration";
 
     private HttpHeaders httpHeaders;
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
 
     private final CourtLocationRepository courtLocationRepository;
 
     private final ExpenseRatesRepository expenseRatesRepository;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
@@ -73,7 +75,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     @Nested
     @DisplayName("GET  " + ViewCodeAndDescriptions.URL)
     class ViewCodeAndDescriptions {
-        public static final String URL = BASE_URL + "/codes/{code_type}";
+        static final String URL = BASE_URL + "/codes/{code_type}";
 
         private String toUrl(CodeType codeType) {
             return toUrl(codeType.name());
@@ -288,9 +290,10 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET  " + ViewCourtDetails.URL)
     @Sql(value = {"/db/administration/tearDownCourts.sql",
         "/db/administration/createCourts.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+
     @Sql(value = "/db/administration/tearDownCourts.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class ViewCourtDetails {
-        public static final String URL = BASE_URL + "/courts/{loc_code}";
+        static final String URL = BASE_URL + "/courts/{loc_code}";
 
 
         private String toUrl(String locCode) {
@@ -419,9 +422,10 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     @DisplayName("PUT  " + UpdateCourtRates.URL)
     @Sql(value = {"/db/administration/tearDownCourts.sql",
         "/db/administration/createCourts.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+
     @Sql(value = "/db/administration/tearDownCourts.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class UpdateCourtRates {
-        public static final String URL = BASE_URL + "/courts/{loc_code}/rates";
+        static final String URL = BASE_URL + "/courts/{loc_code}/rates";
 
 
         private String toUrl(String locCode) {
@@ -539,9 +543,10 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     @DisplayName("PUT  " + UpdateCourtDetails.URL)
     @Sql(value = {"/db/administration/tearDownCourts.sql",
         "/db/administration/createCourts.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+
     @Sql(value = "/db/administration/tearDownCourts.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     class UpdateCourtDetails {
-        public static final String URL = BASE_URL + "/courts/{loc_code}";
+        static final String URL = BASE_URL + "/courts/{loc_code}";
 
         private String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);
@@ -654,7 +659,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
         }
     }
 
-    public static ExpenseRatesDto getBaseExpenseRates() {
+    static ExpenseRatesDto getBaseExpenseRates() {
         return ExpenseRatesDto.builder()
             .carMileageRatePerMile0Passengers(new BigDecimal("0.31400"))
             .carMileageRatePerMile1Passengers(new BigDecimal("0.35600"))
@@ -678,9 +683,10 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     @DisplayName("GET  " + ViewAllCourtsDetails.URL)
     @Sql(value = {"/db/administration/tearDownCourts.sql",
         "/db/administration/createCourts.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+
     @Sql(value = "/db/administration/tearDownCourts.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-    class ViewAllCourtsDetails {
-        public static final String URL = BASE_URL + "/courts";
+    final class ViewAllCourtsDetails {
+        static final String URL = BASE_URL + "/courts";
 
         private ViewAllCourtsDetails() {
 
@@ -777,13 +783,12 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
         }
     }
 
-
     @Nested
     @DisplayName("GET  " + ViewExpenseDetails.URL)
     @Sql({"/db/mod/truncate.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
-    class ViewExpenseDetails {
-        public static final String URL = BASE_URL + "/expenses/rates";
+    final class ViewExpenseDetails {
+        static final String URL = BASE_URL + "/expenses/rates";
 
         private ViewExpenseDetails() {
 
@@ -843,7 +848,7 @@ public class AdministrationControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql",
         "/db/JurorExpenseControllerITest_expenseRates.sql"})
     class UpdateExpenseDetails {
-        public static final String URL = BASE_URL + "/expenses/rates";
+        static final String URL = BASE_URL + "/expenses/rates";
 
 
         private ExpenseRatesDto getValidPayload() {

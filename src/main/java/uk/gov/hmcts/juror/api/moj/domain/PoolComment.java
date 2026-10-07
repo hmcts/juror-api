@@ -61,6 +61,7 @@ public class PoolComment implements Serializable {
     private LocalDateTime lastUpdate;
 
     @PreUpdate
+    @SuppressWarnings({"PMD.UnusedPrivateMethod"}) // false positive, called by @PreUpdate annotation.
     private void preUpdate() {
         lastUpdate = LocalDateTime.now();
     }

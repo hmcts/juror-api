@@ -49,3 +49,24 @@ variable "pgsql_storage_tier" {
   type        = string
   default     = null
 }
+
+variable "service_criticality" {
+  description = "Service criticality rating from 1-5."
+  type        = number
+  default     = 1
+}
+
+variable "enable_qpi" {
+  description = "Enables Query Performance Insight. Creates Log Analytics workspace and diagnostic setting needed"
+  type        = bool
+  default     = false
+}
+
+variable "pgsql_server_configuration_extra" {
+  description = "Additional PostgreSQL server configuration parameters merged with defaults"
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
+}

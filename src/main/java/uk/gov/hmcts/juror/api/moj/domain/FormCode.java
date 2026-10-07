@@ -32,7 +32,13 @@ public enum FormCode {
     ENG_REQUESTINFO("5227", PrintDataService::reprintRequestInfoLetter, List.of(IJurorStatus.SUMMONED)),
     BI_REQUESTINFO("5227C", PrintDataService::reprintRequestInfoLetter, List.of(IJurorStatus.SUMMONED)),
     ENG_WITHDRAWAL("5224", PrintDataService::printWithdrawalLetter, List.of(IJurorStatus.DISQUALIFIED)),
-    BI_WITHDRAWAL("5224C", PrintDataService::printWithdrawalLetter, List.of(IJurorStatus.DISQUALIFIED));
+    BI_WITHDRAWAL("5224C", PrintDataService::printWithdrawalLetter, List.of(IJurorStatus.DISQUALIFIED)),
+    ENG_DBD_SUMMONS("6220", PrintDataService::reprintDbdSummonsLetter, List.of(IJurorStatus.SUMMONED)),
+    BI_DBD_SUMMONS("6220C", PrintDataService::reprintDbdSummonsLetter, List.of(IJurorStatus.SUMMONED)),
+    ENG_DBD_RESPONSE("6221", PrintDataService::printDbdResponseLetter, List.of(IJurorStatus.SUMMONED)),
+    BI_DBD_RESPONSE("6221C", PrintDataService::printDbdResponseLetter, List.of(IJurorStatus.SUMMONED)),
+    ENG_DBD_SUMMONS_REM("6228", PrintDataService::printDbdSummonsReminderLetter, List.of(IJurorStatus.SUMMONED)),
+    BI_DBD_SUMMONS_REM("6228C", PrintDataService::printDbdSummonsReminderLetter, List.of(IJurorStatus.SUMMONED));
     private final String code;
 
     private final List<Integer> jurorStatus;
@@ -46,7 +52,7 @@ public enum FormCode {
     }
 
     public static FormCode getFormCode(String code) {
-        for (FormCode formCode : FormCode.values()) {
+        for (FormCode formCode : values()) {
             if (formCode.getCode().equals(code)) {
                 return formCode;
             }
@@ -55,4 +61,3 @@ public enum FormCode {
     }
 
 }
-

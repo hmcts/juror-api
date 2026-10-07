@@ -17,7 +17,7 @@ import java.util.Set;
 
 
 @Repository
-@SuppressWarnings("LineLength")
+@SuppressWarnings({"PMD.TooManyMethods", "LineLength"})
 public interface AppearanceRepository extends IAppearanceRepository, JpaRepository<Appearance, AppearanceId>,
     RevisionRepository<Appearance, AppearanceId, Long> {
 
@@ -100,13 +100,8 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
     List<Appearance> findByLocCodeAndAttendanceDateAndTrialNumber(String locCode, LocalDate attendanceDate,
                                                                   String trialNumber);
 
-    @Query(value = "select max(a.version) from juror_mod.appearance_audit a where "
-        + "a.juror_number = ?1 and a.attendance_date = ?2 and a.loc_code = ?3", nativeQuery = true)
-    Long getLastVersionNumber(String jurorNumber, LocalDate date, String locCode);
-
     List<Appearance> findAllByJurorNumberAndAttendanceDateGreaterThanEqualAndLocCodeOrderByAttendanceDateDesc(String jurorNumber,
-
-                                                                                              LocalDate date,
+                                                                                                              LocalDate date,
                                                                                               String locCodes);
     /**
      * Find expense payment appearances for the adjusted limits report.
@@ -230,4 +225,3 @@ public interface AppearanceRepository extends IAppearanceRepository, JpaReposito
         @Param("courtLocationRevision") Long courtLocationRevision,
         @Param("locCode") String locCode);
 }
-

@@ -30,12 +30,11 @@ public class BureauDashboardServiceImpl implements BureauDashboardService {
 
     @Override
     public BureauPoolManagementInfoDto getBureauPoolManagementInfo(String locCode) {
-        BureauPoolManagementInfoDto bureauPoolManagementInfoDto = BureauPoolManagementInfoDto.builder()
+        return BureauPoolManagementInfoDto.builder()
             .deferredJurorsWithStartDateNextWeek(jurorResponseService.getDeferredJurorsStartDateNextWeekCount(locCode))
             .poolsNotYetSummoned(jurorResponseService.getPoolsNotYetSummonedCount(locCode))
             .poolsTransferringNextWeek(jurorResponseService.getPoolsTransferringNextWeekCount(locCode))
             .build();
-        return bureauPoolManagementInfoDto;
     }
 
 
@@ -67,10 +66,8 @@ public class BureauDashboardServiceImpl implements BureauDashboardService {
     @Override
     public BureauNotificationManagementInfoDto getBureauNotificationManagementInfo(String locCode) {
 
-        BureauNotificationManagementInfoDto bureauNotificationManagementInfoDto =
-            BureauNotificationManagementInfoDto.builder()
+        return BureauNotificationManagementInfoDto.builder()
                 .fourWeeksSummonsReplies(jurorResponseService.getOpenSummonsRepliesFourWeeksCount(locCode))
                 .build();
-        return bureauNotificationManagementInfoDto;
     }
 }

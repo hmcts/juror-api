@@ -27,7 +27,7 @@ import java.util.List;
 class PostponedListByDateReportITest extends AbstractGroupedReportControllerITest {
 
     @Autowired
-    public PostponedListByDateReportITest(TestRestTemplate template) {
+    PostponedListByDateReportITest(TestRestTemplate template) {
         super(template, PostponedListByDateReport.class);
     }
 
@@ -45,9 +45,6 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -56,9 +53,6 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
     }
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -69,9 +63,6 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
 
 
     @Test
-    @SuppressWarnings({
-        "PMD.JUnitTestsShouldIncludeAssert"//False positive
-    })
     void positiveNotFound() {
         testBuilder()
             .jwt(getCourtJwt("414"))
@@ -322,7 +313,7 @@ class PostponedListByDateReportITest extends AbstractGroupedReportControllerITes
             .build();
     }
 
-    public GroupByResponse getTypicalGroupByResponse() {
+    GroupByResponse getTypicalGroupByResponse() {
         return GroupByResponse.builder()
             .name(DataType.POOL_NUMBER.name())
             .nested(null)

@@ -49,6 +49,7 @@ public class YieldPerformanceReportResponse {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class TableData {
         private List<YieldPerformanceReportResponse.TableData.Heading> headings;
         private List<YieldData> data;
@@ -62,6 +63,7 @@ public class YieldPerformanceReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Heading {
             private String id;
             private String name;
@@ -72,6 +74,7 @@ public class YieldPerformanceReportResponse {
         @NoArgsConstructor
         @AllArgsConstructor
         @Builder
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class YieldData {
             private String court;
             private int requested;
@@ -90,9 +93,9 @@ public class YieldPerformanceReportResponse {
         DIFFERENCE("difference", "Difference", Double.class.getSimpleName()),
         COMMENTS("comments", "Comments", String.class.getSimpleName());
 
-        private String id;
-        private String displayName;
-        private String dataType;
+        private final String id;
+        private final String displayName;
+        private final String dataType;
 
         TableHeading(String id, String displayName, String dataType) {
             this.id = id;

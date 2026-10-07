@@ -82,10 +82,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     excludeAutoConfiguration = {SecurityAutoConfiguration.class})
 @ContextConfiguration(classes = {JurorExpenseController.class, RestResponseEntityExceptionHandler.class,
     BulkServiceImpl.class})
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.CouplingBetweenObjects"
+})
+
 @DisplayName("Controller: " + JurorExpenseControllerTest.BASE_URL)
-@SuppressWarnings("PMD.ExcessiveImports")
 class JurorExpenseControllerTest {
-    public static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
+    static final String BASE_URL = "/api/v1/moj/expenses/{loc_code}";
 
     @Autowired
     private MockMvc mockMvc;
@@ -104,9 +108,9 @@ class JurorExpenseControllerTest {
     @DisplayName("POST " + UnpaidExpensesForCourtLocation.URL)
     class UnpaidExpensesForCourtLocation {
 
-        public static final String URL = BASE_URL + "/unpaid-summary";
+        static final String URL = BASE_URL + "/unpaid-summary";
 
-        public String toUrl(String locCode) {
+        String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);
         }
 
@@ -152,6 +156,7 @@ class JurorExpenseControllerTest {
 
         @Test
         @DisplayName("Invalid court location")
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void invalidCourtLocation() throws Exception {
             mockMvc.perform(
                     post(toUrl(TestConstants.INVALID_COURT_LOCATION))
@@ -164,6 +169,7 @@ class JurorExpenseControllerTest {
 
         @Test
         @DisplayName("Invalid page number")
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void invalidPageNumber() throws Exception {
             UnpaidExpenseSummaryRequestDto requestDto = getValidRequest();
             requestDto.setPageNumber(-1);
@@ -177,6 +183,7 @@ class JurorExpenseControllerTest {
 
         @Test
         @DisplayName("Invalid page Limit")
+        @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
         void invalidPageLimit() throws Exception {
             UnpaidExpenseSummaryRequestDto requestDto = getValidRequest();
             requestDto.setPageLimit(-1);
@@ -206,16 +213,15 @@ class JurorExpenseControllerTest {
     @DisplayName("GET " + GetDefaultExpenses.URL)
     class GetDefaultExpenses {
 
-        public static final String URL = BASE_URL + "/{juror_number}/default-expenses";
+        static final String URL = BASE_URL + "/{juror_number}/default-expenses";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
         @Test
         @DisplayName("Valid Request")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void happyPathForGetDefaultExpenses() throws Exception {
             final String jurorNumber = "111111111";
 
@@ -253,21 +259,19 @@ class JurorExpenseControllerTest {
         }
     }
 
-
     @Nested
     @DisplayName("POST " + SetDefaultExpenses.URL)
     class SetDefaultExpenses {
 
-        public static final String URL = BASE_URL + "/{juror_number}/default-expenses";
+        static final String URL = BASE_URL + "/{juror_number}/default-expenses";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
 
         @Test
         @DisplayName("Happy Path - Set Default Expenses")
-        @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
         void happyPathForSetDefaultExpensesNotOverrideDraftExpenses() throws Exception {
             RequestDefaultExpensesDto payload = new RequestDefaultExpensesDto();
             payload.setTravelTime(LocalTime.of(4, 30));
@@ -295,7 +299,7 @@ class JurorExpenseControllerTest {
     class SubmitForApproval {
         private static final String URL = BASE_URL + "/{juror_number}/submit-for-approval";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -355,9 +359,9 @@ class JurorExpenseControllerTest {
     @Nested
     @DisplayName("POST (get) " + GetEnteredExpenseDetails.URL)
     class GetEnteredExpenseDetails {
-        public static final String URL = BASE_URL + "/{juror_number}/entered";
+        static final String URL = BASE_URL + "/{juror_number}/entered";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -422,14 +426,14 @@ class JurorExpenseControllerTest {
 
     @Nested
     @DisplayName("POST " + ApproveExpenses.URL)
-    class ApproveExpenses {
-        public static final String URL = BASE_URL + "/{payment_method}/approve";
+    final class ApproveExpenses {
+        static final String URL = BASE_URL + "/{payment_method}/approve";
 
         private ApproveExpenses() {
 
         }
 
-        public String toUrl(String locCode, PaymentMethod paymentMethod) {
+        String toUrl(String locCode, PaymentMethod paymentMethod) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{payment_method}", paymentMethod.name());
         }
@@ -500,13 +504,13 @@ class JurorExpenseControllerTest {
     @Nested
     @DisplayName("GET " + GetSimplifiedExpenseDetails.URL)
     class GetSimplifiedExpenseDetails {
-        public static final String URL = BASE_URL + "/{juror_number}/{type}/view/simplified";
+        static final String URL = BASE_URL + "/{juror_number}/{type}/view/simplified";
 
-        public String toUrl(String locCode, String jurorNumber, ExpenseType expenseType) {
+        String toUrl(String locCode, String jurorNumber, ExpenseType expenseType) {
             return toUrl(locCode, jurorNumber, expenseType.name());
         }
 
-        public String toUrl(String locCode, String jurorNumber, String expenseType) {
+        String toUrl(String locCode, String jurorNumber, String expenseType) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber)
                 .replace("{type}", expenseType);
@@ -589,10 +593,10 @@ class JurorExpenseControllerTest {
     @Nested
     @DisplayName("GET " + GetDraftExpenses.URL)
     class GetDraftExpenses {
-        public static final String URL = BASE_URL + "/{juror_number}/DRAFT/view";
+        static final String URL = BASE_URL + "/{juror_number}/DRAFT/view";
 
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -664,9 +668,9 @@ class JurorExpenseControllerTest {
     @Nested
     @DisplayName("GET (POST) " + GetExpenses.URL)
     class GetExpenses {
-        public static final String URL = BASE_URL + "/{juror_number}/view";
+        static final String URL = BASE_URL + "/{juror_number}/view";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -759,11 +763,10 @@ class JurorExpenseControllerTest {
         }
     }
 
-
     @Nested
     @DisplayName("GET " + GetExpensesForApproval.URL)
     class GetExpensesForApproval {
-        public static final String URL = BASE_URL + "/{payment_method}/pending-approval";
+        static final String URL = BASE_URL + "/{payment_method}/pending-approval";
 
         private String toUrl(String locCode, PaymentMethod paymentMethod, LocalDate from, LocalDate to) {
             return toUrl(locCode, paymentMethod.name(),
@@ -875,9 +878,9 @@ class JurorExpenseControllerTest {
     @Nested
     @DisplayName("GET " + GetCounts.URL)
     class GetCounts {
-        public static final String URL = BASE_URL + "/{juror_number}/counts";
+        static final String URL = BASE_URL + "/{juror_number}/counts";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -938,9 +941,9 @@ class JurorExpenseControllerTest {
     @Nested
     @DisplayName("PUT " + PostEditDailyExpense.URL)
     class PostEditDailyExpense {
-        public static final String URL = BASE_URL + "/{juror_number}/{type}/edit";
+        static final String URL = BASE_URL + "/{juror_number}/{type}/edit";
 
-        public String toUrl(String locCode, String jurorNumber, String type) {
+        String toUrl(String locCode, String jurorNumber, String type) {
             return URL
                 .replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber)
@@ -1041,17 +1044,16 @@ class JurorExpenseControllerTest {
             .build();
     }
 
-
     @Nested
     @DisplayName("POST " + CalculateTotals.URL)
-    class CalculateTotals {
-        public static final String URL = BASE_URL + "/{juror_number}/calculate/totals";
+    final class CalculateTotals {
+        static final String URL = BASE_URL + "/{juror_number}/calculate/totals";
 
         private CalculateTotals() {
 
         }
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }
@@ -1121,9 +1123,9 @@ class JurorExpenseControllerTest {
     @Nested
     @DisplayName("PATCH " + ApportionSmartCard.URL)
     class ApportionSmartCard {
-        public static final String URL = BASE_URL + "/{juror_number}/smartcard";
+        static final String URL = BASE_URL + "/{juror_number}/smartcard";
 
-        public String toUrl(String locCode, String jurorNumber) {
+        String toUrl(String locCode, String jurorNumber) {
             return URL.replace("{loc_code}", locCode)
                 .replace("{juror_number}", jurorNumber);
         }

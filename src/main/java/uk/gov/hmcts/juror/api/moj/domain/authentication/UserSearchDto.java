@@ -12,10 +12,13 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.moj.domain.QUser;
+import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.SortMethod;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.service.IsPageable;
 import uk.gov.hmcts.juror.api.validation.CourtLocationCode;
+
+import java.util.Set;
 
 
 @Data
@@ -29,6 +32,7 @@ public class UserSearchDto implements IsPageable {
     @CourtLocationCode
     private String court;
     private UserType userType;
+    private Set<Role> roles;
 
     private boolean onlyActive;
     private SortMethod sortMethod;

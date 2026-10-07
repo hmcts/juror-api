@@ -6,14 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.controller.request.ExcusalDecisionDto;
 import uk.gov.hmcts.juror.api.moj.domain.ExcusalDecision;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.exception.ExcusalResponseException;
@@ -30,6 +33,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 
 /**
  * Excusal Response service.
@@ -48,29 +53,37 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private final JurorHistoryService jurorHistoryService;
     private final JurorPoolService jurorPoolService;
     private final JurorResponseService jurorResponseService;
+    private final JurorRecordService jurorRecordService;
+    private final EmailDataService emailDataService;
+    private final FeatureFlagConfigurationProperties featureFlags;
+
 
 
 
 
     @Override
     @Transactional
-    public void respondToExcusalRequest(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
+    public void respondToExcusalRequest(BureauJwtPayload payload,
+                                        ExcusalDecisionDto excusalDecisionDto,
                                         String jurorNumber) {
 
         final String login = payload.getLogin();
         final String owner = payload.getOwner();
-        log.info(String.format("Processing excusal request for Juror %s, by user %s", jurorNumber, login));
+        log.info("Processing excusal request for Juror {}, by user {}", jurorNumber, login);
 
         checkExcusalCodeIsValid(excusalDecisionDto.getExcusalReasonCode());
         JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
         JurorPoolUtils.checkOwnershipForCurrentUser(jurorPool, owner);
 
-        if (excusalDecisionDto.getExcusalDecision().equals(ExcusalDecision.GRANT)) {
+        if (Boolean.TRUE.equals(excusalDecisionDto.getUseSummonsAddress())) {
+            jurorRecordService.updateJurorAddressFromResponse(jurorPool);
+        }
+
+        if (excusalDecisionDto.getExcusalDecision() == ExcusalDecision.GRANT) {
             jurorResponseService.setResponseProcessingStatusToClosed(jurorNumber);
             grantExcusalForJuror(payload, excusalDecisionDto, jurorPool);
             if (!ExcusalCodeEnum.D.getCode().equals(excusalDecisionDto.getExcusalReasonCode())
                 && SecurityUtil.BUREAU_OWNER.equals(owner)) {
-                // Only generate letter for non-deceased jurors and Bureau users
                 sendExcusalLetter(jurorPool, jurorNumber);
             }
         } else {
@@ -79,7 +92,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     }
 
     public void checkExcusalCodeIsValid(String excusalCode) {
-        log.info(String.format("Checking excusal code %s is valid", excusalCode));
+        log.info("Checking excusal code {} is valid", excusalCode);
 
         List<String> excusalCodes = new ArrayList<>();
         // Extract just the excusal code from the ExcusalCodeEntity objects stored in ExcusalCodeRepository
@@ -92,17 +105,19 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
         }
 
         if (!excusalCodes.contains(excusalCode)) {
-            log.info(String.format("Excusal code %s is invalid", excusalCode));
+            log.info("Excusal code {} is invalid", excusalCode);
             throw new ExcusalResponseException.InvalidExcusalCode(excusalCode);
         }
     }
+
+
 
 
     private void grantExcusalForJuror(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
                                       JurorPool jurorPool) {
         Juror juror = jurorPool.getJuror();
 
-        log.info(String.format("Processing officer decision to grant excusal for Juror %s", juror.getJurorNumber()));
+        log.info("Processing officer decision to grant excusal for Juror {}", juror.getJurorNumber());
 
         juror.setResponded(true);
         juror.setExcusalDate(LocalDate.now());
@@ -130,7 +145,7 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
     private void refuseExcusalForJuror(BureauJwtPayload payload, ExcusalDecisionDto excusalDecisionDto,
                                        JurorPool jurorPool) {
         Juror juror = jurorPool.getJuror();
-        log.info(String.format("Processing officer decision to refuse excusal for Juror %s", juror.getJurorNumber()));
+        log.info("Processing officer decision to refuse excusal for Juror {}", juror.getJurorNumber());
 
         juror.setResponded(true);
         if (jurorPool.getStatus().getStatus() != IJurorStatus.EXCUSED) {
@@ -176,23 +191,37 @@ public class ExcusalResponseServiceImpl implements ExcusalResponseService {
 
         jurorHistoryRepository.save(jurorHistory);
 
-        // bureau only - queue letter for xerox
-        if (SecurityUtil.isBureau()) {
+        if (SecurityUtil.isBureau()
+            && featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+            && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+            emailDataService.emailExcusalDeniedLetter(jurorPool, "Refused Excusal");
+        } else if (SecurityUtil.isBureau()) {
+            // bureau only - queue letter for xerox
             printDataService.printExcusalDeniedLetter(jurorPool);
 
-            jurorHistoryService.createNonExcusedLetterHistory(jurorPool, "Refused Excusal");
+            jurorHistoryService.createNonExcusedLetterHistory(jurorPool, "Refused Excusal",
+                                                              CommunicationChannel.LETTER);
         }
 
     }
 
     private void sendExcusalLetter(JurorPool jurorPool, String jurorNumber) {
-        log.info(String.format("Preparing an excusal letter for Juror %s", jurorNumber));
+        log.info("Preparing an excusal letter for Juror {}", jurorNumber);
 
-        printDataService.printExcusalLetter(jurorPool);
+        printDataService.removeQueuedLetterForJuror(
+            jurorPool,
+            List.of(FormCode.ENG_EXCUSAL, FormCode.BI_EXCUSAL)
+        );
 
-        jurorHistoryService.createExcusedLetter(jurorPool);
+        if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+            && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool)) {
+            emailDataService.emailExcusalGrantedLetter(jurorPool);
+        } else {
+            printDataService.printExcusalLetter(jurorPool);
+            jurorHistoryService.createExcusedLetter(jurorPool, CommunicationChannel.LETTER);
+        }
 
-        log.info(String.format("Excusal letter enqueued for Juror %s", jurorNumber));
+        log.info("Excusal letter enqueued for Juror {}", jurorNumber);
     }
 
     private JurorStatus getPoolStatus(int poolStatusId) {

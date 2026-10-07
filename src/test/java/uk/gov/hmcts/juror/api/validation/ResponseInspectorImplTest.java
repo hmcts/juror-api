@@ -443,7 +443,7 @@ public class ResponseInspectorImplTest {
     }
 
     @Test
-    public void getYoungestJurorAgeAllowed() {
+    public void returnYoungestJurorAgeAllowed() {
         //given(mockSystemParameterRepository.findById(AGE_LOWER_SP_ID)).willReturn(SystemParameter.builder()
         //.spValue("99")
         //.build());
@@ -458,7 +458,7 @@ public class ResponseInspectorImplTest {
     }
 
     @Test
-    public void getTooOldJurorAge() {
+    public void returnTooOldJurorAge() {
         given(mockSystemParameterRepository.findById(AGE_UPPER_SP_ID)).willReturn(Optional.of(SystemParameter.builder()
             .spValue("1234")
             .build()));
@@ -468,21 +468,21 @@ public class ResponseInspectorImplTest {
     }
 
     @Test
-    public void getJurorAgeAtHearingDate() {
-        final LocalDate hearing02_01_2018 = LocalDate.of(2018, 1, 2);
+    public void returnJurorAgeAtHearingDate() {
+        final LocalDate hearing02x01x2018 = LocalDate.of(2018, 1, 2);
         final LocalDate oneDayBefore18 = LocalDate.of(2000, 1, 1);
         final LocalDate exactly18 = LocalDate.of(2000, 1, 2);
         final LocalDate oneDayAfter18 = LocalDate.of(2000, 1, 3);
 
-        assertThat(inspector.getJurorAgeAtHearingDate(oneDayBefore18, hearing02_01_2018))
+        assertThat(inspector.getJurorAgeAtHearingDate(oneDayBefore18, hearing02x01x2018))
             .as("Juror is 18 the day before the hearing")
             .isEqualTo(18);
 
-        assertThat(inspector.getJurorAgeAtHearingDate(exactly18, hearing02_01_2018))
+        assertThat(inspector.getJurorAgeAtHearingDate(exactly18, hearing02x01x2018))
             .as("Juror is 18 on the hearing date.")
             .isEqualTo(18);
 
-        assertThat(inspector.getJurorAgeAtHearingDate(oneDayAfter18, hearing02_01_2018))
+        assertThat(inspector.getJurorAgeAtHearingDate(oneDayAfter18, hearing02x01x2018))
             .as("Juror is 18 one day after the hearing.")
             .isEqualTo(17);
     }

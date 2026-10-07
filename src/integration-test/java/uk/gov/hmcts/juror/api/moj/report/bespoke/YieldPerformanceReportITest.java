@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractControllerIntegrationTest;
-import uk.gov.hmcts.juror.api.moj.controller.reports.request.YieldPerformanceReportRequest;
+import uk.gov.hmcts.juror.api.moj.controller.reports.request.CourtsAndDatesReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.YieldPerformanceReportResponse;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
@@ -34,16 +34,14 @@ import static org.assertj.core.api.BDDAssertions.within;
     "/db/mod/truncate.sql",
     "/db/mod/reports/YieldPerformanceReportITest_typical.sql",
 })
-@SuppressWarnings({"PMD.TooManyMethods",
-    "PMD.JUnitTestsShouldIncludeAssert"}//False positive
-)
-class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<YieldPerformanceReportRequest,
+@SuppressWarnings("PMD.TooManyMethods")
+class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<CourtsAndDatesReportRequest,
     YieldPerformanceReportResponse> {
-    public static final String URL = "/api/v1/moj/reports/yield-performance";
-    public static final String LOCAL_DATE = "LocalDate";
+    static final String URL = "/api/v1/moj/reports/yield-performance";
+    private static final String LOCAL_DATE = "LocalDate";
 
     @Autowired
-    public YieldPerformanceReportITest(TestRestTemplate template) {
+    YieldPerformanceReportITest(TestRestTemplate template) {
         super(HttpMethod.POST, template, HttpStatus.OK);
     }
 
@@ -64,8 +62,8 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
     @Override
-    protected YieldPerformanceReportRequest getValidPayload() {
-        return YieldPerformanceReportRequest.builder()
+    protected CourtsAndDatesReportRequest getValidPayload() {
+        return CourtsAndDatesReportRequest.builder()
             .allCourts(false)
             .courtLocCodes(List.of("415","774"))
             .fromDate(LocalDate.parse("2024-08-01"))
@@ -74,10 +72,11 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewByCourtNegativeBalance() {
 
         testBuilder()
-            .payload(YieldPerformanceReportRequest.builder()
+            .payload(CourtsAndDatesReportRequest.builder()
             .allCourts(false)
             .courtLocCodes(List.of("415"))
             .fromDate(LocalDate.parse("2024-08-01"))
@@ -90,10 +89,11 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewByCourtPositiveBalance() {
 
         testBuilder()
-            .payload(YieldPerformanceReportRequest.builder()
+            .payload(CourtsAndDatesReportRequest.builder()
                 .allCourts(false)
                 .courtLocCodes(List.of("417"))
                 .fromDate(LocalDate.parse("2024-08-01"))
@@ -106,6 +106,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewByCourts() {
 
         testBuilder()
@@ -116,10 +117,11 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
     @Test
+    @SuppressWarnings("PMD.UnitTestShouldIncludeAssert")
     void viewByAllCourts() {
 
         testBuilder()
-            .payload(YieldPerformanceReportRequest.builder()
+            .payload(CourtsAndDatesReportRequest.builder()
                 .allCourts(true)
                 .fromDate(LocalDate.parse("2024-07-21"))
                 .toDate(LocalDate.parse("2024-08-07"))
@@ -150,7 +152,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
 
-    public void assertHeadingsCourt(YieldPerformanceReportResponse response) {
+    private void assertHeadingsCourt(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
         Assertions.assertThat(response.getHeadings()).isNotNull();
 
@@ -222,7 +224,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
 
     }
 
-    public void verifyHeadingsAllCourts(YieldPerformanceReportResponse response) {
+    private void verifyHeadingsAllCourts(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
         Assertions.assertThat(response.getHeadings()).isNotNull();
 
@@ -246,7 +248,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
     @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
-    public void verifyCourtPayloadNegativeBalance(YieldPerformanceReportResponse response) {
+    private void verifyCourtPayloadNegativeBalance(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
 
         Assertions.assertThat(response.getTableData()).isNotNull();
@@ -264,7 +266,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
             + System.lineSeparator() + "415240802 - This is a test comment 2");
     }
 
-    public void verifyCourtPayloadPositiveBalance(YieldPerformanceReportResponse response) {
+    private void verifyCourtPayloadPositiveBalance(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
 
         Assertions.assertThat(response.getTableData()).isNotNull();
@@ -282,7 +284,7 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
     }
 
     @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
-    public void verifyCourtsPayload(YieldPerformanceReportResponse response) {
+    private void verifyCourtsPayload(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
 
         Assertions.assertThat(response.getTableData()).isNotNull();
@@ -307,11 +309,10 @@ class YieldPerformanceReportITest extends AbstractControllerIntegrationTest<Yiel
         Assertions.assertThat(data.getBalance()).isEqualTo(-10);
         Assertions.assertThat(data.getDifference()).isEqualTo(-90.90909);
         Assertions.assertThat(data.getComments()).isEqualTo("");
-
     }
 
     @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
-    public void verifyAllCourtsPayload(YieldPerformanceReportResponse response) {
+    private void verifyAllCourtsPayload(YieldPerformanceReportResponse response) {
         Assertions.assertThat(response).isNotNull();
 
         Assertions.assertThat(response.getTableData()).isNotNull();

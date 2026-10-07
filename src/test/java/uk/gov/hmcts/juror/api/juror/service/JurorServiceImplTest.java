@@ -11,7 +11,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
+import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -55,8 +57,13 @@ import static org.mockito.Mockito.when;
 /**
  * Unit test of {@link JurorServiceImpl}.
  */
+@SuppressWarnings({"unchecked",
+    "PMD.ExcessiveImports",
+    "PMD.CouplingBetweenObjects",
+    "PMD.TooManyFields"})
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class JurorServiceImplTest {
+    private static final String DIGITAL_BY_DEFAULT_FEATURE_FLAG = "digital-by-default";
 
     private static final String TEST_JUROR_NUMBER = "209092530";
 
@@ -99,6 +106,8 @@ public class JurorServiceImplTest {
     private JurorService mockJurorService;
     @Mock
     private JurorPoolService jurorPoolService;
+    @Mock
+    private FeatureFlagConfigurationProperties featureFlags;
 
     @InjectMocks
     private JurorServiceImpl defaultService;
@@ -139,7 +148,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void getJurorByByJurorNumber_WithJurorNumber_ReturnsJurorDetails() {
+    public void jurorByByJurorNumber_WithJurorNumber_ReturnsJurorDetails() {
         when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPoolDetails);
 
         final JurorDetailDto jurorDto = defaultService.getJurorByJurorNumber(TEST_JUROR_NUMBER);
@@ -152,7 +161,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void getJurorByJurorNumber_alternatePath_uniquePoolAttendTime() {
+    public void jurorByJurorNumber_alternatePath_uniquePoolAttendTime() {
         doReturn(LocalDateTime.of(2024,1,1,8,0,0))
             .when(mockUniquePoolService).getPoolAttendanceTime("101");
 
@@ -164,6 +173,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.NcssCount")
     public void convertJurorResponseDtoToEntityTest() throws Exception {
         final String jurorNumber = "546547731";
         final LocalDate dob = LocalDate.now();
@@ -328,8 +338,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void processStraightThroughAcceptance_happyPath_processAcceptanceCalled() throws
-        StraightThroughProcessingServiceException {
+    public void processStraightThroughAcceptance_happyPath_processAcceptanceCalled()  {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
         final DigitalResponse jurorResponse = mock(DigitalResponse.class);
@@ -350,8 +359,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void processStraightThroughAcceptance_unhappyPath_processAcceptanceNotCalled() throws
-        StraightThroughProcessingServiceException {
+    public void processStraightThroughAcceptance_unhappyPath_processAcceptanceNotCalled() {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
         final DigitalResponse jurorResponse = mock(DigitalResponse.class);
@@ -372,8 +380,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void processDeceasedExcusal_happyPath_processDeceasedExcusalCalled() throws
-        StraightThroughProcessingServiceException {
+    public void processDeceasedExcusal_happyPath_processDeceasedExcusalCalled() {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
         final DigitalResponse jurorResponse = mock(DigitalResponse.class);
@@ -397,7 +404,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void processAgeExcusal_happyPath_ageExcusalCalled() throws StraightThroughProcessingServiceException {
+    public void processAgeExcusal_happyPath_ageExcusalCalled() {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
         final DigitalResponse jurorResponse = mock(DigitalResponse.class);
@@ -429,7 +436,7 @@ public class JurorServiceImplTest {
     }
 
     @Test
-    public void processAgeExcusal_unhappyPath_ageExcusalNotCalled() throws StraightThroughProcessingServiceException {
+    public void processAgeExcusal_unhappyPath_ageExcusalNotCalled() {
 
         final JurorResponseDto responseDto = mock(JurorResponseDto.class);
         final DigitalResponse jurorResponse = mock(DigitalResponse.class);
@@ -458,5 +465,53 @@ public class JurorServiceImplTest {
         verify(straightThroughProcessor, times(0))
             .processDeceasedExcusal(any(DigitalResponse.class));
         verify(straightThroughProcessor, times(0)).processAgeExcusal(any(DigitalResponse.class));
+    }
+
+    @Test
+    public void getDbdInformation_WithJurorNumber_ReturnsDbdInformation() {
+        final LocalDate serviceStartDate = LocalDate.of(2026, 8, 10);
+        jurorPoolDetails.getCourt().setLocCourtName("Test Court");
+        jurorPoolDetails.getCourt().setAddress1("Address line 1");
+        jurorPoolDetails.getCourt().setAddress2("Address line 2");
+        jurorPoolDetails.getCourt().setAddress3("Address line 3");
+        jurorPoolDetails.getCourt().setAddress4("Address line 4");
+        jurorPoolDetails.getCourt().setAddress5("Address line 5");
+        jurorPoolDetails.getCourt().setPostcode("AB1 2CD");
+        jurorPoolDetails.getPool().setReturnDate(serviceStartDate);
+
+        when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPoolDetails);
+        when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(true);
+        jurorPoolUtilsMockedStatic.when(() -> JurorPoolUtils.isDigitalByDefault(jurorPoolDetails)).thenReturn(true);
+
+        final DbdInformationResponseDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
+
+        assertThat(dbdInformationDto).isNotNull();
+        assertThat(dbdInformationDto.getCourtName()).isEqualTo("Test Court");
+        assertThat(dbdInformationDto.getServiceStartDate()).isEqualTo(serviceStartDate);
+        assertThat(dbdInformationDto)
+            .extracting("courtAddress1", "courtAddress2", "courtAddress3", "courtAddress4", "courtAddress5",
+                "courtPostcode")
+            .containsExactly("Address line 1", "Address line 2", "Address line 3", "Address line 4", "Address line 5",
+                "AB1 2CD");
+    }
+
+    @Test
+    public void getDbdInformation_WithNoPoolEntry_ReturnsNull() {
+        when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(null);
+
+        final DbdInformationResponseDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
+
+        assertThat(dbdInformationDto).isNull();
+    }
+
+    @Test
+    public void getDbdInformation_WithNonDbdJuror_ReturnsNull() {
+        when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPoolDetails);
+        when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(true);
+        jurorPoolUtilsMockedStatic.when(() -> JurorPoolUtils.isDigitalByDefault(jurorPoolDetails)).thenReturn(false);
+
+        final DbdInformationResponseDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
+
+        assertThat(dbdInformationDto).isNull();
     }
 }

@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.domain.letter.court.ExcusalRefusedLetterList;
 
 import java.util.List;
 
+@FunctionalInterface
 public interface IExcusalRefusalLetterListRepository {
     List<ExcusalRefusedLetterList> findJurorsEligibleForExcusalRefusalLetter(CourtLetterSearchCriteria searchCriteria,
                                                                              String owner);

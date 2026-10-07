@@ -55,7 +55,7 @@ public class PoolHistoryControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql","/db/PoolHistoryController_createInitialPoolHistories.sql"})
     public void testGetPoolHistory_Happy_Path() {
         ResponseEntity<PoolHistoryListDto> response =
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
                 URI.create("/api/v1/moj/pool-history/111111111")), PoolHistoryListDto.class);
 
         assertThat(response.getStatusCode())
@@ -97,6 +97,7 @@ public class PoolHistoryControllerITest extends AbstractIntegrationTest {
             .isEqualTo(FORBIDDEN);
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void initHeaders() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
             .userLevel("99")
@@ -109,6 +110,7 @@ public class PoolHistoryControllerITest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()

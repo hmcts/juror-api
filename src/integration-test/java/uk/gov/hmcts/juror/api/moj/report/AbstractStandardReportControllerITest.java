@@ -12,7 +12,7 @@ import uk.gov.hmcts.juror.api.moj.controller.reports.response.StandardReportResp
 @DisplayName("Controller: " + AbstractStandardReportControllerITest.BASE_URL)
 public abstract class AbstractStandardReportControllerITest
     extends AbstractReportControllerITest<StandardReportResponse> {
-    public AbstractStandardReportControllerITest(TestRestTemplate template,
+    protected AbstractStandardReportControllerITest(TestRestTemplate template,
                                                  Class<? extends AbstractStandardReport> reportClass) {
         super(template, reportClass, StandardReportResponse.class);
     }

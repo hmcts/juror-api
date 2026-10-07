@@ -3,15 +3,18 @@ package uk.gov.hmcts.juror.api.moj.service.poolmanagement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.antlr.v4.runtime.misc.Triple;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.AgeDisqualifiedJurorDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorManagementResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.poolmanagement.ReassignPoolMembersResultDto;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
@@ -24,12 +27,16 @@ import uk.gov.hmcts.juror.api.moj.repository.CourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.EmailDataService;
 import uk.gov.hmcts.juror.api.moj.service.GeneratePoolNumberService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.ReissueLetterService;
 import uk.gov.hmcts.juror.api.moj.service.jurormanagement.JurorAppearanceService;
+import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseService;
 import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.JurorUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
@@ -37,6 +44,7 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,12 +52,18 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.UNCONFIRMED_ATTENDANCE_EXISTS;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings({"PMD.TooManyMethods",
+@SuppressWarnings({
+    "PMD.TooManyMethods",
     "PMD.ExcessiveImports",
-    "PMD.GodClass"})
+    "PMD.AvoidInstantiatingObjectsInLoops",
+    "PMD.CouplingBetweenObjects"
+})
 public class JurorManagementServiceImpl implements JurorManagementService {
 
     private final PoolRequestRepository poolRequestRepository;
@@ -63,10 +77,16 @@ public class JurorManagementServiceImpl implements JurorManagementService {
     private final JurorHistoryService jurorHistoryService;
     private final ReissueLetterService reissueLetterService;
     private final JurorAppearanceService appearanceService;
+    private final JurorResponseService jurorResponseService;
+    private final JurorPaperResponseRepositoryMod paperResponseRepository;
+    private final JurorDigitalResponseRepositoryMod digitalResponseRepository;
+    private final EmailDataService emailDataService;
+    private final FeatureFlagConfigurationProperties featureFlags;
 
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @SuppressWarnings({"PMD.ExceptionAsFlowControl", "PMD.CyclomaticComplexity", "PMD.CognitiveComplexity"})
     public ReassignPoolMembersResultDto reassignJurors(BureauJwtPayload payload,
                                                        JurorManagementRequestDto jurorManagementRequestDto) {
         log.trace("Entered reassignJurors method");
@@ -92,22 +112,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 poolRequestRepository.findByPoolNumber(jurorManagementRequestDto.getSourcePoolNumber()
                 ), jurorManagementRequestDto.getSourcePoolNumber());
 
-        PoolRequest targetPoolRequest;
-        if (jurorManagementRequestDto.getReceivingPoolNumber() != null) {
-            targetPoolRequest =
-                RepositoryUtils.unboxOptionalRecord(
-                    poolRequestRepository.findByPoolNumber(
-                        jurorManagementRequestDto.getReceivingPoolNumber()),
-                    jurorManagementRequestDto.getReceivingPoolNumber()
-                );
-        } else {
-            if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
-                throw new MojException.BadRequest("Receiving Pool Number is required for Bureau users", null);
-            }
-            SecurityUtil.validateCourtLocationPermitted(jurorManagementRequestDto.getReceivingCourtLocCode());
-            targetPoolRequest = createTargetPoolRequest(jurorManagementRequestDto, sourcePoolRequest,
-                receivingCourtLocation);
-        }
+        PoolRequest targetPoolRequest = validateTargetPool(
+            jurorManagementRequestDto, owner, sourcePoolRequest, receivingCourtLocation);
 
         final String sourcePoolNumber = sourcePoolRequest.getPoolNumber();
         final String targetPoolNumber = targetPoolRequest.getPoolNumber();
@@ -134,6 +140,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         log.debug("{} Pool Members found for the {} juror numbers provided", sourceJurorPools.size(),
             jurorManagementRequestDto.getJurorNumbers().stream().distinct().count());
 
+        final List<AgeDisqualifiedJurorDto> ageDisqualifiedJurorDtoList = new ArrayList<>();
+
         final String currentUser = payload.getLogin();
         int reassignedJurorsCount = 0;
         for (JurorPool sourceJurorPool : sourceJurorPools) {
@@ -147,6 +155,11 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                     final String errorString = "Users can only reassign owned juror pools";
                     log.error(errorString);
                     throw new MojException.BadRequest(errorString, null);
+                }
+
+                if (checkForAgeDisqualification(
+                    sourceJurorPool, targetPoolRequest, ageDisqualifiedJurorDtoList, jurorNumber)) {
+                    continue;
                 }
 
                 JurorPool targetJurorPool;
@@ -185,20 +198,25 @@ public class JurorManagementServiceImpl implements JurorManagementService {
                 jurorHistoryService.createReassignPoolMemberHistory(sourceJurorPool, targetPoolNumber,
                     receivingCourtLocation);
 
-                // queue a summons confirmation letter only if juror is Bureau owned, has responded and is police
-                // checked
-                if (SecurityUtil.isBureau()) {
-                    if (targetJurorPool.getStatus().getStatus() == IJurorStatus.RESPONDED
-                        && targetJurorPool.getJuror().getPoliceCheck().isChecked()) {
-                        printDataService.printConfirmationLetter(targetJurorPool);
-                    }
-                    if (targetJurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
-                        reissueLetterService.updatePendingLetters(
-                            jurorNumber,
-                            Set.of(FormCode.ENG_SUMMONS, FormCode.BI_SUMMONS)
-                        );
+                // Need to check if there is an open response for court user only for jurors in summoned status
+                if (SecurityUtil.isCourt() && targetJurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED
+                    && Boolean.TRUE.equals(jurorManagementRequestDto.getFromSummonsReply())) {
+                    boolean processingComplete = jurorResponseService.closeOpenResponseRecord(
+                        jurorNumber, payload.getLogin());
+
+                    if (processingComplete) {
+                        // update the juror status to responded
+                        targetJurorPool.setStatus(RepositoryUtils.retrieveFromDatabase(
+                            IJurorStatus.RESPONDED, jurorStatusRepository));
+                        Juror juror = targetJurorPool.getJuror();
+                        juror.setResponded(true);
+                        jurorPoolRepository.save(targetJurorPool);
                     }
                 }
+
+                // queue a summons confirmation letter only if juror is Bureau owned, has responded and is police
+                // checked
+                processLetters(targetJurorPool, jurorNumber);
 
                 reassignedJurorsCount++;
 
@@ -207,11 +225,85 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             }
         }
 
-        poolRequestRepository.saveAndFlush(targetPoolRequest);
+        // remove a target pool created for court users if no jurors were reassigned into it
+        if (reassignedJurorsCount == 0 && !owner.equals(JurorDigitalApplication.JUROR_OWNER)
+            && targetPoolRequest.getLastUpdate().isAfter(LocalDateTime.now().minusMinutes(1))
+            && targetPoolRequest.getNumberRequested() == null) {
+            poolRequestRepository.delete(targetPoolRequest);
+        } else {
+            poolRequestRepository.saveAndFlush(targetPoolRequest);
+        }
 
         log.trace("Finished reassignJurors method");
 
-        return new ReassignPoolMembersResultDto(reassignedJurorsCount, targetPoolNumber);
+        return new ReassignPoolMembersResultDto(reassignedJurorsCount, targetPoolNumber, ageDisqualifiedJurorDtoList);
+    }
+
+    private void processLetters(JurorPool targetJurorPool, String jurorNumber) {
+        if (SecurityUtil.isBureau()) {
+            if (targetJurorPool.getStatus().getStatus() == IJurorStatus.RESPONDED
+                && targetJurorPool.getJuror().getPoliceCheck().isChecked()) {
+                if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                    && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(targetJurorPool)) {
+                    emailDataService.emailConfirmationLetter(targetJurorPool);
+                } else {
+                    printDataService.printConfirmationLetter(targetJurorPool);
+                }
+            }
+            if (targetJurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
+                reissueLetterService.updatePendingLetters(
+                    jurorNumber,
+                    Set.of(FormCode.ENG_SUMMONS, FormCode.BI_SUMMONS)
+                );
+            }
+        }
+    }
+
+    private @NonNull PoolRequest validateTargetPool(JurorManagementRequestDto jurorManagementRequestDto,
+                                                    String owner, PoolRequest sourcePoolRequest,
+                                                    CourtLocation receivingCourtLocation) {
+        PoolRequest targetPoolRequest;
+        if (jurorManagementRequestDto.getReceivingPoolNumber() != null) {
+            targetPoolRequest =
+                RepositoryUtils.unboxOptionalRecord(
+                    poolRequestRepository.findByPoolNumber(
+                        jurorManagementRequestDto.getReceivingPoolNumber()),
+                    jurorManagementRequestDto.getReceivingPoolNumber()
+                );
+        } else {
+            if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
+                throw new MojException.BadRequest("Receiving Pool Number is required for Bureau users", null);
+            }
+            SecurityUtil.validateCourtLocationPermitted(jurorManagementRequestDto.getReceivingCourtLocCode());
+            targetPoolRequest = createTargetPoolRequest(
+                jurorManagementRequestDto, sourcePoolRequest,
+                receivingCourtLocation
+            );
+        }
+        return targetPoolRequest;
+    }
+
+    private boolean checkForAgeDisqualification(JurorPool sourceJurorPool, PoolRequest targetPoolRequest,
+                                                List<AgeDisqualifiedJurorDto> ageDisqualifiedJurorDtoList,
+                                                String jurorNumber) {
+        // check if the juror will be over age when reassigned
+        LocalDate currentServiceStartDate = sourceJurorPool.getReturnDate();
+        LocalDate newDate = targetPoolRequest.getReturnDate();
+        LocalDate dob = JurorUtils.resolveDateOfBirth(
+            sourceJurorPool.getJuror(), digitalResponseRepository, paperResponseRepository, null);
+
+        if (JurorUtils.isAgeDisqualified(dob, newDate)) {
+            ageDisqualifiedJurorDtoList.add(
+                AgeDisqualifiedJurorDto.builder()
+                    .jurorNumber(jurorNumber)
+                    .dob(dob)
+                    .currentServiceStartDate(currentServiceStartDate)
+                    .newDate(newDate)
+                    .build());
+            // don't want to reassign this juror
+            return true;
+        }
+        return false;
     }
 
     private void validatePoolLocationOwnership(PoolRequest sourcePoolRequest, PoolRequest targetPoolRequest) {
@@ -257,6 +349,17 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             );
             log.error(message);
             throw new MojException.BadRequest(message, null);
+        }
+
+        if (appearanceService.getUnconfirmedAttendanceCountForJurorsAtCourt(
+                                                jurorManagementRequestDto.getJurorNumbers(),
+                                                jurorManagementRequestDto.getSourceCourtLocCode()) > 0
+            && !jurorManagementRequestDto.getSourceCourtLocCode()
+            .equals(jurorManagementRequestDto.getReceivingCourtLocCode())) {
+            throw new MojException.BusinessRuleViolation("Cannot reassign pool members when there are unconfirmed "
+                                                             + "attendances at the sending court location",
+                                                         UNCONFIRMED_ATTENDANCE_EXISTS);
+
         }
     }
 
@@ -574,6 +677,8 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         targetPoolRequest.setPoolType(sourcePoolRequest.getPoolType());
         // explicitly set number requested to null (not 0) so we can differentiate between these pools and nil pools
         targetPoolRequest.setNumberRequested(null);
+        targetPoolRequest.setDateCreated(LocalDateTime.now());
+        targetPoolRequest.setLastUpdate(LocalDateTime.now());
         log.trace("Pool: {} created to receive transferred pool members", targetPoolRequest.getPoolNumber());
         return poolRequestRepository.save(targetPoolRequest);
     }
@@ -690,5 +795,3 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
 
 }
-
-

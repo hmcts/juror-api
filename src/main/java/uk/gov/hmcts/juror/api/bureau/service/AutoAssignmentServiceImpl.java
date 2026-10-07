@@ -26,13 +26,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -43,6 +43,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 @Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings({"PMD.CouplingBetweenObjects"})
 public class AutoAssignmentServiceImpl implements AutoAssignmentService {
 
     static final int DEFAULT_CAPACITY_FALLBACK = 60;
@@ -55,7 +56,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
 
     @Override
     @Transactional
-    public void autoAssign(AutoAssignRequest request, String requestingUser) throws AutoAssignException {
+    public void autoAssign(AutoAssignRequest request, String requestingUser) {
 
         if (requestingUser == null || isBlank(requestingUser)) {
             log.error("Requesting user value was invalid ({}), and is required for audit", requestingUser);
@@ -168,7 +169,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
     @Transactional(propagation = Propagation.REQUIRES_NEW, readOnly = true)
     public List<UserJurorResponseAudit> assignAndAudit(List<DigitalResponse> backlog,
                                                        List<AutoAssignRequest.StaffCapacity> staffCapacity,
-                                                       String requestingUser) throws AutoAssignException {
+                                                       String requestingUser) {
 
         final List<String> staffLogins = staffCapacity.stream().map(AutoAssignRequest.StaffCapacity::getLogin).toList();
         LinkedList<User> staff = new LinkedList<>(userRepository.findAllByUsernameIn(staffLogins));
@@ -221,15 +222,23 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
                                                                Map<String, Integer> staffMemberCapacities) {
         final Iterator<DigitalResponse> backlogItems = backlog.iterator();
 
-        Map<User, Set<DigitalResponse>> allocation = new HashMap<>();
+        Map<User, Set<DigitalResponse>> allocation = new ConcurrentHashMap<>();
 
         for (final User staffMember : staff) {
             for (int j = 0; j < staffMemberCapacities.get(staffMember.getUsername()) && backlogItems.hasNext(); j++) {
-                allocation.computeIfAbsent(staffMember, s -> new HashSet<>()).add(backlogItems.next());
+                updateAllocationMapWithBacklogItems(allocation, staffMember, backlogItems.next());
             }
         }
 
         return allocation;
+    }
+
+    private void updateAllocationMapWithBacklogItems(
+        Map<User, Set<DigitalResponse>> allocation,
+        final User staffMember,
+        DigitalResponse digitalResponse
+    ) {
+        allocation.computeIfAbsent(staffMember, s -> new HashSet<>()).add(digitalResponse);
     }
 
     /**
@@ -240,7 +249,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
      *
      * @throws AutoAssignException if there are fewer entities than logins
      */
-    private void checkForMissingStaff(List<String> staffLogins, List<User> staff) throws AutoAssignException {
+    private void checkForMissingStaff(List<String> staffLogins, List<User> staff) {
         final Set<String> retrievedLogins = staff.stream().map(User::getUsername).collect(Collectors.toSet());
         final List<String> missing =
             staffLogins.stream().filter(s -> !retrievedLogins.contains(s)).toList();
@@ -254,9 +263,9 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
     /**
      * Checks that all staff members are valid candidates for auto-assignment (i.e. not inactive and not a team leader).
      */
-    private void checkForInvalidStaff(Collection<User> staff) throws AutoAssignException {
+    private void checkForInvalidStaff(Collection<User> staff) {
         List<User> ineligible =
-            staff.stream().filter(s -> !s.isActive() || !UserType.BUREAU.equals(s.getUserType()) || s.isTeamLeader())
+            staff.stream().filter(s -> !s.isActive() || s.getUserType() != UserType.BUREAU || s.isTeamLeader())
                 .toList();
         if (!ineligible.isEmpty()) {
             final List<String> ineligibleLogins = Lists.transform(ineligible, User::getUsername);

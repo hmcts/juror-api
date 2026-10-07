@@ -218,15 +218,15 @@ class DeceasedResponseServiceTest {
         verify(jurorResponseCommonRepositoryMod, times(1))
             .findByJurorNumber(jurorNumber);
 
-        final ArgumentCaptor<PaperResponse> PaperResponseCaptor = ArgumentCaptor.forClass(PaperResponse.class);
+        final ArgumentCaptor<PaperResponse> paperResponseCaptor = ArgumentCaptor.forClass(PaperResponse.class);
 
         verify(jurorPaperResponseRepository, times(1))
-            .save(PaperResponseCaptor.capture());
+            .save(paperResponseCaptor.capture());
 
-        PaperResponse paperResponse = PaperResponseCaptor.getValue();
+        PaperResponse paperResponse = paperResponseCaptor.getValue();
         assertThat(paperResponse.getJurorNumber()).isEqualTo(jurorNumber);
         assertThat(paperResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
-        assertThat(paperResponse.getProcessingComplete()).isTrue();
+        assertThat(paperResponse.isProcessingComplete()).isTrue();
         assertThat(paperResponse.getCompletedAt()).isNotNull();
 
         final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);
@@ -295,7 +295,7 @@ class DeceasedResponseServiceTest {
         DigitalResponse digitalResponse = digitalResponseCaptor.getValue();
         assertThat(digitalResponse.getJurorNumber()).isEqualTo(jurorNumber);
         assertThat(digitalResponse.getProcessingStatus()).isEqualTo(ProcessingStatus.CLOSED);
-        assertThat(digitalResponse.getProcessingComplete()).isTrue();
+        assertThat(digitalResponse.isProcessingComplete()).isTrue();
         assertThat(digitalResponse.getCompletedAt()).isNotNull();
 
         final ArgumentCaptor<Juror> jurorArgumentCaptor = ArgumentCaptor.forClass(Juror.class);

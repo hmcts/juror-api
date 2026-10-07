@@ -19,7 +19,7 @@ public class NotifyConfig {
             log.info("Configuring connection proxy!");
             final InetSocketAddress socketAddress = new InetSocketAddress(
                 proxyProps.getHost(),
-                Integer.valueOf(proxyProps.getPort())
+                Integer.parseInt(proxyProps.getPort())
             );
             final Proxy proxy = new Proxy(proxyProps.getType(), socketAddress);
             return new NotificationClient(props.getKey(), proxy);

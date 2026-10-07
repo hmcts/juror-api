@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 
 @Slf4j
+@SuppressWarnings("PMD.ExcessivePublicCount")
 public class LetterBase {
 
     protected final LetterContext letterContext;
@@ -85,8 +86,6 @@ public class LetterBase {
 
     }
 
-
-    @SuppressWarnings("PMD.AvoidRethrowingException")
     public String getLetterString() {
         try {
             return this.data.stream()
@@ -189,6 +188,7 @@ public class LetterBase {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     @EqualsAndHashCode
     protected static class LetterDataShuffle implements ILetterData {
         private final List<ILetterData> letterDataShuffleList = new ArrayList<>();
@@ -339,6 +339,7 @@ public class LetterBase {
     }
 
 
+    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     protected enum ContextType {
         JUROR_POOL(context -> context.getJurorPool() != null),
         COURT_LOCATION(context -> context.getCourtLocation() != null),
@@ -387,6 +388,17 @@ public class LetterBase {
             new DataShuffle(LetterDataType.JUROR_ADDRESS4, 35),
             new DataShuffle(LetterDataType.JUROR_ADDRESS5, 35),
             new DataShuffle(LetterDataType.JUROR_ADDRESS6, 35),
+            new DataShuffle(LetterDataType.JUROR_POSTCODE, 10)
+        );
+    }
+
+    protected void addJurorAddressDbd() {
+        addData(LetterDataType.JUROR_ADDRESS1, 35);
+        addDataShuffle(
+            new DataShuffle(LetterDataType.JUROR_ADDRESS2, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS3, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS4, 35),
+            new DataShuffle(LetterDataType.JUROR_ADDRESS5, 35),
             new DataShuffle(LetterDataType.JUROR_POSTCODE, 10)
         );
     }

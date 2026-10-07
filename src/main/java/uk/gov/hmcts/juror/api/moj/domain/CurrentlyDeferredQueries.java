@@ -4,7 +4,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 
 import java.time.LocalDate;
 
-public abstract class CurrentlyDeferredQueries {
+public class CurrentlyDeferredQueries {
 
     private static BooleanExpression filterByOwner(String owner) {
         QCurrentlyDeferred currentlyDeferred = QCurrentlyDeferred.currentlyDeferred;
@@ -31,5 +31,9 @@ public abstract class CurrentlyDeferredQueries {
      */
     public static BooleanExpression filterByCourtAndDate(String owner, String locCode, LocalDate deferredTo) {
         return filterByOwner(owner).and(filterByCourtLocation(locCode)).and(filterByDeferredDate(deferredTo));
+    }
+
+    protected CurrentlyDeferredQueries() {
+        throw new IllegalArgumentException("CurrentDeferredQueries must not be instantiated.");
     }
 }

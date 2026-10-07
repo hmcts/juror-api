@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.EntityPathBase;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -55,7 +57,7 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
 
         query.join(JUROR_POOL).on(JUROR.jurorNumber.eq(JUROR_POOL.juror.jurorNumber));
 
-        if (request.getLetterType().equals(LetterType.SUMMONED_REMINDER)) {
+        if (request.getLetterType() == LetterType.SUMMONED_REMINDER) {
             // for this letter type need to ensure any letters not printed (i.e. don't exist in bulk table) are
             // retrieved
             query.leftJoin(BULK_PRINT_DATA).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo)
@@ -81,12 +83,12 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
 
             query.where(QJurorHistory.jurorHistory.poolNumber.eq(JUROR_POOL.pool.poolNumber));
 
-            if (request.getLetterType().equals(LetterType.DEFERRAL_REFUSED)) {
+            if (request.getLetterType() == LetterType.DEFERRAL_REFUSED) {
                 query.where(QJurorHistory.jurorHistory.historyCode.eq(HistoryCodeMod.NON_DEFERRED_LETTER));
             }
         }
 
-        if (!request.getLetterType().equals(LetterType.SUMMONED_REMINDER)) {
+        if (request.getLetterType() != LetterType.SUMMONED_REMINDER) {
             query.where(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
                 .map(FormCode::getCode).toList()));
         }
@@ -106,11 +108,11 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         } else if (request.getPoolNumber() != null) {
             query.where(JUROR_POOL.pool.poolNumber.eq(request.getPoolNumber()));
         } else if (Boolean.TRUE.equals(request.getShowAllQueued())) {
-            if  (request.getLetterType().equals(LetterType.SUMMONED_REMINDER)) {
+            if  (request.getLetterType() == LetterType.SUMMONED_REMINDER) {
                 query.where(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
                     .map(FormCode::getCode).toList()));
             }
-            query.where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false)));
+            query.where(isPending());
         } else if (request.getJurorName() != null) {
             query.where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
                 .likeIgnoreCase("%" + request.getJurorName().toLowerCase(Settings.LOCALE) + "%"));
@@ -145,7 +147,7 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         JPAQuery<BulkPrintData> query = queryFactory.selectFrom(BULK_PRINT_DATA)
             .where(BULK_PRINT_DATA.jurorNo.eq(jurorNumber))
             .where(BULK_PRINT_DATA.formAttribute.formType.eq(formCode))
-            .where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false)));
+            .where(isPending());
 
         return Optional.ofNullable(query.fetchOne());
     }
@@ -186,9 +188,15 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         JPAQuery<BulkPrintData> query = queryFactory.selectFrom(BULK_PRINT_DATA)
             .where(BULK_PRINT_DATA.jurorNo.eq(jurorNumber))
             .where(BULK_PRINT_DATA.formAttribute.formType.eq(formCode))
-            .where(BULK_PRINT_DATA.extractedFlag.eq(false))
+            .where(isPending())
             .orderBy(BULK_PRINT_DATA.creationDate.desc());
 
         return Optional.ofNullable(query.fetchFirst());
+    }
+
+    private static BooleanExpression isPending() {
+        return BULK_PRINT_DATA.extractedFlag.isNull()
+            .or(BULK_PRINT_DATA.extractedFlag.eq(false))
+            .or(BULK_PRINT_DATA.emailStatus.eq(EmailStatus.PENDING));
     }
 }

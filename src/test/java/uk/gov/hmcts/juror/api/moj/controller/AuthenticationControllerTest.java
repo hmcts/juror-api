@@ -43,10 +43,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
-@DisplayName("Controller: " + AuthenticationControllerTest.BASE_URL)
-public class AuthenticationControllerTest {
 
-    public static final String BASE_URL = "/api/v1/auth/moj";
+@DisplayName("Controller: " + AuthenticationControllerTest.BASE_URL)
+class AuthenticationControllerTest {
+
+    static final String BASE_URL = "/api/v1/auth/moj";
 
     @Autowired
     private MockMvc mockMvc;
@@ -60,7 +61,7 @@ public class AuthenticationControllerTest {
     @Nested
     @DisplayName("POST " + ViewCourts.URL)
     class ViewCourts {
-        public static final String URL = BASE_URL + "/courts";
+        static final String URL = BASE_URL + "/courts";
 
         @Test
         void positiveTypical() throws Exception {
@@ -97,7 +98,7 @@ public class AuthenticationControllerTest {
     @Nested
     @DisplayName("GET " + CreateJwt.URL)
     class CreateJwt {
-        public static final String URL = BASE_URL + "/jwt/{loc_code}";
+        static final String URL = BASE_URL + "/jwt/{loc_code}";
 
         private String toUrl(String locCode) {
             return URL.replace("{loc_code}", locCode);

@@ -38,29 +38,34 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.CouplingBetweenObjects"
+})
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Utilisation Reports Integration Tests at " + UtilisationReportsITest.URL_BASE)
-@SuppressWarnings("PMD.ExcessiveImports")
 class UtilisationReportsITest extends AbstractIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
     @Autowired
     private UtilisationStatsRepository utilisationStatsRepository;
-    public static final String URL_BASE = "/api/v1/moj/reports";
-    public static final String DAILY_UTILISATION_REPORT_URL = URL_BASE + "/daily-utilisation";
-    public static final String DAILY_UTILISATION_JURORS_URL = URL_BASE + "/daily-utilisation-jurors";
-    public static final String GENERATE_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/generate-monthly-utilisation";
-    public static final String VIEW_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/view-monthly-utilisation";
-    public static final String GET_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/monthly-utilisation-reports";
-    public static final String COURT_UTILISATION_STATS_REPORT_URL = URL_BASE + "/court-utilisation-stats-report";
-    public static final String OVERDUE_UTILISATION_REPORT_URL = URL_BASE + "/overdue-utilisation-report";
+    static final String URL_BASE = "/api/v1/moj/reports";
+    static final String DAILY_UTILISATION_REPORT_URL = URL_BASE + "/daily-utilisation";
+    static final String DAILY_UTILISATION_JURORS_URL = URL_BASE + "/daily-utilisation-jurors";
+    static final String GENERATE_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/generate-monthly-utilisation";
+    static final String VIEW_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/view-monthly-utilisation";
+    static final String GET_MONTHLY_UTILISATION_REPORT_URL = URL_BASE + "/monthly-utilisation-reports";
+    static final String COURT_UTILISATION_STATS_REPORT_URL = URL_BASE + "/court-utilisation-stats-report";
+    static final String OVERDUE_UTILISATION_REPORT_URL = URL_BASE + "/overdue-utilisation-report";
 
     private HttpHeaders httpHeaders;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         initHeaders();
     }
 
@@ -91,7 +96,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         void viewDailyUtilisationHappy() {
 
             ResponseEntity<DailyUtilisationReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(DAILY_UTILISATION_REPORT_URL
                             + "/415?reportFromDate=2024-04-20&reportToDate=2024-05-13")),
                     DailyUtilisationReportResponse.class);
@@ -146,7 +151,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         @Test
         void viewDailyUtilisationReportFromAfterReportToDate() {
             ResponseEntity<DailyUtilisationReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(DAILY_UTILISATION_REPORT_URL
                             + "/415?reportFromDate=2024-05-20&reportToDate=2024-04-13")),
                     DailyUtilisationReportResponse.class);
@@ -159,7 +164,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         void viewDailyUtilisationReportInvalidDateRange() {
             // reportFromDate is more than 31 before reportToDate
             ResponseEntity<DailyUtilisationReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(DAILY_UTILISATION_REPORT_URL
                             + "/415?reportFromDate=2024-04-20&reportToDate=2024-05-23")),
                     DailyUtilisationReportResponse.class);
@@ -177,7 +182,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
             ResponseEntity<DailyUtilisationReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(DAILY_UTILISATION_REPORT_URL
                             + "/415?reportFromDate=2024-04-20&reportToDate=2024-05-13")),
                     DailyUtilisationReportResponse.class);
@@ -201,7 +206,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         void viewDailyUtilisationJurorsHappy() {
 
             ResponseEntity<DailyUtilisationReportJurorsResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(DAILY_UTILISATION_JURORS_URL
                             + "/415?reportDate=2024-05-09")),
                     DailyUtilisationReportJurorsResponse.class);
@@ -240,7 +245,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         @Test
         void viewDailyUtilisationJurorsNoUtilisation() {
             ResponseEntity<DailyUtilisationReportJurorsResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(DAILY_UTILISATION_JURORS_URL
                             + "/415?reportDate=2024-03-01")),
                     DailyUtilisationReportJurorsResponse.class);
@@ -268,7 +273,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
             ResponseEntity<DailyUtilisationReportJurorsResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(DAILY_UTILISATION_JURORS_URL
                             + "/415?reportDate=2024-05-09")),
                     DailyUtilisationReportJurorsResponse.class);
@@ -293,7 +298,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         void generateMonthlyUtilisationReportHappy() {
 
             ResponseEntity<MonthlyUtilisationReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(GENERATE_MONTHLY_UTILISATION_REPORT_URL
                             + "/415?reportDate=2024-05-01")),
                     MonthlyUtilisationReportResponse.class);
@@ -340,7 +345,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
 
             LocalDate may2024 = LocalDate.parse("2024-05-01");
 
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                     URI.create(GENERATE_MONTHLY_UTILISATION_REPORT_URL
                         + "/415?reportDate=2024-05-01")),
                 MonthlyUtilisationReportResponse.class);
@@ -350,7 +355,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
                 may2024, "415").size()).isEqualTo(1);
 
             // generate the same report again
-            restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+            restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                     URI.create(GENERATE_MONTHLY_UTILISATION_REPORT_URL
                         + "/415?reportDate=2024-05-01")),
                 MonthlyUtilisationReportResponse.class);
@@ -368,7 +373,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
             ResponseEntity<MonthlyUtilisationReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(GENERATE_MONTHLY_UTILISATION_REPORT_URL
                             + "/415?reportDate=2024-05-01")),
                     MonthlyUtilisationReportResponse.class);
@@ -394,7 +399,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         void viewMonthlyUtilisationReportHappy() {
 
             ResponseEntity<MonthlyUtilisationReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(VIEW_MONTHLY_UTILISATION_REPORT_URL
                             + "/415?reportDate=2024-05-01")),
                     MonthlyUtilisationReportResponse.class);
@@ -434,7 +439,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         void viewMonthlyUtilisationReportPreviousMonths() {
 
             ResponseEntity<MonthlyUtilisationReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(VIEW_MONTHLY_UTILISATION_REPORT_URL
                             + "/415?reportDate=2024-05-01&previousMonths=true")),
                     MonthlyUtilisationReportResponse.class);
@@ -494,7 +499,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
             ResponseEntity<MonthlyUtilisationReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(VIEW_MONTHLY_UTILISATION_REPORT_URL
                             + "/415?reportDate=2024-05-01")),
                     MonthlyUtilisationReportResponse.class);
@@ -519,7 +524,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
         void monthlyUtilisationReportsHappy() {
 
             ResponseEntity<String> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(GET_MONTHLY_UTILISATION_REPORT_URL + "/415")),
                     String.class);
 
@@ -540,7 +545,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
 
             ResponseEntity<MonthlyUtilisationReportResponse> responseEntity =
-                restTemplate.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+                restTemplate.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
                         URI.create(GET_MONTHLY_UTILISATION_REPORT_URL + "/415")),
                     MonthlyUtilisationReportResponse.class);
 

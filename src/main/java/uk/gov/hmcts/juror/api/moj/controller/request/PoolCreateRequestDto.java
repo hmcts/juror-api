@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,45 +17,37 @@ import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Getter
 @Setter
 @Schema(description = "Pool Create request")
 public class PoolCreateRequestDto implements Serializable {
 
-    @JsonProperty("poolNumber")
     @Schema(name = "Pool number", description = "Pool Request number")
     private String poolNumber;
 
-    @JsonProperty("startDate")
     @Schema(name = "Start Date", description = "Pool Create - Start Date")
     private LocalDate startDate;
 
-    @JsonProperty("attendTime")
     @Schema(name = "Attend Time", description = "Pool Create - Attend Time")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime attendTime;
 
-    @JsonProperty("noRequested")
     @Schema(name = "Jurors Requested", description = "Pool Create - No. of Jurors Requested")
     private Integer noRequested;
 
-    @JsonProperty("bureauDeferrals")
     @Schema(name = "Bureau Deferrals", description = "Pool Create - Bureau Deferrals")
     private Integer bureauDeferrals;
 
-    @JsonProperty("numberRequired")
     @Schema(name = "Jurors required", description = "Pool Create - Number of Jurors required")
     private Integer numberRequired;
 
-    @JsonProperty("citizensToSummon")
     @Schema(name = "Citizens to summon", description = "Pool Create - Number of Citizens to summon")
     private Integer citizensToSummon;
 
-    @JsonProperty("catchmentArea")
     @Schema(name = "Catchment Area", description = "Pool Create - Summons Catchment Area (location code)")
     private String catchmentArea;
 
-    @JsonProperty("postcodes")
     @Schema(name = "Postcodes", description = "Pool create - Postcodes to include in catchment area")
     private List<String> postcodes;
 

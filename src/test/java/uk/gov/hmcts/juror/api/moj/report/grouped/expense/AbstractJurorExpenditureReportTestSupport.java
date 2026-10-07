@@ -32,7 +32,7 @@ public abstract class AbstractJurorExpenditureReportTestSupport<R extends Abstra
     protected CourtLocationService courtLocationService;
     protected MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
-    public AbstractJurorExpenditureReportTestSupport(
+    protected AbstractJurorExpenditureReportTestSupport(
         boolean includeNested,
         IDataType... dataTypes) {
         super(
@@ -44,7 +44,7 @@ public abstract class AbstractJurorExpenditureReportTestSupport<R extends Abstra
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         this.securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
         this.courtLocationService = mock(CourtLocationService.class);

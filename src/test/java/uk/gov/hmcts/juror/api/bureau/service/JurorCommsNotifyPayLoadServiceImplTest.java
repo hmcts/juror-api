@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import uk.gov.hmcts.juror.api.config.JurorPortalProperties;
 import uk.gov.hmcts.juror.api.config.WelshDayMonthTranslationConfig;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
@@ -14,9 +15,11 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateFieldMod;
 import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMapperMod;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.repository.CourtEmailAttachmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.NotifyTemplateFieldRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
 
 import java.time.LocalDate;
@@ -82,6 +85,15 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
 
     @Mock
     private WelshCourtLocationRepository welshCourtLocationRepository;
+
+    @Mock
+    private JurorPortalProperties jurorPortalProperties;
+
+    @Mock
+    private CourtEmailAttachmentRepository courtEmailAttachmentRepository;
+
+    @Mock
+    private ApplicationSettingService applicationSettingService;
 
     @InjectMocks
     private JurorCommsNotifyPayLoadServiceImpl service;
@@ -195,6 +207,65 @@ public class JurorCommsNotifyPayLoadServiceImplTest {
             .containsValue(COURT_NAME);
 
         verify(notifyTemplateFieldRepository).findByTemplateId(TEMPLATE_ID);
+    }
+
+    @Test
+    public void generatePayLoadData_jurorOrResponseEmail_usesJurorEmailWhenPresent() {
+        templateFields.clear();
+        templateFields.add(NotifyTemplateFieldMod.builder()
+            .id(8L)
+            .templateId(TEMPLATE_ID)
+            .templateField(EMAIL_ADDRESS)
+            .mapperObject(NotifyTemplateMapperMod.JUROR_OR_RESPONSE_EMAIL)
+            .build());
+
+        getCourt(true);
+        PoolRequest poolRequest = new PoolRequest();
+        pool.setPool(poolRequest);
+        poolRequest.setCourtLocation(court);
+
+        given(commonResponseRepositoryMod.findByJurorNumber(JUROR_NUMBER)).willReturn(jurorResponse);
+        given(notifyTemplateFieldRepository.findByTemplateId(TEMPLATE_ID)).willReturn(templateFields);
+
+        payLoad = service.generatePayLoadData(TEMPLATE_ID, pool);
+
+        assertThat(payLoad)
+            .as("Juror email should take priority when populated")
+            .containsEntry(EMAIL_ADDRESS, EMAIL_1);
+
+        verify(notifyTemplateFieldRepository).findByTemplateId(TEMPLATE_ID);
+        verify(commonResponseRepositoryMod).findByJurorNumber(JUROR_NUMBER);
+    }
+
+    @Test
+    public void generatePayLoadData_jurorOrResponseEmail_usesThirdPartyEmailWhenJurorAndResponseEmailMissing() {
+        templateFields.clear();
+        templateFields.add(NotifyTemplateFieldMod.builder()
+            .id(8L)
+            .templateId(TEMPLATE_ID)
+            .templateField(EMAIL_ADDRESS)
+            .mapperObject(NotifyTemplateMapperMod.JUROR_OR_RESPONSE_EMAIL)
+            .build());
+        pool.getJuror().setEmail(null);
+        when(jurorResponse.getEmail()).thenReturn(null);
+        when(jurorResponse.getEmailAddress()).thenReturn("third-party@response.com");
+
+        getCourt(true);
+        PoolRequest poolRequest = new PoolRequest();
+        pool.setPool(poolRequest);
+        poolRequest.setCourtLocation(court);
+
+        given(commonResponseRepositoryMod.findByJurorNumber(JUROR_NUMBER)).willReturn(jurorResponse);
+        given(notifyTemplateFieldRepository.findByTemplateId(TEMPLATE_ID)).willReturn(templateFields);
+
+        payLoad = service.generatePayLoadData(TEMPLATE_ID, pool);
+
+        assertThat(payLoad)
+            .as("Third-party email should be used when juror and response email are missing")
+            .containsEntry(EMAIL_ADDRESS, "third-party@response.com");
+
+        verify(notifyTemplateFieldRepository).findByTemplateId(TEMPLATE_ID);
+        verify(commonResponseRepositoryMod).findByJurorNumber(JUROR_NUMBER);
     }
 
     @Test

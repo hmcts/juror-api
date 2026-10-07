@@ -9,7 +9,6 @@ import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
-import uk.gov.hmcts.juror.api.moj.repository.AppearanceRepository;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.LocalDate;
@@ -18,8 +17,6 @@ import java.time.LocalDate;
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class AppearanceCreationServiceImpl implements AppearanceCreationService {
-    private final AppearanceRepository appearanceRepository;
-    private final UserService userService;
 
     @Override
     @Transactional
@@ -30,8 +27,7 @@ public class AppearanceCreationServiceImpl implements AppearanceCreationService 
                 .attendanceDate(appearanceDate)
                 .courtLocation(courtLocation)
                 .poolNumber(poolNumber)
-                .appearanceConfirmed(appearanceConfirmed),
-            jurorNumber, appearanceDate, courtLocation)
+                .appearanceConfirmed(appearanceConfirmed))
             .build();
     }
 
@@ -46,8 +42,7 @@ public class AppearanceCreationServiceImpl implements AppearanceCreationService 
                 .courtLocation(courtLocation)
                 .noShow(Boolean.TRUE)
                 .attendanceType(AttendanceType.ABSENT)
-                .appearanceConfirmed(appearanceConfirmed),
-            jurorNumber, attendanceDate, courtLocation)
+                .appearanceConfirmed(appearanceConfirmed))
             .build();
     }
 
@@ -68,23 +63,13 @@ public class AppearanceCreationServiceImpl implements AppearanceCreationService 
                     .attendanceType(AttendanceType.NON_ATTENDANCE)
                     .appearanceStage(AppearanceStage.EXPENSE_ENTERED)
                     .isDraftExpense(true)
-                    .appearanceConfirmed(appearanceConfirmed),
-                jurorNumber, nonAttendanceDate, courtLocation)
+                    .appearanceConfirmed(appearanceConfirmed))
                 .build();
     }
 
-    //Public for test use should only be used internally
-    public Appearance.AppearanceBuilder addStandardAttributes(Appearance.AppearanceBuilder appearanceBuilder,
-                                                       String jurorNumber, LocalDate appearanceDate,
-                                                       CourtLocation courtLocation) {
+    private Appearance.AppearanceBuilder addStandardAttributes(Appearance.AppearanceBuilder appearanceBuilder) {
         return appearanceBuilder
-            .createdBy(SecurityUtil.getActiveLogin())
-            .version(getLastVersionNumber(jurorNumber, appearanceDate, courtLocation.getLocCode()));
+            .createdBy(SecurityUtil.getActiveLogin());
     }
 
-    //Public for test use should only be used internally
-    public Long getLastVersionNumber(String jurorNumber, LocalDate date, String locCode) {
-        Long lastVersion = appearanceRepository.getLastVersionNumber(jurorNumber, date, locCode);
-        return lastVersion == null ? null : lastVersion + 1;
-    }
 }

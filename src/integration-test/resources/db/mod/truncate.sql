@@ -57,3 +57,7 @@ DELETE FROM juror_mod.welsh_court_location where loc_code in ('001', '002', '003
 DELETE FROM juror_mod.court_location where loc_code in ('001', '002', '003');
 
 DELETE FROM juror_mod.bureau_snapshot;
+
+DELETE FROM juror_mod.excluded_voters;
+DELETE FROM juror_mod.voters;
+UPDATE juror_mod.court_location set voters_lock = 0;

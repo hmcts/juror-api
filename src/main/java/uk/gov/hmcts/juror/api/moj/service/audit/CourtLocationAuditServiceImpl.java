@@ -158,11 +158,13 @@ public class CourtLocationAuditServiceImpl implements CourtLocationAuditService 
         if (courtLocation.isPresent()) {
             CourtLocation court = courtLocation.get();
             // Priority: loc_court_name > name > loc_code
-            if (court.getLocCourtName() != null && !court.getLocCourtName().trim().isEmpty()) {
-                return court.getLocCourtName();
+            String locCourtName = court.getLocCourtName();
+            if (locCourtName != null && !locCourtName.isBlank()) {
+                return locCourtName;
             }
-            if (court.getName() != null && !court.getName().trim().isEmpty()) {
-                return court.getName();
+            String courtName = court.getName();
+            if (courtName != null && !courtName.isBlank()) {
+                return courtName;
             }
         }
         return locCode;

@@ -14,7 +14,6 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,8 +58,6 @@ public class ExpensePaymentByTypeReport extends AbstractStandardReport {
         public Map<String, StandardReportResponse.DataTypeValue> getHeadings(
                 StandardReportRequest request,
                 AbstractReportResponse.TableData<StandardTableData> tableData) {
-
-        LocalDateTime now = LocalDateTime.now();
 
         Map<String, StandardReportResponse.DataTypeValue> map = new ConcurrentHashMap<>();
 

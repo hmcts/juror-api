@@ -21,7 +21,7 @@ import java.util.List;
 })
 class NonRespondedReportITest extends AbstractStandardReportControllerITest {
     @Autowired
-    public NonRespondedReportITest(TestRestTemplate template) {
+    NonRespondedReportITest(TestRestTemplate template) {
         super(template, NonRespondedReport.class);
     }
 
@@ -38,7 +38,6 @@ class NonRespondedReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalCourt() {
         testBuilder()
             .triggerValid()
@@ -47,7 +46,6 @@ class NonRespondedReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void positiveTypicalBureau() {
         testBuilder()
             .jwt(getBureauJwt())
@@ -57,7 +55,6 @@ class NonRespondedReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setPoolNumber(null);
@@ -68,7 +65,6 @@ class NonRespondedReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getCourtJwt("414"))

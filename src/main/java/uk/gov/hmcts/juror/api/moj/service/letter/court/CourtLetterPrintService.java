@@ -5,6 +5,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.letter.court.PrintLetterDa
 
 import java.util.List;
 
+@FunctionalInterface
 public interface CourtLetterPrintService {
     List<PrintLetterDataResponseDto> getPrintLettersData(PrintLettersRequestDto printLettersRequestDto, String login);
 }

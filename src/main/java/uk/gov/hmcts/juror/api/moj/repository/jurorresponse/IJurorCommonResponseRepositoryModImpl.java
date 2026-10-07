@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.PoolTransferWeekday;
 import uk.gov.hmcts.juror.api.moj.domain.QCurrentlyDeferred;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
@@ -29,19 +30,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 
-
-
 @Slf4j
 public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonResponseRepositoryMod {
     private final PoolTransferDayRepository poolTransferDayRepository;
 
+    @PersistenceContext
+    EntityManager entityManager;
+
     public IJurorCommonResponseRepositoryModImpl(PoolTransferDayRepository poolTransferDayRepository) {
         this.poolTransferDayRepository = poolTransferDayRepository;
     }
-
-    @PersistenceContext
-
-    EntityManager entityManager;
 
     @Override
     public List<Tuple> getJurorResponseDetailsByUsernameAndStatus(String staffLogin,
@@ -300,20 +298,20 @@ public class IJurorCommonResponseRepositoryModImpl implements IJurorCommonRespon
 
         // Apply adjustments
         effectiveDate = effectiveDate.plusDays(weekdayAdjustment);
-        LocalDate latestReturnDate = effectiveDate.plusDays(7);  // 1 week
+        // 1 week
 
-        return latestReturnDate;
+        return effectiveDate.plusDays(7);
     }
 
     private int getWeekdayAdjustmentFromDB(String transferDay, String runDay) {
         if (transferDay == null || runDay == null) {
             return 0;
         }
-        String t = transferDay.trim();
-        String r = runDay.trim();
+        String transferDayTrim = transferDay.trim();
+        String runDayTrim = runDay.trim();
         return poolTransferDayRepository
-            .findByTransferDayAndRunDayIgnoreCase(t, r)
-            .map(ptw -> ptw.getAdjustment())
+            .findByTransferDayAndRunDayIgnoreCase(transferDayTrim, runDayTrim)
+            .map(PoolTransferWeekday::getAdjustment)
             .orElse(0);
     }
 

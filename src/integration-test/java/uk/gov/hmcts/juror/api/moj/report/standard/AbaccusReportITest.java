@@ -24,7 +24,7 @@ import java.util.List;
 })
 class AbaccusReportITest extends AbstractStandardReportControllerITest {
     @Autowired
-    public AbaccusReportITest(TestRestTemplate template) {
+    AbaccusReportITest(TestRestTemplate template) {
         super(template, AbaccusReport.class);
     }
 
@@ -43,7 +43,6 @@ class AbaccusReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void positiveTypicalBureau() {
         testBuilder()
             .triggerValid()
@@ -83,35 +82,42 @@ class AbaccusReportITest extends AbstractStandardReportControllerITest {
                 ))
                 .data(StandardTableData.of(
                         new ReportLinkedMap<String, Object>()
+                            .add("document_code", "5221")
+                            .add("total_sent_for_printing", 1)
+                            .add("date_sent", "2024-01-31"),
+                        new ReportLinkedMap<String, Object>()
                             .add("document_code", "5224AC")
                             .add("total_sent_for_printing", 1)
-                            .add("date_sent", "2024-01-27"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("document_code", "5228")
-                            .add("total_sent_for_printing", 1)
-                            .add("date_sent", "2024-01-20"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("document_code", "5228")
-                            .add("total_sent_for_printing", 1)
-                            .add("date_sent", "2024-01-25"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("document_code", "5228")
-                            .add("total_sent_for_printing", 2)
                             .add("date_sent", "2024-01-27"),
                         new ReportLinkedMap<String, Object>()
                             .add("document_code", "5228")
                             .add("total_sent_for_printing", 4)
                             .add("date_sent", "2024-01-31"),
                         new ReportLinkedMap<String, Object>()
+                            .add("document_code", "5228")
+                            .add("total_sent_for_printing", 2)
+                            .add("date_sent", "2024-01-27"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("document_code", "5228")
+                            .add("total_sent_for_printing", 1)
+                            .add("date_sent", "2024-01-25"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("document_code", "5228")
+                            .add("total_sent_for_printing", 1)
+                            .add("date_sent", "2024-01-20"),
+                        new ReportLinkedMap<String, Object>()
                             .add("document_code", "5228C")
                             .add("total_sent_for_printing", 4)
+                            .add("date_sent", "2024-01-31"),
+                        new ReportLinkedMap<String, Object>()
+                            .add("document_code", "6220")
+                            .add("total_sent_for_printing", 1)
                             .add("date_sent", "2024-01-31")
                     )
                 ).build()).build();
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeInvalidPayload() {
         StandardReportRequest request = getValidPayload();
         request.setToDate(null);
@@ -122,7 +128,6 @@ class AbaccusReportITest extends AbstractStandardReportControllerITest {
     }
 
     @Test
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
     void negativeUnauthorised() {
         testBuilder()
             .jwt(getCourtJwt("414"))

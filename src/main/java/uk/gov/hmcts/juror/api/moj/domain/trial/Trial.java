@@ -100,6 +100,7 @@ public class Trial implements Serializable {
         @JoinColumn(name = "loc_code", referencedColumnName = "loc_code"),
         @JoinColumn(name = "trial_number", referencedColumnName = "trial_number")
     })
+    @Builder.Default
     private List<Panel> panel = new ArrayList<>();
 
 
@@ -112,6 +113,7 @@ public class Trial implements Serializable {
             @JoinColumn(name = "trial_number", referencedColumnName = "trial_number")
         }
     )
+    @Builder.Default
     @SQLJoinTableRestriction("result = 'J'")
     private List<Panel> jurors = new ArrayList<>();
 
@@ -124,6 +126,7 @@ public class Trial implements Serializable {
             @JoinColumn(name = "trial_number", referencedColumnName = "trial_number")
         }
     )
+    @Builder.Default
     @SQLJoinTableRestriction("result in ('NU', 'CD')")
     private List<Panel> notUsedPanel = new ArrayList<>();
 }

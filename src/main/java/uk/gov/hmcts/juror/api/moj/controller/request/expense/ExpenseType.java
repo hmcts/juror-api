@@ -8,13 +8,13 @@ import java.util.function.Function;
 
 public enum ExpenseType {
     DRAFT(appearance -> appearance.isDraftExpense()
-        && AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage())),
+        && appearance.getAppearanceStage() == AppearanceStage.EXPENSE_ENTERED),
     FOR_APPROVAL(appearance -> !appearance.isDraftExpense()
-        && AppearanceStage.EXPENSE_ENTERED.equals(appearance.getAppearanceStage())),
+        && appearance.getAppearanceStage() == AppearanceStage.EXPENSE_ENTERED),
     FOR_REAPPROVAL(appearance -> !appearance.isDraftExpense()
-        && AppearanceStage.EXPENSE_EDITED.equals(appearance.getAppearanceStage())),
+        && appearance.getAppearanceStage() == AppearanceStage.EXPENSE_EDITED),
     APPROVED(appearance -> !appearance.isDraftExpense()
-        && AppearanceStage.EXPENSE_AUTHORISED.equals(appearance.getAppearanceStage()));
+        && appearance.getAppearanceStage() == AppearanceStage.EXPENSE_AUTHORISED);
 
     @SuppressWarnings("PMD.LinguisticNaming")
     private final Function<Appearance, Boolean> isApplicableFunction;

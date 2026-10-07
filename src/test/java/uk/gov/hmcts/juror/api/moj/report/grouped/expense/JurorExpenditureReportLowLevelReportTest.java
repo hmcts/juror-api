@@ -34,7 +34,7 @@ import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIn
 class JurorExpenditureReportLowLevelReportTest
     extends AbstractJurorExpenditureReportTestSupport<JurorExpenditureReportLowLevelReport> {
 
-    public JurorExpenditureReportLowLevelReportTest() {
+    JurorExpenditureReportLowLevelReportTest() {
         super(true,
             ExpenseDataTypes.JUROR_NUMBER,
             DataType.FIRST_NAME,
@@ -49,13 +49,13 @@ class JurorExpenditureReportLowLevelReportTest
     }
 
     @Override
-    public JurorExpenditureReportLowLevelReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected JurorExpenditureReportLowLevelReport createReport(PoolRequestRepository poolRequestRepository) {
         return new JurorExpenditureReportLowLevelReport(courtLocationService);
     }
 
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         securityUtilMockedStatic.when(SecurityUtil::isCourt).thenReturn(true);
         doNothing().when(report).addGroupBy(any(), any(IDataType[].class));
 

@@ -2,7 +2,9 @@ package uk.gov.hmcts.juror.api.moj.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
@@ -31,7 +33,9 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @AllArgsConstructor
 @Getter
 @Setter
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Juror paper response personal details")
+@SuppressWarnings({"PMD.TooManyFields"})
 public class EditJurorRecordRequestDto {
 
     @JsonProperty("title")
@@ -158,5 +162,11 @@ public class EditJurorRecordRequestDto {
 
     @JsonProperty("third_party")
     private JurorThirdPartyDto thirdParty;
+
+    @JsonProperty("dbd_preference")
+    @Length(max = 7)
+    @Pattern(regexp = "(?i)^(paper|digital)$", message = "dbd_preference must be either 'Paper' or 'Digital'")
+    @Schema(description = "If the juror prefers Paper or Digital communication")
+    private String dbdPreference;
 
 }

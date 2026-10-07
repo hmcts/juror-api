@@ -13,10 +13,10 @@ import java.util.Optional;
 public interface LaUserRepository extends CrudRepository<LaUser, String>, QuerydslPredicateExecutor<LaUser> {
 
     // there could be multiple users with the same email address but different local authorities
-    List<LaUser> findByUsername(String username);
+    List<LaUser> findByUsernameIgnoreCase(String username);
 
     // there should only be one user with the same email address and local authority
-    Optional<LaUser> findByUsernameAndLocalAuthority(String username, LocalAuthority localAuthority);
+    Optional<LaUser> findByUsernameIgnoreCaseAndLocalAuthority(String username, LocalAuthority localAuthority);
 
     List<LaUser> findByLocalAuthority(LocalAuthority localAuthority);
 

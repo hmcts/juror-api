@@ -33,6 +33,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.NumberUtils.unboxIntegerValues;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings("PMD.TooManyMethods")
 public class ManagePoolsServiceImpl implements ManagePoolsService {
 
     private final CourtLocationRepository courtLocationRepository;
@@ -50,7 +51,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
 
         // validate the user has access to the court location -
         // bureau user will have it, court user should have access to the court and secondary courts
-        if (owner.equals(JurorDigitalApplication.JUROR_OWNER)) {
+        if (JurorDigitalApplication.JUROR_OWNER.equals(owner)) {
             RepositoryUtils.retrieveFromDatabase(locCode, courtLocationRepository);
         } else {
             validateCourtLocationAndOwnership(locCode, owner);
@@ -229,6 +230,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
         return mapAvailablePoolsToDto(activePoolsData, owner);
     }
 
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private List<AvailablePoolsInCourtLocationDto.AvailablePoolsDto> mapAvailablePoolsToDto(List<Tuple> activePoolsData,
                                                                                             String owner) {
         log.trace("Juror record owner: {} - Enter method - mapActivePoolStatsToDto", owner);
@@ -243,7 +245,7 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
 
             int confirmedPoolMembers = unboxIntegerValues(activePool.get(3, Integer.class));
 
-            if (owner.equalsIgnoreCase(JurorDigitalApplication.JUROR_OWNER)) {
+            if (JurorDigitalApplication.JUROR_OWNER.equalsIgnoreCase(owner)) {
                 log.debug("Juror record owner: {} - Calculate current pool utilisation stats for {}", owner,
                     activePool.get(0, String.class));
                 int bureauUtilisation = calculateUtilisation(activePool.get(2, Integer.class), confirmedPoolMembers);

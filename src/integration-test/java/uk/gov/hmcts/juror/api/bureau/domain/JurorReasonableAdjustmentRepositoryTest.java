@@ -41,7 +41,6 @@ public class JurorReasonableAdjustmentRepositoryTest extends AbstractIntegration
     @Sql("/db/truncate.sql")
     @Sql("/db/BureauJurorSpecialNeedsRepository_findByJurorNumber.sql")
     //FALSE positive
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void findByJurorNumberWithValidJurorNumberReturnsJurorSpecialNeeds() {
         executeInTransaction(() -> {
             List<JurorReasonableAdjustment> actualReasonableAdjustment = jurorReasonableAdjustmentRepository

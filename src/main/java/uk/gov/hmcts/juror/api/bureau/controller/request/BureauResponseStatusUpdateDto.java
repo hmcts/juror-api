@@ -1,5 +1,7 @@
 package uk.gov.hmcts.juror.api.bureau.controller.request;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +14,7 @@ import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Data
 public class BureauResponseStatusUpdateDto {
     private String jurorNumber;

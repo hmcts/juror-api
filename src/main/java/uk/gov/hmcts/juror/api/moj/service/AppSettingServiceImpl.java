@@ -37,6 +37,10 @@ public class AppSettingServiceImpl implements AppSettingService {
     private static final String SMART_SURVEY_SUMMONS_RESPONSE_DAYS = "SMART_SURVEY_SUMMONS_RESPONSE_DAYS";
     private static final String SMART_SURVEY_SUMMONS_RESPONSE_EXPORT_NAME = "SMART_SURVEY_SUMMONS_RESPONSE_EXPORT_NAME";
     private static final String NOTIFY_ER_REMINDER = "NOTIFY_ER_REMINDER";
+    private static final String WE_ARE_GROUP_CONTACT_INFORMATION_TEMPLATE_ID =
+        "WE_ARE_GROUP_CONTACT_INFORMATION_TEMPLATE_ID";
+    private static final String WE_ARE_GROUP_REFERRAL_CONFIRMED_TEMPLATE_ID =
+        "WE_ARE_GROUP_REFERRAL_CONFIRMED_TEMPLATE_ID";
 
     private final AppSettingRepository appSettingRepository;
     private final SystemParameterRepository systemParameterRepository;
@@ -129,15 +133,10 @@ public class AppSettingServiceImpl implements AppSettingService {
     @Override
     public String getWelshTranslation() {
         Optional<AppSetting> welshTranslation = appSettingRepository.findById(WELSH_TRANSLATION);
-        final AppSetting setting = welshTranslation.isPresent()
-            ?
-            welshTranslation.get()
-            :
-                null;
+        final AppSetting setting = welshTranslation.orElse(null);
         if (setting != null) {
-            final String welshTranslationText = setting.getValue();
             return
-                (welshTranslationText);
+                setting.getValue();
         }
 
         return null;
@@ -162,15 +161,10 @@ public class AppSettingServiceImpl implements AppSettingService {
     @Override
     public String getSmartSurveySummonsResponseSurveyId() {
         Optional<AppSetting> surveyId = appSettingRepository.findById(SMART_SURVEY_SUMMONS_RESPONSE_SURVEY_ID);
-        final AppSetting setting = surveyId.isPresent()
-            ?
-            surveyId.get()
-            :
-                null;
+        final AppSetting setting = surveyId.orElse(null);
         if (setting != null) {
-            final String surveyIdText = setting.getValue();
             return
-                (surveyIdText);
+                setting.getValue();
         }
 
         return null;
@@ -179,15 +173,10 @@ public class AppSettingServiceImpl implements AppSettingService {
     @Override
     public String getSmartSurveySummonsResponseExportName() {
         Optional<AppSetting> surveyId = appSettingRepository.findById(SMART_SURVEY_SUMMONS_RESPONSE_EXPORT_NAME);
-        final AppSetting setting = surveyId.isPresent()
-            ?
-            surveyId.get()
-            :
-                null;
+        final AppSetting setting = surveyId.orElse(null);
         if (setting != null) {
-            final String surveyIdText = setting.getValue();
             return
-                (surveyIdText);
+                setting.getValue();
         }
 
         return null;
@@ -203,6 +192,32 @@ public class AppSettingServiceImpl implements AppSettingService {
             return templateIdValue;
         }
         log.warn("Notify ER Reminder Template ID not found in APP_SETTING table!");
+        return null;
+    }
+
+    @Override
+    public String getWeAreGroupContactInformationTemplateId() {
+        Optional<AppSetting> templateId = appSettingRepository.findById(WE_ARE_GROUP_CONTACT_INFORMATION_TEMPLATE_ID);
+        final AppSetting setting = templateId.orElse(null);
+        if (setting != null) {
+            final String templateIdValue = setting.getValue();
+            log.debug("Notify Bureau Information  Email Template ID: {}", templateIdValue);
+            return templateIdValue;
+        }
+        log.warn("Notify Bureau  Information Email Template ID not found in APP_SETTING table!");
+        return null;
+    }
+
+    @Override
+    public String getWeAreGroupReferralConfirmedTemplateId() {
+        Optional<AppSetting> templateId = appSettingRepository.findById(WE_ARE_GROUP_REFERRAL_CONFIRMED_TEMPLATE_ID);
+        final AppSetting setting = templateId.orElse(null);
+        if (setting != null) {
+            final String templateIdValue = setting.getValue();
+            log.debug("Notify Bureau  Referral Email Template ID: {}", templateIdValue);
+            return templateIdValue;
+        }
+        log.warn("Notify Bureau  Referral Email Template ID not found in APP_SETTING table!");
         return null;
     }
 

@@ -2,10 +2,13 @@ package uk.gov.hmcts.juror.api.bureau.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.bureau.exception.JurorCommsNotificationServiceException;
+import uk.gov.hmcts.juror.api.config.JurorPortalProperties;
 import uk.gov.hmcts.juror.api.config.WelshDayMonthTranslationConfig;
+import uk.gov.hmcts.juror.api.juror.domain.ApplicationSettings;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.ICourtLocation;
@@ -15,8 +18,10 @@ import uk.gov.hmcts.juror.api.moj.domain.NotifyTemplateMapperMod;
 import uk.gov.hmcts.juror.api.moj.domain.TemporaryCourtAddress;
 import uk.gov.hmcts.juror.api.moj.domain.TemporaryCourtName;
 import uk.gov.hmcts.juror.api.moj.domain.TemporaryCourtPhone;
+import uk.gov.hmcts.juror.api.moj.repository.CourtEmailAttachmentRepository;
 import uk.gov.hmcts.juror.api.moj.repository.NotifyTemplateFieldRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.ApplicationSettingService;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
 
@@ -27,12 +32,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +46,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLoadService {
 
     private static final String SERVICE_START_DATE = "SERVICESTARTDATE";
@@ -52,13 +58,15 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
     private static final DateTimeFormatter WELSH_DATE_TIME_FORMATTER =
         DateTimeFormatter.ofPattern(DATE_FORMAT, new Locale("en", "GB"));
     private static final String TAUNTON_LOC_CODE = "459";
-    private static final String HARROW_LOC_CODE = "468";
 
     private final NotifyTemplateFieldRepositoryMod notifyTemplateFieldRepositoryMod;
     private final JurorCommonResponseRepositoryMod commonResponseRepositoryMod;
     private final WelshDayMonthTranslationConfig welshDayMonthTranslationConfig;
     private final PoolRequestService poolRequestService;
     private final WelshCourtLocationRepository welshCourtLocationRepository;
+    private final JurorPortalProperties jurorPortalProperties;
+    private final CourtEmailAttachmentRepository courtFileAttachmentRepository;
+    private final ApplicationSettingService applicationSettingService;
 
     /**
      * Establishes the mapping for the required fields required for the given templateId
@@ -68,6 +76,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
      * @param detailData source of data.
      * @return Map pairing for each template placeholder:value.
      */
+    @SuppressWarnings({"PMD.NcssCount", "PMD.CyclomaticComplexity", "PMD.CognitiveComplexity"})
     @Override
     public Map<String, String> generatePayLoadData(String templateId, String detailData, JurorPool juror) {
 
@@ -91,10 +100,6 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
             context.setTemporaryCourtName(TemporaryCourtName.TAUNTON.getTemporaryCourtName());
             context.setTemporaryCourtAddress(TemporaryCourtAddress.TAUNTON.getTemporaryCourtAddress());
             context.setTemporaryCourtPhone(TemporaryCourtPhone.TAUNTON.getTemporaryCourtPhone());
-        } else if (juror.getCourt() != null && HARROW_LOC_CODE.equals(juror.getCourt().getLocCode())) {
-            context.setTemporaryCourtName(TemporaryCourtName.HARROW.getTemporaryCourtName());
-            context.setTemporaryCourtAddress(TemporaryCourtAddress.HARROW.getTemporaryCourtAddress());
-            context.setTemporaryCourtPhone(TemporaryCourtPhone.HARROW.getTemporaryCourtPhone());
         } else {
             log.warn("Court location code is null or unrecognized for juror: {}", juror.getJurorNumber());
         }
@@ -104,10 +109,10 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         final WelshCourtLocation welshCourtLocation = getWelshCourtLocation(context.getCourtLocation().getLocCode());
         context.setWelshCourtLocation(welshCourtLocation);
         Boolean isWelshCourt = isWelshCourtAndComms(juror.getJuror().getWelsh(), welshCourtLocation);
+        resolveAttachmentUrls(context, isWelshCourt);
 
 
-
-        final Map<String, String> map = new HashMap<>();
+        final Map<String, String> map = new ConcurrentHashMap<>();
         Object fieldValue = null;
         try {
             for (NotifyTemplateFieldMod field : fields) {
@@ -128,7 +133,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                             String formattedDateWelsh = WELSH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
                             String str;
                             Map<String, String> myWelshTranslationMap;
-                            myWelshTranslationMap = setUpTranslationMap();
+                            myWelshTranslationMap = getTranslationMap();
 
                             for (Map.Entry<String, String> entry : myWelshTranslationMap.entrySet()) {
                                 str = formattedDateWelsh.replace(entry.getKey(), entry.getValue());
@@ -164,7 +169,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
             log.error(
                 "Failed to establish data needed for notify template fields to send comms (missing template fields "
                     + "data)", stre);
-            throw new StringIndexOutOfBoundsException();
+            throw stre;
         } catch (Exception e) {
             log.error(
                 "Failed to establish data needed for notify template fields to send comms (missing template fields "
@@ -180,6 +185,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
      * @param templateId template for which the payload is to be assembled for.
      * @return Map pairing for each template placeholder:value.
      */
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.CognitiveComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     @Override
     public Map<String, String> generatePayLoadData(String templateId, JurorPool jurorPool) {
 
@@ -194,10 +200,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
             context.setTemporaryCourtName(TemporaryCourtName.TAUNTON.getTemporaryCourtName());
             context.setTemporaryCourtAddress(TemporaryCourtAddress.TAUNTON.getTemporaryCourtAddress());
             context.setTemporaryCourtPhone(TemporaryCourtPhone.TAUNTON.getTemporaryCourtPhone());
-        } else if (jurorPool.getCourt() != null && HARROW_LOC_CODE.equals(jurorPool.getCourt().getLocCode())) {
-            context.setTemporaryCourtName(TemporaryCourtName.HARROW.getTemporaryCourtName());
-            context.setTemporaryCourtAddress(TemporaryCourtAddress.HARROW.getTemporaryCourtAddress());
-            context.setTemporaryCourtPhone(TemporaryCourtPhone.HARROW.getTemporaryCourtPhone());
+
         } else {
             log.warn("Court location code is null or unrecognized for juror: {}", jurorPool.getJurorNumber());
         }
@@ -208,9 +211,9 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         final WelshCourtLocation welshCourtLocation = getWelshCourtLocation(context.getCourtLocation().getLocCode());
         context.setWelshCourtLocation(welshCourtLocation);
         Boolean isWelshCourt = isWelshCourtAndComms(jurorPool.getJuror().getWelsh(), welshCourtLocation);
+        resolveAttachmentUrls(context, isWelshCourt);
 
-
-        final Map<String, String> map = new HashMap<>();
+        final Map<String, String> map = new ConcurrentHashMap<>();
         try {
             Object fieldValue = null;
             String value;
@@ -223,14 +226,14 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
                 } else if (mapperObject.getType() == NotifyTemplateMapperMod.Type.JUROR) {
                     fieldValue = invokeGetter(context, mapperObject);
 
-                    if (field.getTemplateField().equalsIgnoreCase(SERVICE_START_DATE)) {
+                    if (SERVICE_START_DATE.equalsIgnoreCase(field.getTemplateField())) {
                         String formattedDate = ENGLISH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
                         String formattedDateWelsh = WELSH_DATE_TIME_FORMATTER.format((LocalDate) fieldValue);
                         String str;
 
                         if (isWelshCourt) {
                             Map<String, String> myWelshTranslationMap;
-                            myWelshTranslationMap = setUpTranslationMap();
+                            myWelshTranslationMap = getTranslationMap();
 
                             for (Map.Entry<String, String> entry : myWelshTranslationMap.entrySet()) {
                                 str = formattedDateWelsh.replace(entry.getKey(), entry.getValue());
@@ -325,13 +328,11 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         return notifyTemplateFieldRepositoryMod.findByTemplateId(templateId);
     }
 
-    public List<String> setUpWelshMonthDays() {
-        List<String> welshMonthsDays;
-        welshMonthsDays = welshDayMonthTranslationConfig.getWelshDaysMonths();
-        return welshMonthsDays;
+    public List<String> getWelshMonthDays() {
+        return welshDayMonthTranslationConfig.getWelshDaysMonths();
     }
 
-    public List<String> setUpEnglishDaysWeek() {
+    public List<String> getEnglishDaysWeek() {
         List<String> daysWeek = new ArrayList<>();
         for (String dayOfWeek : new DateFormatSymbols().getWeekdays()) {
             if (dayOfWeek != null && !dayOfWeek.isEmpty()) {
@@ -341,7 +342,7 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         return daysWeek;
     }
 
-    public List<String> setUpEnglishMonths() {
+    public List<String> getEnglishMonths() {
         List<String> monthNames = new ArrayList<>();
         for (String nameOfMonth : new DateFormatSymbols().getMonths()) {
             if (nameOfMonth != null && !nameOfMonth.isEmpty()) {
@@ -351,20 +352,71 @@ public class JurorCommsNotifyPayLoadServiceImpl implements JurorCommsNotifyPayLo
         return monthNames;
     }
 
-    public List<String> setUpEnglishDaysMonth() {
+    public List<String> getEnglishDaysMonth() {
         ArrayList<String> daysMonths = new ArrayList<>();
-        daysMonths.addAll(setUpEnglishDaysWeek());
-        daysMonths.addAll(setUpEnglishMonths());
+        daysMonths.addAll(getEnglishDaysWeek());
+        daysMonths.addAll(getEnglishMonths());
         return daysMonths;
     }
 
-    public Map<String, String> setUpTranslationMap() {
-        Map<String, String> myWelshTranslationMap = new HashMap<>();
-        for (int i = 0; i < setUpWelshMonthDays().size(); i++) {
-            myWelshTranslationMap.put(setUpEnglishDaysMonth().get(i), setUpWelshMonthDays().get(i));
+    public Map<String, String> getTranslationMap() {
+        Map<String, String> myWelshTranslationMap = new ConcurrentHashMap<>();
+        for (int i = 0; i < getWelshMonthDays().size(); i++) {
+            myWelshTranslationMap.put(getEnglishDaysMonth().get(i), getWelshMonthDays().get(i));
         }
         return myWelshTranslationMap;
     }
+
+    private String resolveCourtMapUrl(String locCode, boolean isWelshCourt) {
+        String baseUrl = jurorPortalProperties.getMapBaseUrl();
+        if (StringUtils.isBlank(baseUrl)) {
+            return "";
+        }
+        return courtFileAttachmentRepository.findById(locCode)
+            .map(a -> isWelshCourt && a.getFileNameCy() != null ? a.getFileNameCy() : a.getFileNameEn())
+            .map(filename -> buildUrl(baseUrl, filename))
+            .orElse("");
+    }
+
+    private String resolveStaticDocUrl(ApplicationSettings.Setting enSetting,
+                                       ApplicationSettings.Setting cySetting,
+                                       boolean isWelshCourt) {
+        String baseUrl = jurorPortalProperties.getDocumentBaseUrl();
+        if (StringUtils.isBlank(baseUrl)) {
+            return "";
+        }
+        ApplicationSettings.Setting setting = isWelshCourt ? cySetting : enSetting;
+        return applicationSettingService.getAppSetting(setting)
+            .map(ApplicationSettings::getValue)
+            .map(filename -> buildUrl(baseUrl, filename))
+            .orElse("");
+    }
+
+    private String buildUrl(String baseUrl, String filename) {
+        String url = baseUrl.endsWith("/") ? baseUrl + filename : baseUrl + "/" + filename;
+        return url.replace(" ", "%20");
+    }
+
+    private void resolveAttachmentUrls(NotifyTemplateMapperMod.Context context, boolean isWelshCourt) {
+        context.setCourtMapUrl(resolveCourtMapUrl(context.getCourtLocation().getLocCode(), isWelshCourt));
+        context.setAllowancesDocUrl(resolveStaticDocUrl(
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_ALLOWANCES_EN,
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_ALLOWANCES_CY,
+            isWelshCourt));
+        context.setLossOfEarningsDocUrl(resolveStaticDocUrl(
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_LOSS_OF_EARNINGS_EN,
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_LOSS_OF_EARNINGS_CY,
+            isWelshCourt));
+        context.setGuidanceEmployersDocUrl(resolveStaticDocUrl(
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_GUIDANCE_EMPLOYERS_EN,
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_GUIDANCE_EMPLOYERS_CY,
+            isWelshCourt));
+        context.setJuryGuideDocUrl(resolveStaticDocUrl(
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_JURY_GUIDE_EN,
+            ApplicationSettings.Setting.EMAIL_ATTACHMENT_DOC_JURY_GUIDE_CY,
+            isWelshCourt));
+    }
+
 
     /**
      * Gets the attendance time for a summons

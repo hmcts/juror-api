@@ -33,14 +33,14 @@ public abstract class AbstractJurorExpenditureReport extends AbstractGroupedRepo
     @Setter
     private boolean includeHeaderTotals;
 
-    public AbstractJurorExpenditureReport(
+    protected AbstractJurorExpenditureReport(
         CourtLocationService courtLocationService,
         IDataType... dataType) {
         this(null, courtLocationService, false, dataType);
         this.includeHeaderTotals = false;
     }
 
-    public AbstractJurorExpenditureReport(
+    protected AbstractJurorExpenditureReport(
         IDataType expenseTotalPaidDataType,
         CourtLocationService courtLocationService,
         boolean includeNested,

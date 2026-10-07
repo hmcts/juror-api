@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -48,6 +49,13 @@ public class UserRepositoryImpl implements IUserRepository {
         }
         if (search.getUserType() != null) {
             query.where(QUser.user.userType.eq(search.getUserType()));
+        }
+        if (search.getRoles() != null && !search.getRoles().isEmpty()) {
+            BooleanBuilder roleBuilder = new BooleanBuilder();
+            for (Role role : search.getRoles()) {
+                roleBuilder.or(QUser.user.roles.contains(role));
+            }
+            query.where(roleBuilder);
         }
         if (search.isOnlyActive()) {
             query.where(QUser.user.active.isTrue());

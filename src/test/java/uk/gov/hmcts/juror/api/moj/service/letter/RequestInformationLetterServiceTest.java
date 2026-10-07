@@ -117,9 +117,8 @@ public class RequestInformationLetterServiceTest {
         doReturn(Collections.singletonList(createJurorPool(jurorNumber, owner))).when(jurorPoolRepository)
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);
 
-        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() -> {
-            requestInformationLetterService.requestInformation(payload, additionalInformationDto);
-        });
+        assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+            requestInformationLetterService.requestInformation(payload, additionalInformationDto));
 
         verify(jurorPoolRepository, never())
             .findByJurorJurorNumberAndIsActive(jurorNumber, true);

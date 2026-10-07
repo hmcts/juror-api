@@ -13,7 +13,6 @@ import java.util.Locale;
 
 @Getter
 @SuppressWarnings({
-    "PMD.ArrayIsStoredDirectly",
     "LineLength"
 })
 public enum PendingJurorTypes implements IDataType {
@@ -92,7 +91,7 @@ public enum PendingJurorTypes implements IDataType {
     }
 
     @Override
-    public final String getId() {
+    public String getId() {
         return this.name().toLowerCase(Locale.ROOT);
     }
 }

@@ -12,8 +12,8 @@ public enum AppearanceStage {
 
 
     public static Set<AppearanceStage> getConfirmedAppearanceStages() {
-        return EnumSet.of(AppearanceStage.EXPENSE_ENTERED,
-            AppearanceStage.EXPENSE_AUTHORISED,
-            AppearanceStage.EXPENSE_EDITED);
+        return EnumSet.of(EXPENSE_ENTERED,
+            EXPENSE_AUTHORISED,
+            EXPENSE_EDITED);
     }
 }

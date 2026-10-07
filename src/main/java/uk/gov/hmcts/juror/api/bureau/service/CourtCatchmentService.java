@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.bureau.service;
 
 import uk.gov.hmcts.juror.api.bureau.controller.response.CourtCatchmentStatusDto;
 
+@FunctionalInterface
 public interface CourtCatchmentService {
 
     /**

@@ -36,7 +36,7 @@ public interface PoolRequestService {
     PoolsAtCourtLocationListDto getAllActivePoolsAtCourtLocation(String locCode);
 
     /**
-     * Retrieves the pool attendance time for a pool ID (if one is specified in the JUROR.UNIQUE_POOL table)
+     * Retrieves the pool attendance time for a pool ID (if one is specified in the JUROR.UNIQUE_POOL table).
      *
      * @param poolId pool ID to retrieve attendance time for, not null
      * @return pool attendance time, nullable

@@ -28,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.domain.messages.MessageSearch;
 import uk.gov.hmcts.juror.api.moj.domain.messages.MessageType;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 import uk.gov.hmcts.juror.api.moj.service.BulkServiceImpl;
+import uk.gov.hmcts.juror.api.moj.service.BureauMessagingService;
 import uk.gov.hmcts.juror.api.moj.service.MessagingService;
 
 import java.util.HashMap;
@@ -53,8 +54,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     BulkServiceImpl.class})
 @DisplayName("Controller: " + MessagingControllerTest.BASE_URL)
 @SuppressWarnings({
-    "PMD.ExcessiveImports",
-    "PMD.TooManyMethods"
+    "PMD.ExcessiveImports"
 })
 class MessagingControllerTest {
     protected static final String BASE_URL = "/api/v1/moj/messages";
@@ -64,6 +64,9 @@ class MessagingControllerTest {
 
     @MockBean
     private MessagingService messagingService;
+
+    @MockBean
+    private BureauMessagingService bureauMessagingService;
 
     @Nested
     @DisplayName("GET " + GetMessageDetails.URL)

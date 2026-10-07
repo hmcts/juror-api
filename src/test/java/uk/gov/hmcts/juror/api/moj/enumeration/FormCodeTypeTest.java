@@ -9,8 +9,7 @@ import java.util.List;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SuppressWarnings({
-    "PMD.TooManyMethods",
-    "PMD.JUnitAssertionsShouldIncludeMessage"
+    "PMD.TooManyMethods"
 })
 class FormCodeTypeTest {
 

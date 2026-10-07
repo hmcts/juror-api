@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.bureau.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.jsonwebtoken.lang.Assert;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -263,7 +265,7 @@ public class ResponseUpdateController {
                 updateResponseDto.getVersion(), jwtPayload.getLogin()
             );
         } catch (OptimisticLockingFailureException olfe) {
-            log.warn("Juror {} response was updated by another user!", jurorId);
+            log.info("Juror {} response was updated by another user!", jurorId);
             throw new BureauOptimisticLockingException(olfe);
         }
 
@@ -290,6 +292,7 @@ public class ResponseUpdateController {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "Request body for updating the notes field of a juror response")
     public static class JurorNoteDto implements Serializable {
 
@@ -308,6 +311,7 @@ public class ResponseUpdateController {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "Request body for adding a phone log to a juror response")
     public static class JurorPhoneLogDto implements Serializable {
 
@@ -320,6 +324,7 @@ public class ResponseUpdateController {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     private static class AbstractJurorDetailsDto implements Serializable {
 
         @NotNull
@@ -404,7 +409,7 @@ public class ResponseUpdateController {
     @NoArgsConstructor
     @EqualsAndHashCode(callSuper = true)
     @Schema(description = "Request body for editing the juror details section of a first person juror response")
-    public static class FirstPersonJurorDetailsDto extends AbstractJurorDetailsDto {
+    public static final class FirstPersonJurorDetailsDto extends AbstractJurorDetailsDto {
         @Builder
         private FirstPersonJurorDetailsDto(Integer version, String notes, String title, String firstName,
                                            String lastName, String address, String address2, String address3,
@@ -433,8 +438,9 @@ public class ResponseUpdateController {
     @Data
     @NoArgsConstructor
     @EqualsAndHashCode(callSuper = true)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "Request body for editing the juror details section of a third party juror response")
-    public static class ThirdPartyJurorDetailsDto extends AbstractJurorDetailsDto {
+    public static final class ThirdPartyJurorDetailsDto extends AbstractJurorDetailsDto {
 
         @Schema(description = "Flag for using Jurors phone as contact")
         @JsonProperty("useJurorPhoneDetails")
@@ -525,6 +531,7 @@ public class ResponseUpdateController {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Builder
     public static class DeferralExcusalDto implements Serializable {
 
@@ -563,6 +570,7 @@ public class ResponseUpdateController {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Builder
     public static class ReasonableAdjustmentsDto implements Serializable {
 
@@ -610,6 +618,7 @@ public class ResponseUpdateController {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Builder
     public static class CjsEmploymentDetailsDto implements Serializable {
         @NotNull
@@ -658,6 +667,7 @@ public class ResponseUpdateController {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     @Schema(description = "Request body for editing the juror eligibility section of a response")
     public static class JurorEligibilityDto {
         @NotNull

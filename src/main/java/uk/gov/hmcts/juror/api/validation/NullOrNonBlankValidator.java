@@ -16,8 +16,8 @@ public class NullOrNonBlankValidator implements ConstraintValidator<NullOrNonBla
     }
 
     @Override
-    public boolean isValid(String s, ConstraintValidatorContext constraintValidatorContext) {
+    public boolean isValid(String str, ConstraintValidatorContext constraintValidatorContext) {
         // Null check needed because 'isBlank' returns true for null
-        return s == null || !isBlank(s);
+        return str == null || !isBlank(str);
     }
 }

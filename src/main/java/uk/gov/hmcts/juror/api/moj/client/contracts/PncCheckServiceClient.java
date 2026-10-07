@@ -12,6 +12,7 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.JUROR_NUMBER
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REGEX;
 import static uk.gov.hmcts.juror.api.validation.ValidationConstants.SHORT_DATE_STRING_REGEX;
 
+@FunctionalInterface
 public interface PncCheckServiceClient extends Client {
 
     void checkJuror(String jurorNumber);

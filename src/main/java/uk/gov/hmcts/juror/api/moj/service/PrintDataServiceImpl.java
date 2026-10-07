@@ -16,6 +16,9 @@ import uk.gov.hmcts.juror.api.moj.repository.FormAttributeRepository;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ConfirmLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.DbdResponseLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.DbdSummonsLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.DbdSummonsReminderLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralDeniedLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalDeniedLetter;
@@ -59,8 +62,27 @@ public class PrintDataServiceImpl implements PrintDataService {
             if (!Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
                 commitData(new SummonsLetter(jurorPool,
                     jurorPool.getCourt(),
-                    courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+                    courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
                     welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+                ));
+            }
+        });
+    }
+
+    @Override
+    public void bulkPrintDbdSummonsLetter(List<JurorPool> jurorPools) {
+        if (jurorPools == null || jurorPools.isEmpty()) {
+            throw new MojException.InternalServerError(
+                "Attempted to print DBD summons letters for empty jurorPool list", null);
+        }
+
+        jurorPools.forEach(jurorPool -> {
+            //queue a letter if juror is not disqualified
+            if (!Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
+                commitData(new DbdSummonsLetter(jurorPool,
+                                        jurorPool.getCourt(),
+                                        courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
+                                        welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
                 ));
             }
         });
@@ -73,6 +95,39 @@ public class PrintDataServiceImpl implements PrintDataService {
     }
 
     @Override
+    public void reprintDbdSummonsLetter(JurorPool jurorPool) {
+        bulkPrintDbdSummonsLetter(List.of(jurorPool));
+        jurorHistoryService.createSummonLetterReprintedHistory(jurorPool);
+    }
+
+    @Override
+    public void printDbdResponseLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to print digital by default response letter for null jurorPool", null);
+        }
+
+        commitData(new DbdResponseLetter(
+            jurorPool, jurorPool.getCourt(),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
+            welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+        ));
+    }
+
+    public void printDbdSummonsReminderLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to print summons reminder letter for null jurorPool", null);
+        }
+
+        commitData(new DbdSummonsReminderLetter(
+            jurorPool, jurorPool.getCourt(),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
+            welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+        ));
+    }
+
+    @Override
     public void printSummonsReminderLetter(JurorPool jurorPool) {
         if (jurorPool == null) {
             throw new MojException.InternalServerError(
@@ -81,7 +136,7 @@ public class PrintDataServiceImpl implements PrintDataService {
 
         commitData(new SummonsReminderLetter(
             jurorPool, jurorPool.getCourt(),
-            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
             welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));
     }
@@ -94,7 +149,7 @@ public class PrintDataServiceImpl implements PrintDataService {
         }
 
         commitData(new DeferralLetter(jurorPool, jurorPool.getCourt(),
-            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
             welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));
     }
@@ -107,7 +162,7 @@ public class PrintDataServiceImpl implements PrintDataService {
         }
 
         commitData(new DeferralDeniedLetter(jurorPool, jurorPool.getCourt(),
-            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
             welshCourtLocationRepository
                 .findByLocCode(jurorPool.getCourt().getLocCode())
         ));
@@ -121,7 +176,7 @@ public class PrintDataServiceImpl implements PrintDataService {
         }
 
         commitData(new ExcusalDeniedLetter(jurorPool, jurorPool.getCourt(),
-            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
             welshCourtLocationRepository
                 .findByLocCode(jurorPool.getCourt().getLocCode())
         ));
@@ -135,7 +190,7 @@ public class PrintDataServiceImpl implements PrintDataService {
         }
 
         commitData(new ConfirmLetter(jurorPool, jurorPool.getCourt(),
-            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
             welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));
     }
@@ -148,7 +203,7 @@ public class PrintDataServiceImpl implements PrintDataService {
         }
 
         commitData(new PostponeLetter(jurorPool, jurorPool.getCourt(),
-            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
             welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));
     }
@@ -161,7 +216,7 @@ public class PrintDataServiceImpl implements PrintDataService {
         }
 
         commitData(new ExcusalLetter(jurorPool, jurorPool.getCourt(),
-            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
             welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));
     }
@@ -174,7 +229,7 @@ public class PrintDataServiceImpl implements PrintDataService {
         }
 
         commitData(new RequestInfoLetter(jurorPool, additionalInfo, jurorPool.getCourt(),
-            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
             welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));
     }
@@ -215,7 +270,7 @@ public class PrintDataServiceImpl implements PrintDataService {
         }
 
         commitData(new WithdrawalLetter(jurorPool, jurorPool.getCourt(),
-            courtLocationService.getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
             welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
         ));
     }

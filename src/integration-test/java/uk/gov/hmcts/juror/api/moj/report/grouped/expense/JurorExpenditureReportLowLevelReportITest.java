@@ -16,14 +16,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@SuppressWarnings({
-    "PMD.JUnitTestsShouldIncludeAssert"//False positive
-})
 class JurorExpenditureReportLowLevelReportITest extends AbstractJurorExpenditureReportReportITest {
 
 
     @Autowired
-    public JurorExpenditureReportLowLevelReportITest(TestRestTemplate template) {
+    JurorExpenditureReportLowLevelReportITest(TestRestTemplate template) {
         super(template, JurorExpenditureReportLowLevelReport.class);
     }
 

@@ -21,11 +21,10 @@ import java.util.List;
     "/db/administration/createUsers.sql",
     "/db/mod/reports/PanelMembersStatusReportITest_Typical.sql"
 })
-@SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert"})
 class PanelMembersStatusReportITest extends AbstractStandardReportControllerITest {
 
     @Autowired
-    public PanelMembersStatusReportITest(TestRestTemplate template) {
+    PanelMembersStatusReportITest(TestRestTemplate template) {
         super(template, PanelMembersStatusReport.class);
     }
 
@@ -50,6 +49,19 @@ class PanelMembersStatusReportITest extends AbstractStandardReportControllerITes
             .assertEquals(getTypicalResponse());
     }
 
+
+
+    @Test
+    void positiveCurrentJurorsOnlyFalse() {
+        StandardReportRequest request = getValidPayload();
+        request.setCurrentJurorsOnly(false);
+        testBuilder()
+            .payload(request)
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveReportCreated)
+            .assertEquals(getTypicalResponse());
+    }
+
     @Test
     void negativeUnauthorisedBureau() {
         testBuilder()
@@ -62,7 +74,6 @@ class PanelMembersStatusReportITest extends AbstractStandardReportControllerITes
     void negativeMissingTrialNumber() {
         StandardReportRequest request = getValidPayload();
         request.setTrialNumber(null);
-
         testBuilder()
             .payload(addReportType(request))
             .jwt(getValidJwt())
@@ -76,8 +87,22 @@ class PanelMembersStatusReportITest extends AbstractStandardReportControllerITes
         request.setTrialNumber("111112");
 
         AbstractReportResponse.TableData<StandardTableData> tableData = new StandardReportResponse.TableData<>();
+        tableData.setHeadings(getStandardTableHeadings());
+        tableData.setData(new StandardTableData());
 
-        tableData.setHeadings(List.of(
+        testBuilder()
+            .payload(addReportType(request))
+            .jwt(getValidJwt())
+            .triggerValid()
+            .responseConsumer(this::verifyAndRemoveReportCreated)
+            .assertEquals(StandardReportResponse.builder()
+                              .headings(getResponseHeadings("111112"))
+                              .tableData(tableData)
+                              .build());
+    }
+
+    private List<StandardReportResponse.TableData.Heading> getStandardTableHeadings() {
+        return List.of(
             StandardReportResponse.TableData.Heading.builder()
                 .id("juror_number_from_trial")
                 .name("Juror Number")
@@ -90,18 +115,7 @@ class PanelMembersStatusReportITest extends AbstractStandardReportControllerITes
                 .dataType("String")
                 .headings(null)
                 .build()
-        ));
-        tableData.setData(new StandardTableData());
-
-        testBuilder()
-            .payload(addReportType(request))
-            .jwt(getValidJwt())
-            .triggerValid()
-            .responseConsumer(this::verifyAndRemoveReportCreated)
-            .assertEquals(StandardReportResponse.builder()
-                .headings(getResponseHeadings("111112"))
-                .tableData(tableData)
-                .build());
+        );
     }
 
     private StandardReportResponse getTypicalResponse() {
@@ -113,7 +127,6 @@ class PanelMembersStatusReportITest extends AbstractStandardReportControllerITes
 
     private ReportHashMap<String, StandardReportResponse.DataTypeValue> getResponseHeadings(String trialNumber) {
         ReportHashMap<String, StandardReportResponse.DataTypeValue> headingsMap = new ReportHashMap<>();
-
         headingsMap.add("names", StandardReportResponse.DataTypeValue.builder()
             .displayName("Names")
             .dataType("String")
@@ -139,89 +152,75 @@ class PanelMembersStatusReportITest extends AbstractStandardReportControllerITes
             .dataType("String")
             .value("CHESTER (415)")
             .build());
-
         return headingsMap;
     }
 
     private StandardReportResponse.TableData<StandardTableData> getResponseTableData() {
         return StandardReportResponse.TableData.<StandardTableData>builder()
-            .headings(List.of(
-                StandardReportResponse.TableData.Heading.builder()
-                    .id("juror_number_from_trial")
-                    .name("Juror Number")
-                    .dataType("String")
-                    .headings(null)
-                    .build(),
-                StandardReportResponse.TableData.Heading.builder()
-                    .id("panel_status")
-                    .name("Panel Status")
-                    .dataType("String")
-                    .headings(null)
-                    .build()
-            ))
-                .data(new StandardTableData(
-                    List.of(
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500001")
-                            .add("panel_status", "Challenged"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500002")
-                            .add("panel_status", "Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500003")
-                            .add("panel_status", "Not Used"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500004")
-                            .add("panel_status", "Challenged"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500005")
-                            .add("panel_status", "Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500006")
-                            .add("panel_status", "Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500007")
-                            .add("panel_status", "Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500008")
-                            .add("panel_status", "Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500009")
-                            .add("panel_status", "Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500010")
-                            .add("panel_status", "Returned Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500011")
-                            .add("panel_status", "Returned Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500012")
-                            .add("panel_status", "Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500013")
-                            .add("panel_status", "Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500014")
-                            .add("panel_status", "Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500015")
-                            .add("panel_status", "Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500016")
-                            .add("panel_status", "Returned"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500017")
-                            .add("panel_status", "Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500018")
-                            .add("panel_status", "Juror"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500019")
-                            .add("panel_status", "Not Used"),
-                        new ReportLinkedMap<String, Object>()
-                            .add("juror_number_from_trial", "041500020")
-                            .add("panel_status", "Challenged")
-                    )
-                )).build();
+            .headings(getStandardTableHeadings())
+            .data(new StandardTableData(
+                List.of(
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500001")
+                        .add("panel_status", "Challenged"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500002")
+                        .add("panel_status", "Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500003")
+                        .add("panel_status", "Not Used"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500004")
+                        .add("panel_status", "Challenged"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500005")
+                        .add("panel_status", "Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500006")
+                        .add("panel_status", "Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500007")
+                        .add("panel_status", "Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500008")
+                        .add("panel_status", "Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500009")
+                        .add("panel_status", "Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500010")
+                        .add("panel_status", "Returned Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500011")
+                        .add("panel_status", "Returned Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500012")
+                        .add("panel_status", "Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500013")
+                        .add("panel_status", "Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500014")
+                        .add("panel_status", "Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500015")
+                        .add("panel_status", "Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500016")
+                        .add("panel_status", "Returned"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500017")
+                        .add("panel_status", "Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500018")
+                        .add("panel_status", "Juror"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500019")
+                        .add("panel_status", "Not Used"),
+                    new ReportLinkedMap<String, Object>()
+                        .add("juror_number_from_trial", "041500020")
+                        .add("panel_status", "Challenged")
+                )
+            )).build();
     }
 }

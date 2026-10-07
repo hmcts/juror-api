@@ -2,8 +2,12 @@ package uk.gov.hmcts.juror.api.juror.service;
 
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
+import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
+import uk.gov.hmcts.juror.api.moj.domain.DeceasedJuror;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+
+import java.util.List;
 
 /**
  * Public Juror service for public data access operations.
@@ -16,6 +20,16 @@ public interface JurorService {
      * @return Juror details
      */
     JurorDetailDto getJurorByJurorNumber(String jurorNumber);
+
+    /**
+     * Return DBD information for a single juror by id.
+     *
+     * @param jurorNumber Juror number to find
+     * @return DBD information
+     */
+    DbdInformationResponseDto getDbdInformation(String jurorNumber);
+
+    List<DeceasedJuror> getDeceasedJurors(List<String> postcodes);
 
     /**
      * Save a juror response to persistence.

@@ -2,7 +2,8 @@ package uk.gov.hmcts.juror.api.moj.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -41,7 +42,9 @@ import java.util.Set;
 @Setter
 @Getter
 @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Juror overview information for the Juror Record")
+@SuppressWarnings({"PMD.TooManyFields"})
 public class JurorOverviewResponseDto {
 
     @Length(max = 50)
@@ -83,7 +86,6 @@ public class JurorOverviewResponseDto {
 
     @Schema(description = "Identity check code")
     private IdCheckCodeEnum idCheckCode;
-    @JsonProperty("checked_in_today_time")
     @JsonFormat(pattern = ValidationConstants.TIME_FORMAT)
     private LocalTime checkedInTodayTime;
 
@@ -135,12 +137,12 @@ public class JurorOverviewResponseDto {
 
 
         this.attendances = appearanceList.stream()
-            .filter(appearance -> !AttendanceType.ABSENT.equals(appearance.getAttendanceType()))
-            .filter(appearance -> !AttendanceType.NON_ATTENDANCE.equals(appearance.getAttendanceType()))
-            .filter(appearance -> !AttendanceType.NON_ATTENDANCE_LONG_TRIAL.equals(appearance.getAttendanceType()))
+            .filter(appearance -> appearance.getAttendanceType() != AttendanceType.ABSENT)
+            .filter(appearance -> appearance.getAttendanceType() != AttendanceType.NON_ATTENDANCE)
+            .filter(appearance -> appearance.getAttendanceType() != AttendanceType.NON_ATTENDANCE_LONG_TRIAL)
             .count();
         this.absences = appearanceList.stream()
-            .filter(appearance -> AttendanceType.ABSENT.equals(appearance.getAttendanceType()))
+            .filter(appearance -> appearance.getAttendanceType() == AttendanceType.ABSENT)
             .count();
         this.trials = panelRepository.countByJurorJurorNumberAndTrialCourtLocationLocCode(
             jurorPool.getJurorNumber(),

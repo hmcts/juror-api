@@ -29,6 +29,7 @@ import uk.gov.hmcts.juror.api.bureau.domain.SystemParameterRepository;
 import uk.gov.hmcts.juror.api.config.InvalidJwtAuthenticationException;
 import uk.gov.hmcts.juror.api.config.public1.PublicJwtPayload;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
+import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -83,8 +84,16 @@ import static org.mockito.ArgumentMatchers.anyString;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = "notify.disabled=false")
-@SuppressWarnings({"PMD.ExcessiveImports","PMD.TooManyMethods", "PMD.TooManyFields"})
+    properties = {
+        "notify.disabled=false",
+        "feature-flags.flags.digital-by-default=true"
+    })
+@SuppressWarnings({
+    "PMD.ExcessiveImports",
+    "PMD.TooManyMethods",
+    "PMD.TooManyFields",
+    "PMD.CouplingBetweenObjects"
+})
 public class PublicEndpointControllerIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private TestRestTemplate template;
@@ -168,8 +177,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         final String description = "Authentication header is not present";
 
         ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(
-            new RequestEntity<Void>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/public/juror/123456789")),
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/public/juror/123456789")),
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchange).describedAs(description).isNotNull();
@@ -186,8 +195,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, null);
         ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(
-            new RequestEntity<Void>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/public/juror/123456789")),
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/public/juror/123456789")),
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchange).describedAs(description).isNotNull();
@@ -215,8 +224,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, invalidPublicJwt);
         ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(
-            new RequestEntity<Void>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/public/juror/123456789")),
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create("/api/v1/public/juror/123456789")),
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchange).describedAs(description).isNotNull();
@@ -241,14 +250,87 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        ResponseEntity<JurorDetailDto> exchange = template.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<JurorDetailDto> exchange = template.exchange(new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/public/juror/209092530")), JurorDetailDto.class);
         assertThat(exchange.getBody()).extracting("jurorNumber", "title", "firstName", "lastName", "postcode")
             .contains("209092530", "Dr", "Jane", "CASTILLO", "AB39RY");
     }
 
+    @Test
+    @Sql("/db/mod/truncate.sql")
+    @Sql("/db/PublicEndpointControllerTest_retrieveJurorById.sql")
+    @Sql(statements = {
+        "UPDATE juror_mod.court_location SET digital_by_default = true WHERE loc_code = '448'",
+        "UPDATE juror_mod.juror SET digital_by_default = true, dbd_preference = 'Digital' "
+            + "WHERE juror_number = '209092530'"
+    })
+    public void retrieveDbdInformation_RequestWithValidNumber_ReturnsDbdInformation() throws Exception {
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
+            .jurorNumber("209092530")
+            .postcode("AB3 9RY")
+            .surname("CASTILLO")
+            .roles(new String[]{"juror"})
+            .id("")
+            .build())
+        );
+
+        ResponseEntity<DbdInformationResponseDto> exchange = template.exchange(new RequestEntity<>(httpHeaders,
+            HttpMethod.GET, URI.create("/api/v1/public/juror/209092530/dbd-information")),
+            DbdInformationResponseDto.class);
+
+        assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(exchange.getBody()).isNotNull();
+        assertThat(exchange.getBody().getServiceStartDate()).isEqualTo(LocalDate.of(2022, 5, 3));
+
+        executeInTransaction(() -> {
+            Optional<CourtLocation> courtLocation = courtLocationRepository.findByLocCode("448");
+            assertThat(courtLocation).isPresent();
+            assertThat(exchange.getBody().getCourtName()).isEqualTo(courtLocation.get().getLocCourtName());
+        });
+    }
+
+    @Test
+    public void retrieveDbdInformation_InvalidNumberRequest_ReturnsUnauthorizedErrorMessage() throws Exception {
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
+            .jurorNumber("209092530")
+            .postcode("AB3 9RY")
+            .surname("CASTILLO")
+            .roles(new String[]{"juror"})
+            .id("")
+            .build())
+        );
+
+        ResponseEntity<String> exchange = template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+            URI.create("/api/v1/public/juror/12345/dbd-information")), String.class);
+
+        assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(exchange.getBody()).contains("Unauthorized");
+        assertThat(exchange.getBody()).contains("InvalidJwtAuthenticationException");
+    }
+
+    @Test
+    @Sql("/db/mod/truncate.sql")
+    public void retrieveDbdInformation_NoPoolEntry_ReturnsNotFound() throws Exception {
+
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
+            .jurorNumber("209092530")
+            .postcode("AB3 9RY")
+            .surname("CASTILLO")
+            .roles(new String[]{"juror"})
+            .id("")
+            .build())
+        );
+
+        ResponseEntity<String> exchange = template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
+            URI.create("/api/v1/public/juror/209092530/dbd-information")), String.class);
+
+        assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
     /**
-     * A JUROR_MOD.POOL entry with ATTEND_TIME set overrides the LOC_ATTEND_TIME column in JUROR_MOD.COURT_LOCATION
+     * A JUROR_MOD.POOL entry with ATTEND_TIME set overrides the LOC_ATTEND_TIME column in JUROR_MOD.COURT_LOCATION.
      *
      * @throws Exception if the test falls over
      * @since JDB-2042
@@ -268,7 +350,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        ResponseEntity<JurorDetailDto> exchange = template.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<JurorDetailDto> exchange = template.exchange(new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/public/juror/209092530")), JurorDetailDto.class);
 
         assertThat(exchange.getBody()).isNotNull();
@@ -306,7 +388,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             .build())
         );
 
-        ResponseEntity<String> exchange = template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> exchange = template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
             URI.create("/api/v1/public/juror/12345")), String.class);
         assertThat(exchange.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(exchange.getBody()).contains("Unauthorized");
@@ -395,7 +477,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
             assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
             assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
@@ -538,7 +620,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                        h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                                        h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
             assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
             assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
@@ -550,7 +632,6 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/standing_data.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_isSuperUrgentFailedStraightThrough_unhappy.sql")
-    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     public void respondToSummons_unhappy_failedSuperUrgentCheckOnStraightThrough() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
@@ -607,7 +688,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             assertThat(history).isNotEmpty();
             assertThat(history.size()).isEqualTo(1);
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                           h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                                           h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
             assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
             assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
@@ -910,13 +991,13 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
             assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
             assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
 
             historyRecord = history.stream().filter(h ->
-                h.getHistoryCode().equals(HistoryCodeMod.RESPONDED_POSITIVELY)).findFirst();
+                h.getHistoryCode() == HistoryCodeMod.RESPONDED_POSITIVELY).findFirst();
             assertThat(historyRecord.isPresent()).isFalse();
 
             // check no audit records were created
@@ -1021,13 +1102,13 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                            h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                                            h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
             assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
             assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
 
             historyRecord = history.stream().filter(h ->
-                h.getHistoryCode().equals(HistoryCodeMod.RESPONDED_POSITIVELY)).findFirst();
+                h.getHistoryCode() == HistoryCodeMod.RESPONDED_POSITIVELY).findFirst();
             assertThat(historyRecord.isPresent()).isFalse();
 
             Iterable<JurorResponseAuditMod> jurorResponseAuditMod = jurorResponseAuditRepositoryMod.findAll();
@@ -1105,7 +1186,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
             assertThat(history).isNotEmpty();
             Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                        h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                                        h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
             assertThat(historyRecord).isPresent();
             assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
             assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
@@ -1248,7 +1329,6 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/standing_data.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_ageExcusal.sql")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void respondToSummons_happy_ageExcusal_successfulStraightThrough_young() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
@@ -1267,7 +1347,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         // set Juror to be one day too young on first day of hearing
         String youngestJurorAgeAllowedString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(101)).get().getSpValue();
-        youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
+        int youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
         LocalDate dob = hearingDate.minusYears(youngestJurorAgeAllowed - 1L).minusDays(364).toLocalDate();
 
         final JurorResponseDto dto = JurorResponseDto.builder(
@@ -1341,7 +1421,6 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/standing_data.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_ageExcusal.sql")
-    @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage") // false positive
     public void respondToSummons_happy_ageExcusal_successfulStraightThrough_old() throws Exception {
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
@@ -1362,7 +1441,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         String tooOldJurorAgeString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(100)).get().getSpValue();
 
-        tooOldJurorAge = Integer.parseInt(tooOldJurorAgeString);
+        int tooOldJurorAge = Integer.parseInt(tooOldJurorAgeString);
         LocalDate dob =
             hearingDate.minusYears(tooOldJurorAge).minusDays(0).toLocalDate();
 
@@ -1456,7 +1535,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         // set Juror to be too young on first day of hearing
         String youngestJurorAgeAllowedString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(101)).get().getSpValue();
-        youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
+        int youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
         LocalDate dob =
             hearingDate.minusYears(youngestJurorAgeAllowed - 1L).minusDays(0).toLocalDate();
 
@@ -1544,7 +1623,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         // set Juror to be the minimum age allowed on first day of hearing
         String youngestJurorAgeAllowedString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(101)).get().getSpValue();
-        youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
+        int youngestJurorAgeAllowed = Integer.parseInt(youngestJurorAgeAllowedString);
         LocalDate dob =
             hearingDate.minusYears(youngestJurorAgeAllowed).minusDays(0).toLocalDate();
 
@@ -1633,7 +1712,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         //     set Juror to be 1 day off from excusal age
         String tooOldJurorAgeString = systemParameterRepository.findOne(
             QSystemParameter.systemParameter.spId.eq(100)).get().getSpValue();
-        tooOldJurorAge = Integer.parseInt(tooOldJurorAgeString);
+        int tooOldJurorAge = Integer.parseInt(tooOldJurorAgeString);
         LocalDate dob =
             hearingDate.minusYears(tooOldJurorAge - 1L).minusDays(364).toLocalDate();
 
@@ -2291,7 +2370,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     private void checkResponseSubmittedHistory(Collection<JurorHistory> history) {
         Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                            h.getHistoryCode().equals(HistoryCodeMod.RESPONSE_SUBMITTED)).findFirst();
+                                            h.getHistoryCode() == HistoryCodeMod.RESPONSE_SUBMITTED).findFirst();
         assertThat(historyRecord).isPresent();
         assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
         assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Digital");
@@ -2299,7 +2378,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     private void checkRespondedHistory(Collection<JurorHistory> history) {
         Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                        h.getHistoryCode().equals(HistoryCodeMod.RESPONDED_POSITIVELY)).findFirst();
+                                        h.getHistoryCode() == HistoryCodeMod.RESPONDED_POSITIVELY).findFirst();
         assertThat(historyRecord).isPresent();
         assertThat(historyRecord.get().getCreatedBy()).isEqualTo(JurorDigitalApplication.AUTO_USER);
         assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Responded");
@@ -2307,7 +2386,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     private void checkWithdrawalLetterHistory(Collection<JurorHistory> history) {
         Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                            h.getHistoryCode().equals(HistoryCodeMod.WITHDRAWAL_LETTER)).findFirst();
+                                            h.getHistoryCode() == HistoryCodeMod.WITHDRAWAL_LETTER).findFirst();
         assertThat(historyRecord).isPresent();
         assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
         assertThat(historyRecord.get().getOtherInformationRef()).isEqualTo("A");
@@ -2315,12 +2394,13 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     private void checkDisqualifyPoolMemberHistory(Collection<JurorHistory> history) {
         Optional<JurorHistory> historyRecord = history.stream().filter(h ->
-                                        h.getHistoryCode().equals(HistoryCodeMod.DISQUALIFY_POOL_MEMBER)).findFirst();
+                                        h.getHistoryCode() == HistoryCodeMod.DISQUALIFY_POOL_MEMBER).findFirst();
         assertThat(historyRecord).isPresent();
         assertThat(historyRecord.get().getCreatedBy()).isEqualTo("AUTO");
         assertThat(historyRecord.get().getOtherInformationRef()).isEqualTo("A");
     }
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private String mintPublicJwt(final PublicJwtPayload payload) throws Exception {
         return TestUtil.mintPublicJwt(payload, SignatureAlgorithm.HS256, publicSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));

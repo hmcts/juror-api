@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
-public abstract class PoolRequestQueries {
+public class PoolRequestQueries {
 
     private static final QPoolRequest POOL_REQUEST = QPoolRequest.poolRequest;
 
@@ -56,5 +56,9 @@ public abstract class PoolRequestQueries {
         }
 
         return predicate;
+    }
+
+    protected PoolRequestQueries() {
+        throw new IllegalArgumentException("PoolRequestQueries must not be instantiated.");
     }
 }

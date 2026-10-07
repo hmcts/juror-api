@@ -13,7 +13,7 @@ public abstract class AbstractGroupedReportTestSupport
 
     private final IReportGroupBy groupBy;
 
-    public AbstractGroupedReportTestSupport(EntityPath<?> from,
+    protected AbstractGroupedReportTestSupport(EntityPath<?> from,
                                             Class<?> validatorClass,
                                             IReportGroupBy groupBy,
                                             IDataType... dataTypes) {

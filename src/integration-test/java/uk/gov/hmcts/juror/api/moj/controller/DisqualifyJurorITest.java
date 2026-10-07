@@ -24,7 +24,10 @@ import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -44,8 +47,10 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorPaperResponse;
  * Integration tests for the API endpoints defined in DisqualifyJurorController.
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = "feature-flags.flags.digital-by-default=true")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
     @Autowired
@@ -65,8 +70,6 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
-
-    private HttpHeaders httpHeaders;
 
     private static final String URI_DISQUALIFY_JUROR = "/api/v1/moj/disqualify/juror/%s";
     private static final String JUROR_NUMBER_123456789 = "123456789";
@@ -135,6 +138,24 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
         //Post-verification: Verify tables updated
         assertDigitalDisqualifyJurorPostVerification();
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/summonsmanagement/DisqualifyJurorControllerTestData.sql"})
+    public void disqualifyJurorDigitalResponse_digitalByDefaultEligible_queuesWithdrawalEmail() {
+        jdbcTemplate.update("UPDATE juror_mod.juror SET digital_by_default = true, dbd_preference = 'Digital' "
+            + "WHERE juror_number = ?", JUROR_NUMBER_123456789);
+        jdbcTemplate.update("UPDATE juror_mod.court_location SET digital_by_default = true WHERE loc_code = ?",
+            "415");
+        insertDbdWithdrawalTemplateMapping();
+
+        DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDigitalDto();
+
+        assertTemplateExchangeDisqualifyJuror(UserType.BUREAU, disqualifyJurorDto,
+            JUROR_NUMBER_123456789, BUREAU_USER, "400", HttpStatus.OK);
+
+        assertQueuedWithdrawalEmail(JUROR_NUMBER_123456789);
+        assertWithdrawalEmailHistory(JUROR_NUMBER_123456789, "N");
     }
 
     @Test
@@ -293,6 +314,42 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         });
     }
 
+    private void assertQueuedWithdrawalEmail(String jurorNumber) {
+        executeInTransaction(() -> {
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.bulk_print_data WHERE "
+                    + "juror_no = ? AND form_type = '5224' AND digital_comms = true AND extracted_flag = true "
+                    + "AND communication_channel = ? AND email_status = ? AND notify_template_name = ?",
+                Integer.class,
+                jurorNumber,
+                CommunicationChannel.EMAIL.name(),
+                EmailStatus.PENDING.name(),
+                DigitalByDefaultEmailTemplate.WITHDRAWAL_ENGLISH.getTemplateName()))
+                .as("A pending DBD withdrawal email should be queued")
+                .isEqualTo(1);
+        });
+    }
+
+    private void assertWithdrawalEmailHistory(String jurorNumber, String disqualifyCode) {
+        executeInTransaction(() -> {
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history WHERE "
+                    + "juror_number = ? AND history_code = 'RDIS' "
+                    + "AND other_information = 'Withdrawal Email' AND other_info_reference = ?",
+                Integer.class,
+                jurorNumber,
+                disqualifyCode))
+                .as("Juror history should record the queued withdrawal email")
+                .isEqualTo(1);
+        });
+    }
+
+    private void insertDbdWithdrawalTemplateMapping() {
+        jdbcTemplate.update("INSERT INTO juror_mod.notify_template_mapping "
+            + "(template_id, template_name, notify_name, form_type, notification_type, version) "
+            + "VALUES ('2d7e9717-829b-4dcc-8f18-f0cdf047fc8d', ?, 'DBD withdrawal English', '5224', 1, 0) "
+            + "ON CONFLICT (template_name) DO NOTHING",
+            DigitalByDefaultEmailTemplate.WITHDRAWAL_ENGLISH.getTemplateName());
+    }
+
     private void assertTemplateExchangeDisqualifyJuror(
         UserType userType,
         DisqualifyJurorDto disqualifyJurorDto,
@@ -301,7 +358,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         String owner,
         HttpStatus httpStatus) {
         final URI uri = URI.create(String.format(URI_DISQUALIFY_JUROR, jurorNumber));
-        httpHeaders = initialiseHeaders(login, userType, Set.of(Role.MANAGER), owner);
+        HttpHeaders httpHeaders = initialiseHeaders(login, userType, Set.of(Role.MANAGER), owner);
 
         RequestEntity<DisqualifyJurorDto> requestEntity = new RequestEntity<>(disqualifyJurorDto, httpHeaders,
             HttpMethod.PATCH, uri);
@@ -311,7 +368,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
     private DisqualifyReasonsDto templateExchangeDisqualifyReasons() {
         final URI uri = URI.create("/api/v1/moj/disqualify/reasons");
-        httpHeaders = initialiseHeaders(DisqualifyJurorITest.BUREAU_USER, UserType.BUREAU, Set.of(Role.MANAGER), "400");
+        HttpHeaders httpHeaders = initialiseHeaders(BUREAU_USER, UserType.BUREAU, Set.of(Role.MANAGER), "400");
 
         RequestEntity<DisqualifyReasonsDto> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, uri);
         ResponseEntity<DisqualifyReasonsDto> response = template.exchange(requestEntity, DisqualifyReasonsDto.class);

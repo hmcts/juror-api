@@ -34,7 +34,6 @@ import static org.springframework.http.HttpMethod.GET;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + LaEmailAddressControllerITest.BASE_URL)
 @SuppressWarnings("PMD")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql(
     scripts = {"/db/jurorer/teardownLaEmailAddressControllerITest.sql"},
     executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD
@@ -48,11 +47,13 @@ import static org.springframework.http.HttpMethod.GET;
     executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD
 )
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class LaEmailAddressControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/LaExport";
 
-    private final TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
 
     private HttpHeaders httpHeaders;
 

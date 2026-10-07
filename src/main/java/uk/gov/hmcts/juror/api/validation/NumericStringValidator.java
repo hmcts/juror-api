@@ -16,8 +16,8 @@ public class NumericStringValidator implements ConstraintValidator<NumericString
     }
 
     @Override
-    public boolean isValid(String s, ConstraintValidatorContext constraintValidatorContext) {
+    public boolean isValid(String str, ConstraintValidatorContext constraintValidatorContext) {
         // Null handling is left to @Null / @NotNull
-        return s == null || isDigits(s);
+        return str == null || isDigits(str);
     }
 }

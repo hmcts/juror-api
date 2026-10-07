@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -48,21 +47,22 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
+@SuppressWarnings("PMD.ExcessiveImports")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + UserControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Sql(value = {"/db/administration/teardownUsers.sql",
     "/db/administration/createUsers.sql"}, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = "/db/administration/teardownUsers.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
-@SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert","PMD.ExcessiveImports"})
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserControllerITest extends AbstractIntegrationTest {
 
     public static final String BASE_URL = "/api/v1/moj/users";
     private static final String EMAIL_SUFFIX = "@email.gov.uk";
     private static final String SYSTEM_USER = "test_system";
 
-    private final TestRestTemplate template;
+    @Autowired
+    private TestRestTemplate template;
     private HttpHeaders httpHeaders;
 
     private final UserRepository userRepository;
@@ -70,9 +70,10 @@ public class UserControllerITest extends AbstractIntegrationTest {
     private final PlatformTransactionManager transactionManager;
     private TransactionTemplate transactionTemplate;
 
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     @BeforeEach
     public void setUp() throws Exception {
-        httpHeaders = new HttpHeaders();
+        HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         httpHeaders.set(HttpHeaders.AUTHORIZATION, createHmacJwt());
         this.transactionTemplate = new TransactionTemplate(transactionManager);

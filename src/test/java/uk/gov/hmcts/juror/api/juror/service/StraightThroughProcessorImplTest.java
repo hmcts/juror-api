@@ -18,6 +18,7 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
@@ -47,7 +48,7 @@ import static uk.gov.hmcts.juror.api.JurorDigitalApplication.AUTO_USER;
 /**
  * Unit test of {@link StraightThroughProcessorImpl}.
  */
-@SuppressWarnings({"Duplicates", "PMD.TooManyMethods", "PMD.ExcessiveImports"})
+@SuppressWarnings({"Duplicates", "PMD.TooManyMethods", "PMD.ExcessiveImports", "PMD.TooManyFields"})
 @RunWith(MockitoJUnitRunner.class)
 public class StraightThroughProcessorImplTest {
 
@@ -253,7 +254,7 @@ public class StraightThroughProcessorImplTest {
         verify(poolRepository).save(any(JurorPool.class));
 
         verify(partHistRepository, times(1)).save(any(JurorHistory.class));
-        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A");
+        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A", CommunicationChannel.LETTER);
 
         verify(printDataService).printWithdrawalLetter(any(JurorPool.class));
 
@@ -299,7 +300,7 @@ public class StraightThroughProcessorImplTest {
         verify(poolRepository).save(any(JurorPool.class));
 
         verify(partHistRepository, times(1)).save(any(JurorHistory.class));
-        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A");
+        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A",CommunicationChannel.LETTER);
 
         verify(printDataService).printWithdrawalLetter(jurorPool);
 
@@ -566,7 +567,7 @@ public class StraightThroughProcessorImplTest {
     @Test
     public void processAcceptance_response_isUrgent() {
         // configure single jurorResponse property to fail processing
-        setupMock_UrgentSuperUrgent();
+        setupMockUrgentSuperUrgent();
         given(jurorResponse.isUrgent()).willReturn(true);
 
         try {
@@ -586,7 +587,7 @@ public class StraightThroughProcessorImplTest {
     @Test
     public void process_excusal_response_isUrgent() {
         // configure single jurorResponse property to fail processing
-        setupMock_UrgentSuperUrgent();
+        setupMockUrgentSuperUrgent();
 
         try {
             // process response
@@ -601,7 +602,7 @@ public class StraightThroughProcessorImplTest {
         }
     }
 
-    private void setupMock_UrgentSuperUrgent() {
+    private void setupMockUrgentSuperUrgent() {
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
         given(jurorResponse.getTitle()).willReturn("Mr");
@@ -622,7 +623,6 @@ public class StraightThroughProcessorImplTest {
 
 
     private LocalDate addTime(LocalDate date, int years, int days) {
-        LocalDate realDate = date.plusYears(years).plusDays(days);
-        return realDate;
+        return date.plusYears(years).plusDays(days);
     }
 }

@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ExpensePaymentsUsingAdjustedLimitsReport Tests")
+@SuppressWarnings("PMD.TooManyMethods")
 class ExpensePaymentsUsingAdjustedLimitsReportTest {
 
     @Mock
@@ -47,6 +48,7 @@ class ExpensePaymentsUsingAdjustedLimitsReportTest {
 
     private static final String LOC_CODE = "415";
     private static final String COURT_NAME = "CHESTER";
+    @SuppressWarnings("PMD.UseUnderscoresInNumericLiterals")
     private static final Long REVISION_NUMBER = 26111289L;
 
     private CourtLocation courtLocation;

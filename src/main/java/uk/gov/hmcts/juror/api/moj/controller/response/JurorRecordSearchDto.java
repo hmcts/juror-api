@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -17,11 +18,12 @@ import java.util.List;
  */
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Getter
 @Schema(description = "Juror record search response")
 public class JurorRecordSearchDto {
 
-    @JsonProperty("jurorRecordSearchData")
+
     @Schema(description = "List of Juror record search results")
     private List<JurorRecordSearchDataDto> data;
 
@@ -29,38 +31,42 @@ public class JurorRecordSearchDto {
     @NoArgsConstructor
     @Getter
     @Schema(description = "Juror Record search result data")
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class JurorRecordSearchDataDto {
 
         @NotNull
-        @JsonProperty("jurorNumber")
         @Schema(name = "Juror number", description = "Jurors Number")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String jurorNumber;
 
         @NotNull
         @Length(max = 20)
         @Schema(description = "Juror first name", requiredMode = Schema.RequiredMode.REQUIRED)
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String firstName;
 
         @NotNull
         @Length(max = 20)
         @Schema(description = "Juror last name", requiredMode = Schema.RequiredMode.REQUIRED)
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String lastName;
 
         @NotNull
         @Length(max = 8)
         @Schema(description = "Juror address post code", requiredMode = Schema.RequiredMode.REQUIRED)
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String addressPostcode;
 
-        @JsonProperty("poolNumber")
         @Schema(name = "Pool number", description = "The unique number for a pool request")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String poolNumber;
 
-        @JsonProperty("courtName")
         @Schema(name = "Court name", description = "Name for a given court location")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String courtName;
 
-        @JsonProperty("locCode")
         @Schema(name = "Court Location Code", description = "3 digit numeric String to identify a Court Location")
+        @SuppressWarnings({"PMD.ImmutableField"}) // final may not work as possibly not initialised
         private String courtLocationCode;
 
         /**

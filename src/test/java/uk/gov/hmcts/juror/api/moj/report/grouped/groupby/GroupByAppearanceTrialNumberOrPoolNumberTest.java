@@ -20,7 +20,7 @@ class GroupByAppearanceTrialNumberOrPoolNumberTest {
     private static GroupByAppearanceTrialNumberOrPoolNumber groupByAppearanceTrialNumberOrPoolNumber;
 
     @BeforeAll
-    public static void beforeAll() {
+    static void beforeAll() {
         groupByAppearanceTrialNumberOrPoolNumber = new GroupByAppearanceTrialNumberOrPoolNumber();
     }
 

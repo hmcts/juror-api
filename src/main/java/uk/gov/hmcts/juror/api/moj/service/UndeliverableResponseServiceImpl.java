@@ -39,6 +39,7 @@ public class UndeliverableResponseServiceImpl implements UndeliverableResponseSe
 
     @Override
     @Transactional
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void markAsUndeliverable(List<String> jurorNumbers) {
 
         final String username = SecurityUtil.getUsername();

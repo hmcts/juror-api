@@ -6,6 +6,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.test.context.junit4.SpringRunner;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
@@ -135,7 +136,7 @@ public class JurorPoolUtilsTest {
 
     @Test
     public void test_getActiveJurorPoolRecords_noRecords() {
-        Mockito.doReturn(new ArrayList<JurorPool>()).when(jurorPoolPoolRepository)
+        Mockito.doReturn(new ArrayList<>()).when(jurorPoolPoolRepository)
             .findByJurorJurorNumberAndIsActive("333333333", true);
 
         Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
@@ -329,6 +330,27 @@ public class JurorPoolUtilsTest {
             JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolPoolRepository, jurorNumber, "415"));
     }
 
+    @Test
+    public void test_isDigitalByDefault_jurorAndCourtDigitalByDefault() {
+        JurorPool jurorPool = createJurorPoolWithDigitalByDefault(true, true);
+
+        Assertions.assertThat(JurorPoolUtils.isDigitalByDefault(jurorPool)).isTrue();
+    }
+
+    @Test
+    public void test_isDigitalByDefault_jurorDigitalByDefaultCourtNotDigitalByDefault() {
+        JurorPool jurorPool = createJurorPoolWithDigitalByDefault(true, false);
+
+        Assertions.assertThat(JurorPoolUtils.isDigitalByDefault(jurorPool)).isFalse();
+    }
+
+    @Test
+    public void test_isDigitalByDefault_jurorNotDigitalByDefaultCourtDigitalByDefault() {
+        JurorPool jurorPool = createJurorPoolWithDigitalByDefault(false, true);
+
+        Assertions.assertThat(JurorPoolUtils.isDigitalByDefault(jurorPool)).isFalse();
+    }
+
     private JurorPool createJurorPool(String jurorNumber, String owner) {
         JurorPool jurorPool = new JurorPool();
         jurorPool.setOwner(owner);
@@ -345,5 +367,16 @@ public class JurorPoolUtilsTest {
         return jurorPool;
     }
 
+    private JurorPool createJurorPoolWithDigitalByDefault(boolean jurorDigitalByDefault,
+                                                          boolean courtDigitalByDefault) {
+        JurorPool jurorPool = createJurorPool("111111111", "415");
+        jurorPool.getJuror().setDigitalByDefault(jurorDigitalByDefault);
+
+        CourtLocation courtLocation = new CourtLocation();
+        courtLocation.setDigitalByDefault(courtDigitalByDefault);
+        jurorPool.getPool().setCourtLocation(courtLocation);
+
+        return jurorPool;
+    }
 
 }

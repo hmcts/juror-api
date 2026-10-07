@@ -14,7 +14,6 @@ import java.util.Map;
 
 @Data
 @NoArgsConstructor
-@SuppressWarnings("PMD.ShortClassName")
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class MonthlyUtilisationReportResponse {
 
@@ -48,6 +47,7 @@ public class MonthlyUtilisationReportResponse {
 
     @Data
     @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class TableData {
         private List<Heading> headings;
 
@@ -67,6 +67,7 @@ public class MonthlyUtilisationReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Heading {
             private UtilisationReportService.TableHeading id;
             private String name;
@@ -77,6 +78,7 @@ public class MonthlyUtilisationReportResponse {
         @Builder
         @NoArgsConstructor
         @AllArgsConstructor
+        @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
         public static class Month {
             private String month;
             private int jurorWorkingDays;

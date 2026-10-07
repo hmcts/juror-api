@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 class PoolStatusAndGraphReportTest extends AbstractGroupedReportTestSupport<PoolStatusAndGraphReport> {
 
-    public PoolStatusAndGraphReportTest() {
+    PoolStatusAndGraphReportTest() {
         super(QJurorPool.jurorPool,
             PoolStatusAndGraphReport.RequestValidator.class,
             new GroupByPoolStatusAndGraphReport(),
@@ -38,7 +38,7 @@ class PoolStatusAndGraphReportTest extends AbstractGroupedReportTestSupport<Pool
     }
 
     @Override
-    public PoolStatusAndGraphReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected PoolStatusAndGraphReport createReport(PoolRequestRepository poolRequestRepository) {
         return new PoolStatusAndGraphReport(poolRequestRepository);
     }
 
@@ -51,7 +51,7 @@ class PoolStatusAndGraphReportTest extends AbstractGroupedReportTestSupport<Pool
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         doNothing().when(report).addGroupBy(any(), any(IDataType[].class));
 
         report.preProcessQuery(query, request);

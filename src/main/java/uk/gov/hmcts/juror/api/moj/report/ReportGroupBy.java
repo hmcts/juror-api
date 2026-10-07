@@ -28,11 +28,12 @@ public class ReportGroupBy implements IReportGroupBy {
     private Function<Map<String, List<GroupedTableData>>, Map<String, List<GroupedTableData>>>
         sortDataFunction;
 
+    @Override
     public String getGroupFunction(GroupedTableData groupedTableData) {
         return groupedTableData.get(dataType.getId()).toString();
     }
 
-
+    @Override
     public GroupByResponse getGroupedByResponse() {
         return GroupByResponse.builder()
             .name(dataType.name())

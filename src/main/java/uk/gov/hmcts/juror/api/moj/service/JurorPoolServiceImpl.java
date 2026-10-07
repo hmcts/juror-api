@@ -130,7 +130,7 @@ public class JurorPoolServiceImpl implements JurorPoolService {
             jurorPoolRepository.findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
         if (!jurorPools.isEmpty()) {
             return jurorPools.stream()
-                .filter(jurorPool -> jurorPool.getOwner().equals(SecurityUtil.BUREAU_OWNER))
+                .filter(jurorPool -> SecurityUtil.BUREAU_OWNER.equals(jurorPool.getOwner()))
                 .findFirst()
                 .orElse(jurorPools.get(0));
         }

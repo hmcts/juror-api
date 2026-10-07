@@ -63,3 +63,27 @@ insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_nu
 ('415', '415000001', 'T100000001', 1, current_date - 1, 'J', false),
 ('415', '415000002', 'T100000001', 1, current_date - 1, 'J', false),
 ('415', '415000003', 'T100000001', 1, current_date - 1, 'J', false);
+
+-- Additional jurors for currentJurorsOnly flag testing
+insert into juror_mod.juror (juror_number, last_name, first_name, address_line_1, responded)
+values ('415000004', 'LNAME4', 'FNAME4', 'ADDRESS LINE 1', true),
+       ('415000005', 'LNAME5', 'FNAME5', 'ADDRESS LINE 1', true),
+       ('415000006', 'LNAME6', 'FNAME6', 'ADDRESS LINE 1', true);
+
+-- Update existing juror_trial rows to have empanelled_date set (currently sitting)
+UPDATE juror_mod.juror_trial
+SET empanelled_date = current_date
+WHERE trial_number = 'T100000001'
+  AND juror_number IN ('415000001', '415000002', '415000003');
+
+-- Not used — excluded by currentJurorsOnly
+insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed, empanelled_date, return_date)
+values ('415', '415000004', 'T100000001', 1, current_date - 1, 'NU', false, NULL, NULL);
+
+-- Challenged — excluded by currentJurorsOnly
+insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed, empanelled_date, return_date)
+values ('415', '415000005', 'T100000001', 1, current_date - 1, 'CD', false, NULL, NULL);
+
+-- Was a juror but discharged mid-trial — excluded by currentJurorsOnly
+insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed, empanelled_date, return_date)
+values ('415', '415000006', 'T100000001', 1, current_date - 1, 'J', true, current_date - 1, current_date);

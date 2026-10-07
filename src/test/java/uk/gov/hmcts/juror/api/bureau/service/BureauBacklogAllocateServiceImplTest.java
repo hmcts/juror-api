@@ -39,6 +39,8 @@ import static org.mockito.Mockito.verify;
 /**
  * Unit tests for {@link BureauBacklogAllocateServiceImpl}.
  */
+
+@SuppressWarnings("unchecked")
 class BureauBacklogAllocateServiceImplTest {
 
     private static final Comparator<DigitalResponse> ASCENDING_DATE_ORDER =
@@ -51,7 +53,7 @@ class BureauBacklogAllocateServiceImplTest {
     private BureauBacklogAllocateServiceImpl bureauBacklogAllocateService;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         responseRepo = Mockito.mock(JurorDigitalResponseRepositoryMod.class);
         UserRepository userRepo = Mockito.mock(UserRepository.class);
@@ -181,6 +183,7 @@ class BureauBacklogAllocateServiceImplTest {
      *
      * @return List JurorResponses
      */
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     private List<DigitalResponse> generateResponses(int responseCount, Boolean urgent,
                                                     LocalDateTime now) {
 

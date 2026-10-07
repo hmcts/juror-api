@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.juror.api.bureau.service.JurorCommsEmailServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsLetterServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsSentToCourtServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsWeeklyInfoServiceImpl;
@@ -25,6 +26,7 @@ public class BureauBatchProcessFactory {
     private final ExcusedCompletedCourtCommsServiceImpl excusedCompletedCourtCommsService;
     private final JurorDashboardSmartSurveyImportImpl jurorDashboardSmartSurveyImport;
     private final UrgentStatusScheduler urgentStatusScheduler;
+    private final JurorCommsEmailServiceImpl jurorCommsEmailService;
 
     /**
      * Retrieves the correct batch processer Instance based on a given string value.(job identifier)
@@ -41,6 +43,7 @@ public class BureauBatchProcessFactory {
             case "excusalCompletedServiceCourtComms" -> excusedCompletedCourtCommsService;
             case "smartSurveyImport" -> jurorDashboardSmartSurveyImport;
             case "urgentSuperUrgentStatus" -> urgentStatusScheduler;
+            case "emailComms" -> jurorCommsEmailService;
             default -> null;
         };
     }

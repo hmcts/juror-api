@@ -90,7 +90,7 @@ public interface JurorDashboardDataService {
     List<StatsResponseTimesTotals> getAllStatsResponseTimesTotals();
 
     /**
-     * Get the Total Count from the STATS_RESPONSE_TIMES_TOTALS.ONLINE
+     * Get the Total Count from the STATS_RESPONSE_TIMES_TOTALS.ONLINE.
      *
      * @return List
      */

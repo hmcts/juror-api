@@ -51,7 +51,7 @@ public class PoolCreateITest extends ContainerTest {
     public void test_poolCreate_getVoters_distribution() {
         //update the loop count to select voters a number of times
         int loopCount = 100;
-        Map<String, Integer> jurorIdMap = new ConcurrentHashMap<>();
+        Map<Long, Integer> jurorIdMap = new ConcurrentHashMap<>();
 
         for (int i = 0; i < loopCount; i++) {
             // load voters from the database
@@ -62,9 +62,9 @@ public class PoolCreateITest extends ContainerTest {
             assertThat(resultSet).isNotEmpty();
 
             resultSet.forEach(row -> {
-                String jurorNumber = row.getJurorNumber();
-                jurorIdMap.computeIfPresent(jurorNumber, (key, val) -> val + 1);
-                jurorIdMap.putIfAbsent(jurorNumber, 1);
+                Long voterHashId = row.getHashId();
+                jurorIdMap.computeIfPresent(voterHashId, (key, val) -> val + 1);
+                jurorIdMap.putIfAbsent(voterHashId, 1);
             });
         }
         jurorIdMap.forEach((key, val) -> log.info("There were {} occurrences of juror number {}", val, key));

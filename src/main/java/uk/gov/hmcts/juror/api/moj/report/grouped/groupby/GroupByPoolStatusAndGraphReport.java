@@ -6,8 +6,9 @@ public class GroupByPoolStatusAndGraphReport extends ReportGroupByWithPreProcess
     public static final String ACTIVE_TEXT = "Active pool members";
     public static final String INACTIVE_TEXT = "Inactive pool members";
 
+    @SuppressWarnings({"PMD.LinguisticNaming"}) // casting is done after init
     public GroupByPoolStatusAndGraphReport() {
-        super(ReportGroupByWithPreProcessor.builder()
+        super(builder()
             .dataType(DataType.IS_ACTIVE)
             .removeGroupByFromResponse(true)
             .groupByFunction(

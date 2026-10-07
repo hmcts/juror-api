@@ -1,6 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,11 +22,10 @@ import java.util.Set;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DisplayName("Controller: " + AuditControllerITest.BASE_URL)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")//False positive
-public class AuditControllerITest {
-    public static final String BASE_URL = "/api/v1/moj/audit";
-    private final TestRestTemplate template;
+class AuditControllerITest {
+    static final String BASE_URL = "/api/v1/moj/audit";
+    @Autowired
+    private TestRestTemplate template;
 
 
     @Nested
@@ -39,7 +37,7 @@ public class AuditControllerITest {
         "/db/mod/reports/PoolAttendanceAuditReportITest_typical.sql"
     })
     class GetAllPoolAuditsForDay extends AbstractControllerIntegrationTest<Void, List<String>> {
-        public static final String URL = BASE_URL + "/{date}/pool";
+        static final String URL = BASE_URL + "/{date}/pool";
 
         protected GetAllPoolAuditsForDay() {
             super(HttpMethod.GET, template, HttpStatus.OK);

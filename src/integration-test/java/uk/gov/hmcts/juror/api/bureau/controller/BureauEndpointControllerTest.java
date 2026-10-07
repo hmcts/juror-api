@@ -61,7 +61,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     public void bureauAuthenticationEndpoint_unhappy_header1() {
         final String description = "Authentication header is not present";
 
-        ResponseEntity<String> exchange = template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> exchange = template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
             URI.create("/api/v1/bureau/settings")), String.class);
         assertThat(exchange).describedAs(description).isNotNull();
         assertThat(exchange.getStatusCode()).describedAs(description).isNotEqualTo(HttpStatus.OK);
@@ -74,7 +74,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String description = "Authentication header is empty";
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, null);
-        ResponseEntity<String> exchange = template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> exchange = template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
             URI.create("/api/v1/bureau/settings")), String.class);
         assertThat(exchange).describedAs(description).isNotNull();
         assertThat(exchange.getStatusCode()).describedAs(description).isNotEqualTo(HttpStatus.OK);
@@ -96,7 +96,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String invalidPublicJwt = String.join(".", jwtSections[0], "eyJhZG1pbiI6ICJ0cnVlIn0", jwtSections[2]);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, invalidPublicJwt);
-        ResponseEntity<String> exchange = template.exchange(new RequestEntity<Void>(httpHeaders, HttpMethod.GET,
+        ResponseEntity<String> exchange = template.exchange(new RequestEntity<>(httpHeaders, HttpMethod.GET,
             URI.create("/api/v1/bureau/settings")), String.class);
         assertThat(exchange).describedAs(description).isNotNull();
         assertThat(exchange.getStatusCode()).describedAs(description).isNotEqualTo(HttpStatus.OK);
@@ -118,7 +118,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             .build())
         );
 
-        ResponseEntity<BureauJurorDetailDto> responseEntity = template.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<BureauJurorDetailDto> responseEntity = template.exchange(new RequestEntity<>(httpHeaders,
             HttpMethod.GET, URI.create("/api/v1/bureau/juror/209092530")), BureauJurorDetailDto.class);
         assertThat(responseEntity).isNotNull();
         assertThat(responseEntity.getStatusCodeValue()).isEqualTo(200);
@@ -149,7 +149,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
             .build())
         );
 
-        ResponseEntity<BureauResponseSummaryWrapper> response = template.exchange(new RequestEntity<Void>(httpHeaders,
+        ResponseEntity<BureauResponseSummaryWrapper> response = template.exchange(new RequestEntity<>(httpHeaders,
                 HttpMethod.GET, URI.create("/api/v1/bureau/responses?filterBy=todo")),
             BureauResponseSummaryWrapper.class);
         assertThat(response.getStatusCodeValue()).isEqualTo(200);

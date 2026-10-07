@@ -16,9 +16,17 @@ public interface PrintDataService {
         bulkPrintSummonsLetter(List.of(jurorPool));
     }
 
+    void bulkPrintDbdSummonsLetter(List<JurorPool> jurorPools);
+
     void reprintSummonsLetter(JurorPool jurorPool);
 
+    void reprintDbdSummonsLetter(JurorPool jurorPool);
+
+    void printDbdResponseLetter(JurorPool jurorPool);
+
     void printSummonsReminderLetter(JurorPool jurorPool);
+
+    void printDbdSummonsReminderLetter(JurorPool jurorPool);
 
     void printDeferralLetter(JurorPool jurorPool);
 

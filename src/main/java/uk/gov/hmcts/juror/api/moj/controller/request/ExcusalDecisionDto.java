@@ -1,6 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -19,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 @AllArgsConstructor
 @Getter
 @Setter
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Schema(description = "Excusal decision")
 public class ExcusalDecisionDto {
 
@@ -38,5 +41,9 @@ public class ExcusalDecisionDto {
     @Schema(description = "Reply method of juror response, either PAPER or DIGITAL", requiredMode =
         Schema.RequiredMode.REQUIRED)
     private ReplyMethod replyMethod;
+
+    @JsonProperty("useSummonsAddress")
+    @Schema(description = "If true, update juror address from their summons response before processing")
+    private Boolean useSummonsAddress;
 
 }

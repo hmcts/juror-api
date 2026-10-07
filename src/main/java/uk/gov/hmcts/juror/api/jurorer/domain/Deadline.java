@@ -61,10 +61,7 @@ public class Deadline {
      * @return true if current date is after deadline, false otherwise
      */
     public boolean isOverdue() {
-        if (deadlineDate == null) {
-            return false;
-        }
-        return LocalDate.now().isAfter(deadlineDate);
+        return deadlineDate != null && LocalDate.now().isAfter(deadlineDate);
     }
 }
 

@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse;
 
+@FunctionalInterface
 public interface AssignOnUpdateServiceMod {
     /**
      * Called when a bureau officer is making a change to an unassigned response, and assigned to them.

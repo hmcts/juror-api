@@ -17,7 +17,7 @@ class CourtDtoTest extends AbstractValidatorTest<CourtDto> {
         return getValidObject();
     }
 
-    public static CourtDto getValidObject() {
+    static CourtDto getValidObject() {
         return CourtDto.builder()
             .name("courtName")
             .locCode("123")

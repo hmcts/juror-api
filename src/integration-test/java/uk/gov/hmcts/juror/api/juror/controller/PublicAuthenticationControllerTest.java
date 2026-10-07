@@ -178,7 +178,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
             httpHeaders, HttpMethod.POST, uri);
 
         ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchange).describedAs(description).isNotNull();
@@ -248,7 +248,7 @@ public class PublicAuthenticationControllerTest extends AbstractIntegrationTest 
 
 
         ResponseEntity<SpringBootErrorResponse> exchange = template.exchange(requestEntity,
-            new ParameterizedTypeReference<SpringBootErrorResponse>() {
+            new ParameterizedTypeReference<>() {
             });
 
         assertThat(exchange).describedAs(description).isNotNull();

@@ -117,7 +117,6 @@ public class JurorResponseITest extends ContainerTest {
         digitalResponse.setDeferralReason("Some Reason");
         digitalResponse.setDeferralDate(LocalDate.now().toString());
         digitalResponse.setExcusalReason("Some reason");
-        digitalResponse.setVersion(1);
         digitalResponse.setThirdPartyFName("Third party First name");
         digitalResponse.setThirdPartyLName("Third party Last name");
         digitalResponse.setMainPhone("0123456789");

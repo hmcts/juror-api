@@ -14,7 +14,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
@@ -558,7 +557,7 @@ class JurorExpenseServiceTest {
         void appearanceRecordsNotFound() {
             List<LocalDate> attendanceDates = List.of(LocalDate.of(2024, 1, 1));
 
-            doReturn(new ArrayList<Appearance>()).when(appearanceRepository)
+            doReturn(new ArrayList<>()).when(appearanceRepository)
                 .findAllByCourtLocationLocCodeAndJurorNumberAndAttendanceDateInOrderByAttendanceDate(
                     TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
@@ -574,8 +573,8 @@ class JurorExpenseServiceTest {
                     TestConstants.VALID_COURT_LOCATION,
                     TestConstants.VALID_JUROR_NUMBER, attendanceDates);
             verify(appearanceRepository, never())
-                .save(Mockito.any());
-            verify(financialAuditDetailsRepository, never()).save(Mockito.any());
+                .save(any());
+            verify(financialAuditDetailsRepository, never()).save(any());
         }
 
         private Appearance buildTestAppearance(String jurorNumber, LocalDate attendanceDate) {
@@ -1587,11 +1586,10 @@ class JurorExpenseServiceTest {
         private final BigDecimal fullDayStandardLimit = new BigDecimal("20.00");
         private final BigDecimal fullDayLongLimit = new BigDecimal("25.00");
         private final BigDecimal fullDayExtraLongLimit = new BigDecimal("50.00");
-        private ExpenseRates expenseRates;
 
         @BeforeEach
         void beforeEach() {
-            this.expenseRates = mock(ExpenseRates.class);
+            ExpenseRates expenseRates = mock(ExpenseRates.class);
             doReturn(halfDayStandardLimit).when(expenseRates).getLimitFinancialLossHalfDay();
             doReturn(halfDayLongLimit).when(expenseRates).getLimitFinancialLossHalfDayLongTrial();
             doReturn(fullDayStandardLimit).when(expenseRates).getLimitFinancialLossFullDay();
@@ -1946,17 +1944,17 @@ class JurorExpenseServiceTest {
                 .publicTransport(publicTransport)
                 .taxi(hiredVehicle);
 
-            if (TravelMethod.CAR.equals(travelMethod)) {
+            if (travelMethod == TravelMethod.CAR) {
                 builder.traveledByCar(true)
                     .jurorsTakenCar(2);
                 when(expenseRates.getCarMileageRatePerMile2OrMorePassengers())
                     .thenReturn(travelCost);
-            } else if (TravelMethod.MOTERCYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.MOTERCYCLE) {
                 builder.traveledByMotorcycle(true)
                     .jurorsTakenMotorcycle(2);
                 when(expenseRates.getMotorcycleMileageRatePerMile1Passengers())
                     .thenReturn(travelCost);
-            } else if (TravelMethod.BICYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.BICYCLE) {
                 builder.traveledByBicycle(true);
                 when(expenseRates.getBikeRate())
                     .thenReturn(travelCost);
@@ -1984,11 +1982,11 @@ class JurorExpenseServiceTest {
             verify(travel, times(1)).getTaxi();
 
 
-            if (TravelMethod.CAR.equals(travelMethod)) {
+            if (travelMethod == TravelMethod.CAR) {
                 verify(expenseRates, times(1)).getCarMileageRatePerMile2OrMorePassengers();
-            } else if (TravelMethod.MOTERCYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.MOTERCYCLE) {
                 verify(expenseRates, times(1)).getMotorcycleMileageRatePerMile1Passengers();
-            } else if (TravelMethod.BICYCLE.equals(travelMethod)) {
+            } else if (travelMethod == TravelMethod.BICYCLE) {
                 verify(expenseRates, times(1)).getBikeRate();
             }
 
@@ -3231,7 +3229,9 @@ class JurorExpenseServiceTest {
                 courtLocation,
                 List.of(appearance1, appearance2)
             );
-            assertNull(paymentData);
+            assertThat(paymentData)
+                .as("Expected paymentData to be null when the total payment amount is zero")
+                .isNull();
             verify(paymentDataRepository, never()).save(any());
         }
 
@@ -3434,7 +3434,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypical() {
             CourtLocation courtLocation = mock(CourtLocation.class);
             when(courtLocation.getOwner()).thenReturn(TestConstants.VALID_COURT_LOCATION);
@@ -4551,7 +4550,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalFromDateEquals() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -4608,7 +4606,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalFromDateIsAfter() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -4666,7 +4663,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalToDateEquals() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -4718,7 +4714,6 @@ class JurorExpenseServiceTest {
         }
 
         @Test
-        @SuppressWarnings("PMD.JUnitAssertionsShouldIncludeMessage")
         void positiveTypicalToDateIsBefore() {
             Appearance juror1Pool1Appearance1 = mockAppearance(
                 TestConstants.VALID_JUROR_NUMBER, TestConstants.VALID_POOL_NUMBER, LocalDate.of(2023, 1, 1));
@@ -5853,4 +5848,3 @@ class JurorExpenseServiceTest {
         }
     }
 }
-

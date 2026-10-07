@@ -45,6 +45,7 @@ public class PoolRatioReport extends AbstractStandardReport {
     }
 
     private StandardTableData getCombinedTableData(AbstractReportResponse.TableData<StandardTableData> tableData) {
+        @SuppressWarnings("PMD.PublicMemberInNonPublicType")
         @Setter
         @Getter
         class TableData {
@@ -98,7 +99,7 @@ public class PoolRatioReport extends AbstractStandardReport {
                 combinedData.put(key, data);
             }
             data.addRequested(
-                ((Integer) stringObjectLinkedHashMap.getOrDefault(DataType.TOTAL_REQUESTED.getId(), 0)).longValue());
+                (Integer) stringObjectLinkedHashMap.getOrDefault(DataType.TOTAL_REQUESTED.getId(), 0));
             data.addDeferred((Long) stringObjectLinkedHashMap.getOrDefault(DataType.TOTAL_DEFERRED.getId(), 0L));
             data.addSummoned((Long) stringObjectLinkedHashMap.getOrDefault(DataType.TOTAL_SUMMONED.getId(), 0L));
             data.addSupplied((Long) stringObjectLinkedHashMap.getOrDefault(DataType.TOTAL_SUPPLIED.getId(), 0L));
@@ -106,7 +107,7 @@ public class PoolRatioReport extends AbstractStandardReport {
 
         return new StandardTableData(
             combinedData.entrySet().stream()
-                .map((entry) -> {
+                .map(entry -> {
                     String key = entry.getKey();
                     TableData value = entry.getValue();
                     LinkedHashMap<String, Object> map = new LinkedHashMap<>();

@@ -33,16 +33,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings({
-    "PMD.LawOfDemeter",
-    "PMD.ExcessiveImports"
-})
 class UnconfirmedAttendanceReportTest extends AbstractGroupedReportTestSupport<UnconfirmedAttendanceReport> {
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
     private CourtLocationService courtLocationService;
 
-    public UnconfirmedAttendanceReportTest() {
+    UnconfirmedAttendanceReportTest() {
         super(
             QAppearance.appearance,
             UnconfirmedAttendanceReport.RequestValidator.class,
@@ -63,7 +59,7 @@ class UnconfirmedAttendanceReportTest extends AbstractGroupedReportTestSupport<U
 
     @BeforeEach
     @Override
-    public void beforeEach() {
+    protected void beforeEach() {
         securityUtilMockedStatic = mockStatic(SecurityUtil.class);
         courtLocationService = mock(CourtLocationService.class);
         super.beforeEach();
@@ -75,7 +71,7 @@ class UnconfirmedAttendanceReportTest extends AbstractGroupedReportTestSupport<U
     }
 
     @Override
-    public UnconfirmedAttendanceReport createReport(PoolRequestRepository poolRequestRepository) {
+    protected UnconfirmedAttendanceReport createReport(PoolRequestRepository poolRequestRepository) {
         return new UnconfirmedAttendanceReport(this.courtLocationService);
     }
 
@@ -89,7 +85,7 @@ class UnconfirmedAttendanceReportTest extends AbstractGroupedReportTestSupport<U
     }
 
     @Override
-    public void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
+    protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         request.setFromDate(LocalDate.of(2024, 1, 1));
         request.setToDate(LocalDate.of(2024, 1, 2));
         securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);

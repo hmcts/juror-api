@@ -70,3 +70,16 @@ insert into juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_nu
 ('415', '415000004', 'T100000001', 1, '2024-07-11', 'CD', false),
 ('415', '415000005', 'T100000001', 1, '2024-07-11', 'CD', false),
 ('415', '415000006', 'T100000001', 1, '2024-07-11', 'NU', false);
+
+-- Update existing J rows to have empanelled_date set
+UPDATE juror_mod.juror_trial
+SET empanelled_date = '2024-07-11'
+WHERE trial_number = 'T100000001'
+  AND result = 'J';
+
+-- Add a juror with result J but discharged mid-trial — excluded by currentJurorsOnly
+INSERT INTO juror_mod.juror (juror_number, title, last_name, first_name, dob, address_line_1, address_line_4, postcode, responded)
+VALUES ('415000007', 'MR', 'LNAME7', 'FNAME7', '1988-01-01', '542 STREET NAME', 'Chichester', 'PO19 1SX', true);
+
+INSERT INTO juror_mod.juror_trial (loc_code, juror_number, trial_number, rand_number, date_selected, "result", completed, empanelled_date, return_date)
+VALUES ('415', '415000007', 'T100000001', 1, '2024-07-11', 'J', true, '2024-07-11', '2024-07-15');

@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.enumeration;
 import lombok.Getter;
 
 @Getter
+@SuppressWarnings({"PMD.ExcessivePublicCount"})
 public enum HistoryCodeMod {
 
     POLICE_CHECK_UNDO("POLX", "Police Check - Undo"),
@@ -73,7 +74,9 @@ public enum HistoryCodeMod {
     INSUFFICIENT_INFORMATION("POLI", "Insufficient Information"),
     FAILED_TO_ATTEND("PFTA", "Failed To Attend"),
     CHANGE_POOL_REQUEST_DETAILS("PREQ", "Change Pool Request Details"),
-    PENDING_JUROR_AUTHORISED("AUTH", "Pending Juror Authorised");
+    PENDING_JUROR_AUTHORISED("AUTH", "Pending Juror Authorised"),
+    ON_CALL("PONC","Juror On Call"),
+    RESPONSE_PACK_PRINTED("RPCK", "Response Pack");
 
     private final String code;
     private final String description;

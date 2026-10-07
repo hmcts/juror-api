@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.service.report.AttendanceReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.FinancialAuditReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.JurySummoningMonitorReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.ReportService;
+import uk.gov.hmcts.juror.api.moj.service.report.SittingDaysReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.SummonsRepliesReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.UtilisationReportService;
 import uk.gov.hmcts.juror.api.moj.service.report.YieldPerformanceReportService;
@@ -46,9 +47,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         RestResponseEntityExceptionHandler.class
     }
 )
+
 @DisplayName("Controller: " + JurySummoningMonitorReportControllerTest.BASE_URL)
 class JurySummoningMonitorReportControllerTest {
-    public static final String BASE_URL = "/api/v1/moj/reports";
+    static final String BASE_URL = "/api/v1/moj/reports";
     @Autowired
     private MockMvc mockMvc;
 
@@ -73,10 +75,13 @@ class JurySummoningMonitorReportControllerTest {
     @MockBean
     private AttendanceReportService attendanceReportService;
 
+    @MockBean
+    private SittingDaysReportService sittingDaysReportService;
+
     @Nested
     @DisplayName("POST (GET) " + ViewReportStandard.URL)
     class ViewReportStandard {
-        public static final String URL = BASE_URL + "/jury-summoning-monitor";
+        static final String URL = BASE_URL + "/jury-summoning-monitor";
 
         private JurySummoningMonitorReportRequest getValidPayload() {
             return JurySummoningMonitorReportRequest.builder()

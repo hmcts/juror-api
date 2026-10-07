@@ -13,26 +13,8 @@ public enum TemporaryCourtAddress {
                 +
                 "Weston Super Mare,\n"
                 +
-                "BS22 7BB."),
-    HARROW("Hendon Magistrates Court,\n"
-               +
-               "The Court House,\n"
-               +
-               "The Hyde,\n"
-               +
-               "Hendon,\n"
-               +
-               "NW9 7BY.\n"
-               +
-               "or\n"
-               +
-               "Willesden Magistrates Court,\n"
-               +
-               "448 High Road,\n"
-               +
-               "London,\n"
-               +
-               "NW10 2DZ.");
+                "BS22 7BB.");
+
     private final String temporaryCourtAddress;
 
     TemporaryCourtAddress(String temporaryCourtAddress) {

@@ -3,7 +3,7 @@ package uk.gov.hmcts.juror.api.juror.service;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorHolidaysRequestDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorHolidaysResponseDto;
 
-
+@FunctionalInterface
 public interface HolidaysService {
 
 

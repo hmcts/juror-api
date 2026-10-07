@@ -8,7 +8,7 @@ import java.util.List;
  * Custom Repository definition for the PoolHistory entity.
  * Allowing for additional query functions to be explicitly declared
  */
-
+@FunctionalInterface
 public interface IPoolHistoryRepository {
     List<PoolHistory> findPoolHistorySincePoolCreated(String poolNumber);
 }

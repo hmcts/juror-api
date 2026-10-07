@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.moj.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -36,171 +38,145 @@ import static uk.gov.hmcts.juror.api.validation.ValidationConstants.POSTCODE_REG
 @Getter
 @Setter
 @Schema(description = "Juror paper response details submitted by an Officer.")
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class JurorPaperResponseDetailDto implements IJurorResponse {
 
-    @JsonProperty("jurorNumber")
     @Pattern(regexp = JUROR_NUMBER)
     @Schema(description = "Juror number", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotEmpty
     private String jurorNumber;
 
-    @JsonProperty("poolNumber")
     @NotEmpty
     @Schema(name = "Pool number", description = "Pool Request number")
     private String poolNumber;
 
-    @JsonProperty("serviceStartDate")
     @JsonFormat(pattern = "yyyy-MM-dd")
     @NotEmpty
     @Schema(description = "Service start date")
     private LocalDate serviceStartDate;
 
-    @JsonProperty("courtName")
     @NotEmpty
     @Schema(description = "Court name")
     private String courtName;
 
-    @JsonProperty("welshCourt")
     @NotEmpty
     @Schema(name = "Welsh Court", description = "Flag indicating whether the court location is in Wales or not")
     private boolean welshCourt;
 
-    @JsonProperty("jurorStatus")
     @NotEmpty
     @Schema(name = "Juror Status", description = "Jurors status")
     private String jurorStatus;
 
-    @JsonProperty("title")
     @Length(max = 10)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror title")
     private String title;
 
-    @JsonProperty("firstName")
     @NotEmpty
     @Pattern(regexp = NO_PIPES_REGEX)
     @Length(max = 20)
     @Schema(description = "Juror first name")
     private String firstName;
 
-    @JsonProperty("lastName")
+
     @NotEmpty
     @Length(max = 25)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror last name")
     private String lastName;
 
-    @JsonProperty("addressLineOne")
     @Length(max = 35)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror address line 1")
     private String addressLineOne;
 
-    @JsonProperty("addressLineTwo")
     @Length(max = 35)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror address line 2")
     private String addressLineTwo;
 
-    @JsonProperty("addressLineThree")
     @Length(max = 35)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror address line 3")
     private String addressLineThree;
 
-    @JsonProperty("addressTown")
     @Length(max = 35)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror address line 4")
     private String addressTown;
 
-    @JsonProperty("addressCounty")
     @Length(max = 35)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror address line 5")
     private String addressCounty;
 
-    @JsonProperty("addressPostcode")
     @NotEmpty
     @Length(max = 8)
     @Pattern(regexp = POSTCODE_REGEX)
     @Schema(description = "Juror address post code")
     private String addressPostcode;
 
-    @JsonProperty("existingTitle")
     @Length(max = 10)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror title in current Juror record")
     private String existingTitle;
 
-    @JsonProperty("existingFirstName")
     @NotEmpty
     @Pattern(regexp = NO_PIPES_REGEX)
     @Length(max = 20)
     @Schema(description = "Juror first name in current Juror record")
     private String existingFirstName;
 
-    @JsonProperty("existingLastName")
     @NotEmpty
     @Length(max = 20)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror last name in current Juror record")
     private String existingLastName;
 
-    @JsonProperty("existingAddressLineOne")
     @Length(max = 35)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror address line 1 in current Juror record")
     private String existingAddressLineOne;
 
-    @JsonProperty("existingAddressLineTwo")
     @Length(max = 35)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror address line 2 in current Juror record")
     private String existingAddressLineTwo;
 
-    @JsonProperty("existingAddressLineThree")
     @Length(max = 35)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror address line 3 in current Juror record")
     private String existingAddressLineThree;
 
-    @JsonProperty("existingAddressTown")
     @Length(max = 35)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror address line 4 in current Juror record")
     private String existingAddressTown;
 
-    @JsonProperty("existingAddressCounty")
     @Length(max = 35)
     @Pattern(regexp = NO_PIPES_REGEX)
     @Schema(description = "Juror address line 5 in current Juror record")
     private String existingAddressCounty;
 
-    @JsonProperty("existingAddressPostcode")
     @NotEmpty
     @Length(max = 8)
     @Pattern(regexp = POSTCODE_REGEX)
     @Schema(description = "Juror address post code in current Juror record")
     private String existingAddressPostcode;
 
-    @JsonProperty("dateOfBirth")
     @JsonFormat(pattern = "yyyy-MM-dd")
     @LocalDateOfBirth
     @Schema(description = "Juror date of birth")
     private LocalDate dateOfBirth;
 
-    @JsonProperty("primaryPhone")
     @Pattern(regexp = PHONE_NO_REGEX)
     @Schema(description = "Juror primary telephone number")
     private String primaryPhone;
 
-    @JsonProperty("secondaryPhone")
     @Pattern(regexp = PHONE_NO_REGEX)
     @Schema(description = "Juror secondary telephone number")
     private String secondaryPhone;
 
-    @JsonProperty("emailAddress")
     @Length(max = 254)
     @Pattern(regexp = EMAIL_ADDRESS_REGEX)
     @Schema(description = "Juror email address")
@@ -365,39 +341,35 @@ public class JurorPaperResponseDetailDto implements IJurorResponse {
     @NoArgsConstructor
     @Getter
     @Schema(description = "Response submitted by a third party")
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class ThirdParty {
 
-        @JsonProperty("thirdPartyFName")
         @Schema(description = "Third party firstname")
         private String thirdPartyFName;
 
-        @JsonProperty("thirdPartyLName")
         @Schema(description = "Third party lastname")
         private String thirdPartyLName;
 
-        @JsonProperty("thirdPartyPhone")
         @Schema(description = "Third party main phone number")
         @Pattern(regexp = PHONE_NO_REGEX)
         private String mainPhone;
 
-        @JsonProperty("otherPhone")
         @Schema(description = "Third party alternative phone number")
         private String otherPhone;
 
-        @JsonProperty("thirdPartyEmail")
         @Schema(description = "Third party email address")
         @Pattern(regexp = EMAIL_ADDRESS_REGEX)
         private String emailAddress;
 
-        @JsonProperty("relationship")
+
         @Schema(description = "Third party relationship to the juror")
         private String relationship;
 
-        @JsonProperty("thirdPartyReason")
+
         @Schema(description = "Third party reason")
         private String thirdPartyReason;
 
-        @JsonProperty("thirdPartyOtherReason")
+
         @Schema(description = "Third party other reason")
         private String thirdPartyOtherReason;
 

@@ -38,6 +38,7 @@ import java.util.Map;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.GodClass", "PMD.CouplingBetweenObjects"})
 public class UtilisationReportServiceImpl implements UtilisationReportService {
     private final CourtLocationRepository courtLocationRepository;
     private final JurorRepository jurorRepository;
@@ -47,7 +48,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
     @Override
     @Transactional(readOnly = true)
-    @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.AvoidInstantiatingObjectsInLoops"})
     public DailyUtilisationReportResponse viewDailyUtilisationReport(String locCode, LocalDate reportFromDate,
                                                                      LocalDate reportToDate) {
         log.info("Fetching daily utilisation stats for location: {} from: {} to: {}", locCode, reportFromDate,
@@ -81,13 +82,13 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
                     LocalDate date = LocalDate.parse(res.get(0), DateTimeFormatter.ISO_LOCAL_DATE);
 
                     int workingDays = Integer.parseInt(res.get(1));
-                    if (workingDays == 0 && (date.getDayOfWeek().equals(DayOfWeek.SATURDAY)
-                        || date.getDayOfWeek().equals(DayOfWeek.SUNDAY))) {
+                    if (workingDays == 0 && (date.getDayOfWeek() == DayOfWeek.SATURDAY
+                        || date.getDayOfWeek() == DayOfWeek.SUNDAY)) {
                         // ignore weekends with no working days
                         continue;
                     }
 
-                    if (date.getDayOfWeek().equals(DayOfWeek.MONDAY) || firstPass) {
+                    if (date.getDayOfWeek() == DayOfWeek.MONDAY || firstPass) {
                         week = new DailyUtilisationReportResponse.TableData.Week();
                         initialiseWeek(tableData, week);
                         firstPass = false;
@@ -167,7 +168,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
 
                     List<String> res = List.of(result.split(","));
 
-                    if (res.get(1).equals("null")) {
+                    if ("null".equals(res.get(1))) {
                         continue;
                     }
 
@@ -448,6 +449,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         return response;
     }
 
+    @SuppressWarnings("PMD.LinguisticNaming")
     private void getCourtUtilisationStats(List<String> utilisationStats,
                                           CourtUtilisationStatsReportResponse.TableData tableData,
                                           List<String> courtLocCodes) {
@@ -503,7 +505,7 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         tableData.setTotalSittingDays(tableData.getTotalSittingDays() + stats.getSittingDays());
         tableData.setTotalAttendanceDays(tableData.getTotalAttendanceDays() + stats.getAttendanceDays());
         tableData.setTotalNonAttendanceDays(tableData.getTotalNonAttendanceDays()
-            + (stats.getAvailableDays() - stats.getAttendanceDays()));
+            + stats.getAvailableDays() - stats.getAttendanceDays());
     }
 
     private void updateJurorTotals(DailyUtilisationReportJurorsResponse.TableData tableData,
@@ -651,9 +653,9 @@ public class UtilisationReportServiceImpl implements UtilisationReportService {
         TIME_CREATED("Time created", LocalDateTime.class.getSimpleName()),
         COURT_NAME("Court name", String.class.getSimpleName());
 
-        private String displayName;
+        private final String displayName;
 
-        private String dataType;
+        private final String dataType;
 
         ReportHeading(String displayName, String dataType) {
             this.displayName = displayName;

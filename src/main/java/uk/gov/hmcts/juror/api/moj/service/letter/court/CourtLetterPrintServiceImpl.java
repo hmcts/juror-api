@@ -51,6 +51,7 @@ import static uk.gov.hmcts.juror.api.moj.enumeration.letter.CourtLetterType.DEFE
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings({"PMD.GodClass", "PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
 
     private final SystemParameterRepositoryMod systemParameterRepository;
@@ -77,6 +78,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
     private final CertificateOfAttendanceListRepository certificateOfAttendanceListRepository;
 
     @Override
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.CognitiveComplexity"})
     public List<PrintLetterDataResponseDto> getPrintLettersData(PrintLettersRequestDto printLettersRequestDto,
                                                                 String login) {
         Multimap<String, LocalDate> lettersDataMap = transposeListToMap(printLettersRequestDto);
@@ -100,14 +102,14 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             boolean welsh = BooleanUtils.toBoolean(juror.getWelsh())
                 && CourtLocationUtils.isWelshCourtLocation(welshCourtLocationRepository, SecurityUtil.getLocCode());
             Tuple data;
-            if (printLettersRequestDto.getLetterType().equals(CERTIFICATE_OF_EXEMPTION)) {
+            if (printLettersRequestDto.getLetterType() == CERTIFICATE_OF_EXEMPTION) {
                 CertificateOfExemptionRequestDto exemptionRequestDto =
                     (CertificateOfExemptionRequestDto) printLettersRequestDto;
                 data = courtPrintLetterRepository.retrievePrintInformation(jurorNumber,
                     printLettersRequestDto.getLetterType(), welsh, owner,
                     exemptionRequestDto.getTrialNumber());
-            } else if (CourtLetterType.SHOW_CAUSE.equals(printLettersRequestDto.getLetterType())
-                || CourtLetterType.FAILED_TO_ATTEND.equals(printLettersRequestDto.getLetterType())) {
+            } else if (printLettersRequestDto.getLetterType() == CourtLetterType.SHOW_CAUSE
+                || printLettersRequestDto.getLetterType() == CourtLetterType.FAILED_TO_ATTEND) {
                 data = courtPrintLetterRepository.retrievePrintInformationBasedOnLetterSpecificDate(jurorNumber,
                     printLettersRequestDto.getLetterType(), welsh, owner, entry.getValue());
             } else {
@@ -121,12 +123,12 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
 
             // create the print letter response
             PrintLetterDataResponseDto dto;
-            if (!printLettersRequestDto.getLetterType().equals(CERTIFICATE_OF_EXEMPTION)) {
-                dto = createPrintLetterDataResponseDto(data, welsh, printLettersRequestDto);
-            } else {
+            if (printLettersRequestDto.getLetterType() == CERTIFICATE_OF_EXEMPTION) {
                 CertificateOfExemptionRequestDto exemptionRequestDto =
                     (CertificateOfExemptionRequestDto) printLettersRequestDto;
                 dto = createPrintLetterDataResponseDto(data, welsh, exemptionRequestDto);
+            } else {
+                dto = createPrintLetterDataResponseDto(data, welsh, printLettersRequestDto);
             }
             letters.add(dto);
             // add history item
@@ -145,8 +147,8 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
     private Multimap<String, LocalDate> transposeListToMap(PrintLettersRequestDto printLettersRequestDto) {
         Multimap<String, LocalDate> map = LinkedListMultimap.create();
 
-        if (CourtLetterType.SHOW_CAUSE.equals(printLettersRequestDto.getLetterType())
-            || CourtLetterType.FAILED_TO_ATTEND.equals(printLettersRequestDto.getLetterType())) {
+        if (printLettersRequestDto.getLetterType() == CourtLetterType.SHOW_CAUSE
+            || printLettersRequestDto.getLetterType() == CourtLetterType.FAILED_TO_ATTEND) {
             // can print multiple letters for each juror if absent from jury service on more than one day - need to
             // filter based on the given date, e.g. attendanceDate (absentDate)
             printLettersRequestDto.getDetailsPerLetter()
@@ -159,6 +161,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
         return map;
     }
 
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExhaustiveSwitchHasDefault"})
     private void addHistoryItem(PrintLettersRequestDto printLettersRequestDto, String login, String jurorNumber,
                                 Tuple data) {
         JurorHistory.JurorHistoryBuilder jurorHistory = JurorHistory.builder()
@@ -172,7 +175,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
                 jurorHistory.otherInformationRef(data.get(JUROR_POOL.deferralCode));
                 jurorHistory.otherInformationDate(data.get(JUROR_POOL.deferralDate));
 
-                if (DEFERRAL_GRANTED.equals(printLettersRequestDto.getLetterType())) {
+                if (printLettersRequestDto.getLetterType() == DEFERRAL_GRANTED) {
                     jurorHistory.historyCode(HistoryCodeMod.DEFERRED_LETTER);
                     jurorHistory.otherInformation("Print deferral letter");
                 } else {
@@ -230,7 +233,12 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
         jurorHistoryRepository.save(history);
     }
 
-    @SuppressWarnings("checkstyle:WhitespaceAround")
+    @SuppressWarnings({
+        "checkstyle:WhitespaceAround",
+        "PMD.CyclomaticComplexity",
+        "PMD.NcssCount",
+        "PMD.ExhaustiveSwitchHasDefault"
+    })
     private PrintLetterDataResponseDto createPrintLetterDataResponseDto(Tuple data, boolean welsh,
                                                                         PrintLettersRequestDto dto) {
         PrintLetterDataResponseDto.PrintLetterDataResponseDtoBuilder builder = PrintLetterDataResponseDto.builder();
@@ -346,23 +354,23 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
     }
 
     private String formatWelshCourtName(String courtName) {
-        String formattedCourtName = "Llys y Goron\n";
 
-        switch (courtName.substring(0, 1).toLowerCase()) {
-            case "b", "m" -> formattedCourtName += "ym M" + courtName.substring(1).toLowerCase();
-            case "c" -> formattedCourtName += "yng Ngh" + courtName.substring(1).toLowerCase();
-            case "d" -> formattedCourtName += "yn N" + courtName.substring(1).toLowerCase();
-            case "g" -> formattedCourtName += "yng Ng" + courtName.substring(1).toLowerCase();
-            case "p" -> formattedCourtName += "ym Mh" + courtName.substring(1).toLowerCase();
-            case "t" -> formattedCourtName += "yn Nh" + courtName.substring(1).toLowerCase();
-            default -> formattedCourtName += "yn" + courtName.charAt(0) + courtName.substring(1).toLowerCase();
-        }
+        String rest = courtName.substring(1).toLowerCase();
+        String formattedCourtName = switch (courtName.substring(0, 1).toLowerCase()) {
+            case "b", "m" -> "ym M" + rest;
+            case "c" -> "yng Ngh" + rest;
+            case "d" -> "yn N" + rest;
+            case "g" -> "yng Ng" + rest;
+            case "p" -> "ym Mh" + rest;
+            case "t" -> "yn Nh" + rest;
+            default -> "yn" + courtName.charAt(0) + rest;
+        };
 
-        return formattedCourtName;
+        return "Llys y Goron\n" + formattedCourtName;
     }
 
     // todo - refactor this out to reusable utility class for welsh translations and reduce cyclomatic complexity
-    @SuppressWarnings("PMD.CyclomaticComplexity")
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExhaustiveSwitchHasDefault"})
     private String formatDate(LocalDate date, boolean welsh) {
 
         String formattedDate = date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
@@ -392,25 +400,20 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
     }
 
     private String formatCourtManager(boolean welsh) {
-        if (!welsh) {
-            return "The Court Manager";
-        }
-        return "Y Rheolwr Llys";
+        return welsh ? "Y Rheolwr Llys" : "The Court Manager";
     }
 
+    @SuppressWarnings({"PMD.ConfusingTernary", "PMD.InsufficientStringBufferDeclaration"})
     private String formatSignature(String signature, String locCode, boolean welsh) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(signature);
-        stringBuilder.append(NEW_LINE);
-        stringBuilder.append(NEW_LINE);
+        stringBuilder.append(signature)
+            .append(NEW_LINE)
+            .append(NEW_LINE);
 
         if (!welsh) {
-            stringBuilder.append("An Officer of the ");
-            if (!ROYAL_COURTS_OF_JUSTICE.equalsIgnoreCase(locCode)) {
-                stringBuilder.append("Crown ");
-            }
-            stringBuilder.append("Court");
-
+            stringBuilder.append("An Officer of the ")
+                .append(ROYAL_COURTS_OF_JUSTICE.equalsIgnoreCase(locCode) ? "" : "Crown ")
+                .append("Court");
         } else {
             stringBuilder.append("Swyddog Llys");
         }

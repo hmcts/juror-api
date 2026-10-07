@@ -41,9 +41,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @ActiveProfiles("test")
 @SuppressWarnings({
-    "PMD.AbstractClassWithoutAbstractMethod",
     "PMD.TooManyMethods",
-    "PMD.ExcessiveImports"
+    "PMD.ExcessiveImports",
+    "PMD.CouplingBetweenObjects"
 })
 public abstract class AbstractIntegrationTest extends ContainerTest {
 
@@ -303,49 +303,49 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     }
 
     @Data
-    private static class InvalidPayload {
+    private static final class InvalidPayload {
         private int status;
         private List<RestResponseEntityExceptionHandler.FieldError> errors;
     }
 
     @Data
-    private static class InvalidPathParam {
+    private static final class InvalidPathParam {
         private String message;
     }
 
     @Data
-    private static class ErrorResponse {
+    private static final class ErrorResponse {
         private int status;
         private String error;
         private String exception;
         private String message;
         private String path;
 
-        public void setException(Class<? extends Exception> exceptionClass) {
+        void setException(Class<? extends Exception> exceptionClass) {
             this.exception = exceptionClass == null ? null : exceptionClass.getName();
         }
 
-        public void setStatusCode(HttpStatus status) {
+        void setStatusCode(HttpStatus status) {
             this.status = status.value();
             this.error = status.getReasonPhrase();
         }
     }
 
-    public String getBureauJwt() {
+    protected String getBureauJwt() {
         return createJwt("test_bureau_standard", "400",
             UserType.BUREAU, Set.of(), "400");
     }
 
-    public String getCourtJwt(String number) {
+    protected String getCourtJwt(String number) {
         return getCourtJwt(number, Set.of());
     }
 
-    public String getCourtJwt(String number, Set<Role> roles) {
+    protected String getCourtJwt(String number, Set<Role> roles) {
         return createJwt("test_court_standard", number,
             UserType.COURT, roles, number);
     }
 
-    public String getSatelliteCourtJwt(String owner, String... courts) {
+    protected String getSatelliteCourtJwt(String owner, String... courts) {
         return createJwt("test_court_standard", owner, UserType.COURT, Set.of(), courts);
     }
 }

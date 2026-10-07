@@ -18,6 +18,11 @@ public interface JurorRepository extends RevisionRepository<Juror, String, Long>
 
     Juror findByJurorNumber(String jurorNumber);
 
+    List<Juror> findByExcusalCode(String excusalCode);
+    
+    List<Juror> findByJurorNumberIn(List<String> jurorNumber);
+
+
     /**
      * Function to return daily utilisation stats for jurors.
      */
@@ -38,4 +43,7 @@ public interface JurorRepository extends RevisionRepository<Juror, String, Long>
     @Query(value = "SELECT MAX(j.revision) FROM juror_mod.juror_audit j WHERE j.juror_number = ?1",
         nativeQuery = true)
     Long getLatestRevision(String jurorNumber);
+
+    @Query(value = "SELECT nextval('juror_mod.juror_number_seq')", nativeQuery = true)
+    Long getJurorSequenceNumber();
 }
