@@ -121,7 +121,7 @@ public class JurorResponseSearchServiceImpl implements JurorResponseSearchServic
 
         final List<BooleanExpression> filters = createFilters(searchRequestDto, isTeamLeader);
 
-        BooleanExpression combinedFilter = filters.get(0);
+        BooleanExpression combinedFilter = filters.getFirst();
         final int numberOfParameters = filters.size();
         if (numberOfParameters > 1) {
             for (int i = 1;

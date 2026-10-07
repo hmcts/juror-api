@@ -85,7 +85,7 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
 
         assertThat(tableData).hasSize(10); // headings validated in unit test
 
-        OverdueUtilisationReportResponseDto.OverdueUtilisationRecord stats = tableData.get(0);
+        OverdueUtilisationReportResponseDto.OverdueUtilisationRecord stats = tableData.getFirst();
 
         assertThat(stats.getCourt()).isEqualTo("KINGSTON UPON THAMES (427)");
         assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.50));
@@ -122,7 +122,7 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
         assertThat(responseBody.getRecords().size()).isEqualTo(2);
 
         IncompleteServiceReportResponseDto.IncompleteServiceRecord incompleteServiceRecord =
-                                                                                responseBody.getRecords().get(0);
+                                                                                responseBody.getRecords().getFirst();
         assertThat(incompleteServiceRecord.getCourt()).isEqualTo("CHESTER (415)");
         assertThat(incompleteServiceRecord.getNumberOfIncompleteServices()).isEqualTo(11);
 
@@ -166,7 +166,7 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
         assertThat(records).isNotNull();
         assertThat(records.size()).isEqualTo(10);
 
-        ExpenseLimitsReportResponseDto.ExpenseLimitsRecord expenseLimitsRecord = records.get(0);
+        ExpenseLimitsReportResponseDto.ExpenseLimitsRecord expenseLimitsRecord = records.getFirst();
         assertThat(expenseLimitsRecord.getCourtLocationNameAndCode()).isEqualTo("BOURNEMOUTH (406)");
         assertThat(expenseLimitsRecord.getType()).isEqualTo("Public Transport");
         assertThat(expenseLimitsRecord.getOldLimit()).isEqualTo(10.0);
@@ -214,7 +214,7 @@ class ManagementDashboardControllerITest extends AbstractIntegrationTest {
 
         assertThat(responseBody.getTotalMessagesSent()).isEqualTo(71);
 
-        SmsMessagesReportResponseDto.SmsMessagesRecord smsMessagesRecord = records.get(0);
+        SmsMessagesReportResponseDto.SmsMessagesRecord smsMessagesRecord = records.getFirst();
         assertThat(smsMessagesRecord.getCourtLocationNameAndCode()).isEqualTo("CHESTER (415)");
         assertThat(smsMessagesRecord.getMessagesSent()).isEqualTo(55);
         smsMessagesRecord = records.get(1);

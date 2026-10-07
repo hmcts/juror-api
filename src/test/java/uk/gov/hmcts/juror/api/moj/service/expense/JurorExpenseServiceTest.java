@@ -484,7 +484,7 @@ class JurorExpenseServiceTest {
 
             List<Appearance> updatedAppearances = appearanceArgumentCaptor.getValue();
             assertThat(updatedAppearances).hasSize(1);
-            Appearance updatedAppearance = updatedAppearances.get(0);
+            Appearance updatedAppearance = updatedAppearances.getFirst();
             assertThat(updatedAppearance.isDraftExpense())
                 .as("Expect the is_draft_expense flag to be updated to false")
                 .isFalse();
@@ -3119,8 +3119,9 @@ class JurorExpenseServiceTest {
     }
 
     @Nested
-    @DisplayName("PaymentData createPaymentData(String jurorNumber, CourtLocation courtLocation,\n"
-        + "                                  List<Appearance> appearances)")
+    @DisplayName("""
+        PaymentData createPaymentData(String jurorNumber, CourtLocation courtLocation,
+                                          List<Appearance> appearances)""")
     class CreatePaymentData {
         @Test
         void positiveTypical() {
@@ -3287,7 +3288,7 @@ class JurorExpenseServiceTest {
             FinancialAuditDetails financialAuditDetails1 = mock(FinancialAuditDetails.class);
             doReturn(mockUser("UserName1")).when(financialAuditDetails1).getCreatedBy();
             doReturn(List.of(financialAuditDetails1)).when(financialAuditService)
-                .getFinancialAuditDetails(appearances.get(0));
+                .getFinancialAuditDetails(appearances.getFirst());
 
             FinancialAuditDetails financialAuditDetails2 = mock(FinancialAuditDetails.class);
             doReturn(mockUser("UserName2")).when(financialAuditDetails2).getCreatedBy();
@@ -3302,7 +3303,7 @@ class JurorExpenseServiceTest {
             assertThat(jurorExpenseService.validateUserCanApprove(appearances)).isTrue();
 
             verify(financialAuditService, times(1))
-                .getFinancialAuditDetails(appearances.get(0));
+                .getFinancialAuditDetails(appearances.getFirst());
             verify(financialAuditService, times(1))
                 .getFinancialAuditDetails(appearances.get(1));
             verify(financialAuditService, times(1))
@@ -3317,7 +3318,7 @@ class JurorExpenseServiceTest {
             FinancialAuditDetails financialAuditDetails1 = mock(FinancialAuditDetails.class);
             doReturn(mockUser("UserName1")).when(financialAuditDetails1).getCreatedBy();
             doReturn(List.of(financialAuditDetails1)).when(financialAuditService)
-                .getFinancialAuditDetails(appearances.get(0));
+                .getFinancialAuditDetails(appearances.getFirst());
 
             FinancialAuditDetails financialAuditDetails2 = mock(FinancialAuditDetails.class);
             doReturn(mockUser(USER_NAME)).when(financialAuditDetails2).getCreatedBy();
@@ -3332,7 +3333,7 @@ class JurorExpenseServiceTest {
             assertThat(jurorExpenseService.validateUserCanApprove(appearances)).isFalse();
 
             verify(financialAuditService, times(1))
-                .getFinancialAuditDetails(appearances.get(0));
+                .getFinancialAuditDetails(appearances.getFirst());
             verify(financialAuditService, times(1))
                 .getFinancialAuditDetails(appearances.get(1));
             verify(financialAuditService, times(1))
@@ -3349,9 +3350,10 @@ class JurorExpenseServiceTest {
     }
 
     @Nested
-    @DisplayName("boolean validateAppearanceVersionNumber(List<Appearance> appearances,\n"
-        + "                                            List<ApproveExpenseDto.DateToRevision> dateToRevision) {\n"
-        + "    ")
+    @DisplayName("""
+        boolean validateAppearanceVersionNumber(List<Appearance> appearances,
+                                                    List<ApproveExpenseDto.DateToRevision> dateToRevision) {
+            """)
     class ValidateAppearanceVersionNumber {
         private Appearance mockAppearance(long version, LocalDate attendanceDate) {
             Appearance appearance = mock(Appearance.class);
@@ -3416,8 +3418,9 @@ class JurorExpenseServiceTest {
     }
 
     @Nested
-    @DisplayName("public CombinedSimplifiedExpenseDetailDto getSimplifiedExpense(JurorNumberAndPoolNumberDto request,\n"
-        + "                                                                   ExpenseType type)")
+    @DisplayName("""
+        public CombinedSimplifiedExpenseDetailDto getSimplifiedExpense(JurorNumberAndPoolNumberDto request,
+                                                                           ExpenseType type)""")
     class GetSimplifiedExpense {
         @BeforeEach
         void mockCurrentUser() {
@@ -4368,8 +4371,9 @@ class JurorExpenseServiceTest {
     }
 
     @Nested
-    @DisplayName("public List<PendingApproval> getExpensesForApproval(String locCode, PaymentMethod paymentMethod,\n"
-        + "                                                        LocalDate fromInclusive, LocalDate toInclusive)")
+    @DisplayName("""
+        public List<PendingApproval> getExpensesForApproval(String locCode, PaymentMethod paymentMethod,
+                                                                LocalDate fromInclusive, LocalDate toInclusive)""")
     class GetExpensesForApproval {
         private PendingApproval mockPendingApproval(String validJurorNumber, String validPoolNumber) {
             PendingApproval pendingApproval = mock(PendingApproval.class);
@@ -4470,10 +4474,11 @@ class JurorExpenseServiceTest {
     }
 
     @Nested
-    @DisplayName("private List<PendingApproval> mapAppearancesToPendingApproval(List<Appearance> appearances,\n"
-        + "                                                                  boolean isReapproval,\n"
-        + "                                                                  LocalDate fromInclusive, LocalDate "
-        + "toInclusive)")
+    @DisplayName("""
+        private List<PendingApproval> mapAppearancesToPendingApproval(List<Appearance> appearances,
+                                                                          boolean isReapproval,
+                                                                          LocalDate fromInclusive, LocalDate \
+        toInclusive)""")
     class MapAppearancesToPendingApproval {
 
         private Appearance mockAppearance(
@@ -4827,8 +4832,9 @@ class JurorExpenseServiceTest {
     }
 
     @Nested
-    @DisplayName("private PendingApproval mapAppearancesToPendingApprovalSinglePool(List<Appearance> appearances,\n"
-        + "                                                                      boolean isReapproval)")
+    @DisplayName("""
+        private PendingApproval mapAppearancesToPendingApprovalSinglePool(List<Appearance> appearances,
+                                                                              boolean isReapproval)""")
     class MapAppearancesToPendingApprovalSinglePool {
 
         private Appearance mockAppearance(LocalDate date, BigDecimal totalChanged, Long version) {

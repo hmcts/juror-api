@@ -94,11 +94,11 @@ public class FileUploads implements Serializable {
         if (fileSizeBytes < 1024) {
             return fileSizeBytes + " B";
         } else if (fileSizeBytes < 1024 * 1024) {
-            return String.format("%.2f KB", fileSizeBytes / 1024.0);
+            return "%.2f KB".formatted(fileSizeBytes / 1024.0);
         } else if (fileSizeBytes < 1024 * 1024 * 1024) {
-            return String.format("%.2f MB", fileSizeBytes / (1024.0 * 1024.0));
+            return "%.2f MB".formatted(fileSizeBytes / (1024.0 * 1024.0));
         } else {
-            return String.format("%.2f GB", fileSizeBytes / (1024.0 * 1024.0 * 1024.0));
+            return "%.2f GB".formatted(fileSizeBytes / (1024.0 * 1024.0 * 1024.0));
         }
     }
 }

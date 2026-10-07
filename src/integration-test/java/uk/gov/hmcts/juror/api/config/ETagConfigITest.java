@@ -45,7 +45,7 @@ public class ETagConfigITest extends AbstractIntegrationTest {
     @Before
     public void setUp() throws Exception {
         httpHeaders = new HttpHeaders();
-        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+        httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         String bureauJwt = createJwt("rprice", "400");
         httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
     }
@@ -59,7 +59,7 @@ public class ETagConfigITest extends AbstractIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getHeaders().get("ETag").get(0)).isNotNull();
+        assertThat(response.getHeaders().get("ETag").getFirst()).isNotNull();
     }
 
     @Test
@@ -71,7 +71,7 @@ public class ETagConfigITest extends AbstractIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        String etagValue = response.getHeaders().get("ETag").get(0);
+        String etagValue = response.getHeaders().get("ETag").getFirst();
         assertThat(etagValue).isNotNull();
 
         httpHeaders.set("If-None-Match", etagValue);
@@ -92,7 +92,7 @@ public class ETagConfigITest extends AbstractIntegrationTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        String etagValue = response.getHeaders().get("ETag").get(0);
+        String etagValue = response.getHeaders().get("ETag").getFirst();
         assertThat(etagValue).isNotNull();
 
         PoolRequest poolRequest = RepositoryUtils.retrieveFromDatabase("415220110", poolRequestRepository);

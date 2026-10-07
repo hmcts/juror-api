@@ -34,8 +34,7 @@ public class DisqualifyException extends RuntimeException {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public static class RequestedCodeNotValid extends DisqualifyException {
         public RequestedCodeNotValid(final String jurorId, final String code) {
-            super(String.format(
-                "Request to disqualify Juror %s failed as requested code %s is not valid",
+            super("Request to disqualify Juror %s failed as requested code %s is not valid".formatted(
                 jurorId,
                 code
             ));
@@ -48,7 +47,7 @@ public class DisqualifyException extends RuntimeException {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public static class JurorNotFound extends DisqualifyException {
         public JurorNotFound(final String jurorId) {
-            super(String.format("Request to disqualify Juror %s failed as Juror was not found", jurorId));
+            super("Request to disqualify Juror %s failed as Juror was not found".formatted(jurorId));
         }
     }
 
@@ -58,8 +57,7 @@ public class DisqualifyException extends RuntimeException {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public static class ResponseAlreadyCompleted extends DisqualifyException {
         public ResponseAlreadyCompleted(final String jurorId) {
-            super(String.format(
-                "Request to disqualify Juror %s failed as Juror's response processing is already completed",
+            super("Request to disqualify Juror %s failed as Juror's response processing is already completed".formatted(
                 jurorId
             ));
         }
@@ -71,8 +69,7 @@ public class DisqualifyException extends RuntimeException {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public static class RequestIsMissingDetails extends DisqualifyException {
         public RequestIsMissingDetails(final String jurorId) {
-            super(String.format(
-                "Request to disqualify Juror %s failed as request is missing either a body or a version",
+            super("Request to disqualify Juror %s failed as request is missing either a body or a version".formatted(
                 jurorId
             ));
         }
@@ -84,11 +81,11 @@ public class DisqualifyException extends RuntimeException {
     @ResponseStatus(HttpStatus.CONFLICT)
     public static class OptimisticLockingFailure extends DisqualifyException {
         public OptimisticLockingFailure(final String jurorId) {
-            super(String.format("Request to disqualify Juror %s failed due to optimistic locking failure", jurorId));
+            super("Request to disqualify Juror %s failed due to optimistic locking failure".formatted(jurorId));
         }
 
         public OptimisticLockingFailure(final String jurorId, Throwable cause) {
-            super(String.format("Request to disqualify Juror %s failed due to optimistic locking failure", jurorId),
+            super("Request to disqualify Juror %s failed due to optimistic locking failure".formatted(jurorId),
                 cause);
         }
     }
