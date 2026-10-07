@@ -66,10 +66,11 @@ version = '5.32.0'
 
 repositories {
   mavenLocal()
-  mavenCentral()
-  maven {
-    url 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1'
+  if (!System.getenv('GITHUB_ACTIONS')) {
+    maven { url'https://artifactory.platform.hmcts.net/artifactory/maven-remotes'}
   }
+  maven { url 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1' }
+  mavenCentral()
 }
 
 configurations {
