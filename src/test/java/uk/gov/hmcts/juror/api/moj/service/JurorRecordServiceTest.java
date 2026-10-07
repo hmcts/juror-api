@@ -4508,6 +4508,51 @@ class JurorRecordServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("Mark juror as summoned")
+    class MarkAsSummonedTest {
+        @Test
+        void shouldRecordRevertedToSummonedHistory() {
+            TestUtils.mockCourtUser(COURT_OWNER);
+
+            final String jurorNumber = "123456789";
+
+            PoolRequest poolRequest = new PoolRequest();
+
+            poolRequest.setPoolNumber("415230101");
+            poolRequest.setReturnDate(LocalDate.now().minusWeeks(2));
+
+            JurorStatus undeliverableStatus = new JurorStatus();
+            undeliverableStatus.setStatus(IJurorStatus.UNDELIVERABLE);
+
+            JurorStatus summonedStatus = new JurorStatus();
+            summonedStatus.setStatus(IJurorStatus.SUMMONED);
+
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setOwner(COURT_OWNER);
+            jurorPool.setPool(poolRequest);
+            jurorPool.setStatus(undeliverableStatus);
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(List.of(jurorPool));
+            when(jurorStatusRepository.findById(IJurorStatus.SUMMONED))
+                .thenReturn(Optional.of(summonedStatus));
+
+            jurorRecordService.markSummoned(jurorNumber);
+
+            ArgumentCaptor<JurorHistory> historyCaptor = ArgumentCaptor.forClass(JurorHistory.class);
+            verify(jurorHistoryRepository).save(historyCaptor.capture());
+
+
+            JurorHistory history = historyCaptor.getValue();
+            assertThat(history.getHistoryCode()).isEqualTo(HistoryCodeMod.REVERTED_TO_SUMMONED);
+            assertThat(history.getHistoryCode().getCode()).isEqualTo("PSUP");
+            assertThat(history.getPoolNumber()).isEqualTo("415230101");
+
+            assertThat(jurorPool.getStatus()).isEqualTo(summonedStatus);
+            assertThat(jurorPool.getNextDate()).isEqualTo(poolRequest.getReturnDate());
+        }
+    }
 
     private BureauJurorDetailDto createBureauJurorDetailDto(String jurorNumber) {
 
