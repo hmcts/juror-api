@@ -1,7 +1,8 @@
 -- DROP PROCEDURE juror_mod.payment_files_to_clob_write_to_clob(in date, in numeric, inout varchar);
 
--- update the procedure for JS-771, update to filename format and validation of account name
+-- update the procedure for JS-776, update to filename format and validation of account name
 -- taking into account the front end validated for [^a-zA-Z0-9 ./'&-] allowed, since Feb 2025
+-- only replacing the single quote with a space, and removing any new line characters, and trimming the result.
 
 DROP PROCEDURE IF EXISTS juror_mod.payment_files_to_clob_write_to_clob(IN date, IN numeric, INOUT varchar);
 
