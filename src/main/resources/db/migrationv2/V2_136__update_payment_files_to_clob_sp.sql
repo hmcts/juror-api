@@ -58,7 +58,7 @@ BEGIN
                pd.expense_total,
                pd.juror_number || pd.invoice_id AS part_invoice,
                RPAD(COALESCE(pd.bank_sort_code, ''), 6) AS bank_sort_code,
-               UPPER(COALESCE(TRIM(REPLACE(REPLACE(REPLACE(pd.bank_ac_name, chr(39), ' '), chr(10), ' '), chr(13), ' '), ''))) AS bank_ac_name,
+               UPPER(TRIM(COALESCE(REPLACE(REPLACE(REPLACE(REPLACE(pd.bank_ac_name, '|', ' '), chr(39), ' '), chr(10), ' '), chr(13), ' '), ''))) AS bank_ac_name,
                UPPER(COALESCE(REPLACE(REPLACE(REPLACE(pd.bank_ac_number, '|', ' '), CHR(10), ' '), CHR(13), ' '), '')) AS bank_ac_number,
                UPPER(COALESCE(REPLACE(REPLACE(REPLACE(pd.build_soc_number, '|', ' '), CHR(10), ' '), CHR(13), ' '), '')) AS build_soc_number,
                UPPER(COALESCE(REPLACE(REPLACE(REPLACE(pd.address_line_1, '|', ' '), CHR(10), ' '), CHR(13), ' '), '')) AS address_line1,
