@@ -18,7 +18,6 @@ import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ReportsJurorPaymentsDataTypes;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
 
-
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
@@ -84,7 +83,7 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
 
         Map<String, GroupedReportResponse.DataTypeValue> map = loadStandardTrailHeaders(request, trialRepository, true);
 
-        // getTrial already called inside loadStandardTrailHeaders — call again with locCode to avoid SecurityUtil
+        // getTrial is already called inside loadStandardTrailHeaders.
         Trial trial = getTrial(request.getTrialNumber(), request.getLocCode(), trialRepository);
 
         map.put("trial_type", GroupedReportResponse.DataTypeValue.builder()
