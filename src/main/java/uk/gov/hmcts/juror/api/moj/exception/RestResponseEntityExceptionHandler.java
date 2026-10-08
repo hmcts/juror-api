@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.postgresql.util.PSQLException;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -168,6 +169,37 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         return new ResponseEntity<>(body, HttpStatus.NOT_MODIFIED);
     }
 
+    @ExceptionHandler(MojException.BadRequest.class)
+    public ResponseEntity<Object> handleMojBadRequest(MojException.BadRequest ex, WebRequest request) {
+        Map<String, Object> body = createSpringBootErrorResponseBody(ex, HttpStatus.BAD_REQUEST, request);
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MojException.NotFound.class)
+    public ResponseEntity<Object> handleMojNotFound(MojException.NotFound ex, WebRequest request) {
+        Map<String, Object> body = createSpringBootErrorResponseBody(ex, HttpStatus.NOT_FOUND, request);
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MojException.Forbidden.class)
+    public ResponseEntity<Object> handleMojForbidden(MojException.Forbidden ex, WebRequest request) {
+        Map<String, Object> body = createSpringBootErrorResponseBody(ex, HttpStatus.FORBIDDEN, request);
+        return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(MojException.NotImplemented.class)
+    public ResponseEntity<Object> handleMojNotImplemented(MojException.NotImplemented ex, WebRequest request) {
+        Map<String, Object> body = createSpringBootErrorResponseBody(ex, HttpStatus.NOT_IMPLEMENTED, request);
+        return new ResponseEntity<>(body, HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    @ExceptionHandler(MojException.RemoteGatewayException.class)
+    public ResponseEntity<Object> handleMojRemoteGatewayException(MojException.RemoteGatewayException ex,
+                                                                  WebRequest request) {
+        Map<String, Object> body = createSpringBootErrorResponseBody(ex, HttpStatus.SERVICE_UNAVAILABLE, request);
+        return new ResponseEntity<>(body, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
     @ExceptionHandler({SQLException.class, PSQLException.class, DataAccessException.class,
         MojException.InternalServerError.class,
         DateException.DateParseException.class,
@@ -183,6 +215,17 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Object> handleDataIntegrityViolationException(RuntimeException ex, WebRequest request) {
+        return handleInternalServerError(ex, request);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleUnhandledException(Exception ex, WebRequest request) {
+        ResponseStatus responseStatus = AnnotatedElementUtils.findMergedAnnotation(ex.getClass(), ResponseStatus.class);
+        if (responseStatus != null && responseStatus.code() != HttpStatus.INTERNAL_SERVER_ERROR) {
+            HttpStatus status = responseStatus.code();
+            Map<String, Object> body = createSpringBootErrorResponseBody(ex, status, request);
+            return new ResponseEntity<>(body, status);
+        }
         return handleInternalServerError(ex, request);
     }
 
