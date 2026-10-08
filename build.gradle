@@ -62,7 +62,7 @@ jacoco {
   toolVersion = "0.8.15"
 }
 
-version = '5.32.0'
+version = '5.33.0'
 
 repositories {
   mavenLocal()
