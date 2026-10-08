@@ -84,8 +84,8 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         DisqualifyReasonsDto disqualifyReasonsDto = templateExchangeDisqualifyReasons();
 
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().size()).isEqualTo(10);
-        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(0).getCode()).isEqualTo("A");
-        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(0).getDescription()).isEqualTo("Age");
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().getFirst().getCode()).isEqualTo("A");
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().getFirst().getDescription()).isEqualTo("Age");
 
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(1).getCode()).isEqualTo("B");
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(1).getDescription()).isEqualTo("Bail");
@@ -201,7 +201,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
             assertThat(jurorPools.size()).isGreaterThan(0);
 
-            JurorPool jurorPoolRecord = jurorPools.get(0);
+            JurorPool jurorPoolRecord = jurorPools.getFirst();
             Juror juror = jurorPoolRecord.getJuror();
             assertThat(juror.isResponded()).isEqualTo(Boolean.TRUE);
             assertThat(juror.getDisqualifyDate()).isNotNull();
@@ -233,7 +233,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
             assertThat(jurorPools.size()).isGreaterThan(0);
 
-            JurorPool jurorPoolRecord = jurorPools.get(0);
+            JurorPool jurorPoolRecord = jurorPools.getFirst();
             Juror juror = jurorPoolRecord.getJuror();
 
             assertThat(juror.isResponded()).isEqualTo(Boolean.TRUE);
@@ -265,7 +265,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
                 jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_NUMBER_123456789, true);
             assertThat(jurorPools.size()).isGreaterThan(0);
 
-            JurorPool jurorPoolRecord = jurorPools.get(0);
+            JurorPool jurorPoolRecord = jurorPools.getFirst();
             Juror juror = jurorPoolRecord.getJuror();
 
             assertThat(juror.isResponded()).isEqualTo(Boolean.FALSE);
@@ -296,7 +296,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
                 jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_NUMBER_987654321, true);
             assertThat(jurorPools.size()).isGreaterThan(0);
 
-            JurorPool jurorPoolRecord = jurorPools.get(0);
+            JurorPool jurorPoolRecord = jurorPools.getFirst();
             Juror juror = jurorPoolRecord.getJuror();
 
             assertThat(juror.isResponded()).isEqualTo(Boolean.FALSE);
@@ -357,7 +357,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         String login,
         String owner,
         HttpStatus httpStatus) {
-        final URI uri = URI.create(String.format(URI_DISQUALIFY_JUROR, jurorNumber));
+        final URI uri = URI.create(URI_DISQUALIFY_JUROR.formatted(jurorNumber));
         HttpHeaders httpHeaders = initialiseHeaders(login, userType, Set.of(Role.MANAGER), owner);
 
         RequestEntity<DisqualifyJurorDto> requestEntity = new RequestEntity<>(disqualifyJurorDto, httpHeaders,

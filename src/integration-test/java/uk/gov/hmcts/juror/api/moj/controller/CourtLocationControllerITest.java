@@ -159,7 +159,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     private CourtLocationDataDto[] templateExchangeAllCourtLocationsByPostcode(String postcode, String userType,
                                                                                String owner, HttpStatus httpStatus) {
         final URI uri =
-            URI.create(String.format("/api/v1/moj/court-location/catchment-areas?postcode=%s", postcode));
+            URI.create("/api/v1/moj/court-location/catchment-areas?postcode=%s".formatted(postcode));
         httpHeaders = initialiseHeaders(userType, UserType.BUREAU, Set.of(Role.MANAGER), owner);
         RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, GET, uri);
         if (httpStatus.is2xxSuccessful()) {

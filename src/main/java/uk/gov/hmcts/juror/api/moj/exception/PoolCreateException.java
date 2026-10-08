@@ -45,8 +45,7 @@ public class PoolCreateException extends RuntimeException {
     public static class InvalidAddCitizensToCoronersPool extends PoolCreateException {
 
         public InvalidAddCitizensToCoronersPool(String poolNumber) {
-            super(String.format(
-                "Must supply a valid combination of postcodes and numbers to add to coroner pool %s",
+            super("Must supply a valid combination of postcodes and numbers to add to coroner pool %s".formatted(
                 poolNumber
             ));
         }
@@ -109,7 +108,7 @@ public class PoolCreateException extends RuntimeException {
     public static class InvalidNoOfJurorsRequested extends PoolCreateException {
 
         public InvalidNoOfJurorsRequested(int lowLimit, int upperLimit) {
-            super(String.format("Jurors requested must be within the limits %s and %s (inclusive)",
+            super("Jurors requested must be within the limits %s and %s (inclusive)".formatted(
                 lowLimit, upperLimit
             ));
         }
@@ -123,7 +122,7 @@ public class PoolCreateException extends RuntimeException {
     public static class CoronerPoolNotFound extends PoolCreateException {
 
         public CoronerPoolNotFound(String poolNumber) {
-            super(String.format("Unable to find coroner pool %s", poolNumber));
+            super("Unable to find coroner pool %s".formatted(poolNumber));
         }
     }
 

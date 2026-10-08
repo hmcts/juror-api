@@ -123,7 +123,7 @@ class YieldPerformanceReportServiceImplTest {
             assertThat(tableData.getHeadings()).isNotNull();
             assertThat(tableData.getHeadings().size()).isEqualTo(6);
 
-            YieldPerformanceReportResponse.TableData.Heading tablHeading = tableData.getHeadings().get(0);
+            YieldPerformanceReportResponse.TableData.Heading tablHeading = tableData.getHeadings().getFirst();
             assertThat(tablHeading.getId()).isEqualTo(COURT.getId());
             assertThat(tablHeading.getName()).isEqualTo("Court");
             assertThat(tablHeading.getDataType()).isEqualTo("String");

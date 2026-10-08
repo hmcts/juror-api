@@ -67,7 +67,7 @@ import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.sortNameAsc;
  */
 @Service
 @Slf4j
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ = @Autowired)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.TooManyMethods"})
 public class UserServiceImpl implements UserService {
 
