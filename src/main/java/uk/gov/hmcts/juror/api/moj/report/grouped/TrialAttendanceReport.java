@@ -17,7 +17,6 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractGroupedReport;
 import uk.gov.hmcts.juror.api.moj.report.ReportGroupBy;
 import uk.gov.hmcts.juror.api.moj.report.datatypes.ReportsJurorPaymentsDataTypes;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -58,7 +57,7 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QReportsJurorPayments.reportsJurorPayments.trialNumber.eq(request.getTrialNumber()));
-        query.where(QReportsJurorPayments.reportsJurorPayments.locCode.eq(SecurityUtil.getLocCode()));
+        query.where(QReportsJurorPayments.reportsJurorPayments.locCode.eq(request.getLocCode()));
 
         if (Boolean.TRUE.equals(request.getCurrentJurorsOnly())) {
             query.where(QReportsJurorPayments.reportsJurorPayments.jurorNumber.in(
@@ -82,9 +81,11 @@ public class TrialAttendanceReport extends AbstractGroupedReport {
         StandardReportRequest request,
         StandardReportResponse.TableData<GroupedTableData> tableData) {
 
-        Trial trial = getTrial(request.getTrialNumber(), trialRepository);
-
         Map<String, GroupedReportResponse.DataTypeValue> map = loadStandardTrailHeaders(request, trialRepository, true);
+
+        // getTrial is already called inside loadStandardTrailHeaders.
+        Trial trial = getTrial(request.getTrialNumber(), request.getLocCode(), trialRepository);
+
         map.put("trial_type", GroupedReportResponse.DataTypeValue.builder()
             .displayName("Trial type")
             .dataType("String")
