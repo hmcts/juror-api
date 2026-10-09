@@ -38,7 +38,7 @@ public class AdministrationCourtRoomServiceImpl implements AdministrationCourtRo
     @Override
     @Transactional(readOnly = true)
     public List<CourtRoomWithIdDto> viewCourtRooms(String locCode) {
-        return courtroomRepository.findByCourtLocationLocCode(locCode).stream()
+        return courtroomRepository.findByCourtLocationLocCodeOrderByRoomNumberAscIdAsc(locCode).stream()
             .map(CourtRoomWithIdDto::new)
             .toList();
     }
