@@ -24,6 +24,8 @@ import uk.gov.hmcts.juror.api.bureau.domain.StatsWelshOnlineResponseRepository;
 import uk.gov.hmcts.juror.api.bureau.domain.SurveyResponse;
 import uk.gov.hmcts.juror.api.bureau.domain.SurveyResponseRepository;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
@@ -50,7 +52,8 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
         log.debug("Called Service : JurorDashboardDataServiceImpl.getResponsesOverTime()... ");
 
         List<StatsResponseTime> responsesOverTime = Lists.newLinkedList(
-            statsResponseTimeRepository.findBySummonsMonthBetween(startDate, endDate));
+            statsResponseTimeRepository.findBySummonsMonthBetween(
+                convertToLocalDate(startDate), convertToLocalDate(endDate)));
         log.debug("ResponseOverTimeContents Counts : {} ", responsesOverTime.size());
 
         return responsesOverTime;
@@ -170,7 +173,11 @@ public class JurorDashboardDataServiceImpl implements JurorDashboardDataService 
         return onlineResponseTimesTotals;
     }
 
+    private static LocalDate convertToLocalDate(Date date) {
+        return date.toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
+    }
 
 }
-
 
