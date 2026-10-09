@@ -3,7 +3,7 @@ package uk.gov.hmcts.juror.api.bureau.domain;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -14,14 +14,14 @@ public interface StatsResponseTimeRepository extends CrudRepository<StatsRespons
 
 
     List<StatsResponseTime> findBySummonsMonthBetween(
-        Date summonsMonthStart,
-        Date summonsMonthEnd);
+        LocalDate summonsMonthStart,
+        LocalDate summonsMonthEnd);
 
-    List<StatsResponseTime> findBySummonsMonthEquals(Date queryDate);
+    List<StatsResponseTime> findBySummonsMonthEquals(LocalDate queryDate);
 
-    List<StatsResponseTime> findBySummonsMonthIsGreaterThanEqual(Date queryDate);
+    List<StatsResponseTime> findBySummonsMonthIsGreaterThanEqual(LocalDate queryDate);
 
-    List<StatsResponseTime> findAllBySummonsMonthEquals(Date queryDate);
+    List<StatsResponseTime> findAllBySummonsMonthEquals(LocalDate queryDate);
 
     List<StatsResponseTime> findByLocCodeEquals(String locCode);
 

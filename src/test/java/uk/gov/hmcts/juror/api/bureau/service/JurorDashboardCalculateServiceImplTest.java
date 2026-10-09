@@ -43,13 +43,13 @@ public class JurorDashboardCalculateServiceImplTest {
         LocalDate today = LocalDate.now(ZoneId.systemDefault()).atStartOfDay().toLocalDate();
 
         responsesList = new ArrayList<>(Arrays.asList(
-            StatsResponseTime.builder().summonsMonth(getDate(today, 1)).responseMonth(getDate(today, 1))
+            StatsResponseTime.builder().summonsMonth(getLocalDate(today, 1)).responseMonth(getLocalDate(today, 1))
                 .responsePeriod("Within 7 days").locCode("400").responseMethod("Paper").responseCount(5).build(),
-            StatsResponseTime.builder().summonsMonth(getDate(today, 1)).responseMonth(getDate(today, 1))
+            StatsResponseTime.builder().summonsMonth(getLocalDate(today, 1)).responseMonth(getLocalDate(today, 1))
                 .responsePeriod("Within 14 days").locCode("401").responseMethod("Online").responseCount(10).build(),
-            StatsResponseTime.builder().summonsMonth(getDate(today, 2)).responseMonth(getDate(today, 0))
+            StatsResponseTime.builder().summonsMonth(getLocalDate(today, 2)).responseMonth(getLocalDate(today, 0))
                 .responsePeriod("Over 21 days").locCode("402").responseMethod("Paper").responseCount(15).build(),
-            StatsResponseTime.builder().summonsMonth(getDate(today, 2)).responseMonth(getDate(today, 0))
+            StatsResponseTime.builder().summonsMonth(getLocalDate(today, 2)).responseMonth(getLocalDate(today, 0))
                 .responsePeriod("Over 21 days").locCode("403").responseMethod("Online").responseCount(20).build()
         ));
 
@@ -92,6 +92,10 @@ public class JurorDashboardCalculateServiceImplTest {
 
     private Date getDate(LocalDate date, int monthsToMinus) {
         return Date.from(date.minusMonths(monthsToMinus).atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    private LocalDate getLocalDate(LocalDate date, int monthsToMinus) {
+        return date.minusMonths(monthsToMinus);
     }
 
     @Test
@@ -225,9 +229,9 @@ public class JurorDashboardCalculateServiceImplTest {
         LocalDate today = LocalDate.now(ZoneId.systemDefault()).atStartOfDay().toLocalDate();
 
         List<StatsResponseTime> paperResponsesList = Arrays.asList(
-            StatsResponseTime.builder().summonsMonth(getDate(today, 1)).responseMonth(getDate(today, 1))
+            StatsResponseTime.builder().summonsMonth(getLocalDate(today, 1)).responseMonth(getLocalDate(today, 1))
                 .responsePeriod("Within 7 days").locCode("400").responseMethod("Paper").responseCount(5).build(),
-            StatsResponseTime.builder().summonsMonth(getDate(today, 2)).responseMonth(getDate(today, 0))
+            StatsResponseTime.builder().summonsMonth(getLocalDate(today, 2)).responseMonth(getLocalDate(today, 0))
                 .responsePeriod("Over 21 days").locCode("402").responseMethod("Paper").responseCount(15).build()
         );
 
