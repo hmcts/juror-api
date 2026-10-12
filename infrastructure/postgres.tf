@@ -1,9 +1,3 @@
-data "azurerm_subnet" "postgres" {
-  name                 = "iaas"
-  resource_group_name  = "ss-${var.env}-network-rg"
-  virtual_network_name = "ss-${var.env}-vnet"
-}
-
 module "postgresql_flexible" {
   providers = {
     azurerm.postgres_network = azurerm.postgres_network
@@ -49,57 +43,6 @@ module "postgresql_flexible" {
     },
   ], var.pgsql_server_configuration_extra)
   pgsql_version = "16"
-}
-
-data "azurerm_key_vault" "key_vault" {
-  name                = local.vault_name
-  resource_group_name = local.rg_name
-}
-
-////////////////////////////////
-// Populate Vault with DB info
-////////////////////////////////
-
-resource "azurerm_key_vault_secret" "POSTGRES-CONNECTION-STRING" {
-  name         = "${var.component}-POSTGRES-CONNECTION-STRING"
-  value        = "jdbc:postgresql://${module.postgresql_flexible.fqdn}:${local.db_port}/${local.db_name}"
-  key_vault_id = data.azurerm_key_vault.key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "POSTGRES-USER" {
-  name         = "${var.component}-POSTGRES-USER"
-  value        = module.postgresql_flexible.username
-  key_vault_id = data.azurerm_key_vault.key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "POSTGRES-PASS" {
-  name         = "${var.component}-POSTGRES-PASS"
-  value        = module.postgresql_flexible.password
-  key_vault_id = data.azurerm_key_vault.key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "POSTGRES_HOST" {
-  name         = "${var.component}-POSTGRES-HOST"
-  value        = module.postgresql_flexible.fqdn
-  key_vault_id = data.azurerm_key_vault.key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "POSTGRES_PORT" {
-  name         = "${var.component}-POSTGRES-PORT"
-  value        = local.db_port
-  key_vault_id = data.azurerm_key_vault.key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "POSTGRES_DATABASE" {
-  name         = "${var.component}-POSTGRES-DATABASE"
-  value        = local.db_name
-  key_vault_id = data.azurerm_key_vault.key_vault.id
-}
-
-data "azurerm_client_config" "current" {}
-
-data "azuread_group" "dts_jit_access_juror_db_admin" {
-  display_name = "DTS JIT Access Juror DB Admin"
 }
 
 resource "azurerm_postgresql_flexible_server_active_directory_administrator" "jit" {
