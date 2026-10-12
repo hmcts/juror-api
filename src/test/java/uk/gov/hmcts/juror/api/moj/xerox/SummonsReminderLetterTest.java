@@ -73,6 +73,7 @@ class SummonsReminderLetterTest extends AbstractLetterTest {
         addWelshField("JURY MANAGER", 30);
         addWelshField("MONDAY 6 FEBRUARY, 2017", 32);
         addWelshField("LNAMEEIGHTTHREEONEFIVE", 25);
+        addWelshField("DYDD LLUN 6 CHWEFROR, 2017", 32);
     }
 
 
