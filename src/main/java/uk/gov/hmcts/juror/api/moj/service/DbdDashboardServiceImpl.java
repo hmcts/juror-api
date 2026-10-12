@@ -36,7 +36,7 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
 
     private final DbdResponseStatsRepository dbdResponseStatsRepository;
 
-    // Package-visible phase: periodB-minus-periodA diffing. Stateless and dependency-free, so a
+    // Package-visible phase: periodA-minus-periodB diffing. Stateless and dependency-free, so a
     // plain instance is enough - no Spring wiring needed for something with no collaborators.
     private final LocationMetricsDiffCalculator locationMetricsDiffCalculator = new LocationMetricsDiffCalculator();
 

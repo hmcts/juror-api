@@ -17,7 +17,7 @@ class LocationMetricsDiffCalculatorTest {
     private final LocationMetricsDiffCalculator diffCalculator = new LocationMetricsDiffCalculator();
 
     @Test
-    void shouldCalculatePeriodBMinusPeriodAChange() {
+    void shouldCalculatePeriodAMinusPeriodBChange() {
         PeriodResult periodA = PeriodResult.builder()
             .locations(List.of(locationMetrics(
                 415,
@@ -55,31 +55,31 @@ class LocationMetricsDiffCalculatorTest {
             diffCalculator.buildChangeResult(periodA, periodB).getLocations().get(0);
 
         assertThat(result.getLocationCode()).isEqualTo(415);
-        assertThat(result.getTotalResponses()).isEqualTo(3);
-        assertThat(result.getNotRespondedTotal()).isEqualTo(-2);
+        assertThat(result.getTotalResponses()).isEqualTo(-3);
+        assertThat(result.getNotRespondedTotal()).isEqualTo(2);
         assertThat(result.getThirdPartyTotal()).isNull();
-        assertThat(result.getOnlineResponseTotal()).isEqualTo(2);
-        assertThat(result.getPaperResponseTotal()).isEqualTo(1);
-        assertThat(result.getResponseRatePercent()).isEqualTo(16);
-        assertThat(result.getDigitalResponsesPercent()).isEqualTo(-1);
-        assertThat(result.getOnlineResponseTimes().getWithin7days()).isEqualTo(1);
-        assertThat(result.getOnlineResponseTimes().getWithin14days()).isEqualTo(1);
-        assertThat(result.getOnlineResponseTimes().getWithin21days()).isEqualTo(1);
-        assertThat(result.getOnlineResponseTimes().getOver21days()).isEqualTo(1);
-        assertThat(result.getPaperResponseTimes().getWithin7days()).isEqualTo(1);
+        assertThat(result.getOnlineResponseTotal()).isEqualTo(-2);
+        assertThat(result.getPaperResponseTotal()).isEqualTo(-1);
+        assertThat(result.getResponseRatePercent()).isEqualTo(-16);
+        assertThat(result.getDigitalResponsesPercent()).isEqualTo(1);
+        assertThat(result.getOnlineResponseTimes().getWithin7days()).isEqualTo(-1);
+        assertThat(result.getOnlineResponseTimes().getWithin14days()).isEqualTo(-1);
+        assertThat(result.getOnlineResponseTimes().getWithin21days()).isEqualTo(-1);
+        assertThat(result.getOnlineResponseTimes().getOver21days()).isEqualTo(-1);
+        assertThat(result.getPaperResponseTimes().getWithin7days()).isEqualTo(-1);
         assertThat(result.getPaperResponseTimes().getWithin14days()).isZero();
-        assertThat(result.getPaperResponseTimes().getWithin21days()).isEqualTo(1);
+        assertThat(result.getPaperResponseTimes().getWithin21days()).isEqualTo(-1);
         assertThat(result.getPaperResponseTimes().getOver21days()).isZero();
-        assertThat(result.getResponseTimesPercent().getWithin7DaysPercent()).isEqualTo(2);
-        assertThat(result.getResponseTimesPercent().getWithin14DaysPercent()).isEqualTo(-2);
-        assertThat(result.getResponseTimesPercent().getWithin21DaysPercent()).isEqualTo(8);
+        assertThat(result.getResponseTimesPercent().getWithin7DaysPercent()).isEqualTo(-2);
+        assertThat(result.getResponseTimesPercent().getWithin14DaysPercent()).isEqualTo(2);
+        assertThat(result.getResponseTimesPercent().getWithin21DaysPercent()).isEqualTo(-8);
         assertThat(result.getResponseTimesPercent().getOver21DaysPercent()).isZero();
-        assertThat(result.getAgeGroupBreakdown()).containsEntry("18-24", -1);
-        assertThat(result.getAgeGroupBreakdown()).containsEntry("25-34", -6);
-        assertThat(result.getAgeGroupBreakdown()).containsEntry("35-44", 8);
-        assertThat(result.getAgeGroupBreakdownPercent()).containsEntry("18-24", -10);
-        assertThat(result.getAgeGroupBreakdownPercent()).containsEntry("25-34", -43);
-        assertThat(result.getAgeGroupBreakdownPercent()).containsEntry("35-44", 53);
+        assertThat(result.getAgeGroupBreakdown()).containsEntry("18-24", 1);
+        assertThat(result.getAgeGroupBreakdown()).containsEntry("25-34", 6);
+        assertThat(result.getAgeGroupBreakdown()).containsEntry("35-44", -8);
+        assertThat(result.getAgeGroupBreakdownPercent()).containsEntry("18-24", 10);
+        assertThat(result.getAgeGroupBreakdownPercent()).containsEntry("25-34", 43);
+        assertThat(result.getAgeGroupBreakdownPercent()).containsEntry("35-44", -53);
     }
 
     @SuppressWarnings("PMD.ExcessiveParameterList")
