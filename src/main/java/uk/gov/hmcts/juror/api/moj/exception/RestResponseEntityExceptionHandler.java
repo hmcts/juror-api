@@ -234,7 +234,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
     @Nullable
     @Override
-    @SuppressWarnings({"PMD.AvoidDeeplyNestedIfStmts"})
+    @SuppressWarnings({"PMD.AvoidDeeplyNestedIfStmts", "PMD.AvoidReassigningParameters"})
     protected ResponseEntity<Object> handleExceptionInternal(
         Exception ex, @Nullable Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
         logger.error("Internal server error", ex);

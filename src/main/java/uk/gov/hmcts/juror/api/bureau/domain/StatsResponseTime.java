@@ -5,8 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +13,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Immutable;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 
 /**
  * Entity representing data responses over a period of time by paper or digital.
@@ -33,14 +31,12 @@ public class StatsResponseTime implements Serializable {
     @NotNull
     @Id
     @Column(name = "summons_month")
-    @Temporal(TemporalType.DATE)
-    private Date summonsMonth;
+    private LocalDate summonsMonth;
 
     @NotNull
     @Id
     @Column(name = "response_month")
-    @Temporal(TemporalType.DATE)
-    private Date responseMonth;
+    private LocalDate responseMonth;
 
     @NotNull
     @Id
