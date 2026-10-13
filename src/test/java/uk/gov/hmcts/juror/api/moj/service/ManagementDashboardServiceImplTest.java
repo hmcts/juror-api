@@ -105,7 +105,7 @@ class ManagementDashboardServiceImplTest {
         assertThat(overdueUtilisationReportResponseDto.getRecords()).hasSize(1);
 
         OverdueUtilisationReportResponseDto.OverdueUtilisationRecord utilisationRecord =
-                        overdueUtilisationReportResponseDto.getRecords().get(0);
+                        overdueUtilisationReportResponseDto.getRecords().getFirst();
 
         assertThat(utilisationRecord.getCourt()).isEqualTo("COVENTRY (417)");
         assertThat(utilisationRecord.getDaysElapsed()).isEqualTo(32);
@@ -148,7 +148,7 @@ class ManagementDashboardServiceImplTest {
         for (int i = 1; i <= 15; i++) {
             WeekendAttendanceReportResponse.TableData.DataRow row =
                 new WeekendAttendanceReportResponse.TableData.DataRow();
-            row.setCourtLocationNameAndCode("Court " + i + " (" + String.format("%03d", i) + ")");
+            row.setCourtLocationNameAndCode("Court " + i + " (" + "%03d".formatted(i) + ")");
             row.setSaturdayTotal(i);
             row.setSundayTotal(i);
             row.setHolidayTotal(i);
@@ -202,7 +202,7 @@ class ManagementDashboardServiceImplTest {
 
         for (int i = 1; i <= 15; i++) {
             records.add(new SmsMessagesReportResponseDto.SmsMessagesRecord(
-                String.format("%03d", i), i));
+                "%03d".formatted(i), i));
         }
 
         when(messageRepository.getSmsMessageCounts()).thenReturn(records);

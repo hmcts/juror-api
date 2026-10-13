@@ -590,7 +590,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             if (jurorPool.getStatus().getStatus() > 2 && !(jurorPool.getStatus().getStatus() == 7
                 && requestDto.getDeferralMaintenance() != null && requestDto.getDeferralMaintenance().equals(true))) {
                 failedTransfers.put(jurorPool.getJurorNumber(),
-                    new Triple<>(String.format(JurorManagementConstants.INVALID_STATUS_MESSAGE, jurorPool.getStatus()
+                    new Triple<>(JurorManagementConstants.INVALID_STATUS_MESSAGE.formatted(jurorPool.getStatus()
                         .getStatusDesc()), jurorPool.getJuror().getFirstName(), jurorPool.getJuror().getLastName()));
                 return;
             }

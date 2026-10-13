@@ -72,7 +72,7 @@ public class DisqualifyJurorController {
 
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(String.format("Juror %s disqualified with code %s", jurorNumber, disqualifyJuror.getCode()));
+            .body("Juror %s disqualified with code %s".formatted(jurorNumber, disqualifyJuror.getCode()));
     }
 
     /**
@@ -99,7 +99,7 @@ public class DisqualifyJurorController {
 
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(String.format("Juror %s disqualified with code %s", jurorNumber, DisqualifyCode.A));
+            .body("Juror %s disqualified with code %s".formatted(jurorNumber, DisqualifyCode.A));
     }
 
 }

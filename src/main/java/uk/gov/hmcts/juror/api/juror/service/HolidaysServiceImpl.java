@@ -31,7 +31,7 @@ public class HolidaysServiceImpl implements HolidaysService {
         log.info("Called Service : HolidaysServiceImpl.getMatchingHolidayDates() ");
         List<Date> holidaysDate = requestDto.getHolidaysDate();
 
-        Date firstCheckDate = holidaysDate.get(0);
+        Date firstCheckDate = holidaysDate.getFirst();
         Date secondCheckDate = holidaysDate.get(1);
         Date thirdCheckDate = holidaysDate.get(2);
 

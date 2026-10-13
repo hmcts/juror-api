@@ -206,7 +206,7 @@ public class LaNotificationServiceImpl implements LaNotificationService {
                                                      String templateId,
                                                      Map<String, String> payload) {
         EmailNotification notification = new EmailNotification(templateId, emailAddress, payload);
-        notification.setReferenceNumber(String.format("LA_REMINDER_%s", emailAddress));
+        notification.setReferenceNumber("LA_REMINDER_%s".formatted(emailAddress));
         return notification;
     }
 

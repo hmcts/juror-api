@@ -93,7 +93,7 @@ public class PoolSummaryResponseDto {
             + "'Additional Info'")
         private int unresolved;
 
-        @Schema(name = "Surplus", description = "Either 0 or calculated as Requested From Bureau minus Confirmed, "
+        @Schema(name = "Surplus", description = "Either 0 or calculated as Confirmed minus Requested From Bureau, "
             + "whichever is greater. Cannot be below 0.")
         private int surplus;
 

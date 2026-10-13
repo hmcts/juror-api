@@ -875,14 +875,14 @@ class JurorAppearanceServiceTest {
         // assert and verify response
         assertThat(response.getDetails()).hasSize(2);
         List<AttendanceDetailsResponse.Details> details = response.getDetails();
-        assertThat(details.get(0).getJurorNumber()).isEqualTo(JUROR8);
-        assertThat(details.get(0).getFirstName()).isEqualTo("TEST");
-        assertThat(details.get(0).getLastName()).isEqualTo("EIGHT");
-        assertThat(details.get(0).getJurorStatus()).isEqualTo(2);
-        assertThat(details.get(0).getCheckInTime()).isNull();
-        assertThat(details.get(0).getCheckOutTime()).isNull();
-        assertThat(details.get(0).getIsNoShow()).isNull();
-        assertThat(details.get(0).getAppearanceStage()).isNull();
+        assertThat(details.getFirst().getJurorNumber()).isEqualTo(JUROR8);
+        assertThat(details.getFirst().getFirstName()).isEqualTo("TEST");
+        assertThat(details.getFirst().getLastName()).isEqualTo("EIGHT");
+        assertThat(details.getFirst().getJurorStatus()).isEqualTo(2);
+        assertThat(details.getFirst().getCheckInTime()).isNull();
+        assertThat(details.getFirst().getCheckOutTime()).isNull();
+        assertThat(details.getFirst().getIsNoShow()).isNull();
+        assertThat(details.getFirst().getAppearanceStage()).isNull();
 
         assertThat(details.get(1).getJurorNumber()).isEqualTo(JUROR9);
         assertThat(details.get(1).getFirstName()).isEqualTo("TEST");
@@ -930,14 +930,14 @@ class JurorAppearanceServiceTest {
         assertThat(response.getDetails()).hasSize(2);
 
         List<AttendanceDetailsResponse.Details> details = response.getDetails();
-        assertThat(details.get(0).getJurorNumber()).isEqualTo(JUROR3);
-        assertThat(details.get(0).getFirstName()).isEqualTo("TEST");
-        assertThat(details.get(0).getLastName()).isEqualTo("THREE");
-        assertThat(details.get(0).getJurorStatus()).isEqualTo(3);
-        assertThat(details.get(0).getCheckInTime()).isEqualTo("09:30");
-        assertThat(details.get(0).getCheckOutTime()).isNull();
-        assertThat(details.get(0).getIsNoShow()).isEqualTo(Boolean.FALSE);
-        assertThat(details.get(0).getAppearanceStage()).isEqualTo(CHECKED_IN);
+        assertThat(details.getFirst().getJurorNumber()).isEqualTo(JUROR3);
+        assertThat(details.getFirst().getFirstName()).isEqualTo("TEST");
+        assertThat(details.getFirst().getLastName()).isEqualTo("THREE");
+        assertThat(details.getFirst().getJurorStatus()).isEqualTo(3);
+        assertThat(details.getFirst().getCheckInTime()).isEqualTo("09:30");
+        assertThat(details.getFirst().getCheckOutTime()).isNull();
+        assertThat(details.getFirst().getIsNoShow()).isEqualTo(Boolean.FALSE);
+        assertThat(details.getFirst().getAppearanceStage()).isEqualTo(CHECKED_IN);
 
         assertThat(details.get(1).getJurorNumber()).isEqualTo(JUROR6);
         assertThat(details.get(1).getFirstName()).isEqualTo("TEST");
@@ -976,10 +976,10 @@ class JurorAppearanceServiceTest {
         assertThat(response.getDetails()).hasSize(1);
 
         List<AttendanceDetailsResponse.Details> details = response.getDetails();
-        assertThat(details.get(0).getJurorNumber()).isEqualTo(JUROR3);
-        assertThat(details.get(0).getFirstName()).isEqualTo("TEST");
-        assertThat(details.get(0).getLastName()).isEqualTo("THREE");
-        assertThat(details.get(0).getJurorStatus()).isEqualTo(3);
+        assertThat(details.getFirst().getJurorNumber()).isEqualTo(JUROR3);
+        assertThat(details.getFirst().getFirstName()).isEqualTo("TEST");
+        assertThat(details.getFirst().getLastName()).isEqualTo("THREE");
+        assertThat(details.getFirst().getJurorStatus()).isEqualTo(3);
 
         AttendanceDetailsResponse.Summary summary = response.getSummary();
         assertThat(summary.getCheckedIn()).isZero();
@@ -3216,12 +3216,12 @@ class JurorAppearanceServiceTest {
             assertThat(response.getJurors().size()).isEqualTo(2);
 
             List<UnconfirmedJurorDataDto> jurors = response.getJurors();
-            assertThat(jurors.get(0).getJurorNumber()).isEqualTo("123456789");
-            assertThat(jurors.get(0).getFirstName()).isEqualTo("Joe");
-            assertThat(jurors.get(0).getLastName()).isEqualTo("Lastname");
-            assertThat(jurors.get(0).getStatus()).isEqualTo(JurorStatusEnum.RESPONDED);
-            assertThat(jurors.get(0).getCheckInTime()).isEqualTo(checkInTime);
-            assertThat(jurors.get(0).getCheckOutTime()).isEqualTo(checkOutTime);
+            assertThat(jurors.getFirst().getJurorNumber()).isEqualTo("123456789");
+            assertThat(jurors.getFirst().getFirstName()).isEqualTo("Joe");
+            assertThat(jurors.getFirst().getLastName()).isEqualTo("Lastname");
+            assertThat(jurors.getFirst().getStatus()).isEqualTo(JurorStatusEnum.RESPONDED);
+            assertThat(jurors.getFirst().getCheckInTime()).isEqualTo(checkInTime);
+            assertThat(jurors.getFirst().getCheckOutTime()).isEqualTo(checkOutTime);
 
             assertThat(jurors.get(1).getJurorNumber()).isEqualTo("987654321");
             assertThat(jurors.get(1).getFirstName()).isEqualTo("Bob");
@@ -3510,10 +3510,10 @@ class JurorAppearanceServiceTest {
                 jurorPoolRepository.findJurorsInAttendanceAtCourtLocation(VALID_COURT_LOCATION, pools);
 
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).getJuror().getJurorNumber()).isEqualTo("111111111");
-            assertThat(result.get(0).getPool().getPoolNumber())
+            assertThat(result.getFirst().getJuror().getJurorNumber()).isEqualTo("111111111");
+            assertThat(result.getFirst().getPool().getPoolNumber())
                 .isEqualTo(TestConstants.VALID_POOL_NUMBER);
-            assertThat(result.get(0).getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
+            assertThat(result.getFirst().getStatus().getStatus()).isEqualTo(IJurorStatus.RESPONDED);
 
             verify(jurorPoolRepository, times(1))
                 .findJurorsInAttendanceAtCourtLocation(VALID_COURT_LOCATION, pools);

@@ -21,7 +21,7 @@ public class JurorPaperResponseException extends RuntimeException {
     public static class JurorPaperResponseAlreadyExists extends JurorPaperResponseException {
 
         public JurorPaperResponseAlreadyExists(String jurorNumber) {
-            super(String.format("The Juror Paper Response already exists for Juror %s", jurorNumber));
+            super("The Juror Paper Response already exists for Juror %s".formatted(jurorNumber));
         }
     }
 
@@ -77,7 +77,7 @@ public class JurorPaperResponseException extends RuntimeException {
     public static class JurorPaperResponseDoesNotExist extends JurorPaperResponseException {
 
         public JurorPaperResponseDoesNotExist(String jurorNumber) {
-            super(String.format("The Juror Paper response does not exist for juror %s", jurorNumber));
+            super("The Juror Paper response does not exist for juror %s".formatted(jurorNumber));
         }
     }
 
@@ -99,8 +99,7 @@ public class JurorPaperResponseException extends RuntimeException {
     public static class NoJurorPaperResponseRecordFound extends JurorPaperResponseException {
 
         public NoJurorPaperResponseRecordFound(String jurorNumber) {
-            super(String.format(
-                "Unable to find a valid Juror Paper response record for juror number: %s",
+            super("Unable to find a valid Juror Paper response record for juror number: %s".formatted(
                 jurorNumber
             ));
         }

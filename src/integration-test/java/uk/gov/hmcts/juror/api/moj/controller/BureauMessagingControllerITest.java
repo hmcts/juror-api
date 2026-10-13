@@ -99,7 +99,7 @@ class BureauMessagingControllerITest extends AbstractIntegrationTest {
 
             List<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById(VALID_JUROR_NUMBER);
             assertThat(history).isNotEmpty();
-            JurorHistory lastHistory = history.get(history.size() - 1);
+            JurorHistory lastHistory = history.getLast();
             assertThat(lastHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.NOTIFY_MESSAGE_REQUESTED);
             assertThat(lastHistory.getOtherInformation())
                 .isEqualTo("Bureau email sent: " + EmailTemplateName.CONTACT_INFORMATION.name());
@@ -136,7 +136,7 @@ class BureauMessagingControllerITest extends AbstractIntegrationTest {
             assertThat(body).isNotNull();
             assertThat(body.getSuccessfulEmailsSent()).isEqualTo(0);
             assertThat(body.getFailedNotifications()).hasSize(1);
-            assertThat(body.getFailedNotifications().get(0).getFailureReason())
+            assertThat(body.getFailedNotifications().getFirst().getFailureReason())
                 .isEqualTo(BureauEmailResponseDto.FailureReason.JUROR_NOT_FOUND);
         }
     }

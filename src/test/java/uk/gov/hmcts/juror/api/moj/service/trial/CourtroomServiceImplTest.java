@@ -37,12 +37,12 @@ public class CourtroomServiceImplTest {
         verify(courtroomRepository, times(1)).getCourtroomsForLocation(courts);
         assertThat(courtrooms).hasSize(1);
 
-        assertThat(courtrooms.get(0).getCourtLocation()).isEqualTo("STOKE_ON_TRENT");
-        assertThat(courtrooms.get(0).getCourtRooms().get(0).getId()).isEqualTo(Long.valueOf(9002));
-        assertThat(courtrooms.get(0).getCourtRooms().get(0).getOwner()).isEqualTo("001");
-        assertThat(courtrooms.get(0).getCourtRooms().get(0).getLocCode()).isEqualTo("002");
-        assertThat(courtrooms.get(0).getCourtRooms().get(0).getRoomNumber()).isEqualTo("RM1");
-        assertThat(courtrooms.get(0).getCourtRooms().get(0).getDescription()).isEqualTo("JURY ROOM 1");
+        assertThat(courtrooms.getFirst().getCourtLocation()).isEqualTo("STOKE_ON_TRENT");
+        assertThat(courtrooms.getFirst().getCourtRooms().getFirst().getId()).isEqualTo(Long.valueOf(9002));
+        assertThat(courtrooms.getFirst().getCourtRooms().getFirst().getOwner()).isEqualTo("001");
+        assertThat(courtrooms.getFirst().getCourtRooms().getFirst().getLocCode()).isEqualTo("002");
+        assertThat(courtrooms.getFirst().getCourtRooms().getFirst().getRoomNumber()).isEqualTo("RM1");
+        assertThat(courtrooms.getFirst().getCourtRooms().getFirst().getDescription()).isEqualTo("JURY ROOM 1");
     }
 
     private List<Tuple> createCourtsList() {

@@ -423,7 +423,7 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
             List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
             assertThat(bulkPrintData).hasSize(1);
 
-            BulkPrintData emailData = bulkPrintData.get(0);
+            BulkPrintData emailData = bulkPrintData.getFirst();
             assertThat(emailData.getCommunicationChannel()).isEqualTo(CommunicationChannel.EMAIL);
             assertThat(emailData.getEmailStatus()).isEqualTo(EmailStatus.PENDING);
             assertThat(emailData.getNotifyTemplateName()).isEqualTo(
@@ -449,7 +449,7 @@ public class DeferralRequestControllerITest extends AbstractIntegrationTest {
             List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
             assertThat(bulkPrintData).hasSize(1);
 
-            BulkPrintData emailData = bulkPrintData.get(0);
+            BulkPrintData emailData = bulkPrintData.getFirst();
             assertThat(emailData.getCommunicationChannel()).isEqualTo(CommunicationChannel.EMAIL);
             assertThat(emailData.getEmailStatus()).isEqualTo(EmailStatus.PENDING);
             assertThat(emailData.getNotifyTemplateName()).isEqualTo(

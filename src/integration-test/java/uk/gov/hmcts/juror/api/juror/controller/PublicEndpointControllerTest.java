@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.juror.controller;
 
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.Jwts;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -115,7 +115,7 @@ public class PublicEndpointControllerTest extends AbstractIntegrationTest {
     }
 
     public String mintPublicJwt(final PublicJwtPayload payload) {
-        return TestUtil.mintPublicJwt(payload, SignatureAlgorithm.HS256, publicSecret,
+        return TestUtil.mintPublicJwt(payload, Jwts.SIG.HS256, publicSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 }

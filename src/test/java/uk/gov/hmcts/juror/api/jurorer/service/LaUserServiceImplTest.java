@@ -73,7 +73,7 @@ class LaUserServiceImplTest {
 
         assertNotNull(localAuthorities);
         assertEquals(1, localAuthorities.size());
-        assertEquals("001", localAuthorities.get(0).getLaCode());
+        assertEquals("001", localAuthorities.getFirst().getLaCode());
 
     }
 
@@ -194,8 +194,8 @@ class LaUserServiceImplTest {
 
         assertThat(laUserList).isNotEmpty();
         assertThat(laUserList).hasSize(1);
-        assertThat(laUserList.get(0).getUsername()).isEqualTo(email);
-        assertThat(laUserList.get(0).getLocalAuthority().getLaCode()).isEqualTo("001");
+        assertThat(laUserList.getFirst().getUsername()).isEqualTo(email);
+        assertThat(laUserList.getFirst().getLocalAuthority().getLaCode()).isEqualTo("001");
 
         verify(userRepository).findByUsernameIgnoreCase(email);
     }
@@ -312,7 +312,7 @@ class LaUserServiceImplTest {
             .containsExactly("Aberdeen", "Birmingham", "Westminster");
 
         ExportLaEmailAddressResponseDto.LocalAuthorityEmailsDto aberdeenEmails =
-            response.getLocalAuthorities().get(0);
+            response.getLocalAuthorities().getFirst();
         assertThat(aberdeenEmails.getLaCode()).isEqualTo("002");
         assertThat(aberdeenEmails.getIsActive()).isFalse();
         assertThat(aberdeenEmails.getEmailAddresses())
@@ -341,7 +341,7 @@ class LaUserServiceImplTest {
         ExportLaEmailAddressResponseDto response = laUserService.getAllLaEmailAddresses(false);
 
         assertThat(response.getLocalAuthorities()).hasSize(1);
-        assertThat(response.getLocalAuthorities().get(0).getEmailAddresses())
+        assertThat(response.getLocalAuthorities().getFirst().getEmailAddresses())
             .extracting(
                 ExportLaEmailAddressResponseDto.EmailAddressDto::getUsername,
                 ExportLaEmailAddressResponseDto.EmailAddressDto::getActive

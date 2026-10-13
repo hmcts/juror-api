@@ -34,7 +34,7 @@ public class AutoAssignException extends RuntimeException {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public static class CapacityBiggerThanBacklog extends AutoAssignException {
         public CapacityBiggerThanBacklog(final int totalCapacity, final int backlogSize) {
-            super(String.format("Total capacity of %d exceeds backlog size of %d", totalCapacity, backlogSize));
+            super("Total capacity of %d exceeds backlog size of %d".formatted(totalCapacity, backlogSize));
         }
     }
 

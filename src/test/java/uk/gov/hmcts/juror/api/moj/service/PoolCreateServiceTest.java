@@ -272,7 +272,7 @@ class PoolCreateServiceTest {
         ArgumentCaptor<List<Juror>> jurorsCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(jurorRepository).saveAll(jurorsCaptor.capture());
 
-        Juror juror = jurorsCaptor.getValue().get(0);
+        Juror juror = jurorsCaptor.getValue().getFirst();
         assertThat(juror.isDigitalByDefault()).isTrue();
         assertThat(juror.getDbdPreference()).isEqualTo(ReplyMethod.DIGITAL.getDescription());
         Mockito.verify(printDataService, Mockito.never()).bulkPrintSummonsLetter(Mockito.any());
@@ -280,7 +280,7 @@ class PoolCreateServiceTest {
 
         ArgumentCaptor<List<JurorHistory>> jurorHistoryCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(jurorHistoryRepository).saveAll(jurorHistoryCaptor.capture());
-        JurorHistory jurorHistory = jurorHistoryCaptor.getValue().get(0);
+        JurorHistory jurorHistory = jurorHistoryCaptor.getValue().getFirst();
         assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
         assertThat(jurorHistory.getOtherInformation()).isEqualTo("DBD Summons letter");
     }
@@ -294,14 +294,14 @@ class PoolCreateServiceTest {
         ArgumentCaptor<List<Juror>> jurorsCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(jurorRepository).saveAll(jurorsCaptor.capture());
 
-        Juror juror = jurorsCaptor.getValue().get(0);
+        Juror juror = jurorsCaptor.getValue().getFirst();
         assertThat(juror.isDigitalByDefault()).isFalse();
         assertThat(juror.getDbdPreference()).isNull();
         Mockito.verify(printDataService).bulkPrintSummonsLetter(Mockito.any());
 
         ArgumentCaptor<List<JurorHistory>> jurorHistoryCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(jurorHistoryRepository).saveAll(jurorHistoryCaptor.capture());
-        JurorHistory jurorHistory = jurorHistoryCaptor.getValue().get(0);
+        JurorHistory jurorHistory = jurorHistoryCaptor.getValue().getFirst();
         assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
         assertThat(jurorHistory.getOtherInformation()).isNull();
     }
@@ -322,7 +322,7 @@ class PoolCreateServiceTest {
         ArgumentCaptor<List<Juror>> jurorsCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(jurorRepository).saveAll(jurorsCaptor.capture());
 
-        Juror juror = jurorsCaptor.getValue().get(0);
+        Juror juror = jurorsCaptor.getValue().getFirst();
         assertThat(juror.isDigitalByDefault()).isFalse();
         assertThat(juror.getDbdPreference()).isNull();
         Mockito.verify(printDataService).bulkPrintSummonsLetter(Mockito.any());

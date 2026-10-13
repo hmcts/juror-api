@@ -91,7 +91,7 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
                 .as("Reminder history should be created for LA 002")
                 .hasSize(1);
 
-            ReminderHistory history = histories.get(0);
+            ReminderHistory history = histories.getFirst();
             assertThat(history.getLaCode()).isEqualTo("002");
             assertThat(history.getSentBy()).isEqualTo(BUREAU_USER);
             assertThat(history.getSentTo()).isEqualTo("user1@la002.gov.uk");

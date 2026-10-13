@@ -1,7 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.client.interceptor;
 
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +15,7 @@ import uk.gov.hmcts.juror.api.utils.TestConstants;
 
 import java.io.IOException;
 import java.util.HashMap;
+import javax.crypto.SecretKey;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,6 +45,7 @@ class JwtAuthenticationInterceptorTest {
     private JwtSecurityConfig securityConfig;
 
     private byte[] body;
+    private SecretKey secretKey;
 
     @BeforeEach
     void beforeEach() throws IOException {
@@ -56,16 +56,18 @@ class JwtAuthenticationInterceptorTest {
         this.securityConfig.setTokenValidity(160_000);
         this.securityConfig.setSecret(TestConstants.JWT_SECRET);
         this.securityConfig.setClaims(new HashMap<>());
+        this.secretKey = org.mockito.Mockito.mock(SecretKey.class);
 
         when(this.request.getHeaders()).thenReturn(this.httpHeaders);
         when(this.clientHttpRequestExecution.execute(this.request, this.body)).thenReturn(this.clientHttpResponse);
         this.jwtAuthenticationInterceptor = new JwtAuthenticationInterceptor(this.jwtService, this.securityConfig);
+        when(jwtService.getSigningKey(this.securityConfig.getSecret())).thenReturn(secretKey);
 
         when(jwtService.generateJwtToken(null,
             this.securityConfig.getIssuer(),
             this.securityConfig.getSubject(),
             this.securityConfig.getTokenValidity(),
-            Keys.hmacShaKeyFor(Decoders.BASE64.decode(this.securityConfig.getSecret())),
+            secretKey,
             this.securityConfig.getClaims()
         )).thenReturn(TestConstants.JWT);
     }
@@ -86,9 +88,10 @@ class JwtAuthenticationInterceptorTest {
                 this.securityConfig.getIssuer(),
                 this.securityConfig.getSubject(),
                 this.securityConfig.getTokenValidity(),
-                Keys.hmacShaKeyFor(Decoders.BASE64.decode(this.securityConfig.getSecret())),
+                secretKey,
                 this.securityConfig.getClaims()
             );
+        verify(jwtService, times(1)).getSigningKey(this.securityConfig.getSecret());
         verifyNoMoreInteractions(jwtService);
         verify(clientHttpRequestExecution, times(1)).execute(request, body);
     }
@@ -104,6 +107,7 @@ class JwtAuthenticationInterceptorTest {
 
         verify(request, times(1)).getHeaders();
         verify(httpHeaders, never()).setBearerAuth(any());
+        verify(jwtService, never()).getSigningKey(any());
         verify(jwtService, never())
             .generateJwtToken(any(), any(), any(), any(Long.class), any(), any());
         verifyNoMoreInteractions(jwtService);

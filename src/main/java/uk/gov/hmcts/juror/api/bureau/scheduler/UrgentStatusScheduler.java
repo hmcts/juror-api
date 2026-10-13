@@ -30,7 +30,7 @@ import static uk.gov.hmcts.juror.api.bureau.service.BureauProcessService.DATE_TI
 
 @Slf4j
 @Component
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class UrgentStatusScheduler implements ScheduledService {
 
     private final UrgencyService urgencyService;

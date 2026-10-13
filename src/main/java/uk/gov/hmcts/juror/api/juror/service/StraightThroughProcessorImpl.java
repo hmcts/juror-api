@@ -41,7 +41,7 @@ import static uk.gov.hmcts.juror.api.moj.domain.JurorHistory.RESPONDED;
 @SuppressWarnings("PMD")
 @Component
 @Slf4j
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class StraightThroughProcessorImpl implements StraightThroughProcessor {
 
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;

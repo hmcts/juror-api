@@ -21,7 +21,7 @@ public class PoolRequestException extends RuntimeException {
     public static class DuplicatePoolRequest extends PoolRequestException {
 
         public DuplicatePoolRequest(String poolNumber) {
-            super(String.format("Failed to create a new Pool. A Pool already exists with Pool Number: %s",
+            super("Failed to create a new Pool. A Pool already exists with Pool Number: %s".formatted(
                 poolNumber
             ));
         }
@@ -34,7 +34,7 @@ public class PoolRequestException extends RuntimeException {
     public static class PoolRequestNotFoundForPoolId extends PoolRequestException {
 
         public PoolRequestNotFoundForPoolId(String poolNumber, String owner) {
-            super(String.format("Unable to find a pool with Pool Number: %s and Owner: %s",
+            super("Unable to find a pool with Pool Number: %s and Owner: %s".formatted(
                 poolNumber, owner
             ));
         }
@@ -47,7 +47,7 @@ public class PoolRequestException extends RuntimeException {
     public static class PoolRequestNotFound extends PoolRequestException {
 
         public PoolRequestNotFound(String poolNumber) {
-            super(String.format("Unable to find an active pool for %s", poolNumber));
+            super("Unable to find an active pool for %s".formatted(poolNumber));
         }
     }
 
@@ -55,7 +55,7 @@ public class PoolRequestException extends RuntimeException {
     public static class PoolRequestDateInvalid extends PoolRequestException {
 
         public PoolRequestDateInvalid(String poolNumber) {
-            super(String.format("Unable to find valid date for pool %s", poolNumber));
+            super("Unable to find valid date for pool %s".formatted(poolNumber));
         }
     }
 

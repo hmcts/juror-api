@@ -95,8 +95,8 @@ public class OutgoingSMSMessagesReport extends AbstractStandardReport {
             StandardTableData data = tableData.getData();
             for (java.util.LinkedHashMap<String, Object> row : data) {
                 Object totalValue = row.get("total_sms_sent");
-                if (totalValue instanceof Number) {
-                    totalSmsSent += ((Number) totalValue).longValue();
+                if (totalValue instanceof Number number) {
+                    totalSmsSent += number.longValue();
                 }
             }
         }
