@@ -20,8 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.bureau.exception.DisqualifyException;
-import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseDisqualifyService;
 import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
