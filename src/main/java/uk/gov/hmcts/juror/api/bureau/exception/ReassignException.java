@@ -18,7 +18,7 @@ public class ReassignException extends RuntimeException {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public static class StaffMemberNotFound extends ReassignException {
         public StaffMemberNotFound(String staffLogin) {
-            super(String.format("Reassignment failed as staff member %s cannot be found.", staffLogin));
+            super("Reassignment failed as staff member %s cannot be found.".formatted(staffLogin));
         }
     }
 

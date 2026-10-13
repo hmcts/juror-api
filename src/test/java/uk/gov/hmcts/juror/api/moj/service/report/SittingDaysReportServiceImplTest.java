@@ -96,7 +96,7 @@ class SittingDaysReportServiceImplTest {
             validateTableHeadings(response.getTableData());
 
             assertThat(response.getTableData().getData()).hasSize(1);
-            SittingDaysStatsReportResponse.TableData.DataRow row = response.getTableData().getData().get(0);
+            SittingDaysStatsReportResponse.TableData.DataRow row = response.getTableData().getData().getFirst();
             assertThat(row.getCourtLocationNameAndCode()).isEqualTo("CHESTER (415)");
             assertThat(row.getZeroSittingDays()).isEqualTo(5);
             assertThat(row.getOneSittingDay()).isEqualTo(10);
@@ -186,7 +186,7 @@ class SittingDaysReportServiceImplTest {
     private void validateTableHeadings(SittingDaysStatsReportResponse.TableData tableData) {
         assertThat(tableData).isNotNull();
         assertThat(tableData.getHeadings()).hasSize(15);
-        assertThat(tableData.getHeadings().get(0).getId()).isEqualTo(COURT_LOCATION_NAME_AND_CODE);
+        assertThat(tableData.getHeadings().getFirst().getId()).isEqualTo(COURT_LOCATION_NAME_AND_CODE);
         assertThat(tableData.getHeadings().get(1).getId()).isEqualTo(ZERO_SITTING_DAYS);
         assertThat(tableData.getHeadings().get(2).getId()).isEqualTo(ONE_SITTING_DAY);
         assertThat(tableData.getHeadings().get(3).getId()).isEqualTo(TWO_SITTING_DAYS);

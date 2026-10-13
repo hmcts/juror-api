@@ -324,7 +324,7 @@ class TrialControllerTest {
             JurorDetailRequestDto detailRequestDto = new JurorDetailRequestDto();
             detailRequestDto.setFirstName("FNAME");
             detailRequestDto.setLastName("LNAME");
-            detailRequestDto.setJurorNumber(String.format("11111111%d", i));
+            detailRequestDto.setJurorNumber("11111111%d".formatted(i));
             detailRequestDto.setResult(PanelResult.JUROR);
             jurorDetailRequestDtos.add(detailRequestDto);
         }
@@ -343,7 +343,7 @@ class TrialControllerTest {
             JurorDetailRequestDto detailRequestDto = new JurorDetailRequestDto();
             detailRequestDto.setFirstName("FNAME");
             detailRequestDto.setLastName("LNAME");
-            detailRequestDto.setJurorNumber(String.format("11111111%d", i));
+            detailRequestDto.setJurorNumber("11111111%d".formatted(i));
             detailRequestDto.setResult(PanelResult.JUROR);
             jurorDetailRequestDtos.add(detailRequestDto);
         }

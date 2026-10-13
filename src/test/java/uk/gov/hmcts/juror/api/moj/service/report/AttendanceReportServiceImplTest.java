@@ -143,7 +143,7 @@ class AttendanceReportServiceImplTest {
 
             assertThat(tableData.getData()).isNotEmpty();
             assertThat(tableData.getData()).hasSize(2);
-            WeekendAttendanceReportResponse.TableData.DataRow row1 = tableData.getData().get(0);
+            WeekendAttendanceReportResponse.TableData.DataRow row1 = tableData.getData().getFirst();
             assertThat(row1.getCourtLocationNameAndCode()).isEqualTo("BRIGHTON (777)");
             assertThat(row1.getSaturdayTotal()).isEqualTo(1);
             assertThat(row1.getSundayTotal()).isEqualTo(1);
@@ -185,7 +185,7 @@ class AttendanceReportServiceImplTest {
         }
 
         private void validateTableHeadings(WeekendAttendanceReportResponse.TableData tableData) {
-            WeekendAttendanceReportResponse.TableData.Heading tablHeading = tableData.getHeadings().get(0);
+            WeekendAttendanceReportResponse.TableData.Heading tablHeading = tableData.getHeadings().getFirst();
             assertThat(tablHeading.getId()).isEqualTo(COURT_LOCATION_NAME_AND_CODE);
             assertThat(tablHeading.getName()).isEqualTo("Court");
             assertThat(tablHeading.getDataType()).isEqualTo("String");

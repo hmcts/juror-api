@@ -292,7 +292,7 @@ public class JurorManagementServiceImplTest {
         targetPoolRequest.setCourtLocation(targetCourtLocation);
 
         List<JurorPool> poolMemberList = createJurorPoolList("400");
-        JurorPool sourceJurorPool = poolMemberList.get(0);
+        JurorPool sourceJurorPool = poolMemberList.getFirst();
         sourceJurorPool.setPool(sourcePoolRequest);
         sourceJurorPool.getJuror().setDateOfBirth(dob);
 
@@ -314,7 +314,7 @@ public class JurorManagementServiceImplTest {
         Assertions.assertThat(result.getNewPoolNumber()).isEqualTo(targetPoolNumber);
         Assertions.assertThat(result.getAgeDisqualified()).hasSize(1);
 
-        AgeDisqualifiedJurorDto ageDisqualifiedJuror = result.getAgeDisqualified().get(0);
+        AgeDisqualifiedJurorDto ageDisqualifiedJuror = result.getAgeDisqualified().getFirst();
         Assertions.assertThat(ageDisqualifiedJuror.getJurorNumber()).isEqualTo(jurorNumber);
         Assertions.assertThat(ageDisqualifiedJuror.getDob()).isEqualTo(dob);
         Assertions.assertThat(ageDisqualifiedJuror.getCurrentServiceStartDate()).isEqualTo(sourceServiceStartDate);
@@ -777,7 +777,7 @@ public class JurorManagementServiceImplTest {
 
         final List<JurorPool> poolMemberList = createJurorPoolList(courtOwner);
 
-        JurorPool targetJurorPool = createJurorPoolList(courtOwner).get(0);
+        JurorPool targetJurorPool = createJurorPoolList(courtOwner).getFirst();
         targetJurorPool.setPool(targetpoolRequest);
 
         when(appearanceService.hasAttendancesInPool(jurorNumber, targetPoolNumber)).thenReturn(true);
@@ -2148,7 +2148,7 @@ public class JurorManagementServiceImplTest {
             .as("Expect juror 333333333 to be unavailable for transfer")
             .isNotNull();
         Assertions.assertThat(validationFailure2.getFailureReason())
-            .isEqualTo(String.format(JurorManagementConstants.INVALID_STATUS_MESSAGE, "Transferred"));
+            .isEqualTo(JurorManagementConstants.INVALID_STATUS_MESSAGE.formatted("Transferred"));
         Assertions.assertThat(validationFailure2.getFirstName()).isEqualTo("Test333333333");
         Assertions.assertThat(validationFailure2.getLastName()).isEqualTo("Person333333333");
 

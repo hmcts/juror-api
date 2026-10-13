@@ -226,7 +226,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(tableData.getJurors()).hasSize(21);
 
             // validate a juror
-            DailyUtilisationReportJurorsResponse.TableData.Juror juror = tableData.getJurors().get(0);
+            DailyUtilisationReportJurorsResponse.TableData.Juror juror = tableData.getJurors().getFirst();
             assertThat(juror).isNotNull();
             assertThat(juror.getJuror()).isEqualTo("415000001");
             assertThat(juror.getJurorWorkingDay()).isEqualTo(1);
@@ -317,7 +317,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(tableData.getMonths()).isNotNull();
             assertThat(tableData.getMonths().size()).isEqualTo(1);
 
-            MonthlyUtilisationReportResponse.TableData.Month month = tableData.getMonths().get(0);
+            MonthlyUtilisationReportResponse.TableData.Month month = tableData.getMonths().getFirst();
             assertThat(month.getMonth()).isEqualTo("May 2024");
             assertThat(month.getJurorWorkingDays()).isEqualTo(457);
             assertThat(month.getSittingDays()).isEqualTo(260);
@@ -418,7 +418,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(tableData.getMonths()).isNotNull();
             assertThat(tableData.getMonths().size()).isEqualTo(1);
 
-            MonthlyUtilisationReportResponse.TableData.Month month = tableData.getMonths().get(0);
+            MonthlyUtilisationReportResponse.TableData.Month month = tableData.getMonths().getFirst();
             assertThat(month.getMonth()).isEqualTo("May 2024");
             assertThat(month.getJurorWorkingDays()).isEqualTo(455);
             assertThat(month.getSittingDays()).isEqualTo(55);
@@ -458,7 +458,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(tableData.getMonths()).isNotNull();
             assertThat(tableData.getMonths().size()).isEqualTo(3);
 
-            MonthlyUtilisationReportResponse.TableData.Month month = tableData.getMonths().get(0);
+            MonthlyUtilisationReportResponse.TableData.Month month = tableData.getMonths().getFirst();
             assertThat(month.getMonth()).isEqualTo("March 2024");
             assertThat(month.getJurorWorkingDays()).isEqualTo(453);
             assertThat(month.getSittingDays()).isEqualTo(53);
@@ -589,7 +589,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(tableData.getHeadings()).hasSize(4);
             assertThat(tableData.getData()).isNotNull();
             assertThat(tableData.getData()).hasSize(3);
-            CourtUtilisationStatsReportResponse.UtilisationStats stats = tableData.getData().get(0);
+            CourtUtilisationStatsReportResponse.UtilisationStats stats = tableData.getData().getFirst();
             assertThat(stats.getCourtName()).isEqualTo("CHESTER (415)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(12.28));
             assertThat(stats.getMonth()).isEqualTo("June 2024");
@@ -638,7 +638,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(tableData.getHeadings()).hasSize(4);
             assertThat(tableData.getData()).isNotNull();
             assertThat(tableData.getData()).hasSize(1);
-            CourtUtilisationStatsReportResponse.UtilisationStats stats = tableData.getData().get(0);
+            CourtUtilisationStatsReportResponse.UtilisationStats stats = tableData.getData().getFirst();
             assertThat(stats.getCourtName()).isEqualTo("CHESTER (415)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(12.28));
             assertThat(stats.getMonth()).isEqualTo("June 2024");
@@ -714,7 +714,7 @@ class UtilisationReportsITest extends AbstractIntegrationTest {
             assertThat(tableData.getData()).isNotNull();
             assertThat(tableData.getData()).hasSize(11);
 
-            OverdueUtilisationReportResponse.UtilisationStats stats = tableData.getData().get(0);
+            OverdueUtilisationReportResponse.UtilisationStats stats = tableData.getData().getFirst();
             assertThat(stats.getCourtName()).isEqualTo("KINGSTON UPON THAMES (427)");
             assertThat(Math.round(stats.getUtilisation())).isEqualTo(Math.round(11.50));
             assertThat(stats.getDateLastRun()).isEqualTo(LocalDate.now().minusDays(90));

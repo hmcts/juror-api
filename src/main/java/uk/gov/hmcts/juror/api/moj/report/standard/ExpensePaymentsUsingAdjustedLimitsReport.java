@@ -138,7 +138,7 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
                     continue;
                 }
 
-                String jurorNumber = parts.get(0);
+                String jurorNumber = parts.getFirst();
                 String firstName = parts.get(1);
                 String lastName = parts.get(2);
                 String poolNumber = parts.get(3);
@@ -189,7 +189,7 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
         row.put("last_name", record.getLastName());
         row.put("pool_number", record.getPoolNumber());
         row.put("trial_number", record.getTrialNumber());
-        row.put("total_paid", String.format("£%.2f", record.getTotalPaid()));
+        row.put("total_paid", "£%.2f".formatted(record.getTotalPaid()));
         return row;
     }
 
@@ -273,7 +273,7 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
                 .displayName("Old Limit")
                 .dataType(String.class.getSimpleName())
                 .value(limits.get("old_limit") != null
-                        ? String.format("£%.2f", limits.get("old_limit"))
+                        ? "£%.2f".formatted(limits.get("old_limit"))
                         : "N/A")
                 .build());
 
@@ -281,7 +281,7 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
                 .displayName("New Limit")
                 .dataType(String.class.getSimpleName())
                 .value(limits.get("new_limit") != null
-                        ? String.format("£%.2f", limits.get("new_limit"))
+                        ? "£%.2f".formatted(limits.get("new_limit"))
                         : "N/A")
                 .build());
 
@@ -321,7 +321,7 @@ public class ExpensePaymentsUsingAdjustedLimitsReport extends AbstractStandardRe
 
             if (!auditData.isEmpty()) {
 
-                String[] parts = auditData.get(0).split(",");
+                String[] parts = auditData.getFirst().split(",");
 
                 boolean isPublicTransport = "Public Transport".equalsIgnoreCase(transportType);
 

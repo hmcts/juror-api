@@ -36,7 +36,7 @@ public class HolidayITest extends ContainerTest {
         ArrayList<Holidays> holidays = new ArrayList<>();
         holidayIterable.forEach(holidays::add);
         assertThat(holidays.size()).as("Expected one holiday date").isEqualTo(1);
-        assertThat(holidays.get(0).getPublicHoliday()).as("Should not be a public holiday").isFalse();
+        assertThat(holidays.getFirst().getPublicHoliday()).as("Should not be a public holiday").isFalse();
     }
 
     @Test

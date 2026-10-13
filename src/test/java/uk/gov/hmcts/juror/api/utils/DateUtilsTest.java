@@ -218,7 +218,7 @@ public class DateUtilsTest {
         Assertions.assertThat(startingWeekDates.size())
             .as("Expected list size to be four")
             .isEqualTo(4);
-        Assertions.assertThat(startingWeekDates.get(0))
+        Assertions.assertThat(startingWeekDates.getFirst())
             .as("Expected first item to be %s", DateUtils.getStartOfWeekFromDate(LocalDate.now()))
             .isEqualTo(DateUtils.getStartOfWeekFromDate(LocalDate.now()));
         Assertions.assertThat(startingWeekDates.get(1))

@@ -225,7 +225,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             assertThat(responseBody.getTotalItems()).isEqualTo(26);
             assertThat(responseBody.getData().size()).isEqualTo(25);
 
-            UnpaidExpenseSummaryResponseDto firstItem = responseBody.getData().get(0);
+            UnpaidExpenseSummaryResponseDto firstItem = responseBody.getData().getFirst();
             assertThat(firstItem.getJurorNumber()).isEqualTo("641500020");
             assertThat(firstItem.getPoolNumber()).isEqualTo("415230101");
             assertThat(firstItem.getFirstName()).isEqualTo("Fnametwozero");
@@ -396,7 +396,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
         static final String URL = BASE_URL + "/{juror_number}/default-expenses";
 
         private BigDecimal createBigDecimal(double value) {
-            return new BigDecimal(String.format("%.2f", value));
+            return new BigDecimal("%.2f".formatted(value));
         }
 
         String toUrl(String courtLocation, String jurorNumber) {
@@ -1274,7 +1274,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(responseEntity.getBody()).isNotNull();
                 List<GetEnteredExpenseResponse> responseList = responseEntity.getBody();
                 assertThat(responseList).hasSize(1);
-                GetEnteredExpenseResponse response = responseList.get(0);
+                GetEnteredExpenseResponse response = responseList.getFirst();
                 assertThat(response.getDateOfExpense()).isEqualTo(dateOfExpense);
                 assertThat(response.getStage()).isEqualTo(AppearanceStage.EXPENSE_ENTERED);
                 assertThat(response.getTotalDue()).isEqualTo(new BigDecimal("525.00"));
@@ -1317,7 +1317,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(responseEntity.getBody()).isNotNull();
                 List<GetEnteredExpenseResponse> responseList = responseEntity.getBody();
                 assertThat(responseList).hasSize(1);
-                GetEnteredExpenseResponse response = responseList.get(0);
+                GetEnteredExpenseResponse response = responseList.getFirst();
                 assertThat(response.getDateOfExpense()).isEqualTo(dateOfExpense);
                 assertThat(response.getStage()).isEqualTo(AppearanceStage.EXPENSE_ENTERED);
                 assertThat(response.getTotalDue()).isEqualTo(new BigDecimal("552.97"));
@@ -1360,7 +1360,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 assertThat(responseEntity.getBody()).isNotNull();
                 List<GetEnteredExpenseResponse> responseList = responseEntity.getBody();
                 assertThat(responseList).hasSize(1);
-                GetEnteredExpenseResponse response = responseList.get(0);
+                GetEnteredExpenseResponse response = responseList.getFirst();
                 assertThat(response.getDateOfExpense()).isEqualTo(dateOfExpense);
                 assertThat(response.getStage()).isEqualTo(AppearanceStage.EXPENSE_AUTHORISED);
                 assertThat(response.getTotalDue()).isEqualTo(new BigDecimal("551.48"));
@@ -1485,7 +1485,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             List<Appearance> modifiedAppearances =
                 appearances.stream().filter(app -> appearanceDates.contains(app.getAttendanceDate())).toList();
             assertThat(modifiedAppearances).hasSize(2);
-            verifyExpenseSubmittedForApproval(modifiedAppearances.get(0), 3);
+            verifyExpenseSubmittedForApproval(modifiedAppearances.getFirst(), 3);
             verifyExpenseSubmittedForApproval(modifiedAppearances.get(1), 3);
 
             List<Appearance> unmodifiedAppearances =
@@ -1523,7 +1523,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             List<Appearance> modifiedAppearances =
                 appearances.stream().filter(app -> appearanceDates.contains(app.getAttendanceDate())).toList();
             assertThat(modifiedAppearances).hasSize(1);
-            verifyExpenseSubmittedForApproval(modifiedAppearances.get(0), 3);
+            verifyExpenseSubmittedForApproval(modifiedAppearances.getFirst(), 3);
 
             List<Appearance> unmodifiedAppearances =
                 appearances.stream().filter(app -> !appearanceDates.contains(app.getAttendanceDate())).toList();
@@ -1772,7 +1772,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 CombinedSimplifiedExpenseDetailDto body = response.getBody();
                 assertThat(body.getExpenseDetails()).hasSize(3);
-                assertThat(body.getExpenseDetails().get(0)).isEqualTo(
+                assertThat(body.getExpenseDetails().getFirst()).isEqualTo(
                     SimplifiedExpenseDetailDto.builder()
                         .attendanceDate(LocalDate.of(2025, 1, 8))
                         .financialAuditNumber("F123")
@@ -1840,7 +1840,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 CombinedSimplifiedExpenseDetailDto body = response.getBody();
                 assertThat(body.getExpenseDetails()).hasSize(3);
-                assertThat(body.getExpenseDetails().get(0)).isEqualTo(
+                assertThat(body.getExpenseDetails().getFirst()).isEqualTo(
                     SimplifiedExpenseDetailDto.builder()
                         .attendanceDate(LocalDate.of(2025, 1, 11))
                         .financialAuditNumber("F321")
@@ -1908,7 +1908,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
 
                 CombinedSimplifiedExpenseDetailDto body = response.getBody();
                 assertThat(body.getExpenseDetails()).hasSize(3);
-                assertThat(body.getExpenseDetails().get(0)).isEqualTo(
+                assertThat(body.getExpenseDetails().getFirst()).isEqualTo(
                     SimplifiedExpenseDetailDto.builder()
                         .attendanceDate(LocalDate.of(2025, 1, 14))
                         .financialAuditNumber("F12345")
@@ -2130,7 +2130,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                     triggerValid(COURT_LOCATION, JUROR_NUMBER);
                 CombinedExpenseDetailsDto<ExpenseDetailsDto> body = response.getBody();
                 assertThat(body.getExpenseDetails()).hasSize(3);
-                assertThat(body.getExpenseDetails().get(0)).isEqualTo(
+                assertThat(body.getExpenseDetails().getFirst()).isEqualTo(
                     ExpenseDetailsDto.builder()
                         .attendanceDate(LocalDate.of(2025, 1, 5))
                         .attendanceType(AttendanceType.FULL_DAY)
@@ -2309,7 +2309,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                         ));
                 CombinedExpenseDetailsDto<ExpenseDetailsDto> body = response.getBody();
                 assertThat(body.getExpenseDetails()).hasSize(3);
-                assertThat(body.getExpenseDetails().get(0)).isEqualTo(
+                assertThat(body.getExpenseDetails().getFirst()).isEqualTo(
                     ExpenseDetailsDto.builder()
                         .attendanceDate(LocalDate.of(2025, 1, 5))
                         .attendanceType(AttendanceType.FULL_DAY)
@@ -2515,9 +2515,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 financialAuditDetailsAppearances.sort(
                     Comparator.comparing(FinancialAuditDetailsAppearances::getAttendanceDate));
                 assertThat(financialAuditDetailsAppearances).hasSize(3);
-                long id = assertFinancialAuditDetailsApproved(financialAuditDetails.get(0),
+                long id = assertFinancialAuditDetailsApproved(financialAuditDetails.getFirst(),
                     LocalDateTime.now(), FinancialAuditDetails.Type.APPROVED_BACS);
-                assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
+                assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.getFirst(),
                     id, LocalDate.of(2025, 1, 8), 3);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(1),
                     id, LocalDate.of(2025, 1, 9), 4);
@@ -2570,9 +2570,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 financialAuditDetailsAppearances.sort(
                     Comparator.comparing(FinancialAuditDetailsAppearances::getAttendanceDate));
                 assertThat(financialAuditDetailsAppearances).hasSize(3);
-                long id = assertFinancialAuditDetailsApproved(financialAuditDetails.get(0),
+                long id = assertFinancialAuditDetailsApproved(financialAuditDetails.getFirst(),
                     LocalDateTime.now(), FinancialAuditDetails.Type.APPROVED_CASH);
-                assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
+                assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.getFirst(),
                     id, LocalDate.of(2025, 2, 8), 3);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(1),
                     id, LocalDate.of(2025, 2, 9), 3);
@@ -2649,9 +2649,9 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 financialAuditDetailsAppearances.sort(
                     Comparator.comparing(FinancialAuditDetailsAppearances::getAttendanceDate));
                 assertThat(financialAuditDetailsAppearances).hasSize(3);
-                long id = assertFinancialAuditDetailsApproved(financialAuditDetails.get(0),
+                long id = assertFinancialAuditDetailsApproved(financialAuditDetails.getFirst(),
                     LocalDateTime.now(), FinancialAuditDetails.Type.REAPPROVED_BACS);
-                assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
+                assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.getFirst(),
                     id, LocalDate.of(2025, 1, 14), 4, 12_344L);
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(1),
                     id, LocalDate.of(2025, 1, 15), 4, 12_344L);
@@ -2688,7 +2688,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                                            BigDecimal financialLoss) {
                 List<PaymentData> paymentDataList = paymentDataRepository.findByJurorNumber(jurorNumber);
                 assertThat(paymentDataList).hasSize(1);
-                PaymentData paymentData = paymentDataList.get(0);
+                PaymentData paymentData = paymentDataList.getFirst();
                 assertThat(paymentData.getJurorNumber()).isEqualTo(jurorNumber);
                 assertThat(paymentData.getExpenseTotal()).isEqualTo(totalExpense);
                 assertThat(paymentData.getFinancialLossTotal()).isEqualTo(financialLoss);
@@ -3186,7 +3186,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 financialAuditDetailsAppearances.sort(
                     Comparator.comparing(FinancialAuditDetailsAppearances::getAttendanceDate));
                 assertThat(financialAuditDetailsAppearances).hasSize(2);
-                assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
+                assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.getFirst(),
                     2, LocalDate.of(2025, 1, 8), 3);
 
                 assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(1),
@@ -3252,7 +3252,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 List<FinancialAuditDetailsAppearances> financialAuditDetailsAppearances = new ArrayList<>();
                 financialAuditDetailsAppearancesRepository.findAll().forEach(financialAuditDetailsAppearances::add);
                 assertThat(financialAuditDetailsAppearances).hasSize(1);
-                assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
+                assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.getFirst(),
                     2, LocalDate.of(2025, 1, 11), 3);
                 assertJurorHistory(jurorNumber, HistoryCodeMod.EDIT_PAYMENTS, "COURT_USER", "£62.03",
                     "415230101", LocalDate.of(2025, 1, 11), "F2", 1, 0);
@@ -3316,7 +3316,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 List<FinancialAuditDetailsAppearances> financialAuditDetailsAppearances = new ArrayList<>();
                 financialAuditDetailsAppearancesRepository.findAll().forEach(financialAuditDetailsAppearances::add);
                 assertThat(financialAuditDetailsAppearances).hasSize(1);
-                assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.get(0),
+                assertFinancialAuditDetailsAppearances(financialAuditDetailsAppearances.getFirst(),
                     2, LocalDate.of(2025, 1, 15), 3);
                 assertJurorHistory(jurorNumber, HistoryCodeMod.EDIT_PAYMENTS, "COURT_USER", "£65.54",
                     "415230101", LocalDate.of(2025, 1, 15), "F2", 1, 0);
@@ -3410,7 +3410,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 CombinedExpenseDetailsDto<ExpenseDetailsForTotals> response = triggerValid(JUROR_NUMBER, request);
                 assertThat(response).isNotNull();
                 assertThat(response.getExpenseDetails()).hasSize(2);
-                assertThat(response.getExpenseDetails().get(0)).isEqualTo(
+                assertThat(response.getExpenseDetails().getFirst()).isEqualTo(
                     ExpenseDetailsForTotals.builder()
                         .financialLossApportionedApplied(false)
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3491,7 +3491,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 CombinedExpenseDetailsDto<ExpenseDetailsForTotals> response = triggerValid(JUROR_NUMBER, request);
                 assertThat(response).isNotNull();
                 assertThat(response.getExpenseDetails()).hasSize(1);
-                assertThat(response.getExpenseDetails().get(0)).isEqualTo(
+                assertThat(response.getExpenseDetails().getFirst()).isEqualTo(
                     ExpenseDetailsForTotals.builder()
                         .financialLossApportionedApplied(false)
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3558,7 +3558,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 CombinedExpenseDetailsDto<ExpenseDetailsForTotals> response = triggerValid(JUROR_NUMBER, request);
                 assertThat(response).isNotNull();
                 assertThat(response.getExpenseDetails()).hasSize(1);
-                assertThat(response.getExpenseDetails().get(0)).isEqualTo(
+                assertThat(response.getExpenseDetails().getFirst()).isEqualTo(
                     ExpenseDetailsForTotals.builder()
                         .financialLossApportionedApplied(true)
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3625,7 +3625,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 CombinedExpenseDetailsDto<ExpenseDetailsForTotals> response = triggerValid(JUROR_NUMBER, request);
                 assertThat(response).isNotNull();
                 assertThat(response.getExpenseDetails()).hasSize(1);
-                assertThat(response.getExpenseDetails().get(0)).isEqualTo(
+                assertThat(response.getExpenseDetails().getFirst()).isEqualTo(
                     ExpenseDetailsForTotals.builder()
                         .financialLossApportionedApplied(true)
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3695,7 +3695,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 CombinedExpenseDetailsDto<ExpenseDetailsForTotals> response = triggerValid(JUROR_NUMBER, request);
                 assertThat(response).isNotNull();
                 assertThat(response.getExpenseDetails()).hasSize(2);
-                assertThat(response.getExpenseDetails().get(0)).isEqualTo(
+                assertThat(response.getExpenseDetails().getFirst()).isEqualTo(
                     ExpenseDetailsForTotals.builder()
                         .financialLossApportionedApplied(false)
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -3788,7 +3788,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
                 CombinedExpenseDetailsDto<ExpenseDetailsForTotals> response = triggerValid(JUROR_NUMBER, request);
                 assertThat(response).isNotNull();
                 assertThat(response.getExpenseDetails()).hasSize(2);
-                assertThat(response.getExpenseDetails().get(0)).isEqualTo(
+                assertThat(response.getExpenseDetails().getFirst()).isEqualTo(
                     ExpenseDetailsForTotals.builder()
                         .financialLossApportionedApplied(false)
                         .payAttendance(PayAttendanceType.FULL_DAY)
@@ -4613,7 +4613,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void typical() {
                 triggerValid(JUROR_NUMBER, getValidPayload(new BigDecimal("90.00")));
 
-                assertAppearance(ATTENDANCE_DATES.get(0),
+                assertAppearance(ATTENDANCE_DATES.getFirst(),
                     new BigDecimal("30.00"));
                 assertAppearance(ATTENDANCE_DATES.get(1),
                     new BigDecimal("30.00"));
@@ -4626,7 +4626,7 @@ class JurorExpenseControllerITest extends AbstractIntegrationTest {
             void typicalWithRoundingErrorsAccountedFor() {
                 triggerValid(JUROR_NUMBER, getValidPayload(new BigDecimal("100.00")));
 
-                assertAppearance(ATTENDANCE_DATES.get(0),
+                assertAppearance(ATTENDANCE_DATES.getFirst(),
                     new BigDecimal("33.33"));
                 assertAppearance(ATTENDANCE_DATES.get(1),
                     new BigDecimal("33.33"));

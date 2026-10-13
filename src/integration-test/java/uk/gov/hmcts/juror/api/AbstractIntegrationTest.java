@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api;
 
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.Jwts;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -101,17 +101,17 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     }
 
     protected String mintBureauJwt(final BureauJwtPayload payload) {
-        return TestUtil.mintBureauJwt(payload, SignatureAlgorithm.HS256, bureauSecret,
-            Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
+        return TestUtil.mintBureauJwt(payload, Jwts.SIG.HS256, bureauSecret,
+                                      Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 
     protected String createHmacJwt() {
-        return TestUtil.mintHmacJwt(SignatureAlgorithm.HS256, hmacSecret,
+        return TestUtil.mintHmacJwt(Jwts.SIG.HS256, hmacSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 
     protected String mintJurorErJwt(final JurorErJwtPayload payload) {
-        return TestUtil.mintJurorErJwt(payload, SignatureAlgorithm.HS256, jurorErSecret,
+        return TestUtil.mintJurorErJwt(payload, Jwts.SIG.HS256, jurorErSecret,
                                       Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 

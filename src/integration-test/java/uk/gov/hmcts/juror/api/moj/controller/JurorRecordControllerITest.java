@@ -294,13 +294,13 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(pendingJuror.size()).as("Expect there to be four records returned").isEqualTo(4);
 
         // verify the records are as expected
-        assertThat(pendingJuror.get(0).getJurorNumber()).isEqualTo("041600001");
-        assertThat(pendingJuror.get(0).getFirstName()).isEqualTo("Johna");
-        assertThat(pendingJuror.get(0).getLastName()).isEqualTo("Smitha");
-        assertThat(pendingJuror.get(0).getPendingJurorStatus().getCode()).isEqualTo(
+        assertThat(pendingJuror.getFirst().getJurorNumber()).isEqualTo("041600001");
+        assertThat(pendingJuror.getFirst().getFirstName()).isEqualTo("Johna");
+        assertThat(pendingJuror.getFirst().getLastName()).isEqualTo("Smitha");
+        assertThat(pendingJuror.getFirst().getPendingJurorStatus().getCode()).isEqualTo(
             PendingJurorStatusEnum.QUEUED.getCode());
-        assertThat(pendingJuror.get(0).getNotes()).isEqualTo("Notes on record");
-        assertThat(pendingJuror.get(0).getPostcode()).isEqualTo("TE1 1ST");
+        assertThat(pendingJuror.getFirst().getNotes()).isEqualTo("Notes on record");
+        assertThat(pendingJuror.getFirst().getPostcode()).isEqualTo("TE1 1ST");
 
         assertThat(pendingJuror.get(1).getJurorNumber()).isEqualTo("041600002");
         assertThat(pendingJuror.get(1).getFirstName()).isEqualTo("Johnb");
@@ -354,13 +354,13 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(pendingJuror.size()).as("Expect there to be two records returned").isEqualTo(2);
 
         // verify the records are as expected
-        assertThat(pendingJuror.get(0).getJurorNumber()).isEqualTo("041600001");
-        assertThat(pendingJuror.get(0).getFirstName()).isEqualTo("Johna");
-        assertThat(pendingJuror.get(0).getLastName()).isEqualTo("Smitha");
-        assertThat(pendingJuror.get(0).getPendingJurorStatus().getCode()).isEqualTo(
+        assertThat(pendingJuror.getFirst().getJurorNumber()).isEqualTo("041600001");
+        assertThat(pendingJuror.getFirst().getFirstName()).isEqualTo("Johna");
+        assertThat(pendingJuror.getFirst().getLastName()).isEqualTo("Smitha");
+        assertThat(pendingJuror.getFirst().getPendingJurorStatus().getCode()).isEqualTo(
             PendingJurorStatusEnum.QUEUED.getCode());
-        assertThat(pendingJuror.get(0).getNotes()).isEqualTo("Notes on record");
-        assertThat(pendingJuror.get(0).getPostcode()).isEqualTo("TE1 1ST");
+        assertThat(pendingJuror.getFirst().getNotes()).isEqualTo("Notes on record");
+        assertThat(pendingJuror.getFirst().getPostcode()).isEqualTo("TE1 1ST");
 
         assertThat(pendingJuror.get(1).getJurorNumber()).isEqualTo("041600002");
         assertThat(pendingJuror.get(1).getFirstName()).isEqualTo("Johnb");
@@ -584,7 +584,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(bulkPrintDataList.size()).as("Expect the bulk print data to have 4 records").isEqualTo(4);
 
             // validate one of the records for the new address details
-            BulkPrintData bulkPrintData = bulkPrintDataList.get(0);
+            BulkPrintData bulkPrintData = bulkPrintDataList.getFirst();
             assertThat(bulkPrintData.getJurorNo()).isEqualTo(jurorNumber);
 
             String detailRec = bulkPrintData.getDetailRec();
@@ -3056,7 +3056,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                     .map(Revision::getEntity).toList();
             assertThat(jurorAuditHistory.size()).isEqualTo(2);
 
-            Juror originalJurorVersion = jurorAuditHistory.get(0);
+            Juror originalJurorVersion = jurorAuditHistory.getFirst();
             assertThat(originalJurorVersion.getTitle()).isNull();
             assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
             assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
@@ -3122,7 +3122,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                     .map(Revision::getEntity).toList();
             assertThat(jurorAuditHistory.size()).isEqualTo(2);
 
-            Juror originalJurorVersion = jurorAuditHistory.get(0);
+            Juror originalJurorVersion = jurorAuditHistory.getFirst();
             assertThat(originalJurorVersion.getTitle()).isNull();
             assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
             assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
@@ -3192,7 +3192,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                     .map(Revision::getEntity).toList();
             assertThat(jurorAuditHistory.size()).isEqualTo(2);
 
-            Juror originalJurorVersion = jurorAuditHistory.get(0);
+            Juror originalJurorVersion = jurorAuditHistory.getFirst();
             assertThat(originalJurorVersion.getTitle()).isNull();
             assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
             assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
@@ -3245,7 +3245,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertThat(jurorHistoryList.size()).isEqualTo(1);
-            JurorHistory jurorHistory = jurorHistoryList.get(0);
+            JurorHistory jurorHistory = jurorHistoryList.getFirst();
             assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
             assertThat(jurorHistory.getOtherInformation()).isEqualTo("Name change rejected");
 
@@ -3255,7 +3255,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                     .map(Revision::getEntity).toList();
             assertThat(jurorAuditHistory.size()).isEqualTo(2);
 
-            Juror originalJurorVersion = jurorAuditHistory.get(0);
+            Juror originalJurorVersion = jurorAuditHistory.getFirst();
             assertThat(originalJurorVersion.getTitle()).isNull();
             assertThat(originalJurorVersion.getFirstName()).isEqualToIgnoringCase("FNAMEONE");
             assertThat(originalJurorVersion.getLastName()).isEqualToIgnoringCase("LNAMEONE");
@@ -3588,7 +3588,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(jurorAttendanceDetailsResponseDto.isOnCall()).isEqualTo(false);
 
             JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData jurorAttendanceDetailsDto =
-                jurorAttendanceDetailsResponseDto.getData().get(0);
+                jurorAttendanceDetailsResponseDto.getData().getFirst();
             assertThat(jurorAttendanceDetailsDto.getAttendanceDate())
                 .isEqualTo(LocalDate.now().minusDays(5));
             assertThat(jurorAttendanceDetailsDto.getAttendanceType())
@@ -3657,7 +3657,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(jurorAttendanceDetailsResponseDto.isOnCall()).isEqualTo(true);
 
             JurorAttendanceDetailsResponseDto.JurorAttendanceResponseData jurorAttendanceDetailsDto =
-                jurorAttendanceDetailsResponseDto.getData().get(0);
+                jurorAttendanceDetailsResponseDto.getData().getFirst();
             assertThat(jurorAttendanceDetailsDto.getAttendanceDate())
                 .isEqualTo(LocalDate.now().minusDays(2));
             assertThat(jurorAttendanceDetailsDto.getAttendanceType())
@@ -4033,7 +4033,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.ELIGIBLE));
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
-            final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
+            final JurorPool jurorPool = jurorPoolRepository
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true).getFirst();
 
             assertEquals(PoliceCheck.ELIGIBLE, juror.getPoliceCheck(),
                          "Police check should match");
@@ -4086,7 +4087,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.INELIGIBLE));
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
-            final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
+            final JurorPool jurorPool = jurorPoolRepository
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true).getFirst();
 
             assertEquals(PoliceCheck.INELIGIBLE, juror.getPoliceCheck(),
                          "Police check should match");
@@ -4139,7 +4141,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
-            final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
+            final JurorPool jurorPool = jurorPoolRepository
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true).getFirst();
 
             assertEquals(PoliceCheck.ERROR_RETRY_CONNECTION_ERROR, juror.getPoliceCheck(),
                          "Police check should match");
@@ -4179,7 +4182,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(new PoliceCheckStatusDto(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED));
 
             Juror juror = jurorRepository.findById(jurorNumber).get();
-            final JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true).get(0);
+            final JurorPool jurorPool = jurorPoolRepository
+                .findByJurorJurorNumberAndIsActive(jurorNumber, true).getFirst();
 
             assertEquals(PoliceCheck.UNCHECKED_MAX_RETRIES_EXCEEDED, juror.getPoliceCheck(),
                          "Police check should match");
@@ -4193,7 +4197,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             List<JurorHistory> jurorHistoryList =
                 jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
-            JurorHistory jurorHistory = jurorHistoryList.get(0);
+            JurorHistory jurorHistory = jurorHistoryList.getFirst();
             verifyStandardJurorHistory(jurorPool, List.of(jurorHistory),
                                        new JurorHistoryExpectedValues("POLG", "Unchecked - timed out", null, null)
             );
@@ -4238,7 +4242,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(JUROR_NUMBER);
             assertEquals(1, jurorHistories.size(), "Should only be one history entry");
-            JurorHistory jurorHistory = jurorHistories.get(0);
+            JurorHistory jurorHistory = jurorHistories.getFirst();
             assertEquals(POOL_NUMBER, jurorHistory.getPoolNumber(), "Pool number should match");
             assertEquals(JUROR_NUMBER, jurorHistory.getJurorNumber(), "Juror number should match");
             assertEquals("COURT_USER", jurorHistory.getCreatedBy(), "User id should match");
@@ -4972,7 +4976,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             List<PoolRequest> pools = poolRequestRepository.findAll();
 
             assertEquals(1, pools.size(), "Should only be one juror pool");
-            PoolRequest pool = pools.get(0);
+            PoolRequest pool = pools.getFirst();
             assertEquals(LocalDateTime.of(2023, 11, 29, 9, 0, 0),
                          pool.getLastUpdate(), "Last updated should not change as pool should not be updated");
 
@@ -5001,7 +5005,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             List<PoolRequest> pools = poolRequestRepository.findAll();
 
             assertEquals(1, pools.size(), "Should only be one pools (The newly created one)");
-            PoolRequest pool = pools.get(0);
+            PoolRequest pool = pools.getFirst();
             validatePoolCreation(requestDto, pool, "415");
             validatePendingJuror(requestDto, pool.getPoolNumber(), pool.getReturnDate());
         }
@@ -5236,9 +5240,9 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(juror.getBankAccountName()).isEqualTo(dto.getAccountHolderName());
             assertThat(juror.getBankAccountNumber()).isEqualTo(dto.getAccountNumber());
 
-            assertThat(historyList.get(0).getJurorNumber()).isEqualTo(jurorNumber);
-            assertThat(historyList.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
-            assertThat(historyList.get(0).getOtherInformation()).isEqualTo("Bank Account Name Changed");
+            assertThat(historyList.getFirst().getJurorNumber()).isEqualTo(jurorNumber);
+            assertThat(historyList.getFirst().getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
+            assertThat(historyList.getFirst().getOtherInformation()).isEqualTo("Bank Account Name Changed");
 
             assertThat(historyList.get(1).getJurorNumber()).isEqualTo(jurorNumber);
             assertThat(historyList.get(1).getHistoryCode()).isEqualTo(HistoryCodeMod.CHANGE_PERSONAL_DETAILS);
@@ -5379,7 +5383,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         private void validatePendingJuror(JurorCreateRequestDto dto, String poolNumber, LocalDate returnDate) {
             List<PendingJuror> pendingJurors = pendingJurorRepository.findAll();
             assertEquals(1, pendingJurors.size(), "Should be one pending jurors");
-            PendingJuror pendingJuror = pendingJurors.get(0);
+            PendingJuror pendingJuror = pendingJurors.getFirst();
 
             assertNotNull(pendingJuror.getJurorNumber(), "Juror number must be set");
             assertEquals(poolNumber, pendingJuror.getPoolNumber(), "Pool number must match");
@@ -5423,12 +5427,12 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             List<PoolHistory> poolHistories = poolHistoryRepository.findAll();
             assertEquals(1, poolHistories.size(), "Should be one pool history");
-            PoolHistory poolHistory = poolHistories.get(0);
+            PoolHistory poolHistory = poolHistories.getFirst();
             assertEquals(poolRequest.getPoolNumber(), poolHistory.getPoolNumber(), "Pool number must match");
             assertEquals("COURT_USER", poolHistory.getUserId(), "User id must match");
             assertEquals(HistoryCode.PREQ, poolHistory.getHistoryCode(), "History code must match");
-            assertEquals(String.format("Pool Request %s created for pending Juror",
-                                       poolRequest.getPoolNumber()),
+            assertEquals("Pool Request %s created for pending Juror".formatted(
+                poolRequest.getPoolNumber()),
                          poolHistory.getOtherInformation(), "Info must match");
         }
 
@@ -5768,11 +5772,11 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             List<JurorHistory> jurorHistory = jurorHistoryRepository
                 .findByJurorNumberOrderById(juror.getJurorNumber());
             assertThat(jurorHistory).isNotEmpty();
-            assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
+            assertThat(jurorHistory.getFirst().getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
 
             List<BulkPrintData> letters = bulkPrintDataRepository.findByJurorNo(juror.getJurorNumber());
             assertThat(letters).isNotEmpty();
-            BulkPrintData bulkPrintData = letters.get(0);
+            BulkPrintData bulkPrintData = letters.getFirst();
             assertThat(bulkPrintData.getJurorNo()).isEqualTo(juror.getJurorNumber());
             assertThat(bulkPrintData.getFormAttribute().getFormType()).isEqualTo(FormCode.ENG_SUMMONS.getCode());
         }
@@ -6031,7 +6035,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             List<FilterJurorRecord> data = responseBody.getData();
             assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
-            FilterJurorRecord juror = data.get(0);
+            FilterJurorRecord juror = data.getFirst();
             assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
                 .isEqualTo("641700120");
             assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
@@ -6064,7 +6068,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             List<FilterJurorRecord> data = responseBody.getData();
             assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
-            FilterJurorRecord juror = data.get(0);
+            FilterJurorRecord juror = data.getFirst();
             assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
                 .isEqualTo("641700123");
             assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
@@ -6097,7 +6101,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
 
             List<FilterJurorRecord> data = responseBody.getData();
             assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
-            FilterJurorRecord juror = data.get(0);
+            FilterJurorRecord juror = data.getFirst();
             assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
                 .isEqualTo("641700123");
             assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
@@ -6160,7 +6164,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(1);
             List<FilterJurorRecord> data = responseBody.getData();
             assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
-            FilterJurorRecord juror = data.get(0);
+            FilterJurorRecord juror = data.getFirst();
             assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
                 .isEqualTo("641600091");
             assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
@@ -6186,7 +6190,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             List<FilterJurorRecord> data = responseBody.getData();
             assertThat(data.size()).as("Expect the response body to contain all 4 data items").isEqualTo(4);
             // validate the first juror in the response
-            FilterJurorRecord juror = data.get(0);
+            FilterJurorRecord juror = data.getFirst();
             assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
                 .isEqualTo("641500097");
             assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
@@ -6212,7 +6216,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             List<FilterJurorRecord> data = responseBody.getData();
             assertThat(data.size()).as("Expect the response body to contain all 10 data items").isEqualTo(10);
             // validate the first juror in the response
-            FilterJurorRecord juror = data.get(0);
+            FilterJurorRecord juror = data.getFirst();
             assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
                 .isEqualTo("641500100");
             assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
@@ -6237,7 +6241,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
                 .isEqualTo(1);
             List<FilterJurorRecord> data = responseBody.getData();
             assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
-            FilterJurorRecord juror = data.get(0);
+            FilterJurorRecord juror = data.getFirst();
             assertThat(juror.getJurorNumber()).as("Expect the response body to contain the correct juror number")
                 .isEqualTo("641500095");
             assertThat(juror.getJurorName()).as("Expect the response body to contain the correct juror name")
@@ -6280,7 +6284,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             JurorSimpleDetailsResponseDto responseBody = response.getBody();
             assertThat(responseBody).isNotNull();
             assertThat(responseBody.getJurorDetails()).hasSize(1);
-            JurorSimpleDetailsResponseDto.SimpleDetails jurorDetails = responseBody.getJurorDetails().get(0);
+            JurorSimpleDetailsResponseDto.SimpleDetails jurorDetails = responseBody.getJurorDetails().getFirst();
             assertThat(jurorDetails.getJurorNumber()).isEqualTo(jurorNumber);
             assertThat(jurorDetails.getFirstName()).isEqualTo("Fnamenineten");
             assertThat(jurorDetails.getLastName()).isEqualTo("Lnamenineten");
@@ -6361,7 +6365,7 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
     private void verifyBulkPrintData(String jurorNumber, String formCode) {
         List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(jurorNumber);
         assertThat(bulkPrintData).hasSize(1);
-        assertThat(bulkPrintData.get(0).getFormAttribute().getFormType()).isEqualTo(formCode);
+        assertThat(bulkPrintData.getFirst().getFormAttribute().getFormType()).isEqualTo(formCode);
     }
 
     private void verifyNoBulkPrintData(String jurorNumber) {

@@ -67,7 +67,7 @@ public final class RepositoryUtils {
             return repoResult.get();
         }
         throw new MojException.NotFound(
-            String.format("Unable to find a valid %s in the database for %s.",supportText, id),
+            "Unable to find a valid %s in the database for %s.".formatted(supportText, id),
             null
         );
     }

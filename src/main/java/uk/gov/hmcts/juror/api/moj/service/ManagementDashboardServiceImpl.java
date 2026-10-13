@@ -150,7 +150,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         for (String line : courtRevisions) {
             List<String> stats = List.of(line.split(","));
             try {
-                final String locCode = stats.get(0);
+                final String locCode = stats.getFirst();
                 final Double publicTransportSoftLimit = Double.parseDouble(stats.get(1));
                 final Double taxiSoftLimit = Double.parseDouble(stats.get(2));
                 final String changedBy = stats.get(3);
@@ -177,7 +177,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
         List<ExpenseLimitsReportResponseDto.ExpenseLimitsRecord> expenseLimitsRecords = new ArrayList<>();
 
-        CourtLocationAuditRecord latestRecord = auditRecords.get(0);
+        CourtLocationAuditRecord latestRecord = auditRecords.getFirst();
 
         for (int i = 1; i < auditRecords.size(); i += 1) {
 
@@ -304,7 +304,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
             stats = adjustedStatsForCommas(stats);
 
             try {
-                String locCode = stats.get(0);
+                String locCode = stats.getFirst();
 
                 String locName = stats.get(1);
                 int availableDays = Integer.parseInt(stats.get(3));
@@ -361,7 +361,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         if (stats.size() > 6) {
             String locName = String.join(",", stats.subList(1, stats.size() - 4));
             List<String> adjustedStats = new ArrayList<>();
-            adjustedStats.add(stats.get(0)); // locCode
+            adjustedStats.add(stats.getFirst()); // locCode
             adjustedStats.add(locName); // locName
             adjustedStats.addAll(stats.subList(stats.size() - 4, stats.size())); // Remaining stats
             return adjustedStats;

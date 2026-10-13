@@ -395,7 +395,7 @@ class AbstractReportTest {
                 new ReportLinkedMap<String, Object>().add(dataType.getId(), "test1"),
                 new ReportLinkedMap<String, Object>().add(dataType.getId(), "test2")
             );
-            verify(report, times(1)).getDataFromReturnType(data.get(0), dataType);
+            verify(report, times(1)).getDataFromReturnType(data.getFirst(), dataType);
             verify(report, times(1)).getDataFromReturnType(data.get(1), dataType);
             verify(report, times(1)).getDataFromReturnType(data.get(2), dataType);
         }
@@ -426,7 +426,7 @@ class AbstractReportTest {
                 new ReportLinkedMap<>(),
                 new ReportLinkedMap<String, Object>().add(dataType.getId(), "test2")
             );
-            verify(report, times(1)).getDataFromReturnType(data.get(0), dataType);
+            verify(report, times(1)).getDataFromReturnType(data.getFirst(), dataType);
             verify(report, times(1)).getDataFromReturnType(data.get(1), dataType);
             verify(report, times(1)).getDataFromReturnType(data.get(2), dataType);
         }
@@ -1156,7 +1156,7 @@ class AbstractReportTest {
         AbstractReport<Object> report = createReport();
         report.isCourtUserOnly();
         assertThat(report.authenticationConsumers).hasSize(1);
-        Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.get(0);
+        Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.getFirst();
 
         assertDoesNotThrow(() -> authenticationConsumer.accept(mock(StandardReportRequest.class)),
             "No exception should be thrown when court user");
@@ -1168,7 +1168,7 @@ class AbstractReportTest {
         AbstractReport<Object> report = createReport();
         report.isCourtUserOnly();
         assertThat(report.authenticationConsumers).hasSize(1);
-        Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.get(0);
+        Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.getFirst();
 
         MojException.Forbidden exception = assertThrows(
             MojException.Forbidden.class,
@@ -1184,7 +1184,7 @@ class AbstractReportTest {
         AbstractReport<Object> report = createReport();
         report.isBureauUserOnly();
         assertThat(report.authenticationConsumers).hasSize(1);
-        Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.get(0);
+        Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.getFirst();
 
         assertDoesNotThrow(() -> authenticationConsumer.accept(mock(StandardReportRequest.class)),
             "No exception should be thrown when bureau user");
@@ -1196,7 +1196,7 @@ class AbstractReportTest {
         AbstractReport<Object> report = createReport();
         report.isBureauUserOnly();
         assertThat(report.authenticationConsumers).hasSize(1);
-        Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.get(0);
+        Consumer<StandardReportRequest> authenticationConsumer = report.authenticationConsumers.getFirst();
 
         MojException.Forbidden exception = assertThrows(
             MojException.Forbidden.class,

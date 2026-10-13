@@ -94,7 +94,7 @@ public class LetterController {
 
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(String.format("Request Letter queued for juror number %s", jurorNumber));
+            .body("Request Letter queued for juror number %s".formatted(jurorNumber));
     }
 
     @PostMapping(path = "/reissue-letter-list")

@@ -183,7 +183,7 @@ public abstract class AbstractJurorAmendmentReport implements IReport {
         JurorAudit afterChangeJuror = null;
         if (includeOneAuditEitherSide) {
             JurorAudit previousJurorAudit =
-                jurorAuditService.getPreviousJurorAudit(jurors.get(jurors.size() - 1));
+                jurorAuditService.getPreviousJurorAudit(jurors.getLast());
             if (previousJurorAudit != null) {
                 jurors.add(previousJurorAudit);
             }

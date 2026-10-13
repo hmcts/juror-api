@@ -40,7 +40,9 @@ public class PoolStatisticsServiceImpl implements PoolStatisticsService {
 
         PoolSummaryResponseDto poolSummaryResponse = new PoolSummaryResponseDto();
         populatePoolDetailsData(poolSummaryResponse, poolRequest);
-        populateBureauSummoningData(poolSummaryResponse, poolStatistics, poolRequest.getNumberRequested());
+        final int noRequestedFromBureau = Math.max(poolRequest.getTotalNoRequired() - poolStatistics.getCourtSupply(),
+            0);
+        populateBureauSummoningData(poolSummaryResponse, poolStatistics, noRequestedFromBureau);
         populatePoolSummaryData(poolSummaryResponse, poolStatistics, poolRequest.getTotalNoRequired());
         populateAdditionalStatsData(poolSummaryResponse, poolStatistics, poolRequest);
 
@@ -57,7 +59,7 @@ public class PoolStatisticsServiceImpl implements PoolStatisticsService {
      */
     private PoolRequest getActivePoolRequest(String poolNumber) {
         Optional<PoolRequest> poolRequestOpt = poolRequestRepository.findByPoolNumber(poolNumber);
-        if (!poolRequestOpt.isPresent()) {
+        if (poolRequestOpt.isEmpty()) {
             throw new PoolRequestException.PoolRequestNotFound(poolNumber);
         }
         return poolRequestOpt.get();

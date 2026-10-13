@@ -307,15 +307,15 @@ public class JurorServiceImplTest {
         assertThat(entity.getMentalHealthActDetails()).isEqualTo(mentalHealthActDetail);
 
         assertThat(entity.getCjsEmployments()).hasSize(1);
-        assertThat(entity.getCjsEmployments().get(0).getJurorNumber()).isEqualTo(jurorNumber);
-        assertThat(entity.getCjsEmployments().get(0).getCjsEmployer()).isEqualTo(cjsEmployer);
-        assertThat(entity.getCjsEmployments().get(0).getCjsEmployerDetails()).isEqualTo(cjsEmployerDetails);
+        assertThat(entity.getCjsEmployments().getFirst().getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(entity.getCjsEmployments().getFirst().getCjsEmployer()).isEqualTo(cjsEmployer);
+        assertThat(entity.getCjsEmployments().getFirst().getCjsEmployerDetails()).isEqualTo(cjsEmployerDetails);
 
         assertThat(entity.getReasonableAdjustments()).hasSize(1);
-        assertThat(entity.getReasonableAdjustments().get(0).getJurorNumber()).isEqualTo(jurorNumber);
-        assertThat(entity.getReasonableAdjustments().get(0).getReasonableAdjustment().getCode())
+        assertThat(entity.getReasonableAdjustments().getFirst().getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(entity.getReasonableAdjustments().getFirst().getReasonableAdjustment().getCode())
             .isEqualTo(reasonableAdjustmentType);
-        assertThat(entity.getReasonableAdjustments().get(0).getReasonableAdjustmentDetail())
+        assertThat(entity.getReasonableAdjustments().getFirst().getReasonableAdjustmentDetail())
             .isEqualTo(reasonableAdjustmentNeedDetail);
         assertThat(entity.getReasonableAdjustmentsArrangements()).isEqualTo(reasonableAdjustmentArrangements);
 

@@ -429,7 +429,7 @@ class CompleteServiceServiceImplTest {
                 "Expected 0 invalid juror number");
             assertEquals(1, completeServiceValidationResponseDto.getValid().size(),
                 "Expected 1 valid juror number");
-            JurorStatusValidationResponseDto validJuror = completeServiceValidationResponseDto.getValid().get(0);
+            JurorStatusValidationResponseDto validJuror = completeServiceValidationResponseDto.getValid().getFirst();
 
             validateJurorStatusValidationResponseDto(validJuror,
                 TestConstants.VALID_JUROR_NUMBER,
@@ -468,7 +468,7 @@ class CompleteServiceServiceImplTest {
             assertEquals(3, completeServiceValidationResponseDto.getValid().size(),
                 "Expected 3 valid juror number");
 
-            validateJurorStatusValidationResponseDto(completeServiceValidationResponseDto.getValid().get(0),
+            validateJurorStatusValidationResponseDto(completeServiceValidationResponseDto.getValid().getFirst(),
                 "123456789",
                 firstName1,
                 lastName1,
@@ -526,7 +526,7 @@ class CompleteServiceServiceImplTest {
                 "Expected 3 invalid juror number");
 
             validateJurorStatusValidationResponseDto(
-                completeServiceValidationResponseDto.getInvalidNotResponded().get(0),
+                completeServiceValidationResponseDto.getInvalidNotResponded().getFirst(),
                 "123456789",
                 firstName1,
                 lastName1,
@@ -587,12 +587,12 @@ class CompleteServiceServiceImplTest {
                 "Expected 2 invalid juror number");
 
             validateJurorStatusValidationResponseDto(
-                completeServiceValidationResponseDto.getInvalidNotResponded().get(0),
+                completeServiceValidationResponseDto.getInvalidNotResponded().getFirst(),
                 "123456789",
                 firstName1,
                 lastName1,
                 poolStatus1);
-            validateJurorStatusValidationResponseDto(completeServiceValidationResponseDto.getValid().get(0),
+            validateJurorStatusValidationResponseDto(completeServiceValidationResponseDto.getValid().getFirst(),
                 "123456788",
                 firstName2,
                 lastName2,

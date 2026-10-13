@@ -364,7 +364,7 @@ class MessagingControllerTest {
         @Test
         void negativeInvalidPayload() throws Exception {
             MessageSendRequest request = getValidPayload();
-            request.getJurors().get(0).setJurorNumber(TestConstants.INVALID_JUROR_NUMBER);
+            request.getJurors().getFirst().setJurorNumber(TestConstants.INVALID_JUROR_NUMBER);
             mockMvc.perform(post(URL, MessageType.BAD_WEATHER_COURT.name(),
                     TestConstants.VALID_COURT_LOCATION)
                     .contentType(MediaType.APPLICATION_JSON)

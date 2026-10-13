@@ -181,7 +181,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
             .historyCode(HistoryCodeMod.DEFERRED_POOL_MEMBER)
             .createdBy(username)
             .poolNumber(jurorPool.getPoolNumber())
-            .otherInformation(String.format(DEFERRAL_DENIED_INFO, deferralRequestDto.getDeferralReason()))
+            .otherInformation(DEFERRAL_DENIED_INFO.formatted(deferralRequestDto.getDeferralReason()))
             .build();
 
         jurorHistoryRepository.save(jurorHistory);
@@ -233,7 +233,7 @@ public class DeferralResponseServiceImpl implements DeferralResponseService {
             .historyCode(HistoryCodeMod.DEFERRED_POOL_MEMBER)
             .createdBy(username)
             .poolNumber(jurorPool.getPoolNumber())
-            .otherInformation(String.format(DEFERRAL_GRANTED_INFO, reasonCode))
+            .otherInformation(DEFERRAL_GRANTED_INFO.formatted(reasonCode))
             .build();
 
         jurorHistoryRepository.save(jurorHistory);

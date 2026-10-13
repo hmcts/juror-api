@@ -60,19 +60,19 @@ class ExemptionCertificateServiceTest {
         verify(trialRepository, times(1))
             .getListOfActiveTrials("415");
 
-        assertThat(trials.get(0).getTrialType())
+        assertThat(trials.getFirst().getTrialType())
             .as("Expect trial type to be Civil")
             .isEqualTo("Civil");
-        assertThat(trials.get(0).getEndDate())
+        assertThat(trials.getFirst().getEndDate())
             .as("Expect trial end date to be null")
             .isNull();
-        assertThat(trials.get(0).getTrialNumber())
+        assertThat(trials.getFirst().getTrialNumber())
             .as("Expect trial number to be T10000000")
             .isEqualTo("T10000000");
-        assertThat(trials.get(0).getJudge())
+        assertThat(trials.getFirst().getJudge())
             .as("Expect trial judge to be SIR DREDD")
             .isEqualTo("SIR DREDD");
-        assertThat(trials.get(0).getStartDate())
+        assertThat(trials.getFirst().getStartDate())
             .as("Expect trial start date to be " + LocalDate.now())
             .isEqualTo(LocalDate.now());
 
@@ -85,7 +85,7 @@ class ExemptionCertificateServiceTest {
 
         TestUtils.setUpMockAuthentication("415", "TEST_COURT", "1", List.of("415"));
 
-        doReturn(setupPanel(setupTrial().get(0)))
+        doReturn(setupPanel(setupTrial().getFirst()))
             .when(panelRepository)
             .findByTrialTrialNumberAndTrialCourtLocationLocCode(caseNumber, courtLocation);
 
@@ -100,16 +100,16 @@ class ExemptionCertificateServiceTest {
             .as("Expect single juror only")
             .isEqualTo(1);
 
-        assertThat(jurors.get(0).getJurorNumber())
+        assertThat(jurors.getFirst().getJurorNumber())
             .as("Expect juror number to be 111111111")
             .isEqualTo("111111111");
-        assertThat(jurors.get(0).getFirstName())
+        assertThat(jurors.getFirst().getFirstName())
             .as("Expect juror's first name to be FNAME")
             .isEqualTo("FNAME");
-        assertThat(jurors.get(0).getLastName())
+        assertThat(jurors.getFirst().getLastName())
             .as("Expect juror's first name to be LNAME")
             .isEqualTo("LNAME");
-        assertThat(jurors.get(0).getDateEmpanelled())
+        assertThat(jurors.getFirst().getDateEmpanelled())
             .as("Expect date empanelled to be " + LocalDate.now())
             .isEqualTo(LocalDate.now());
     }

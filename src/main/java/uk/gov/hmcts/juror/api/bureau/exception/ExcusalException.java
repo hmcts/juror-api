@@ -34,7 +34,7 @@ public class ExcusalException extends RuntimeException {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public static class RequestedCodeNotValid extends ExcusalException {
         public RequestedCodeNotValid(final String jurorId, final String code) {
-            super(String.format("Request to excuse Juror %s failed as requested code %s is not valid", jurorId, code));
+            super("Request to excuse Juror %s failed as requested code %s is not valid".formatted(jurorId, code));
         }
     }
 
@@ -44,7 +44,7 @@ public class ExcusalException extends RuntimeException {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public static class JurorNotFound extends ExcusalException {
         public JurorNotFound(final String jurorId) {
-            super(String.format("Request to excuse Juror %s failed as Juror was not found", jurorId));
+            super("Request to excuse Juror %s failed as Juror was not found".formatted(jurorId));
         }
     }
 

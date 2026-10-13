@@ -296,7 +296,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
     private void checkWriteAccessForCurrentUser(String jurorNumber, String owner) {
         List<JurorPool> jurorPools = getJurorPools(jurorNumber);
 
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         checkAccessForCurrentUser(jurorPool, owner);
     }
 
@@ -736,7 +736,7 @@ public class JurorPaperResponseServiceImpl implements JurorPaperResponseService 
             juror.setReasonableAdjustmentCode(null);
         } else {
             JurorPaperResponseDto.ReasonableAdjustment newReasonableAdjustmentDetailsDto =
-                reasonableAdjustmentDetailsDto.getReasonableAdjustments().get(0);
+                reasonableAdjustmentDetailsDto.getReasonableAdjustments().getFirst();
             juror.setReasonableAdjustmentCode(newReasonableAdjustmentDetailsDto.getAssistanceType());
             juror.setReasonableAdjustmentMessage(newReasonableAdjustmentDetailsDto.getAssistanceTypeDetails());
         }

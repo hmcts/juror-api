@@ -225,6 +225,11 @@ spring:
       on-profile: test
 testing:
   fix-clock: true
+server:
+  error:
+    include-message: always
+    include-exception: true
+    include-binding-errors: always
 jwt:
   secret:
     hmac: test-hmac-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256-algorithm

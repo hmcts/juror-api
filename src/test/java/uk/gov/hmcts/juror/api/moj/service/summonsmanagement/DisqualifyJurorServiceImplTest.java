@@ -136,10 +136,10 @@ public class DisqualifyJurorServiceImplTest {
         List<DisqualifyReasonsDto.DisqualifyReasons> disqualifyReasonsListActual =
             disqualifyReasonsActual.getDisqualifyReasons();
 
-        assertThat(disqualifyReasonsListActual.get(0).getCode()).isEqualTo("A");
-        assertThat(disqualifyReasonsListActual.get(0).getDescription()).isEqualTo("Age");
-        assertThat(disqualifyReasonsListActual.get(0).getHeritageCode()).isEqualTo("A");
-        assertThat(disqualifyReasonsListActual.get(0).getHeritageDescription())
+        assertThat(disqualifyReasonsListActual.getFirst().getCode()).isEqualTo("A");
+        assertThat(disqualifyReasonsListActual.getFirst().getDescription()).isEqualTo("Age");
+        assertThat(disqualifyReasonsListActual.getFirst().getHeritageCode()).isEqualTo("A");
+        assertThat(disqualifyReasonsListActual.getFirst().getHeritageDescription())
             .isEqualTo("Less Than Eighteen Years of Age or Over 75");
 
         assertThat(disqualifyReasonsListActual.get(1).getCode()).isEqualTo("B");
@@ -261,7 +261,7 @@ public class DisqualifyJurorServiceImplTest {
         assertThat(capturedJurorPool.getNextDate()).isNull();
         assertThat(capturedJurorPool.getStatus().getStatus()).isEqualTo(DISQUALIFIED);
 
-        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"B");
+        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.getFirst(),"B");
 
         // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
 
@@ -332,7 +332,7 @@ public class DisqualifyJurorServiceImplTest {
         assertThat(capturedJurorPool.getNextDate()).isNull();
         assertThat(capturedJurorPool.getStatus().getStatus()).isEqualTo(DISQUALIFIED);
 
-        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"N");
+        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.getFirst(),"N");
         // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
         //Services or repository methods specific to Paper response
         verify(jurorPaperResponseRepository, never()).findById(anyString());
@@ -357,7 +357,7 @@ public class DisqualifyJurorServiceImplTest {
 
         disqualifyJurorService.disqualifyJuror(jurorNumber, disqualifyJurorDto, courtPayload);
 
-        verify(emailDataService).emailWithdrawalLetter(jurorPoolList.get(0), "N");
+        verify(emailDataService).emailWithdrawalLetter(jurorPoolList.getFirst(), "N");
         verify(printDataService, never()).printWithdrawalLetter(any(JurorPool.class));
     }
 
@@ -379,8 +379,8 @@ public class DisqualifyJurorServiceImplTest {
 
         disqualifyJurorService.disqualifyJuror(jurorNumber, disqualifyJurorDto, courtPayload);
 
-        verify(printDataService).printWithdrawalLetter(jurorPoolList.get(0));
-        verify(jurorHistoryService).createWithdrawHistoryUser(jurorPoolList.get(0), "Withdrawal Letter", "N",
+        verify(printDataService).printWithdrawalLetter(jurorPoolList.getFirst());
+        verify(jurorHistoryService).createWithdrawHistoryUser(jurorPoolList.getFirst(), "Withdrawal Letter", "N",
                                                               CommunicationChannel.LETTER);
         verify(emailDataService, never()).emailWithdrawalLetter(any(JurorPool.class), anyString());
     }
@@ -504,7 +504,7 @@ public class DisqualifyJurorServiceImplTest {
 
         //Common
         // TODO add verification for printDataServiceArgumentCaptor
-        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"N");
+        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.getFirst(),"N");
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
@@ -649,7 +649,7 @@ public class DisqualifyJurorServiceImplTest {
 
     private List<JurorPool> createDigitalByDefaultJurorPoolList(String jurorNumber, String owner) {
         List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, owner);
-        JurorPool jurorPool = jurorPools.get(0);
+        JurorPool jurorPool = jurorPools.getFirst();
         jurorPool.getCourt().setDigitalByDefault(true);
         jurorPool.getJuror().setDigitalByDefault(true);
         jurorPool.getJuror().setDbdPreference(ReplyMethod.DIGITAL.getDescription());

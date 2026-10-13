@@ -4,8 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-import static java.lang.String.format;
-
 @SuppressWarnings("PMD.AvoidStringBufferField")
 public abstract class AbstractLetterTest {
     protected final StringBuilder expectedEnglish = new StringBuilder();
@@ -83,7 +81,7 @@ public abstract class AbstractLetterTest {
         String dateString = formatter.format(cal.getTime()).toUpperCase();
         String[] dateParts = dateString.split("\\s");
         String welshMonth = XeroxConstants.WELSH_DATE_TRANSLATION_MAP.get(dateParts[1]);
-        return format("%s %s %s", dateParts[0], welshMonth, dateParts[2]);
+        return "%s %s %s".formatted(dateParts[0], welshMonth, dateParts[2]);
     }
 
     protected String getExpectedEnglishResult() {

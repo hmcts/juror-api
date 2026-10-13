@@ -131,7 +131,7 @@ public class DeceasedResponseControllerITest extends AbstractIntegrationTest {
             List<ContactLog> contactLog = contactLogRepository.findByJurorNumber(jurorNumber);
 
             assertThat(contactLog).isNotEmpty();
-            assertThat(contactLog.get(0).getNotes()).contains(PAPER_RESPONSE_EXISTS_TEXT);
+            assertThat(contactLog.getFirst().getNotes()).contains(PAPER_RESPONSE_EXISTS_TEXT);
 
             // verify the paper response has been created
             PaperResponse jurorPaperResponse =
@@ -182,7 +182,7 @@ public class DeceasedResponseControllerITest extends AbstractIntegrationTest {
             List<ContactLog> contactLog = contactLogRepository.findByJurorNumber(jurorNumber);
 
             assertThat(contactLog).isNotEmpty();
-            assertThat(contactLog.get(0).getNotes()).doesNotContain(PAPER_RESPONSE_EXISTS_TEXT);
+            assertThat(contactLog.getFirst().getNotes()).doesNotContain(PAPER_RESPONSE_EXISTS_TEXT);
         });
     }
 

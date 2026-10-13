@@ -411,7 +411,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             .hasSize(2);
 
         JurorAppearanceResponseDto.JurorAppearanceResponseData jurorAppearanceResponseData =
-            jurorAppearanceResponseDto.getData().get(0);
+            jurorAppearanceResponseDto.getData().getFirst();
         assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR1);
         assertThat(jurorAppearanceResponseData.getFirstName()).isEqualTo("TEST");
         assertThat(jurorAppearanceResponseData.getLastName()).isEqualTo("LASTNAME");
@@ -447,7 +447,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             .hasSize(1);
 
         JurorAppearanceResponseDto.JurorAppearanceResponseData jurorAppearanceResponseData =
-            jurorAppearanceResponseDto.getData().get(0);
+            jurorAppearanceResponseDto.getData().getFirst();
 
         assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR2);
         assertThat(jurorAppearanceResponseData.getJurorStatus()).isEqualTo(IJurorStatus.JUROR);
@@ -1383,8 +1383,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
             assertThat(responseEntity.getBody())
-                .as(String.format(RESPONSE_MESSAGE, 2))
-                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 2));
+                .as(RESPONSE_MESSAGE.formatted(2))
+                .isEqualTo(RESPONSE_EQUAL_TO.formatted(2));
 
             // verify the attendance date was updated successfully
             LocalDate attendanceDateAfterJuror1 = retrieveAttendanceDate(JUROR1, POOL_NUMBER_415230101);
@@ -1409,8 +1409,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
             assertThat(responseEntity.getBody())
-                .as(String.format(RESPONSE_MESSAGE, 2))
-                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 2));
+                .as(RESPONSE_MESSAGE.formatted(2))
+                .isEqualTo(RESPONSE_EQUAL_TO.formatted(2));
 
             // verify the attendance date was updated successfully for two jurors
             LocalDate attendanceDateAfterJuror1 = retrieveAttendanceDate(JUROR1, POOL_NUMBER_415230101);
@@ -1438,8 +1438,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
             assertThat(responseEntity.getBody())
-                .as(String.format(RESPONSE_MESSAGE, 1))
-                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 1));
+                .as(RESPONSE_MESSAGE.formatted(1))
+                .isEqualTo(RESPONSE_EQUAL_TO.formatted(1));
 
             // verify the on-call flag was updated successfully
             Boolean onCallFlagAfter =
@@ -1463,8 +1463,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
             assertThat(responseEntity.getBody())
-                .as(String.format(RESPONSE_MESSAGE, 0))
-                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 0));
+                .as(RESPONSE_MESSAGE.formatted(0))
+                .isEqualTo(RESPONSE_EQUAL_TO.formatted(0));
 
             // verify the attendance date was not updated
             LocalDate attendanceDateAfter = retrieveAttendanceDate(JUROR3, POOL_NUMBER_415230101);
@@ -1484,8 +1484,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
             assertThat(responseEntity.getBody())
-                .as(String.format(RESPONSE_MESSAGE, 0))
-                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 0));
+                .as(RESPONSE_MESSAGE.formatted(0))
+                .isEqualTo(RESPONSE_EQUAL_TO.formatted(0));
         }
 
         @Test
@@ -1501,8 +1501,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
             assertThat(responseEntity.getBody())
-                .as(String.format(RESPONSE_MESSAGE, 0))
-                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 0));
+                .as(RESPONSE_MESSAGE.formatted(0))
+                .isEqualTo(RESPONSE_EQUAL_TO.formatted(0));
         }
 
         @Test
@@ -1520,8 +1520,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
             assertThat(responseEntity.getBody())
-                .as(String.format(RESPONSE_MESSAGE, 0))
-                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 0));
+                .as(RESPONSE_MESSAGE.formatted(0))
+                .isEqualTo(RESPONSE_EQUAL_TO.formatted(0));
 
             // verify the attendance date was not updated
             LocalDate attendanceDateAfter = retrieveAttendanceDate(JUROR5, POOL_NUMBER_415230101);
@@ -1543,8 +1543,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
 
             assertThat(responseEntity.getStatusCode()).as(HTTP_STATUS_OK_MESSAGE).isEqualTo(OK);
             assertThat(responseEntity.getBody())
-                .as(String.format(RESPONSE_MESSAGE, 0))
-                .isEqualTo(String.format(RESPONSE_EQUAL_TO, 0));
+                .as(RESPONSE_MESSAGE.formatted(0))
+                .isEqualTo(RESPONSE_EQUAL_TO.formatted(0));
 
             // verify the attendance date was not updated
             LocalDate attendanceDateAfter = retrieveAttendanceDate(JUROR7, POOL_NUMBER_415230101);
@@ -1686,7 +1686,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             // verify juror history
             List<JurorHistory> jurorHistoryList = jurorHistoryRepository.findByJurorNumberOrderById(JUROR1);
             assertThat(jurorHistoryList).hasSize(1);
-            assertThat(jurorHistoryList.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.ATTENDANCE_DELETED);
+            assertThat(jurorHistoryList.getFirst().getHistoryCode()).isEqualTo(HistoryCodeMod.ATTENDANCE_DELETED);
 
         }
 
@@ -2087,7 +2087,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             List<UnconfirmedJurorDataDto> unconfirmedJurors = responseDto.getJurors();
             assertThat(unconfirmedJurors).hasSize(3);
 
-            UnconfirmedJurorDataDto juror = unconfirmedJurors.get(0);
+            UnconfirmedJurorDataDto juror = unconfirmedJurors.getFirst();
             assertThat(juror.getJurorNumber()).isEqualTo("333333333");
             assertThat(juror.getFirstName()).isEqualTo("TEST");
             assertThat(juror.getLastName()).isEqualTo("THREE");
@@ -2304,7 +2304,8 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             assertThat(jurorsOnTrialResponseDto.getTrialsList().size()).as("Expect 3 records to be returned")
                 .isEqualTo(3);
 
-            JurorsOnTrialResponseDto.JurorsOnTrialResponseData first = jurorsOnTrialResponseDto.getTrialsList().get(0);
+            JurorsOnTrialResponseDto.JurorsOnTrialResponseData first =
+                jurorsOnTrialResponseDto.getTrialsList().getFirst();
             assertThat(first.getTrialNumber()).isEqualTo("T10000001");
             assertThat(first.getParties()).isEqualTo("test trial");
             assertThat(first.getTrialType()).isEqualTo("Civil");
@@ -2513,7 +2514,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
             .isEqualTo(3);
 
         JurorAppearanceResponseDto.JurorAppearanceResponseData jurorAppearanceResponseData =
-            jurorAppearanceResponseDto.getData().get(0);
+            jurorAppearanceResponseDto.getData().getFirst();
         assertThat(jurorAppearanceResponseData.getJurorNumber()).isEqualTo(JUROR1);
         assertThat(jurorAppearanceResponseData.getFirstName()).isEqualTo("TEST");
         assertThat(jurorAppearanceResponseData.getLastName()).isEqualTo("LASTNAME");

@@ -548,7 +548,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             trialRequest.setCourtLocation("462");
             ResponseEntity<TrialSummaryDto> responseEntity =
                 restTemplate.exchange(new RequestEntity<>(trialRequest, httpHeaders, GET,
-                    URI.create(String.format(URL_TRIAL_SUMMARY, "T100000023", "415"))), TrialSummaryDto.class);
+                    URI.create(URL_TRIAL_SUMMARY.formatted("T100000023", "415"))), TrialSummaryDto.class);
 
             assertThat(responseEntity.getStatusCode())
                 .as("Bureau users are forbidden from getting trial summary").isEqualTo(FORBIDDEN);
@@ -562,7 +562,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             trialRequest.setCourtLocation("415");
             ResponseEntity<TrialSummaryDto> responseEntity =
                 restTemplate.exchange(new RequestEntity<>(trialRequest, httpHeaders, GET,
-                    URI.create(String.format(URL_TRIAL_SUMMARY, "123", "415"))), TrialSummaryDto.class);
+                    URI.create(URL_TRIAL_SUMMARY.formatted("123", "415"))), TrialSummaryDto.class);
 
             assertThat(responseEntity.getStatusCode())
                 .as("Expect a Not Found exception if trial details cannot be found for the search criteria")
@@ -577,7 +577,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             trialRequest.setCourtLocation("415");
             ResponseEntity<String> responseEntity =
                 restTemplate.exchange(new RequestEntity<>(trialRequest, httpHeaders, GET,
-                    URI.create(String.format(URL_TRIAL_SUMMARY, "T100000023", "415"))), String.class);
+                    URI.create(URL_TRIAL_SUMMARY.formatted("T100000023", "415"))), String.class);
 
             assertThat(responseEntity.getStatusCode())
                 .as("Officer forbidden to view trial details of courts not member of").isEqualTo(FORBIDDEN);
@@ -592,7 +592,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
         private ResponseEntity<TrialSummaryDto> invokeService(String trialNumber, String locCode) {
             ResponseEntity<TrialSummaryDto> responseEntity =
                 restTemplate.exchange(new RequestEntity<>(httpHeaders, GET,
-                    URI.create(String.format(URL_TRIAL_SUMMARY, trialNumber, locCode))), TrialSummaryDto.class);
+                    URI.create(URL_TRIAL_SUMMARY.formatted(trialNumber, locCode))), TrialSummaryDto.class);
 
             assertThat(responseEntity.getStatusCode())
                 .as("Expect request to get trial summary is successful")
@@ -1077,7 +1077,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
                 // confirm panel reassigned history
                 List<JurorHistory> jurorHistory = jurorHistoryRepository.findByJurorNumberOrderById("415000006");
                 assertThat(jurorHistory).hasSize(1);
-                assertThat(jurorHistory.get(0).getHistoryCode()).isEqualTo(HistoryCodeMod.REASSIGN_PANEL);
+                assertThat(jurorHistory.getFirst().getHistoryCode()).isEqualTo(HistoryCodeMod.REASSIGN_PANEL);
             });
 
         }
@@ -1386,7 +1386,7 @@ class TrialControllerITest extends AbstractIntegrationTest {
             JurorDetailRequestDto detailRequestDto = new JurorDetailRequestDto();
             detailRequestDto.setFirstName("FNAME");
             detailRequestDto.setLastName("LNAME");
-            detailRequestDto.setJurorNumber(String.format("4150000%02d", i));
+            detailRequestDto.setJurorNumber("4150000%02d".formatted(i));
             detailRequestDto.setResult(PanelResult.JUROR);
             dtoList.add(detailRequestDto);
         }

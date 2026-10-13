@@ -90,11 +90,11 @@ public class ManagePoolsServiceImplTest extends TestCase {
             false);
 
         assertThat(availablePools.getAvailablePools()).hasSize(1);
-        assertThat(availablePools.getAvailablePools().get(0).getPoolNumber()).isEqualTo("111111111");
-        assertThat(availablePools.getAvailablePools().get(0).getUtilisationDescription()).isEqualTo(
+        assertThat(availablePools.getAvailablePools().getFirst().getPoolNumber()).isEqualTo("111111111");
+        assertThat(availablePools.getAvailablePools().getFirst().getUtilisationDescription()).isEqualTo(
             PoolUtilisationDescription.CONFIRMED);
-        assertThat(availablePools.getAvailablePools().get(0).getUtilisation()).isEqualTo(1);
-        assertThat(availablePools.getAvailablePools().get(0).getServiceStartDate()).isEqualTo("2023-06-22");
+        assertThat(availablePools.getAvailablePools().getFirst().getUtilisation()).isEqualTo(1);
+        assertThat(availablePools.getAvailablePools().getFirst().getServiceStartDate()).isEqualTo("2023-06-22");
         mockitoVerificationFindAvailablePools(1);
     }
 
@@ -196,7 +196,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
                 WEEK_COMMENCING, NUMBER_OF_WEEKS);
         assertThat(poolStatistics.size()).as("Expected list size of nine").isEqualTo(9);
 
-        Tuple stats = poolStatistics.get(0);
+        Tuple stats = poolStatistics.getFirst();
         assertThat(stats.get(0, LocalDate.class)).isExactlyInstanceOf(LocalDate.class);
         assertThat(stats.get(1, String.class)).isExactlyInstanceOf(String.class);
         assertThat(stats.get(6, int.class)).isExactlyInstanceOf(Integer.class);
@@ -223,7 +223,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
             .getNilPools(bureauPayload.getOwner(), COURT_LOCATION_CODE, POOL_TYPE, WEEK_COMMENCING, NUMBER_OF_WEEKS);
         assertThat(poolStatistics.size()).as("Expected list size of two").isEqualTo(2);
 
-        Tuple stats = poolStatistics.get(0);
+        Tuple stats = poolStatistics.getFirst();
         assertThat(stats.get(0, String.class))
             .as(stringLogMessage(), "111111111")
             .isEqualTo("111111111");
@@ -254,22 +254,22 @@ public class ManagePoolsServiceImplTest extends TestCase {
         assertThat(dto.getStatsByWeek().size())
             .as("Expected size to be eight")
             .isEqualTo(8);
-        assertThat(dto.getStatsByWeek().get(0).getStartOfWeek())
+        assertThat(dto.getStatsByWeek().getFirst().getStartOfWeek())
             .as("Expected start of week date to be %s", DateUtils.getStartOfWeekFromDate(LocalDate.now()))
             .isEqualTo(DateUtils.getStartOfWeekFromDate(LocalDate.now()));
-        assertThat(dto.getStatsByWeek().get(0).getStats().size())
+        assertThat(dto.getStatsByWeek().getFirst().getStats().size())
             .as("Expected size to be ten")
             .isEqualTo(10);
-        assertThat(dto.getStatsByWeek().get(0).getStats().get(0).summoned)
+        assertThat(dto.getStatsByWeek().getFirst().getStats().getFirst().summoned)
             .as("Expected summon amount to be greater than zero")
             .isGreaterThanOrEqualTo(0);
-        assertThat(dto.getStatsByWeek().get(0).getStats().get(0).requested)
+        assertThat(dto.getStatsByWeek().getFirst().getStats().getFirst().requested)
             .as("Expected requested amount to be greater than zero")
             .isGreaterThanOrEqualTo(0);
-        assertThat(dto.getStatsByWeek().get(0).getStats().get(0).confirmed)
+        assertThat(dto.getStatsByWeek().getFirst().getStats().getFirst().confirmed)
             .as("Expected confirmed amount to be greater than zero")
             .isGreaterThanOrEqualTo(0);
-        assertThat(dto.getStatsByWeek().get(0).getStats().get(0).unavailable)
+        assertThat(dto.getStatsByWeek().getFirst().getStats().getFirst().unavailable)
             .as("Expected unavailable amount to be greater than zero")
             .isGreaterThanOrEqualTo(0);
 
@@ -293,7 +293,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
         assertThat(dto.getStatsByWeek().size()).isEqualTo(8);
-        assertThat(dto.getStatsByWeek().get(0).getStats().size()).isEqualTo(0);
+        assertThat(dto.getStatsByWeek().getFirst().getStats().size()).isEqualTo(0);
     }
 
     @Test
@@ -307,7 +307,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
         assertThat(dto.getStatsByWeek().size()).isEqualTo(8);
-        assertThat(dto.getStatsByWeek().get(0).getStats().size()).isEqualTo(0);
+        assertThat(dto.getStatsByWeek().getFirst().getStats().size()).isEqualTo(0);
         assertThat(dto.getStatsByWeek().get(1).getStats().size()).isEqualTo(1);
     }
 
@@ -321,7 +321,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
         assertThat(dto.getStatsByWeek().size()).isEqualTo(8);
-        assertThat(dto.getStatsByWeek().get(0).getStats().size()).isEqualTo(0);
+        assertThat(dto.getStatsByWeek().getFirst().getStats().size()).isEqualTo(0);
         assertThat(dto.getStatsByWeek().get(1).getStats().size()).isEqualTo(1);
     }
 
@@ -334,7 +334,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         SummoningProgressResponseDto dto = managePoolsService
             .getPoolMonitoringStats(bureauPayload, COURT_LOCATION_CODE, POOL_TYPE);
         assertThat(dto.getStatsByWeek().size()).isEqualTo(8);
-        assertThat(dto.getStatsByWeek().get(0).getStats().size()).isEqualTo(2);
+        assertThat(dto.getStatsByWeek().getFirst().getStats().size()).isEqualTo(2);
     }
 
     private static String stringLogMessage() {
@@ -350,7 +350,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         for (int i = 0; i < numberOfWeeks; i++) {
             Tuple tuple = Mockito.mock(Tuple.class);
             doReturn(LocalDate.now()).when(tuple).get(0, LocalDate.class);
-            doReturn(String.format("%s%02d", poolNumber, i + 1)).when(tuple).get(1, String.class);
+            doReturn("%s%02d".formatted(poolNumber, i + 1)).when(tuple).get(1, String.class);
             doReturn(300).when(tuple).get(6, int.class);
             doReturn(40).when(tuple).get(4, int.class);
             doReturn(10).when(tuple).get(5, int.class);
@@ -361,7 +361,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         // nil pool
         Tuple t = Mockito.mock(Tuple.class);
         doReturn(LocalDate.now()).when(t).get(0, LocalDate.class);
-        doReturn(String.format("%s%02d", poolNumber, 9)).when(t).get(1, String.class);
+        doReturn("%s%02d".formatted(poolNumber, 9)).when(t).get(1, String.class);
         doReturn(0).when(t).get(6, int.class);
         doReturn(0).when(t).get(4, int.class);
         doReturn(0).when(t).get(5, int.class);
@@ -382,7 +382,7 @@ public class ManagePoolsServiceImplTest extends TestCase {
         tuple = Mockito.mock(Tuple.class);
         doReturn(0).when(tuple).get(1, int.class);
         doReturn(LocalDate.now()).when(tuple).get(2, LocalDate.class);
-        doReturn(String.format("%s%02d", "4152306", 9)).when(tuple).get(0, String.class);
+        doReturn("%s%02d".formatted("4152306", 9)).when(tuple).get(0, String.class);
         tuples.add(tuple);
         return tuples;
     }

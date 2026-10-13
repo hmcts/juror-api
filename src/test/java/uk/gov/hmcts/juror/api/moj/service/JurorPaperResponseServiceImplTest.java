@@ -1721,15 +1721,15 @@ public class JurorPaperResponseServiceImplTest {
         Assertions.assertThat(eligibility.getOnBail()).isEqualTo(jurorPaperResponse.getBail());
         Assertions.assertThat(eligibility.getConvicted()).isEqualTo(jurorPaperResponse.getConvictions());
 
-        JurorPaperResponseDetailDto.CjsEmployment actualCjsEmployment = responseDto.getCjsEmployment().get(0);
-        JurorResponseCjsEmployment expectedCjsEmployment = jurorPaperResponse.getCjsEmployments().get(0);
+        JurorPaperResponseDetailDto.CjsEmployment actualCjsEmployment = responseDto.getCjsEmployment().getFirst();
+        JurorResponseCjsEmployment expectedCjsEmployment = jurorPaperResponse.getCjsEmployments().getFirst();
         Assertions.assertThat(actualCjsEmployment.getCjsEmployer()).isEqualTo(expectedCjsEmployment.getCjsEmployer());
         Assertions.assertThat(actualCjsEmployment.getCjsEmployerDetails())
             .isEqualTo(expectedCjsEmployment.getCjsEmployerDetails());
 
         JurorPaperResponseDetailDto.ReasonableAdjustment actualReasonableAdjustment
-            = responseDto.getReasonableAdjustments().get(0);
-        JurorReasonableAdjustment expectedSpecialNeeds = jurorPaperResponse.getReasonableAdjustments().get(0);
+            = responseDto.getReasonableAdjustments().getFirst();
+        JurorReasonableAdjustment expectedSpecialNeeds = jurorPaperResponse.getReasonableAdjustments().getFirst();
         Assertions.assertThat(actualReasonableAdjustment.getAssistanceType())
             .isEqualTo(expectedSpecialNeeds.getReasonableAdjustment().getCode());
         Assertions.assertThat(actualReasonableAdjustment.getAssistanceTypeDetails())
