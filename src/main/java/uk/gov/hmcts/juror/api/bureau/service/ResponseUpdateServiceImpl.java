@@ -484,7 +484,6 @@ public class ResponseUpdateServiceImpl implements ResponseUpdateService {
      * @see #updateAndLogAdjustment(String, ReasonableAdjustment, String)
      */
     @Getter
-    @SuppressWarnings("PMD.PublicMemberInNonPublicType")
     private enum ReasonableAdjustment {
         LIMITED_MOBILITY("L", "Limited Mobility"),
         HEARING_IMPAIRMENT("H", "Hearing Impairment"),
