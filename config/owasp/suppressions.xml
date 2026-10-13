@@ -12,18 +12,18 @@
 
   <suppress>
     <notes><![CDATA[
-   Jenkins PR-1299 dependency-check findings for httpclient5-5.4.4.jar.
+   Jenkins PR-1299 dependency-check findings for httpclient5-5.6.4.jar.
    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents\.client5/httpclient5@5\.4\.4$</packageUrl>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents\.client5/httpclient5@5\.6\.4$</packageUrl>
     <cve>CVE-2026-71290</cve>
     <cve>CVE-2026-64607</cve>
   </suppress>
 
   <suppress>
     <notes><![CDATA[
-   Jenkins PR-1299 dependency-check findings for httpcore5-5.3.6.jar and httpcore5-h2-5.3.6.jar.
+   Jenkins PR-1299 dependency-check findings for httpcore5-5.4.3.jar and httpcore5-h2-5.4.3.jar.
    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents\.core5/httpcore5(-h2)?@5\.3\.6$</packageUrl>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.httpcomponents\.core5/httpcore5(-h2)?@5\.4\.3$</packageUrl>
     <cve>CVE-2026-54399</cve>
     <cve>CVE-2026-54428</cve>
   </suppress>
