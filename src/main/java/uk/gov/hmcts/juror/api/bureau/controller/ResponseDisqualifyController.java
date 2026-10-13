@@ -25,12 +25,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.exception.DisqualifyException;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseDisqualifyService;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtAuthentication;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
+import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 
 import java.util.List;
 import java.util.Objects;
@@ -62,7 +62,7 @@ public class ResponseDisqualifyController {
 
         // JDB-1458: We need to remove "E - Electronic Police Check Failure" from the list
         disqualifyReasons.removeIf(disqualifyCode ->
-            DisCode.ELECTRONIC_POLICE_CHECK_FAILURE.equals(disqualifyCode.getDisqualifyCode()));
+            DisqualifyCode.E.getCode().equals(disqualifyCode.getDisqualifyCode()));
 
         return ResponseEntity.ok().body(new DisqualifyReasonsDto(disqualifyReasons));
     }

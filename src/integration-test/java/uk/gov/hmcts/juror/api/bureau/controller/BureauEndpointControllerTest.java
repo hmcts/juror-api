@@ -24,8 +24,8 @@ import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauResponseSummaryWrapper;
 import uk.gov.hmcts.juror.api.bureau.exception.BureauOptimisticLockingException;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -231,7 +231,7 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     }
 
     /**
-     * Tests that {@link JurorResponse#completedAt} is set correctly when a response is closed.
+     * Tests that {@link DigitalResponse#getCompletedAt()} is set correctly when a response is closed.
      *
      * @param beforeTest the time the test started at (the completedAt value should be after this)
      * @since JDB-2139

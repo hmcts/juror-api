@@ -20,11 +20,11 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.SpringBootErrorResponse;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseDisqualifyController.DisqualifyCodeDto;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseDisqualifyController.DisqualifyReasonsDto;
-import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
-import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
 import uk.gov.hmcts.juror.api.moj.domain.DisqualifiedCode;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
+import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 
 import java.net.URI;
@@ -75,7 +75,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
         // JDB-1458: unable to assert actual list of reasons as they may change, but we know 'E' shouldn't be in it
         assertThat(data)
             .as("Ensure Disqualify code is not E")
-            .filteredOn("disqualifyCode", DisCode.ELECTRONIC_POLICE_CHECK_FAILURE)
+            .filteredOn("disqualifyCode", DisqualifyCode.E.getCode())
             .isEmpty();
     }
 
@@ -160,7 +160,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 jdbcTemplate.queryForObject("SELECT STATUS FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     Long.class))
             .as("Juror's pool entry should have STATUS set to 6, meaning Disqualified")
-            .isEqualTo(IPoolStatus.DISQUALIFIED);
+            .isEqualTo(IJurorStatus.DISQUALIFIED);
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT NEXT_DATE FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     Timestamp.class))
@@ -321,7 +321,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 jdbcTemplate.queryForObject("SELECT STATUS FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     Long.class))
             .as("Juror's pool entry should have STATUS set to 6, meaning Disqualified")
-            .isEqualTo(IPoolStatus.DISQUALIFIED);
+            .isEqualTo(IJurorStatus.DISQUALIFIED);
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT NEXT_DATE FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     Timestamp.class))
@@ -411,7 +411,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 jdbcTemplate.queryForObject("SELECT STATUS FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     Long.class))
             .as("Juror's pool entry should have STATUS set to 1, meaning Summoned")
-            .isEqualTo(IPoolStatus.SUMMONED);
+            .isEqualTo(IJurorStatus.SUMMONED);
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT NEXT_DATE FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     Timestamp.class))
@@ -488,7 +488,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 jdbcTemplate.queryForObject("SELECT STATUS FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     Long.class))
             .as("Juror's pool entry should have STATUS set to 1, meaning Summoned")
-            .isEqualTo(IPoolStatus.SUMMONED);
+            .isEqualTo(IJurorStatus.SUMMONED);
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT NEXT_DATE FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     Timestamp.class))
@@ -563,7 +563,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 jdbcTemplate.queryForObject("SELECT STATUS FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     Long.class))
             .as("Juror's pool entry should have STATUS set to 1, meaning Summoned")
-            .isEqualTo(IPoolStatus.SUMMONED);
+            .isEqualTo(IJurorStatus.SUMMONED);
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT NEXT_DATE FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     Timestamp.class))
@@ -638,7 +638,7 @@ public class ResponseDisqualifyControllerTest extends AbstractIntegrationTest {
                 jdbcTemplate.queryForObject("SELECT STATUS FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     Long.class))
             .as("Juror's pool entry should have STATUS set to 1, meaning Summoned")
-            .isEqualTo(IPoolStatus.SUMMONED);
+            .isEqualTo(IJurorStatus.SUMMONED);
         softly.assertThat(
                 jdbcTemplate.queryForObject("SELECT NEXT_DATE FROM juror_mod.juror_pool WHERE juror_number='644892530'",
                     Timestamp.class))

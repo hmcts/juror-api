@@ -217,7 +217,7 @@ public class ResponseUpdateController {
         assertJurorNumberPathVariable(jurorId);
 
         final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
-        responseUpdateService.updateSpecialNeeds(reasonableAdjustmentsDto, jurorId, jwtPayload.getLogin());
+        responseUpdateService.updateReasonableAdjustments(reasonableAdjustmentsDto, jurorId, jwtPayload.getLogin());
         log.info("Updated update special needs section for juror {}", jurorId);
         return ResponseEntity.noContent().build();
     }
@@ -608,7 +608,9 @@ public class ResponseUpdateController {
         private String other;
 
         /**
-         * Maps to {@link uk.gov.hmcts.juror.api.juror.domain.JurorResponse#specialNeedsArrangements}.
+         * Maps to
+         * {@link uk.gov.hmcts.juror.api.moj.domain.jurorresponse.AbstractJurorResponse
+         * #getReasonableAdjustmentsArrangements()}.
          */
         @Length(max = 1000)
         @Schema(description = "Details about required special arrangements")

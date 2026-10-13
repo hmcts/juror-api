@@ -226,7 +226,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         }
 
         // remove a target pool created for court users if no jurors were reassigned into it
-        if (reassignedJurorsCount == 0 && !owner.equals(JurorDigitalApplication.JUROR_OWNER)
+        if (reassignedJurorsCount == 0 && !JurorDigitalApplication.JUROR_OWNER.equals(owner)
             && targetPoolRequest.getLastUpdate().isAfter(LocalDateTime.now().minusMinutes(1))
             && targetPoolRequest.getNumberRequested() == null) {
             poolRequestRepository.delete(targetPoolRequest);
