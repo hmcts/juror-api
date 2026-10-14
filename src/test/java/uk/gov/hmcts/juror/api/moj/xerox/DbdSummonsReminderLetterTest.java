@@ -15,7 +15,6 @@ class DbdSummonsReminderLetterTest extends AbstractLetterTest {
     protected void setupEnglishExpectedResult() {
         addEnglishLetterDate();
         addEnglishField("THE CROWN COURT AT SWANSEA", 59);
-        addEnglishField("MONDAY 6 FEBRUARY, 2017", 32);
         addEnglishField("MR", 10);
         addEnglishField("FNAMEEIGHTTHREEONE", 20);
         addEnglishField("LNAMEEIGHTTHREEONEFIVE", 25);
@@ -26,6 +25,7 @@ class DbdSummonsReminderLetterTest extends AbstractLetterTest {
         addEnglishField("JUROR_ADDRESS_5", 35);
         addEnglishField("SY2 6LU", 10);
         addEnglishField("641500541", 9);
+        addEnglishField("MONDAY 6 FEBRUARY, 2017", 32);
     }
 
     @Override
@@ -33,8 +33,6 @@ class DbdSummonsReminderLetterTest extends AbstractLetterTest {
         addWelshLetterDate();
         addWelshField("YN ABERTAWE", 40);
         addWelshField("THE CROWN COURT AT SWANSEA", 40);
-        addWelshField("MONDAY 6 FEBRUARY, 2017", 32);
-        addWelshField("DYDD LLUN 6 CHWEFROR, 2017", 32);
         addWelshField("MR", 10);
         addWelshField("FNAMEEIGHTTHREEONE", 20);
         addWelshField("LNAMEEIGHTTHREEONEFIVE", 25);
@@ -45,6 +43,8 @@ class DbdSummonsReminderLetterTest extends AbstractLetterTest {
         addWelshField("JUROR_ADDRESS_5", 35);
         addWelshField("SY2 6LU", 10);
         addWelshField("641500541", 9);
+        addWelshField("MONDAY 6 FEBRUARY, 2017", 32);
+        addWelshField("DYDD LLUN 6 CHWEFROR, 2017", 32);
     }
 
     @Test
