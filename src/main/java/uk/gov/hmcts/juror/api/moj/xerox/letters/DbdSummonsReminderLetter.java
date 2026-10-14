@@ -38,6 +38,7 @@ public class DbdSummonsReminderLetter extends LetterBase {
         addData(LetterDataType.DATE_OF_ATTENDANCE, 32);
         addData(LetterDataType.WELSH_DATE_OF_ATTENDANCE, 32);
         sharedSetup();
+        addData(LetterDataType.WELSH_DATE_OF_ATTENDANCE, 32);
     }
 
     @Override
@@ -47,6 +48,7 @@ public class DbdSummonsReminderLetter extends LetterBase {
         addData(LetterDataType.COURT_NAME, 59);
         addData(LetterDataType.DATE_OF_ATTENDANCE, 32);
         sharedSetup();
+
     }
 
     private void sharedSetup() {
@@ -55,5 +57,6 @@ public class DbdSummonsReminderLetter extends LetterBase {
         addData(LetterDataType.JUROR_LAST_NAME, 25);
         addJurorAddressDbd();
         addData(LetterDataType.JUROR_NUMBER, 9);
+        addData(LetterDataType.DATE_OF_ATTENDANCE, 32);
     }
 }
