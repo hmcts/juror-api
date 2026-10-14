@@ -35,6 +35,8 @@ public class DbdSummonsReminderLetter extends LetterBase {
         addData(LetterDataType.WELSH_DATE_OF_LETTER, 18);
         addData(LetterDataType.WELSH_CORRESPONDENCE_NAME, 40);
         addData(LetterDataType.COURT_NAME, 40);
+        addData(LetterDataType.DATE_OF_ATTENDANCE, 32);
+        addData(LetterDataType.WELSH_DATE_OF_ATTENDANCE, 32);
         sharedSetup();
         addData(LetterDataType.WELSH_DATE_OF_ATTENDANCE, 32);
     }
@@ -44,6 +46,7 @@ public class DbdSummonsReminderLetter extends LetterBase {
         setFormCode(FormCode.ENG_DBD_SUMMONS_REM);
         addData(LetterDataType.DATE_OF_LETTER, 18);
         addData(LetterDataType.COURT_NAME, 59);
+        addData(LetterDataType.DATE_OF_ATTENDANCE, 32);
         sharedSetup();
 
     }

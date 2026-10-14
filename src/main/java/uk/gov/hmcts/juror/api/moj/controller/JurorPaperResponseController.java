@@ -123,7 +123,7 @@ public class JurorPaperResponseController {
     }
 
     /**
-     * Update a Juror Paper Response Special needs details for a given Juror.
+     * Update a Juror Paper Response reasonable adjustment details for a given Juror.
      *
      * @param payload                        JSON Web Token principal
      * @param reasonableAdjustmentDetailsDto Response information to persist
@@ -131,8 +131,8 @@ public class JurorPaperResponseController {
      */
     @PatchMapping(path = "/juror/{jurorNumber}/details/special-needs")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Update an existing Juror paper response special needs details")
-    public void updatePaperSpecialNeedsDetails(
+    @Operation(summary = "Update an existing Juror paper response reasonable adjustment details")
+    public void updatePaperReasonableAdjustmentDetails(
         @Parameter(hidden = true) @AuthenticationPrincipal BureauJwtPayload payload,
         @RequestBody @Valid ReasonableAdjustmentDetailsDto reasonableAdjustmentDetailsDto,
         @Parameter(description = "Valid juror number", required = true)
