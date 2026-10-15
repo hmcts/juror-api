@@ -110,9 +110,8 @@ class AdministrationCourtRoomControllerITest extends AbstractIntegrationTest {
                     .as("Expect the HTTP GET request to be successful")
                     .isEqualTo(HttpStatus.OK);
                 assertThat(response.getBody()).isNotNull();
-                // need to assert in any order as the DB may not return in a consistent order
                 assertThat(response.getBody())
-                    .containsExactlyInAnyOrder(expectedResponse);
+                    .containsExactly(expectedResponse);
             }
 
             @Test
