@@ -7,7 +7,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalCodeDto;
@@ -18,7 +17,6 @@ import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
-import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -75,104 +73,6 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
                 .add(new ResponseExcusalController.ExcusalCodeDto(excusalCode));
         });
         return myList;
-    }
-
-    /**
-     * Check whether or not to excuse juror given parameters below.
-     * @param jurorId juror identifier.
-     * @param excusalCodeDto excusal decision details.
-     * @param login current user login.
-     * @return true when the operation succeeds.
-     * @throws ExcusalException if the excusal operation fails.
-     */
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExceptionAsFlowControl"}) // think exceptions are ok here.
-    @Transactional
-    @Override
-    public boolean excuseJuror(String jurorId, ExcusalCodeDto excusalCodeDto, String login) {
-        if (!isValidExcusalCode(jurorId, excusalCodeDto.getExcusalCode())) {
-            return false;
-        }
-
-        log.debug("Begin processing manual excusal of juror.");
-        try {
-            final DigitalResponse savedResponse = responseRepository.findByJurorNumber(jurorId);
-            if (savedResponse == null) {
-                throw new ExcusalException.JurorNotFound(jurorId);
-            }
-
-            if (BooleanUtils.isTrue(savedResponse.isProcessingComplete())) {
-                final String message = "Response " + savedResponse.getJurorNumber() + " has previously been merged!";
-                log.error("Response {} has previously been completed at {}.",
-                    savedResponse.getJurorNumber(), savedResponse.getCompletedAt()
-                );
-                throw new ExcusalException.ResponseAlreadyCompleted(message);
-            }
-
-            //detach the entity so that it will have to reattached by hibernate on save trigger optimistic locking.
-            entityManager.detach(savedResponse);
-
-            // set optimistic lock version from UI
-            log.debug("Version: DB={}, UI={}", savedResponse.getVersion(), excusalCodeDto.getVersion());
-            savedResponse.setVersion(excusalCodeDto.getVersion());
-
-            //update response
-            savedResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
-
-            // JDB-2685: if no staff assigned, assign current login
-            if (null == savedResponse.getStaff()) {
-                assignOnUpdateService.assignToCurrentLogin(savedResponse, login);
-            }
-
-            // save response
-            try {
-                log.debug("Merging juror response for juror {}", savedResponse.getJurorNumber());
-                mergeService.mergeResponse(savedResponse, login);
-                log.debug("Juror response for juror {} merged successfully", savedResponse.getJurorNumber());
-            } catch (ObjectOptimisticLockingFailureException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Optimistic locking failure:", e);
-                }
-                throw new ExcusalException.OptimisticLockingFailure(jurorId, e);
-            }
-
-            // update juror pool entry
-            JurorPool poolDetails = jurorPoolService.getJurorPoolFromUser(savedResponse.getJurorNumber());
-            poolDetails.getJuror().setResponded(true);
-            poolDetails.getJuror().setExcusalDate(LocalDate.now());
-            poolDetails.getJuror().setExcusalCode(excusalCodeDto.getExcusalCode());
-            poolDetails.setUserEdtq(login);
-            poolDetails.setStatus(
-                RepositoryUtils.retrieveFromDatabase(IJurorStatus.EXCUSED, jurorStatusRepository));
-            poolDetails.setNextDate(null);
-            detailsRepository.save(poolDetails);
-
-            // audit pool
-            JurorHistory history = new JurorHistory();
-            //  history.setOwner("400");
-            history.setJurorNumber(jurorId);
-            history.setOtherInformationDate(LocalDate.now());
-            history.setHistoryCode(HistoryCodeMod.EXCUSE_POOL_MEMBER);
-            history.setCreatedBy(login);
-            history.setPoolNumber(poolDetails.getPoolNumber());
-            history.setOtherInformation("Add Excuse - " + excusalCodeDto.getExcusalCode());
-            historyRepository.save(history);
-
-            if (!ExcusalCodeEnum.D.getCode().equalsIgnoreCase(excusalCodeDto.getExcusalCode())) {
-                // only non-deceased jurors get a letter
-                printDataService.printExcusalLetter(poolDetails);
-            }
-        } catch (ExcusalException.JurorNotFound e) {
-            log.debug("Error while attempting to excuse Juror {}: {}", jurorId, e.getMessage());
-            throw e;
-        } catch (TransactionSystemException e) {
-            // this exception occurs when optimistic locking fails
-            if (log.isDebugEnabled()) {
-                log.debug("Error while attempting to excuse Juror {}: {}", jurorId, e);
-            }
-            throw new ExcusalException.OptimisticLockingFailure(jurorId, e);
-        }
-        log.info("Excused juror {} using code {}, by user {}", jurorId, excusalCodeDto.getExcusalCode(), login);
-        return true;
     }
 
     /**

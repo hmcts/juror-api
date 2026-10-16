@@ -60,29 +60,6 @@ public class ResponseExcusalController {
         return ResponseEntity.ok().body(new ExcusalReasonsDto(excusalReasons));
     }
 
-    @PostMapping("/{jurorId}")
-    @Operation(summary = "excusal for a specific juror",
-        description = "Mark a single juror with a certain excusal code by their juror number")
-    public ResponseEntity<Void> excuseJuror(
-        @Parameter(description = "Valid juror number", required = true) @PathVariable String jurorId,
-        BureauJwtAuthentication jwt,
-        @Validated @RequestBody ExcusalCodeDto excusalCodeDto) {
-        assertJurorNumberPathVariable(jurorId);
-        final BureauJwtPayload jwtPayload = (BureauJwtPayload) jwt.getPrincipal();
-        if (null == excusalCodeDto.getExcusalCode() || null == excusalCodeDto.getVersion()) {
-            // there is either no body or no version present in the request
-            throw new ExcusalException.RequestIsMissingDetails(jurorId);
-        }
-        log.info(
-            "Attempting to excuse juror {} using code {}, by user {}",
-            jurorId,
-            excusalCodeDto.getExcusalCode(),
-            jwtPayload.getLogin()
-        );
-        responseExcusalService.excuseJuror(jurorId, excusalCodeDto, jwtPayload.getLogin());
-        return ResponseEntity.ok().build();
-    }
-
     @PostMapping("/reject/{jurorId}")
     @Operation(summary = "excusal-rejection for a specific juror",
         description = "Reject a single jurors excusal request")
