@@ -20,7 +20,6 @@ import uk.gov.hmcts.juror.api.moj.enumeration.letter.MissingInformation;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
-import uk.gov.hmcts.juror.api.moj.repository.letter.RequestLetterRepository;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyStatusUpdateService;
@@ -47,8 +46,6 @@ import static uk.gov.hmcts.juror.api.moj.enumeration.letter.MissingInformation.b
 @RunWith(SpringRunner.class)
 public class RequestInformationLetterServiceTest {
 
-    @Mock
-    private RequestLetterRepository requestLetterRepository;
     @Mock
     private SummonsReplyStatusUpdateService summonsReplyStatusUpdateService;
     @Mock
@@ -193,8 +190,6 @@ public class RequestInformationLetterServiceTest {
             .updateJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
-        verify(requestLetterRepository, never()).findById(any());
-        verify(requestLetterRepository, never()).save(any());
     }
 
     // testing scenario when associated juror record is not owned by user
@@ -235,8 +230,6 @@ public class RequestInformationLetterServiceTest {
             .updateJurorResponseStatus(jurorNumber, ProcessingStatus.AWAITING_CONTACT, payload);
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true);
-        verify(requestLetterRepository, never()).findById(any());
-        verify(requestLetterRepository, never()).save(any());
     }
 
     private AdditionalInformationDto getAdditionalInformationDto(String jurorNumber) {
