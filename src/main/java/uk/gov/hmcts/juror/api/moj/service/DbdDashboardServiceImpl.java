@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.moj.controller.request.DbdDashboardRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto.CourtGroupResult;
 import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto.LocationMetrics;
+import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto.MonthlyResponseRate;
 import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto.PeriodResult;
 import uk.gov.hmcts.juror.api.moj.controller.response.DbdDashboardResponseDto.ResponseTimesPercent;
 import uk.gov.hmcts.juror.api.moj.domain.DbdResponseStats;
@@ -36,9 +37,11 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
 
     private final DbdResponseStatsRepository dbdResponseStatsRepository;
 
-    // Package-visible phase: periodA-minus-periodB diffing. Stateless and dependency-free, so a
-    // plain instance is enough - no Spring wiring needed for something with no collaborators.
+    // Package-visible phases, each a stateless, dependency-free slice of the overall build - a
+    // plain instance is enough for either, no Spring wiring needed for something with no
+    // collaborators of its own. See each class's Javadoc for why it's split out.
     private final LocationMetricsDiffCalculator locationMetricsDiffCalculator = new LocationMetricsDiffCalculator();
+    private final MonthlyResponseRateCalculator monthlyResponseRateCalculator = new MonthlyResponseRateCalculator();
 
     @Autowired
     public DbdDashboardServiceImpl(DbdResponseStatsRepository dbdResponseStatsRepository) {
@@ -70,7 +73,17 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
             .map(group -> buildGroupResult(group, periodAData, periodBData, request.isSumGroups()))
             .toList();
 
-        return DbdDashboardResponseDto.builder().courtGroups(results).build();
+        // 4. Re-slice the same already-fetched rows by calendar month of summons_date - still no
+        //    further queries. Month is derived here rather than stored/maintained on the table or
+        //    in the stored procedure: it's a pure function of summons_date, so keeping it in Java
+        //    means there's nothing that can drift out of sync with the source column.
+        List<MonthlyResponseRate> monthlyResponseRates = monthlyResponseRateCalculator
+            .buildMonthlyResponseRates(request.getCourtGroups(), periodAData, periodBData);
+
+        return DbdDashboardResponseDto.builder()
+            .courtGroups(results)
+            .monthlyResponseRates(monthlyResponseRates)
+            .build();
     }
 
     private Map<String, List<DbdResponseStats>> fetchByLocCode(

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.juror.api.moj.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.juror.api.bureau.controller.response.DashboardMandatoryKpiData;
 
 import java.io.Serializable;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +33,11 @@ public class DbdDashboardResponseDto implements Serializable {
 
     @Schema(description = "One entry per requested court group, in the order they were requested.")
     private List<CourtGroupResult> courtGroups;
+
+    @Schema(description = "Response rate (%) by calendar month jurors were summoned, one row per month "
+        + "covered by dateRangeA/dateRangeB, oldest first, with one percentage per requested court group. "
+        + "Derived from the same rows already fetched for courtGroups - no extra queries.")
+    private List<MonthlyResponseRate> monthlyResponseRates;
 
     @AllArgsConstructor
     @NoArgsConstructor
@@ -146,5 +153,28 @@ public class DbdDashboardResponseDto implements Serializable {
 
         @Schema(description = "Percentage of all responses received after 21 days.")
         private Integer over21DaysPercent;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+    @Builder
+    @Data
+    @Schema(description = "Response rate (%) for every requested group, for one calendar month of summons dates.")
+    public static class MonthlyResponseRate implements Serializable {
+
+        @JsonFormat(pattern = "yyyyMM")
+        @Schema(description = "The calendar month jurors were summoned in, e.g. 202609 for September 2026.")
+        private YearMonth month;
+
+        @Schema(description = "Response rate (%) for this month, keyed by groupName - one entry per requested "
+            + "court group. A group with no rows summoned in this month is omitted from the map rather than "
+            + "included as 0, so the frontend can distinguish \"no data\" from \"0% response rate\".")
+        private Map<String, Integer> groupResponseRatePercent;
+
+        @Schema(description = "True when this month falls within the last 6 weeks of today - i.e. this cohort "
+            + "may not have finished responding yet, so its response rate can still rise. The frontend's "
+            + "mockup shows this as a footnoted '*' against the most recent month(s).")
+        private Boolean recentCohort;
     }
 }
