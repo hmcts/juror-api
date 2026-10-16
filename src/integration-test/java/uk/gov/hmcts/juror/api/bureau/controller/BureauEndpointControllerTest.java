@@ -87,7 +87,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String description = "Authentication header is invalid";
 
         final String publicJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("testlogin")
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
@@ -112,7 +111,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     public void retrieveBureauJurorDetailsById_WithValidJurorNumberAsParam_ReturnCorrectJurorDetails() {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("testlogin")
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build())
@@ -143,7 +141,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     public void filterBureauDetailsByStatus_WithValidCategoryFilter_ReturnsResponsesForStatusAndCount() {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("testlogin")
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build())
@@ -325,7 +322,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("testlogin")
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
@@ -399,7 +395,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("testlogin")
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
@@ -473,7 +468,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("testlogin")
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
@@ -547,7 +541,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("testlogin")
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
@@ -621,7 +614,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/status/644892530");
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("testlogin")
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());

@@ -64,14 +64,8 @@ class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
     }
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
-    private void initHeaders(String... userLevel) throws Exception {
-        String level = "99";
-        if (userLevel.length == 1) {
-            level = userLevel[0];
-        }
-
+    private void initHeaders() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel(level)
             .login("BUREAU_USER")
             .owner("400")
             .build());
