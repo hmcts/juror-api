@@ -11,8 +11,10 @@ import uk.gov.hmcts.juror.api.moj.domain.DbdResponseStats;
 import uk.gov.hmcts.juror.api.moj.repository.DbdResponseStatsRepository;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -111,11 +113,18 @@ class DbdDashboardServiceImplTest {
         assertThat(result.getTotalResponses()).isEqualTo(17);
         assertThat(result.getResponseRatePercent()).isEqualTo(77);
         assertThat(result.getDigitalResponsesPercent()).isEqualTo(65);
+        assertThat(response.getMonthlyResponseRates()).hasSize(1);
+        assertThat(response.getMonthlyResponseRates().get(0).getMonth()).isEqualTo(YearMonth.of(2026, 1));
+        assertThat(response.getMonthlyResponseRates().get(0).getGroupResponseRatePercent())
+            .containsExactlyEntriesOf(Map.of("Test group", 77));
     }
 
     @Test
     void shouldReturnPeriodBWhenSecondDateRangeProvided() {
         LocalDate periodBStartDate = LocalDate.of(2026, 2, 1);
+        DbdResponseStats periodBResponse = responseStats("415", "Paper", 4);
+        periodBResponse.setSummonsDate(periodBStartDate);
+        periodBResponse.setResponseDate(periodBStartDate);
         LocalDate periodBEndDate = LocalDate.of(2026, 2, 28);
 
         when(dbdResponseStatsRepository.findByLocCodeInAndSummonsDateBetween(
@@ -123,7 +132,7 @@ class DbdDashboardServiceImplTest {
             .thenReturn(List.of(responseStats("415", "Online", 8)));
         when(dbdResponseStatsRepository.findByLocCodeInAndSummonsDateBetween(
             anyLocCodes(), eq(periodBStartDate), eq(periodBEndDate)))
-            .thenReturn(List.of(responseStats("415", "Paper", 4)));
+            .thenReturn(List.of(periodBResponse));
 
         DbdDashboardResponseDto response = dbdDashboardService.getGroupStatistics(
             DbdDashboardRequestDto.builder()
@@ -158,6 +167,12 @@ class DbdDashboardServiceImplTest {
             .isEqualTo(0);
         assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getDigitalResponsesPercent())
             .isEqualTo(100);
+        assertThat(response.getMonthlyResponseRates())
+            .extracting(DbdDashboardResponseDto.MonthlyResponseRate::getMonth)
+            .containsExactly(YearMonth.of(2026, 1), YearMonth.of(2026, 2));
+        assertThat(response.getMonthlyResponseRates())
+            .extracting(DbdDashboardResponseDto.MonthlyResponseRate::getGroupResponseRatePercent)
+            .containsExactly(Map.of("Test group", 100), Map.of("Test group", 100));
         assertThat(response.getCourtGroups().get(0).getChange().getLocations().get(0).getResponseTimesPercent()
                        .getWithin7DaysPercent()).isEqualTo(0);
 
