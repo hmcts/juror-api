@@ -142,6 +142,7 @@ public class EmailDataServiceImpl implements EmailDataService {
 
     private record EmailTemplateData(FormCode formCode, DigitalByDefaultEmailTemplate template) {}
 
+    @Override
     public void emailDeferralDeniedLetter(JurorPool jurorPool) {
         if (jurorPool == null) {
             throw new MojException.InternalServerError(

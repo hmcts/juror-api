@@ -238,6 +238,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     protected ResponseEntity<Object> handleExceptionInternal(
         Exception ex, @Nullable Object body, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
         logger.error("Internal server error", ex);
+        Object responseBody = body;
         if (request instanceof ServletWebRequest servletWebRequest) {
             HttpServletResponse response = servletWebRequest.getResponse();
             if (response != null && response.isCommitted()) {
@@ -249,14 +250,14 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
             }
         }
 
-        if (body == null && ex instanceof ErrorResponse errorResponse) {
-            body = errorResponse.updateAndGetBody(this.getMessageSource(), LocaleContextHolder.getLocale());
+        if (responseBody == null && ex instanceof ErrorResponse errorResponse) {
+            responseBody = errorResponse.updateAndGetBody(this.getMessageSource(), LocaleContextHolder.getLocale());
         }
 
-        if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR && body == null) {
+        if (statusCode == HttpStatus.INTERNAL_SERVER_ERROR && responseBody == null) {
             request.setAttribute("jakarta.servlet.error.exception", ex, 0);
         }
 
-        return this.createResponseEntity(body, headers, statusCode, request);
+        return this.createResponseEntity(responseBody, headers, statusCode, request);
     }
 }
