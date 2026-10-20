@@ -56,7 +56,7 @@ module "postgresql_flexible_pitr" {
 resource "azurerm_postgresql_flexible_server_active_directory_administrator" "jit_pitr" {
   count = local.postgres_pitr_enabled ? 1 : 0
 
-  server_name         = var.postgres_pitr.name
+  server_name         = "${var.postgres_pitr.name}-${var.env}"
   resource_group_name = local.rg_name
   tenant_id           = data.azurerm_client_config.current.tenant_id
   object_id           = data.azuread_group.dts_jit_access_juror_db_admin.object_id
