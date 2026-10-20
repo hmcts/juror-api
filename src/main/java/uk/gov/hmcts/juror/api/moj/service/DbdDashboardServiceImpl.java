@@ -3,6 +3,8 @@ package uk.gov.hmcts.juror.api.moj.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import uk.gov.hmcts.juror.api.bureau.controller.response.DashboardMandatoryKpiData;
 import uk.gov.hmcts.juror.api.moj.controller.request.DbdDashboardRequestDto;
@@ -49,7 +51,9 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
         this.dbdResponseStatsRepository = dbdResponseStatsRepository;
     }
 
+    // Keep both period queries on the same snapshot if the statistics refresh commits between them.
     @Override
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public DbdDashboardResponseDto getGroupStatistics(DbdDashboardRequestDto request) {
         log.debug("Called Service : DbdDashboardServiceImpl.getGroupStatistics()");
 
@@ -102,6 +106,7 @@ public class DbdDashboardServiceImpl implements DbdDashboardService {
         boolean sumGroups) {
 
         List<String> groupLocCodes = group.getGroupLocations().stream()
+            .distinct()
             .map(loc -> String.format("%03d", loc))
             .toList();
 

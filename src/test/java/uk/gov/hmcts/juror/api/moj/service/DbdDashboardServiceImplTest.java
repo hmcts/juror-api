@@ -3,6 +3,8 @@ package uk.gov.hmcts.juror.api.moj.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.juror.api.moj.controller.request.DbdDashboardRequestDto;
@@ -27,6 +29,8 @@ class DbdDashboardServiceImplTest {
 
     private static final LocalDate START_DATE = LocalDate.of(2026, 1, 1);
     private static final LocalDate END_DATE = LocalDate.of(2026, 1, 31);
+
+    private long nextId;
 
     @Mock
     private DbdResponseStatsRepository dbdResponseStatsRepository;
@@ -76,6 +80,30 @@ class DbdDashboardServiceImplTest {
         assertThat(result.getResponseTimesPercent().getWithin21DaysPercent()).isNull();
         assertThat(result.getResponseTimesPercent().getOver21DaysPercent()).isNull();
         assertThat(result.getAgeGroupBreakdownPercent()).isEmpty();
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldCountDuplicateLocationsOnce(boolean sumGroups) {
+        when(dbdResponseStatsRepository.findByLocCodeInAndSummonsDateBetween(
+            anyLocCodes(), eq(START_DATE), eq(END_DATE)))
+            .thenReturn(List.of(responseStats("415", "Online", 10), responseStats("415", "None", 10)));
+
+        DbdDashboardResponseDto response = dbdDashboardService.getGroupStatistics(
+            DbdDashboardRequestDto.builder()
+                .courtGroups(List.of(DbdDashboardRequestDto.CourtGroupDto.builder()
+                    .groupName("Test group").groupLocations(List.of(415, 415)).build()))
+                .dateRangeA(DbdDashboardRequestDto.DateRangeDto.builder()
+                    .startDate(START_DATE).endDate(END_DATE).build())
+                .sumGroups(sumGroups).build());
+
+        assertThat(response.getCourtGroups().get(0).getPeriodA().getLocations()).hasSize(1);
+        DbdDashboardResponseDto.LocationMetrics result =
+            response.getCourtGroups().get(0).getPeriodA().getLocations().get(0);
+        assertThat(result.getTotalResponses()).isEqualTo(10);
+        assertThat(result.getNotRespondedTotal()).isEqualTo(10);
+        assertThat(response.getMonthlyResponseRates().get(0).getGroupResponseRatePercent())
+            .containsEntry("Test group", result.getResponseRatePercent());
     }
 
     @Test
@@ -206,7 +234,7 @@ class DbdDashboardServiceImplTest {
     private DbdResponseStats responseStats(String locCode, String responseMethod, String responsePeriod,
                                            String ageGroup, int jurorCount) {
         return new DbdResponseStats(
-            null,
+            ++nextId,
             START_DATE,
             START_DATE,
             responsePeriod,

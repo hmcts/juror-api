@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,7 +57,8 @@ class MonthlyResponseRateCalculator {
                 .month(month)
                 .groupResponseRatePercent(responseRateByGroupAndMonth.entrySet().stream()
                                               .filter(entry -> entry.getValue().containsKey(month))
-                                              .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get(month))))
+                                              .collect(Collectors.toMap(
+                                                  Map.Entry::getKey, entry -> entry.getValue().get(month))))
                 .recentCohort(isWithinLastSixWeeks(month))
                 .build())
             .toList();
@@ -75,6 +77,8 @@ class MonthlyResponseRateCalculator {
                 periodAData.values().stream(), periodBData != null ? periodBData.values().stream() : Stream.empty())
             .flatMap(List::stream)
             .filter(row -> groupLocCodes.contains(row.getLocCode()))
+            .collect(Collectors.toMap(DbdResponseStats::getId, Function.identity(), (first, second) -> first))
+            .values().stream()
             .collect(Collectors.groupingBy(row -> YearMonth.from(row.getSummonsDate())));
 
         return rowsByMonth.entrySet().stream()

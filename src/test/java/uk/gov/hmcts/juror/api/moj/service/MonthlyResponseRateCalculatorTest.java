@@ -23,6 +23,8 @@ class MonthlyResponseRateCalculatorTest {
     private static final LocalDate SUMMONS_DATE = LocalDate.of(2026, 1, 1);
     private static final String GROUP_NAME = "Test group";
 
+    private long nextId;
+
     private final MonthlyResponseRateCalculator calculator = new MonthlyResponseRateCalculator();
 
     @Test
@@ -53,6 +55,22 @@ class MonthlyResponseRateCalculatorTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getGroupResponseRatePercent()).containsExactlyEntriesOf(Map.of(GROUP_NAME, 30));
+    }
+
+    @Test
+    void shouldCountOverlappingRowsOnceById() {
+        DbdResponseStats response = responseStats("415", SUMMONS_DATE.plusDays(14), "Online", 10);
+        DbdResponseStats sameResponse = responseStats("415", SUMMONS_DATE.plusDays(14), "Online", 10);
+        sameResponse.setId(response.getId());
+
+        List<MonthlyResponseRate> result = calculator.buildMonthlyResponseRates(
+            List.of(group(GROUP_NAME, List.of(415))),
+            Map.of("415", List.of(responseStats("415", SUMMONS_DATE, "None", 5), response)),
+            Map.of("415", List.of(sameResponse,
+                responseStats("415", SUMMONS_DATE.plusDays(25), "None", 5))));
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getGroupResponseRatePercent()).containsExactlyEntriesOf(Map.of(GROUP_NAME, 50));
     }
 
     @Test
@@ -174,6 +192,7 @@ class MonthlyResponseRateCalculatorTest {
     private DbdResponseStats responseStats(String locCode, LocalDate summonsDate,
                                            String responseMethod, int jurorCount) {
         DbdResponseStats stats = new DbdResponseStats();
+        stats.setId(++nextId);
         stats.setLocCode(locCode);
         stats.setSummonsDate(summonsDate);
         stats.setResponseMethod(responseMethod);

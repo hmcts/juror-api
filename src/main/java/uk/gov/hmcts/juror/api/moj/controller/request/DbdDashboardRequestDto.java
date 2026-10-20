@@ -2,7 +2,9 @@ package uk.gov.hmcts.juror.api.moj.controller.request;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -19,7 +21,7 @@ import java.util.List;
  *
  * <p>
  * Unlike DashboardRequestDto, this supports:
- *  - one or more caller-defined court groups (arbitrary, per-request groupings of pilot courts)
+ *  - one or more caller-defined court groups with unique names (per-request groupings of pilot courts)
  *  - a mandatory comparison period (dateRangeA) plus an optional second period (dateRangeB)
  *  - a toggle for whether each group's locations are summed together or returned individually
  */
@@ -41,6 +43,13 @@ public class DbdDashboardRequestDto implements Serializable {
     private DateRangeDto dateRangeB;
 
     private boolean sumGroups;
+
+    @AssertTrue(message = "Court group names must be unique")
+    @JsonIgnore
+    public boolean isGroupNamesUnique() {
+        return courtGroups == null || courtGroups.stream().map(CourtGroupDto::getGroupName).distinct().count()
+            == courtGroups.size();
+    }
 
     @Data
     @NoArgsConstructor

@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql({"/db/mod/truncate.sql", "/db/DbdDashboardControllerITest.sql"})
+@Sql(scripts = "/db/DbdDashboardControllerITest_cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 public class DbdDashboardControllerITest extends AbstractIntegrationTest {
 
     private static final URI STATISTICS_URI = URI.create("/api/v1/moj/dbd-dashboard/statistics");
@@ -154,6 +155,31 @@ public class DbdDashboardControllerITest extends AbstractIntegrationTest {
             .isEqualTo(-33);
         assertJsonInt(response.getBody(),
                       "$.court_groups[0].change.locations[0].age_group_breakdown_percent['18-24']", 2);
+    }
+
+    @Test
+    public void statisticsRejectsDuplicateGroupNames() {
+        ResponseEntity<String> response = postStatistics(Map.of(
+            "courtGroups", List.of(
+                Map.of("groupName", "Pilot courts", "groupLocations", List.of(415)),
+                Map.of("groupName", "Pilot courts", "groupLocations", List.of(416))),
+            "dateRangeA", Map.of("startDate", "20260101", "endDate", "20260131"),
+            "sumGroups", true));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void statisticsWithPartiallyOverlappingPeriods() {
+        ResponseEntity<String> response = postStatistics(Map.of(
+            "courtGroups", List.of(Map.of("groupName", "Pilot courts", "groupLocations", List.of(415))),
+            "dateRangeA", Map.of("startDate", "20260101", "endDate", "20260120"),
+            "dateRangeB", Map.of("startDate", "20260110", "endDate", "20260131"),
+            "sumGroups", true));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertJsonInt(response.getBody(),
+                      "$.monthly_response_rates[0].group_response_rate_percent['Pilot courts']", 61);
     }
 
     private ResponseEntity<String> postStatistics(Map<String, Object> request) {
