@@ -65,3 +65,39 @@ resource "azurerm_postgresql_flexible_server_active_directory_administrator" "ji
 
   depends_on = [module.postgresql_flexible_pitr]
 }
+
+import {
+  for_each = {
+    for name, id in local.postgres_pitr_admin_import_ids : name => id
+    if name == "DTS Platform Operations PostgreSQL Admin Access"
+  }
+  to = module.postgresql_flexible_pitr[0].azurerm_postgresql_flexible_server_active_directory_administrator.pgsql_adadmin
+  id = each.value.id
+}
+
+import {
+  for_each = {
+    for name, id in local.postgres_pitr_admin_import_ids : name => id
+    if name == "DTS JIT Access Juror DB Admin"
+  }
+  to = azurerm_postgresql_flexible_server_active_directory_administrator.jit_pitr[0]
+  id = each.value.id
+}
+
+import {
+  for_each = {
+    for name, id in local.postgres_pitr_admin_import_ids : name => id
+    if name == "jenkins-${var.env}-mi"
+  }
+  to = module.postgresql_flexible_pitr[0].azurerm_postgresql_flexible_server_active_directory_administrator.pgsql_additional_principal_admin[each.value.object_id]
+  id = each.value.id
+}
+
+import {
+  for_each = {
+    for name, id in local.postgres_pitr_admin_import_ids : name => id
+    if name == "jenkins-ptl-mi"
+  }
+  to = module.postgresql_flexible_pitr[0].azurerm_postgresql_flexible_server_active_directory_administrator.pgsql_principal_admin[0]
+  id = each.value.id
+}

@@ -74,9 +74,10 @@ variable "pgsql_server_configuration_extra" {
 variable "postgres_pitr" {
   description = "PostgreSQL restore settings for one target environment; null disables creation."
   type = object({
-    env          = string
-    name         = string
-    restore_time = string
+    env               = string
+    name              = string
+    restore_time      = string
+    import_object_ids = optional(map(string), {})
   })
   default = null
 }
