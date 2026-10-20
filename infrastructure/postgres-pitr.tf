@@ -53,6 +53,22 @@ module "postgresql_flexible_pitr" {
   ], var.pgsql_server_configuration_extra)
 }
 
+import {
+  for_each = local.postgres_pitr_enabled ? (
+    var.postgres_pitr.admin_import_object_id == null ? [] : [var.postgres_pitr.admin_import_object_id]
+  ) : []
+
+  to = module.postgresql_flexible_pitr[0].azurerm_postgresql_flexible_server_active_directory_administrator.pgsql_adadmin
+  id = format(
+    "/subscriptions/%s/resourceGroups/%s/providers/Microsoft.DBforPostgreSQL/flexibleServers/%s-%s/administrators/%s",
+    data.azurerm_client_config.current.subscription_id,
+    local.rg_name,
+    var.postgres_pitr.name,
+    var.env,
+    each.value
+  )
+}
+
 resource "azurerm_postgresql_flexible_server_active_directory_administrator" "jit_pitr" {
   count = local.postgres_pitr_enabled ? 1 : 0
 
