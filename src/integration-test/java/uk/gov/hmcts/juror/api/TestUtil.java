@@ -107,7 +107,6 @@ public final class TestUtil {
         claimsMap.put("login", payload.getLogin());
         claimsMap.put("owner", payload.getOwner());
         claimsMap.put("locCode", payload.getLocCode());
-        claimsMap.put("userLevel", payload.getUserLevel());
         claimsMap.put("staff", payload.getStaff());
 
         claimsMap.put("roles", payload.getRoles());

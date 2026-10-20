@@ -79,7 +79,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
         final String description = "Authentication header is invalid";
 
         final String publicJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("testlogin")
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build());
@@ -104,7 +103,6 @@ public class BureauEndpointControllerTest extends AbstractIntegrationTest {
     public void filterBureauDetailsByStatus_WithValidCategoryFilter_ReturnsResponsesForStatusAndCount() {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("testlogin")
             .owner(JurorDigitalApplication.JUROR_OWNER)
             .build())

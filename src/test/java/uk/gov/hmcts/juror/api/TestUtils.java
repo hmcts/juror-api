@@ -58,12 +58,11 @@ public final class TestUtils {
         return createJwt(owner, username, "99");
     }
 
-    public static BureauJwtPayload createJwt(String owner, String username, String userLevel) {
+    public static BureauJwtPayload createJwt(String owner, String username, String rank) {
         return BureauJwtPayload.builder()
             .owner(owner)
             .login(username)
-            .staff(staffBuilder(username, Integer.valueOf(userLevel), List.of("415", "400")))
-            .userLevel(userLevel)
+            .staff(staffBuilder(username, Integer.valueOf(rank), List.of("415", "400")))
             .build();
     }
 
@@ -78,7 +77,7 @@ public final class TestUtils {
             .build();
     }
 
-    public static BureauJwtPayload createJwt(String owner, String username, String userLevel, List<String> courts) {
+    public static BureauJwtPayload createJwt(String owner, String username, String rank, List<String> courts) {
         UserType userType = "400".equals(owner) ? UserType.BUREAU : UserType.COURT;
         return BureauJwtPayload.builder()
             .owner(owner)
@@ -86,8 +85,7 @@ public final class TestUtils {
             .login(username)
             .activeUserType(userType)
             .userType(userType)
-            .staff(staffBuilder(username, Integer.valueOf(userLevel), courts))
-            .userLevel(userLevel)
+            .staff(staffBuilder(username, Integer.valueOf(rank), courts))
             .build();
     }
 
@@ -144,20 +142,20 @@ public final class TestUtils {
      *
      * @param owner    the owner of the current user
      * @param username the username of the current user
-     * @param level    the level of the current user
+     * @param rank     the staff rank of the current user
      */
-    public static void setupAuthentication(String owner, String username, String level) {
-        BureauJwtPayload bureauJwtPayload = createJwt(owner, username, level);
+    public static void setupAuthentication(String owner, String username, String rank) {
+        BureauJwtPayload bureauJwtPayload = createJwt(owner, username, rank);
         BureauJwtAuthentication bureauJwtAuthentication = mock(BureauJwtAuthentication.class);
         when(bureauJwtAuthentication.getPrincipal()).thenReturn(bureauJwtPayload);
         SecurityContextHolder.getContext().setAuthentication(bureauJwtAuthentication);
     }
 
-    public static void setUpMockAuthentication(String owner, String username, String userLevel, List<String> courts) {
+    public static void setUpMockAuthentication(String owner, String username, String rank, List<String> courts) {
 
         BureauJwtAuthentication auth = mock(BureauJwtAuthentication.class);
         when(auth.getPrincipal())
-            .thenReturn(createJwt(owner, username, userLevel, courts));
+            .thenReturn(createJwt(owner, username, rank, courts));
 
         SecurityContext securityContext = mock(SecurityContext.class);
         when(securityContext.getAuthentication()).thenReturn(auth);

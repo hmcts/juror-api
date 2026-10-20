@@ -59,7 +59,6 @@ public class BureauBacklogCountControllerTest extends AbstractIntegrationTest {
     @Sql("/db/BureauBacklogCountService_BacklogCount.sql")
     public void bureauBacklogCount_happy() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("ncrawford")
             .owner("400")
             .build());

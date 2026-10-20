@@ -40,7 +40,6 @@ public class DeletePoolServiceImpl implements DeletePoolService {
     public void deletePool(String poolNumber) {
         log.trace("Enter deletePoolRequest for Pool Number: {}", poolNumber);
 
-        // according to specifications from heritage, users with a userLevel higher than 3 cannot delete empty pools
         if (SecurityUtil.hasRole(Role.SENIOR_JUROR_OFFICER)) {
             throw new PoolDeleteException.InsufficientPermission(SecurityUtil.getUsername(), poolNumber);
         }

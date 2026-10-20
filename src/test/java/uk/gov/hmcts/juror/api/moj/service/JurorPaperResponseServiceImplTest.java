@@ -1452,7 +1452,6 @@ public class JurorPaperResponseServiceImplTest {
 
     private BureauJwtPayload buildPayload() {
         return BureauJwtPayload.builder()
-            .userLevel("99")
             .login("SOME_USER")
             .owner("400")
             .build();

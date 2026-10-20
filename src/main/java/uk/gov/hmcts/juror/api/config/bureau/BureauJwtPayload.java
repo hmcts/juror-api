@@ -38,8 +38,6 @@ public class BureauJwtPayload {
     private String owner;
     private String locCode;
     private String login;
-    @Deprecated(forRemoval = true)
-    private String userLevel;
     private Staff staff;
     private UserType userType;
     private UserType activeUserType;
@@ -58,7 +56,6 @@ public class BureauJwtPayload {
         this.locCode = locCode;
         this.email = user.getEmail();
         this.login = user.getUsername();
-        this.userLevel = String.valueOf(user.getLevel());
         this.userType = user.getUserType();
         this.activeUserType = activeType;
 
@@ -90,18 +87,14 @@ public class BureauJwtPayload {
             courts);
     }
 
-    public BureauJwtPayload(String owner, String login, String userLevel,
-                            Staff staff) {
-        this(null, owner, null, login, userLevel, staff, null, null, null, null);
+    public BureauJwtPayload(String owner, String login, Staff staff) {
+        this(null, owner, null, login, staff, null, null, null, null);
     }
 
     public List<GrantedAuthority> getGrantedAuthority() {
         List<String> authorities = new ArrayList<>();
         if (roles != null) {
             roles.forEach(role -> authorities.add("ROLE_" + role.name()));
-        }
-        if (getUserLevel() != null) {
-            authorities.add(getUserLevel());
         }
         return AuthorityUtils.createAuthorityList(authorities);
     }
@@ -113,7 +106,6 @@ public class BureauJwtPayload {
         data.put("locCode", locCode);
         data.put("email", email);
         data.put("login", login);
-        data.put("userLevel", userLevel);
         data.put("staff", staff.toClaims());
         data.put("roles", roles);
         data.put("permissions", permissions);
@@ -162,7 +154,6 @@ public class BureauJwtPayload {
             .email(claims.get("email", String.class))
             .owner(claims.get("owner", String.class))
             .locCode(claims.get("locCode", String.class))
-            .userLevel(claims.get("userLevel", String.class))
             .activeUserType(activeUserType)
             .staff(staff)
             .roles(roles)
