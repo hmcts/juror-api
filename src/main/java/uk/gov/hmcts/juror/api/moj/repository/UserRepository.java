@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.juror.domain.QCourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.QUser;
 import uk.gov.hmcts.juror.api.moj.domain.User;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +19,15 @@ public interface UserRepository extends CrudRepository<User, String>, QuerydslPr
     List<User> findAllByUsernameIn(List<String> username);
 
     User findByUsername(String username);
+
+    default List<User> findAllActiveBureauOfficers(EntityManager entityManager) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        return queryFactory
+            .selectFrom(QUser.user)
+            .where(QUser.user.active.eq(true)
+                .and(QUser.user.userType.eq(UserType.BUREAU)))
+            .fetch();
+    }
 
     Optional<User> findByEmailIgnoreCase(String email);
 

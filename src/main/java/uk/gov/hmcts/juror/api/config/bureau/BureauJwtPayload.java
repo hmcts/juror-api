@@ -99,6 +99,7 @@ public class BureauJwtPayload {
         return AuthorityUtils.createAuthorityList(authorities);
     }
 
+    @SuppressWarnings("PMD.UseConcurrentHashMap")
     public Map<String, Object> toClaims() {
         Map<String, Object> data = new HashMap<>();
         data.put("owner", owner);

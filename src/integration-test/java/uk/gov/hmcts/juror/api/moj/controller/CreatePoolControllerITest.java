@@ -42,7 +42,6 @@ import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
-import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolDetailRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -81,8 +80,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
 
     @Autowired
     private BulkPrintDataRepository bulkPrintDataRepository;
-    @Autowired
-    private ConfirmationLetterRepository confirmLetterRepository;
     @Autowired
     private CoronerPoolRepository coronerPoolRepository;
     @Autowired
