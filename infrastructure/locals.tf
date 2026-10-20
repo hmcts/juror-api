@@ -9,7 +9,6 @@ locals {
 
   postgres_active_fqdn     = local.postgres_pitr_cutover ? module.postgresql_flexible_pitr[0].fqdn : module.postgresql_flexible.fqdn
   postgres_active_username = local.postgres_pitr_cutover ? module.postgresql_flexible_pitr[0].username : module.postgresql_flexible.username
-  postgres_active_password = local.postgres_pitr_cutover ? module.postgresql_flexible_pitr[0].password : module.postgresql_flexible.password
 
   postgres_pitr_admin_import_ids = local.postgres_pitr_enabled ? {
     for name, object_id in var.postgres_pitr.import_object_ids : name => {
