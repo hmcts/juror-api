@@ -16,7 +16,7 @@ pgsql_server_configuration_extra = [
 postgres_pitr = {
   env          = "stg"
   name         = "juror-api-pitr"
-  restore_time = "2026-10-12T10:00:00Z"
+  restore_time = "2026-10-20T10:45:00Z"
 }
 postgres_use_pitr = true
 
