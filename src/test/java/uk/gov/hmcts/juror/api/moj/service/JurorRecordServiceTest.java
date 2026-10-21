@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -28,6 +29,7 @@ import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
@@ -3433,8 +3435,13 @@ class JurorRecordServiceTest {
     @DisplayName("public void createJurorManual(JurorManualCreationRequestDto jurorCreationRequestDto)")
     class CreateManualJurorRecord {
 
-        @Test
-        void positiveTypical() {
+        @ParameterizedTest
+        @CsvSource(value = {
+            "false, false, null",
+            "true, false, null",
+            "true, true, Summons letter (Welsh)"
+        }, nullValues = "null")
+        void positiveTypical(boolean welsh, boolean welshCourt, String expectedInfo) {
 
             TestUtils.mockSecurityUtil(
                 BureauJwtPayload.builder()
@@ -3484,6 +3491,14 @@ class JurorRecordServiceTest {
 
             Juror jurorSaved = new Juror();
             jurorSaved.setJurorNumber("041500022");
+            jurorSaved.setWelsh(welsh);
+            if (welsh) {
+                CourtLocation courtLocation = new CourtLocation();
+                courtLocation.setLocCode("415");
+                when(poolRequest.getCourtLocation()).thenReturn(courtLocation);
+                when(welshCourtLocationRepository.findByLocCode("415"))
+                    .thenReturn(welshCourt ? new WelshCourtLocation() : null);
+            }
             when(jurorRepository.save(any())).thenReturn(jurorSaved);
 
             jurorRecordService.createJurorManual(requestDto);
@@ -3530,6 +3545,11 @@ class JurorRecordServiceTest {
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
             verify(poolMemberSequenceService, times(1)).getPoolMemberSequenceNumber(poolNumber);
             verify(poolMemberSequenceService, times(1)).leftPadInteger(22);
+
+            ArgumentCaptor<JurorHistory> historyCaptor = ArgumentCaptor.forClass(JurorHistory.class);
+            verify(jurorHistoryRepository).save(historyCaptor.capture());
+            assertEquals(HistoryCodeMod.PRINT_SUMMONS, historyCaptor.getValue().getHistoryCode());
+            assertEquals(expectedInfo, historyCaptor.getValue().getOtherInformation());
 
         }
 

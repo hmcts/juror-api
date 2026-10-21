@@ -12,6 +12,8 @@ import org.mockito.Mockito;
 import uk.gov.hmcts.juror.api.TestConstants;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
@@ -53,13 +55,16 @@ class JurorHistoryServiceImplTest {
     private final JurorHistoryService jurorHistoryService;
     private final Clock clock;
     private final JurorHistoryRepository jurorHistoryRepository;
+    private final WelshCourtLocationRepository welshCourtLocationRepository;
 
     private MockedStatic<SecurityUtil> securityUtilMockedStatic;
 
     JurorHistoryServiceImplTest() {
         this.clock = mock(Clock.class);
         this.jurorHistoryRepository = mock(JurorHistoryRepository.class);
-        this.jurorHistoryService = new JurorHistoryServiceImpl(jurorHistoryRepository, clock);
+        this.welshCourtLocationRepository = mock(WelshCourtLocationRepository.class);
+        this.jurorHistoryService = new JurorHistoryServiceImpl(jurorHistoryRepository, clock,
+                                                              welshCourtLocationRepository);
     }
 
     @BeforeEach
@@ -154,6 +159,44 @@ class JurorHistoryServiceImplTest {
         jurorHistoryService.createWithdrawHistory(jurorPool, "Other Info", "E",CommunicationChannel.LETTER);
         assertStandardValuesSystem(jurorPool, new JurorHistoryPartHistoryJurorHistoryExpectedValues(
             HistoryCodeMod.WITHDRAWAL_LETTER, "Other Info"));
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+        "true, true, LETTER, Confirmation Letter (Welsh)",
+        "true, false, LETTER, Confirmation Letter",
+        "false, true, LETTER, Confirmation Letter",
+        "null, true, LETTER, Confirmation Letter",
+        "true, false, EMAIL, Confirmation Email (Welsh)",
+        "false, true, EMAIL, Confirmation Email",
+        "null, true, EMAIL, Confirmation Email"
+    }, nullValues = "null")
+    void createConfirmationHistoryRecordsLanguage(Boolean welsh, boolean welshCourt,
+                                                   CommunicationChannel channel, String expectedInfo) {
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.getJuror().setWelsh(welsh);
+        when(welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode()))
+            .thenReturn(welshCourt ? new WelshCourtLocation() : null);
+
+        jurorHistoryService.createConfirmationLetterHistory(jurorPool, "Confirmation Letter", channel);
+
+        assertStandardValuesSystem(jurorPool, new JurorHistoryPartHistoryJurorHistoryExpectedValues(
+            HistoryCodeMod.RESPONDED_LETTER, expectedInfo));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"LETTER, Reissue Deferred Letter (Welsh)", "EMAIL, Reissue Deferred Email (Welsh)"})
+    void createResendHistoryRecordsLanguage(CommunicationChannel channel, String expectedInfo) {
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.getJuror().setWelsh(true);
+        when(welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode()))
+            .thenReturn(new WelshCourtLocation());
+        mockCurrentUser("BUREAU_USER");
+
+        jurorHistoryService.createResendLetterHistory(jurorPool, HistoryCodeMod.RESEND_DEFERRED_LETTER, channel);
+
+        assertStandardValues(jurorPool, "BUREAU_USER", new JurorHistoryPartHistoryJurorHistoryExpectedValues(
+            HistoryCodeMod.RESEND_DEFERRED_LETTER, expectedInfo));
     }
 
     @Test
@@ -355,14 +398,39 @@ class JurorHistoryServiceImplTest {
                 "Deferral Denied Email"));
     }
 
-    @Test
-    void typicalCreateResponsePackPrintedHistory() {
+    @ParameterizedTest
+    @CsvSource(value = {
+        "false, true, null",
+        "null, true, null",
+        "true, false, null",
+        "true, true, Response pack (Welsh)"
+    }, nullValues = "null")
+    void typicalCreateResponsePackPrintedHistory(Boolean welsh, boolean welshCourt, String expectedInfo) {
         JurorPool jurorPool = createJurorPool();
+        jurorPool.getJuror().setWelsh(welsh);
+        when(welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode()))
+            .thenReturn(welshCourt ? new WelshCourtLocation() : null);
 
         mockCurrentUser("someNewUser");
         jurorHistoryService.createResponsePackPrintedHistory(jurorPool);
         assertStandardValues(jurorPool, "someNewUser", new JurorHistoryPartHistoryJurorHistoryExpectedValues(
-            HistoryCodeMod.RESPONSE_PACK_PRINTED, null));
+            HistoryCodeMod.RESPONSE_PACK_PRINTED, expectedInfo));
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+        "BI_REQUESTINFO, false, Request for information deleted (Welsh)",
+        "ENG_REQUESTINFO, true, null"
+    }, nullValues = "null")
+    void createDeletedInformationHistoryUsesLetterLanguage(FormCode formCode, boolean welsh, String expectedInfo) {
+        JurorPool jurorPool = createJurorPool();
+        jurorPool.getJuror().setWelsh(welsh);
+        mockCurrentUser("BUREAU_USER");
+
+        jurorHistoryService.createDeleteAdditionalInfoLetterHistory(jurorPool, formCode);
+
+        assertStandardValues(jurorPool, "BUREAU_USER", new JurorHistoryPartHistoryJurorHistoryExpectedValues(
+            HistoryCodeMod.DELETE_REQUEST_MORE_INFO, expectedInfo));
     }
 
     @Test
