@@ -949,7 +949,6 @@ class TrialServiceImplTest {
 
         bureauJwtPayload.setOwner(owner);
         bureauJwtPayload.setLogin(userType);
-        bureauJwtPayload.setUserLevel("99");
         return bureauJwtPayload;
     }
 

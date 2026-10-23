@@ -88,10 +88,11 @@ class AdministrationCourtRoomServiceImplTest {
                     .roomNumber(TestConstants.VALID_COURT_ROOM_NAME + "3")
                     .description(TestConstants.VALID_COURT_ROOM_DESC + " 3")
                     .build()
-            )).when(courtroomRepository).findByCourtLocationLocCode(TestConstants.VALID_COURT_LOCATION);
+            )).when(courtroomRepository)
+                .findByCourtLocationLocCodeOrderByRoomNumberAscIdAsc(TestConstants.VALID_COURT_LOCATION);
 
             assertThat(administrationCourtRoomService.viewCourtRooms(TestConstants.VALID_COURT_LOCATION))
-                .containsExactlyInAnyOrder(
+                .containsExactly(
                     CourtRoomWithIdDto.builder()
                         .id(1L)
                         .roomName(TestConstants.VALID_COURT_ROOM_NAME + "1")
@@ -109,17 +110,17 @@ class AdministrationCourtRoomServiceImplTest {
                         .build()
                 );
             verify(courtroomRepository, times(1))
-                .findByCourtLocationLocCode(TestConstants.VALID_COURT_LOCATION);
+                .findByCourtLocationLocCodeOrderByRoomNumberAscIdAsc(TestConstants.VALID_COURT_LOCATION);
         }
 
         @Test
         void positiveNoData() {
             doReturn(List.of()).when(courtroomRepository)
-                .findByCourtLocationLocCode(TestConstants.VALID_COURT_LOCATION);
+                .findByCourtLocationLocCodeOrderByRoomNumberAscIdAsc(TestConstants.VALID_COURT_LOCATION);
 
             assertThat(administrationCourtRoomService.viewCourtRooms(TestConstants.VALID_COURT_LOCATION)).isEmpty();
             verify(courtroomRepository, times(1))
-                .findByCourtLocationLocCode(TestConstants.VALID_COURT_LOCATION);
+                .findByCourtLocationLocCodeOrderByRoomNumberAscIdAsc(TestConstants.VALID_COURT_LOCATION);
         }
     }
 
