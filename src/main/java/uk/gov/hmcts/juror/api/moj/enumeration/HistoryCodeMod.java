@@ -61,6 +61,7 @@ public enum HistoryCodeMod {
     RESEND_RESPONSE_PACK("RLPK", "Reissue Response Pack"),
     PRINT_SUMMONS("RSUM", "Print Summons"),
     SUMMONS_REPRINTED("RSUP", "Reissue Summons Letter"),
+    REVERTED_TO_SUMMONED("PSUP", "Reverted to Summoned"),
     COMPLETE_SERVICE("SCOM", "Complete Service"),
     JURY_EMPANELMENT("TADD", "Jury Empanelment"),
     ADD_TO_PANEL("VADD", "Add To Panel"),
