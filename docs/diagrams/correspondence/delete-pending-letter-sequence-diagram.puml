@@ -1,0 +1,91 @@
+@startuml
+title Delete Pending Letter - Call Sequence
+autonumber
+skinparam shadowing false
+hide footbox
+
+actor "Bureau user / API client" as Client
+participant "Spring Security /\nrequest validation" as Security
+participant LetterController as Controller
+participant "ReissueLetterServiceImpl\n(via ReissueLetterService)" as Service
+participant SecurityUtil as SecurityUtil
+participant "BulkPrintDataRepository\n(custom query: IReissueLetterRepositoryImpl)" as Letters
+participant JurorPoolUtils as PoolUtils
+participant JurorPoolRepository as Pools
+participant JurorHistoryService as History
+
+Client -> Security : DELETE /api/v1/moj/letter/delete-pending-letter
+note over Security
+  @IsBureauUser requires Bureau access.
+  Request body is subject to @Valid / @NotNull validation.
+  ReissueLetterRequestDto requires a non-empty letters list.
+  Rejected requests do not reach the service.
+end note
+Security -> Controller : deletePendingLetter(request)
+Controller -> Service : deletePendingLetter(request)
+activate Service
+Service -> SecurityUtil : getActiveUsersBureauPayload()
+SecurityUtil --> Service : authenticated payload
+Service -> Service : Read login; select request.letters.getFirst()
+note right of Service
+  Only the first requested letter is processed.
+  Additional list entries are ignored.
+  The lookup uses juror number and form code,
+  not the submitted print date.
+end note
+Service -> Service : deletePendingLetter(jurorNumber, formCode)
+Service -> Letters : findLatestPendingLetterForJuror(jurorNumber, formCode)
+note right of Letters
+  Filter by juror number and form code.
+  Pending means extractedFlag is null or false,
+  OR emailStatus is PENDING.
+  Order by creationDate descending and fetch first.
+end note
+Letters --> Service : Optional<BulkPrintData>
+
+break No matching pending letter
+  Service -> Service : Private helper returns false
+  Service --> Controller : throw MojException.NotFound
+  Controller --> Client : HTTP 404 via exception handling
+end
+
+Service -> Letters : delete(bulkPrintData)
+
+opt Form code is ENG_REQUESTINFO or BI_REQUESTINFO
+  Service -> PoolUtils : getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber)
+  PoolUtils -> SecurityUtil : getActiveOwner()
+  SecurityUtil --> PoolUtils : current owner
+  PoolUtils -> Pools : findByJurorJurorNumberAndIsActiveAndOwner(\njurorNumber, true, currentOwner)
+  Pools --> PoolUtils : jurorPool or null
+
+  break No active pool association for the current owner
+    PoolUtils --> Service : throw MojException.NotFound
+    Service --> Controller : exception propagates
+    Controller --> Client : HTTP 404 via exception handling
+    note over Service, Letters
+      The service method is transactional.
+      This exception rolls back the deletion.
+    end note
+  end
+
+  PoolUtils --> Service : jurorPool
+  Service -> History : createDeleteAdditionalInfoLetterHistory(jurorPool)
+  note right of History
+    Records DELETE_REQUEST_MORE_INFO history.
+    Other form codes do not create deletion history here.
+  end note
+end
+
+Service -> Service : Private helper returns true
+Service --> Controller : completed
+deactivate Service
+Controller --> Client : HTTP 200 OK; body = "Letters reissued"
+
+legend bottom
+  Service entry method is @Transactional.
+  This endpoint deletes a pending record; it does not reissue letters.
+  The success response text is reproduced from the controller.
+  Repository persistence and history-service internals are omitted.
+  Exceptions terminate the flow and propagate to framework exception handling.
+endlegend
+@enduml

@@ -1,0 +1,87 @@
+@startuml
+title Reissue Letter - High-Level Public Method Calls
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide empty members
+
+class LetterController {
+  +reissueLetter(request: ReissueLetterRequestDto): ResponseEntity<ReissueLetterReponseDto>
+}
+class ReissueLetterRequestDto
+class ReissueLetterReponseDto
+
+interface ReissueLetterService {
+  +reissueLetter(request: ReissueLetterRequestDto): ReissueLetterReponseDto
+}
+class ReissueLetterServiceImpl {
+  +reissueLetter(request: ReissueLetterRequestDto): ReissueLetterReponseDto
+}
+
+interface JurorPoolService {
+  +getJurorPoolFromUser(jurorNumber: String): JurorPool
+}
+interface EmailDataService {
+  +emailReissueLetter(jurorPool: JurorPool, requestedFormCode: FormCode): boolean
+}
+interface PrintDataService {
+  +reprintSummonsLetter(jurorPool: JurorPool): void
+  +reprintDbdSummonsLetter(jurorPool: JurorPool): void
+  +printDbdResponseLetter(jurorPool: JurorPool): void
+  +printSummonsReminderLetter(jurorPool: JurorPool): void
+  +printDbdSummonsReminderLetter(jurorPool: JurorPool): void
+  +printConfirmationLetter(jurorPool: JurorPool): void
+  +printDeferralLetter(jurorPool: JurorPool): void
+  +printDeferralDeniedLetter(jurorPool: JurorPool): void
+  +printExcusalLetter(jurorPool: JurorPool): void
+  +printExcusalDeniedLetter(jurorPool: JurorPool): void
+  +printPostponeLetter(jurorPool: JurorPool): void
+  +reprintRequestInfoLetter(jurorPool: JurorPool): void
+  +printWithdrawalLetter(jurorPool: JurorPool): void
+}
+interface JurorHistoryService {
+  +createSummonLetterReprintedHistory(jurorPool: JurorPool, formCode: FormCode): void
+  +createSummonsReminderLetterHistory(jurorPool: JurorPool): void
+  +createResendLetterHistory(jurorPool: JurorPool, historyCode: HistoryCodeMod): void
+  +createResendLetterHistory(jurorPool: JurorPool, historyCode: HistoryCodeMod, communicationChannel: CommunicationChannel): void
+}
+interface PoolHistoryService {
+  +createPoolHistory(poolNumber: String, historyCode: HistoryCode, otherInfo: String): void
+}
+enum FormCode {
+  {static} +getFormCode(code: String): FormCode
+  +getJurorStatus(): List<Integer>
+  +getLetterPrinter(): BiConsumer<PrintDataService, JurorPool>
+}
+
+LetterController ..> ReissueLetterRequestDto : request body
+LetterController ..> ReissueLetterReponseDto : HTTP 200 response
+LetterController --> ReissueLetterService
+ReissueLetterService <|.. ReissueLetterServiceImpl
+ReissueLetterServiceImpl --> JurorPoolService : retrieve accessible juror pool
+ReissueLetterServiceImpl --> FormCode : allowed statuses and printer selection
+ReissueLetterServiceImpl --> EmailDataService : eligible DBD email reissue
+ReissueLetterServiceImpl --> PrintDataService : invoke selected form-code printer
+ReissueLetterServiceImpl --> JurorHistoryService : record reissue / initial reminder
+ReissueLetterServiceImpl --> PoolHistoryService : reminder counts per pool
+ReissueLetterServiceImpl ..> ReissueLetterReponseDto : constructs
+
+note bottom of LetterController
+  POST /api/v1/moj/letter/reissue-letter
+  Bureau access required (@IsBureauUser)
+  Returns HTTP 200 with ReissueLetterReponseDto
+end note
+
+note bottom of ReissueLetterServiceImpl
+  Status mismatches skip all reissues and
+  return affected jurors in the response.
+  Email and print calls depend on eligibility.
+  Service entry method is transactional.
+end note
+
+legend bottom
+  Only public methods on the main collaborating classes are shown.
+  PrintDataService methods are alternatives selected by FormCode.
+  Repository calls, security helpers, eligibility utilities,
+  DTO accessors and private methods are omitted.
+endlegend
+@enduml

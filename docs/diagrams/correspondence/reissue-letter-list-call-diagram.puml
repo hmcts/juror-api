@@ -1,0 +1,96 @@
+@startuml
+title Reissue Letter List - High-Level Public Method Calls
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide empty members
+
+class LetterController {
+  +reissueLetterList(request: ReissueLetterListRequestDto): ResponseEntity<ReissueLetterListResponseDto>
+}
+
+class ReissueLetterListRequestDto
+class ReissueLetterListResponseDto
+
+interface ReissueLetterService {
+  +reissueLetterList(request: ReissueLetterListRequestDto): ReissueLetterListResponseDto
+}
+
+class ReissueLetterServiceImpl {
+  +reissueLetterList(request: ReissueLetterListRequestDto): ReissueLetterListResponseDto
+}
+
+interface IReissueLetterRepository {
+  +findLetters(request: ReissueLetterListRequestDto, queryConsumer: Consumer<JPAQuery<Tuple>>): List<Tuple>
+}
+
+class IReissueLetterRepositoryImpl {
+  +findLetters(request: ReissueLetterListRequestDto, queryConsumer: Consumer<JPAQuery<Tuple>>): List<Tuple>
+}
+
+interface BulkPrintDataRepository {
+  +findByJurorNoAndFormAttributeFormTypeInOrderByCreationDateDesc(jurorNo: String, formCodes: List<String>): List<BulkPrintData>
+}
+
+interface JurorRepository {
+  +findByJurorNumber(jurorNumber: String): Juror
+}
+
+class SecurityUtil {
+  {static} +getActiveUsersBureauPayload(): BureauJwtPayload
+}
+
+enum LetterType {
+  +getLetterQueryConsumer(): Consumer<JPAQuery<Tuple>>
+  +getTupleComparator(): Comparator<Tuple>
+  +getReissueDataTypes(): List<DataType>
+  +getFormCodes(): List<FormCode>
+}
+
+enum "ReissueLetterService.DataType" as DataType {
+  +getExpression(): Expression<Object>
+  +transform(data: Object): Object
+  +getDisplayText(): String
+  +getDataType(): String
+  +getEntityPaths(): List<Class<? extends EntityPathBase<?>>>
+}
+
+LetterController ..> ReissueLetterListRequestDto : request body
+LetterController ..> ReissueLetterListResponseDto : HTTP 200 response
+LetterController --> ReissueLetterService
+ReissueLetterService <|.. ReissueLetterServiceImpl
+
+ReissueLetterServiceImpl --> SecurityUtil : authenticated login
+ReissueLetterServiceImpl --> BulkPrintDataRepository : find letters and check prior DBD summons
+IReissueLetterRepository <|-- BulkPrintDataRepository
+IReissueLetterRepository <|.. IReissueLetterRepositoryImpl
+ReissueLetterServiceImpl --> JurorRepository : fill missing reminder form codes
+ReissueLetterServiceImpl --> LetterType : query rules, sorting and columns
+ReissueLetterServiceImpl --> DataType : format response fields
+ReissueLetterServiceImpl ..> ReissueLetterListResponseDto : constructs
+IReissueLetterRepositoryImpl --> LetterType : form codes and projected fields
+IReissueLetterRepositoryImpl --> DataType : query expressions and joins
+
+note bottom of LetterController
+  POST /api/v1/moj/letter/reissue-letter-list
+  Bureau users only (@IsBureauUser)
+  HTTP 200 with letter details
+  HTTP 404 when no letters match
+end note
+
+note bottom of JurorRepository
+  Used for SUMMONED_REMINDER rows
+  with a missing form code.
+  Prior DBD summons lookup occurs
+  only for digital-by-default jurors.
+end note
+
+legend bottom
+  Only public methods relevant to this endpoint are shown.
+  BulkPrintDataRepository inherits findLetters from IReissueLetterRepository.
+  Spring Data composes the custom implementation into the repository.
+  DTO accessors, framework calls and private helpers are omitted.
+  Listing is read-only; no letters are queued or sent.
+endlegend
+
+@enduml

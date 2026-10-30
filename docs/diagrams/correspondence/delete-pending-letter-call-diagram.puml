@@ -1,0 +1,74 @@
+@startuml
+title Delete Pending Letter - High-Level Public Method Calls
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide empty members
+
+class LetterController {
+  +deletePendingLetter(request: ReissueLetterRequestDto): ResponseEntity<String>
+}
+class ReissueLetterRequestDto
+interface ReissueLetterService {
+  +deletePendingLetter(request: ReissueLetterRequestDto): void
+}
+class ReissueLetterServiceImpl {
+  +deletePendingLetter(request: ReissueLetterRequestDto): void
+}
+interface IReissueLetterRepository {
+  +findLatestPendingLetterForJuror(jurorNumber: String, formCode: String): Optional<BulkPrintData>
+}
+class IReissueLetterRepositoryImpl {
+  +findLatestPendingLetterForJuror(jurorNumber: String, formCode: String): Optional<BulkPrintData>
+}
+interface BulkPrintDataRepository {
+  +delete(entity: BulkPrintData): void
+}
+class JurorPoolUtils {
+  {static} +getActiveJurorPoolForUser(repository: JurorPoolRepository, jurorNumber: String): JurorPool
+}
+interface JurorPoolRepository {
+  +findByJurorJurorNumberAndIsActiveAndOwner(jurorNumber: String, isActive: boolean, owner: String): JurorPool
+}
+interface JurorHistoryService {
+  +createDeleteAdditionalInfoLetterHistory(jurorPool: JurorPool): void
+}
+class SecurityUtil {
+  {static} +getActiveUsersBureauPayload(): BureauJwtPayload
+  {static} +getActiveOwner(): String
+}
+
+LetterController ..> ReissueLetterRequestDto : request body
+LetterController --> ReissueLetterService
+ReissueLetterService <|.. ReissueLetterServiceImpl
+ReissueLetterServiceImpl --> SecurityUtil : authenticated login
+ReissueLetterServiceImpl --> BulkPrintDataRepository : find latest pending record and delete
+IReissueLetterRepository <|-- BulkPrintDataRepository
+IReissueLetterRepository <|.. IReissueLetterRepositoryImpl
+ReissueLetterServiceImpl --> JurorPoolUtils : request-information forms only
+JurorPoolUtils --> SecurityUtil : current owner
+JurorPoolUtils --> JurorPoolRepository : find active membership
+ReissueLetterServiceImpl --> JurorHistoryService : request-information deletion history
+
+note bottom of LetterController
+  DELETE /api/v1/moj/letter/delete-pending-letter
+  Bureau access required (@IsBureauUser)
+  HTTP 200 with body "Letters reissued"
+end note
+
+note bottom of ReissueLetterServiceImpl
+  Processes only the first letter in the request.
+  Missing pending record throws NotFound.
+  Pool lookup and history occur only for
+  ENG_REQUESTINFO / BI_REQUESTINFO.
+  Service entry method is transactional.
+end note
+
+legend bottom
+  Only public methods relevant to this endpoint are shown.
+  BulkPrintDataRepository inherits the lookup from IReissueLetterRepository.
+  delete is inherited from Spring Data; its concrete entity type is shown.
+  Spring Data composes the custom implementation into the repository.
+  DTO accessors and private helper methods are omitted.
+  No letters are reissued by this endpoint.
+endlegend
+@enduml

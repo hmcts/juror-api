@@ -1,0 +1,132 @@
+@startuml
+title Additional Summons - Call Sequence
+autonumber
+skinparam shadowing false
+hide footbox
+
+actor "Bureau user / API client" as Client
+participant "Spring Security /\nrequest validation" as Security
+participant CreatePoolController as Controller
+participant "PoolCreateServiceImpl\n(via PoolCreateService)" as Service
+participant CourtLocationService as Court
+participant VotersService as Voters
+participant PoolMemberSequenceService as Sequence
+participant "Repositories\n(grouped for readability)" as Repos
+participant PrintDataService as Print
+participant ManageDeferralsService as Deferrals
+
+Client -> Security : POST /api/v1/moj/pool-create/additional-summons
+note over Security
+  Requires Bureau access and a valid PoolAdditionalSummonsDto.
+  Rejected requests do not reach the service.
+end note
+Security -> Controller : additionalSummonsForPool(payload, request)
+Controller -> Service : lockVotersAndSummonAdditionalCitizens(payload, request)
+activate Service
+
+group Validate yield and acquire lock
+  Service -> Court : getYieldForCourtLocation(catchmentArea)
+  Court --> Service : yield
+  Service -> Service : checkYield(...)
+  note right of Service
+    citizensToSummon + citizensSummoned
+    must not exceed floor(yield * noRequested).
+  end note
+  Service -> Court : getVotersLock(catchmentArea)
+  Court --> Service : lock acquired
+end
+
+Service -> Service : summonAdditionalCitizens(payload, request)
+
+group Determine summons type and build internal request
+  Service -> Repos : Retrieve PoolRequest by pool number
+  Repos --> Service : existing pool
+  Service -> Repos : CourtLocationRepository.findByLocCode(pool location)
+  Repos --> Service : court location
+  Service -> Service : Check digital-by-default feature flag\nand court-location setting
+  Service -> Repos : Retrieve PoolRequest for setupPoolRequestDto(...)
+  Repos --> Service : existing pool
+  Service -> Service : Build PoolCreateRequestDto\nusing request and existing attendance details
+end
+
+group Select voters and create pool members - getJurorPools(...)
+  Service -> Voters : getVoters(poolCreateRequestDto)
+  Voters --> Service : randomly selected, filtered voters
+  Service -> Service : Check sufficient voters returned
+  Service -> Sequence : getPoolMemberSequenceNumber(poolNumber)
+  Sequence --> Service : next member sequence
+  Service -> Repos : Retrieve PoolRequest
+  Repos --> Service : pool and existing memberships
+  Service -> Service : Check membership count equals previousJurorCount
+
+  loop Until requested eligible juror count reached, or voters exhausted
+    Service -> Sequence : leftPadInteger(sequenceNumber)
+    Sequence --> Service : padded member sequence
+    Service -> Service : createJurorPool(...)
+    Service -> Repos : JurorStatusRepository.findById(status)
+    Repos --> Service : summoned / disqualified status
+    Service -> Repos : JurorRepository.getJurorSequenceNumber()
+    Repos --> Service : new juror number
+    Service -> Service : Build Juror and JurorPool; increment sequence
+  end
+
+  Service -> Voters : markVotersAsSelected(selectedVoters, attendanceDate)
+  Service -> Service : Check sufficient eligible jurors
+  Service -> Repos : JurorRepository.findByJurorNumberIn(numbers)
+  Repos --> Service : existing matching jurors
+  Service -> Service : Reject if any juror number already exists
+  Service -> Repos : JurorRepository.saveAll(jurors)
+  Repos --> Service : saved jurors
+  Service -> Service : Associate saved jurors with memberships
+  Service -> Repos : JurorPoolRepository.saveAll(jurorPools)
+  Repos --> Service : saved memberships
+
+  opt Non-disqualified jurors exist
+    alt Digital by default
+      Service -> Print : bulkPrintDbdSummonsLetter(summonedJurors)
+    else Standard summons
+      Service -> Print : bulkPrintSummonsLetter(summonedJurors)
+    end
+  end
+
+  Service -> Repos : PoolRequestRepository.save(pool with newRequest = 'N')
+end
+
+group Inner finally - getJurorPools(...)
+  Service -> Court : releaseVotersLock(catchmentArea)
+end
+
+group History and deferrals
+  Service -> Service : Count newly selected non-disqualified jurors
+  Service -> Repos : PoolHistoryRepository.save(ADD_POOL_MEMBERS history)
+  Service -> Repos : JurorHistoryRepository.saveAll(historyList)
+  opt Requested bureauDeferrals > 0
+    Service -> Repos : Retrieve PoolRequest
+    Repos --> Service : pool
+    Service -> Deferrals : useBureauDeferrals(pool, bureauDeferrals, login, false)
+    Deferrals --> Service : processed count
+  end
+end
+
+group Outer finally - lockVotersAndSummonAdditionalCitizens(...)
+  Service -> Court : releaseVotersLock(catchmentArea)
+end
+
+note over Service, Court
+  The success path is shown.
+  Yield validation or lock-acquisition failures stop before the outer try/finally.
+  Once acquired, the outer finally attempts lock release on success or failure.
+  The inner finally also attempts release whenever its try block is entered.
+  Exceptions propagate; failed requests do not return HTTP 201.
+  The service entry method is transactional.
+end note
+
+Service --> Controller : completed
+deactivate Service
+Controller --> Client : HTTP 201 Created (empty body)
+
+legend bottom
+  Repository calls are grouped; supporting-service internals are omitted.
+  PrintDataService prepares summons print data for subsequent processing.
+endlegend
+@enduml

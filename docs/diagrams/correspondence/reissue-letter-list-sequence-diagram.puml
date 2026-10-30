@@ -1,0 +1,100 @@
+@startuml
+title Reissue Letter List - Call Sequence
+autonumber
+skinparam shadowing false
+hide footbox
+
+actor "Bureau user / API client" as Client
+participant "Spring Security /\nrequest validation" as Security
+participant LetterController as Controller
+participant "ReissueLetterServiceImpl\n(via ReissueLetterService)" as Service
+participant SecurityUtil as SecurityUtil
+participant "BulkPrintDataRepository\nfindLetters: IReissueLetterRepositoryImpl" as Letters
+participant JurorRepository as Jurors
+database Database as DB
+
+Client -> Security : POST /api/v1/moj/letter/reissue-letter-list
+note over Security
+  Requires Bureau access (@IsBureauUser).
+  Request body must satisfy DTO validation.
+  Rejected requests do not reach the service.
+end note
+Security -> Controller : reissueLetterList(request)
+Controller -> Service : reissueLetterList(request)
+activate Service
+
+Service -> SecurityUtil : getActiveUsersBureauPayload()
+SecurityUtil --> Service : authenticated payload
+Service -> Service : Read login and request.letterType
+Service -> Letters : findLetters(request, letterType.getLetterQueryConsumer())
+activate Letters
+Letters -> Letters : Build distinct QueryDSL projection\nfrom letterType.getReissueDataTypes()
+note right of Letters
+  Join jurors and pool memberships; left join bulk print data.
+  Apply letter-type rules and optional history join.
+  Require active Bureau-owned memberships.
+  Apply request search / queued-letter filters.
+  Summons reminders can include unprinted letters.
+end note
+Letters -> DB : Execute query ordered by creation date DESC, juror number ASC
+DB --> Letters : matching tuples
+Letters --> Service : letters
+deactivate Letters
+
+break No matching letters
+  Service --> Controller : throw MojException.NotFound
+  Controller --> Client : HTTP 404 via exception handling
+end
+
+group Format response rows
+  Service -> Service : Sort tuples using letterType.getTupleComparator()
+  loop Each tuple and configured reissue data field
+    Service -> Service : Read projected form code and field value
+    alt Field is SUMMONS_DATE with a recognised summons form code
+      Service -> Service : Extract attendance date from fixed-width record\nusing form-specific offsets
+      note right of Service
+        Bilingual 5221C combines the English date
+        with the Welsh day name.
+        A null record produces a null date.
+      end note
+    else Other field / fallback
+      Service -> Service : DataType.transform(projected value)
+    end
+  end
+  Service -> Service : Build headings and dataTypes from letter configuration
+  Service -> Service : setStatusDesc(data, headings)
+  note right of Service
+    When Status and Reason columns exist:
+    Deferred + Postponement of service becomes Postponed.
+  end note
+end
+
+group Fill missing summons-reminder form codes - setFormCode(...)
+  opt Letter type is SUMMONED_REMINDER and hidden_form_code column exists
+    loop Each row with a null form code
+      Service -> Jurors : findByJurorNumber(jurorNumber)
+      Jurors -> DB : Retrieve juror
+      DB --> Jurors : juror
+      Jurors --> Service : juror
+      opt Juror is digital by default
+        Service -> Letters : findByJurorNoAndFormAttributeFormTypeInOrderByCreationDateDesc(\njurorNumber, DBD_SUMMONS_CODES)
+        Letters -> DB : Retrieve matching DBD summons records
+        DB --> Letters : matching records
+        Letters --> Service : records
+      end
+      Service -> Service : Select standard / DBD reminder form code\nand English / bilingual variant
+    end
+  end
+end
+
+Service -> Service : new ReissueLetterListResponseDto(headings, dataTypes, data)
+Service --> Controller : response DTO
+deactivate Service
+Controller --> Client : HTTP 200 OK with response DTO
+
+legend bottom
+  Service method is @Transactional(readOnly = true).
+  This endpoint lists letter details; it does not queue or send letters.
+  Database interactions are summarised; framework internals are omitted.
+endlegend
+@enduml

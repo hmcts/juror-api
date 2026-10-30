@@ -1,0 +1,74 @@
+@startuml
+title Additional Summons - High-Level Classes
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide empty members
+
+class CreatePoolController {
+  +additionalSummonsForPool(payload: BureauJwtPayload, request: PoolAdditionalSummonsDto): ResponseEntity<String>
+}
+
+class PoolAdditionalSummonsDto
+class PoolCreateRequestDto
+class BureauJwtPayload
+
+interface PoolCreateService {
+  +lockVotersAndSummonAdditionalCitizens(payload: BureauJwtPayload, request: PoolAdditionalSummonsDto): void
+}
+
+class PoolCreateServiceImpl {
+  +lockVotersAndSummonAdditionalCitizens(payload: BureauJwtPayload, request: PoolAdditionalSummonsDto): void
+  +summonAdditionalCitizens(payload: BureauJwtPayload, request: PoolAdditionalSummonsDto): void
+}
+
+interface CourtLocationService {
+  +getYieldForCourtLocation(locCode: String): BigDecimal
+  +getVotersLock(locCode: String): boolean
+  +releaseVotersLock(locCode: String): boolean
+}
+
+interface VotersService {
+  +getVoters(request: PoolCreateRequestDto): List<Voters>
+  +markVotersAsSelected(voters: List<Voters>, attendanceDate: Date): void
+}
+
+interface PoolMemberSequenceService {
+  +getPoolMemberSequenceNumber(poolNumber: String): int
+  +leftPadInteger(intValue: int): String
+}
+
+interface ManageDeferralsService {
+  +useBureauDeferrals(newPool: PoolRequest, deferrals: int, userId: String, isNewPool: boolean): int
+}
+
+interface PrintDataService {
+  +bulkPrintSummonsLetter(jurorPools: List<JurorPool>): void
+  +bulkPrintDbdSummonsLetter(jurorPools: List<JurorPool>): void
+}
+
+CreatePoolController ..> PoolAdditionalSummonsDto : request body
+CreatePoolController ..> BureauJwtPayload : authenticated user
+CreatePoolController --> PoolCreateService
+PoolCreateService <|.. PoolCreateServiceImpl
+
+PoolCreateServiceImpl ..> PoolCreateRequestDto : builds from request and existing pool
+PoolCreateServiceImpl --> CourtLocationService : validate yield and lock / unlock voters
+PoolCreateServiceImpl --> VotersService : select and mark voters
+PoolCreateServiceImpl --> PoolMemberSequenceService : allocate member numbers
+PoolCreateServiceImpl --> PrintDataService : prepare standard or DBD summons
+PoolCreateServiceImpl --> ManageDeferralsService : useBureauDeferrals(..., false)
+
+note bottom of CreatePoolController
+  POST /api/v1/moj/pool-create/additional-summons
+  Bureau users only
+  Returns HTTP 201 on success
+end note
+
+legend bottom
+  Only public methods relevant to this endpoint are shown.
+  Persistence dependencies and private helper methods are omitted.
+  Date in VotersService refers to java.sql.Date.
+endlegend
+
+@enduml
