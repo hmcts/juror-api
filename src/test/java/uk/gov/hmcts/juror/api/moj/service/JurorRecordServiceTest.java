@@ -28,8 +28,6 @@ import uk.gov.hmcts.juror.api.bureau.service.ResponseExcusalService;
 import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
-import uk.gov.hmcts.juror.api.juror.domain.JurorResponse;
-import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.ConfirmIdentityDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ContactLogRequestDto;
@@ -79,6 +77,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolHistory;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.PoolType;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
@@ -1409,7 +1408,6 @@ class JurorRecordServiceTest {
 
     private BureauJwtPayload buildPayload(String owner) {
         return BureauJwtPayload.builder()
-            .userLevel("99")
             .login("SOME_USER")
             .owner(owner)
             .build();
@@ -1859,7 +1857,7 @@ class JurorRecordServiceTest {
 
         jurorPools.getFirst().setStatus(jurorStatus);
 
-        JurorResponse response = new JurorResponse();
+        DigitalResponse response = new DigitalResponse();
         response.setJurorNumber(jurorNumber);
 
         doReturn(courtLocation).when(courtLocationService).getCourtLocation(locCode);
@@ -4529,6 +4527,51 @@ class JurorRecordServiceTest {
         }
     }
 
+    @Nested
+    @DisplayName("Mark juror as summoned")
+    class MarkAsSummonedTest {
+        @Test
+        void shouldRecordRevertedToSummonedHistory() {
+            TestUtils.mockCourtUser(COURT_OWNER);
+
+            final String jurorNumber = "123456789";
+
+            PoolRequest poolRequest = new PoolRequest();
+
+            poolRequest.setPoolNumber("415230101");
+            poolRequest.setReturnDate(LocalDate.now().minusWeeks(2));
+
+            JurorStatus undeliverableStatus = new JurorStatus();
+            undeliverableStatus.setStatus(IJurorStatus.UNDELIVERABLE);
+
+            JurorStatus summonedStatus = new JurorStatus();
+            summonedStatus.setStatus(IJurorStatus.SUMMONED);
+
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setOwner(COURT_OWNER);
+            jurorPool.setPool(poolRequest);
+            jurorPool.setStatus(undeliverableStatus);
+
+            when(jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true))
+                .thenReturn(List.of(jurorPool));
+            when(jurorStatusRepository.findById(IJurorStatus.SUMMONED))
+                .thenReturn(Optional.of(summonedStatus));
+
+            jurorRecordService.markSummoned(jurorNumber);
+
+            ArgumentCaptor<JurorHistory> historyCaptor = ArgumentCaptor.forClass(JurorHistory.class);
+            verify(jurorHistoryRepository).save(historyCaptor.capture());
+
+
+            JurorHistory history = historyCaptor.getValue();
+            assertThat(history.getHistoryCode()).isEqualTo(HistoryCodeMod.REVERTED_TO_SUMMONED);
+            assertThat(history.getHistoryCode().getCode()).isEqualTo("PSUP");
+            assertThat(history.getPoolNumber()).isEqualTo("415230101");
+
+            assertThat(jurorPool.getStatus()).isEqualTo(summonedStatus);
+            assertThat(jurorPool.getNextDate()).isEqualTo(poolRequest.getReturnDate());
+        }
+    }
 
     private BureauJurorDetailDto createBureauJurorDetailDto(String jurorNumber) {
 

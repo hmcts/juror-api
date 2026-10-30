@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.bureau.controller.response.BureauJurorDetailDto;
-import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.service.BureauService;
 import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -83,6 +82,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AppearanceStage;
 import uk.gov.hmcts.juror.api.moj.enumeration.ApprovalDecision;
 import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.PendingJurorStatusEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
@@ -153,7 +153,8 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorUtils.checkReadAccessForCurr
  */
 @Slf4j
 @Service
-@SuppressWarnings("PMD")
+@SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.TooManyMethods",
+    "PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class JurorRecordServiceImpl implements JurorRecordService {
     private final ContactCodeRepository contactCodeRepository;
@@ -208,7 +209,6 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    @SuppressWarnings({"PMD.NcssCount", "PMD.CognitiveComplexity", "PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
     public void editJurorDetails(BureauJwtPayload payload, EditJurorRecordRequestDto requestDto, String jurorNumber) {
         log.info("Juror: {}. Start updating details by user {}", jurorNumber, payload.getLogin());
 
@@ -359,7 +359,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     }
 
     private String normalizeAddressValue(String value) {
-        if (value == null || value.trim().isEmpty()) {
+        if (value == null || value.isBlank()) {
             return null;
         }
         return value.trim();
@@ -370,7 +370,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
     }
 
     private String normalizePostcode(String postcode) {
-        if (postcode == null || postcode.trim().isEmpty()) {
+        if (postcode == null || postcode.isBlank()) {
             return null;
         }
         return postcode.replaceAll("\\s+", "").toUpperCase(Locale.ROOT);
@@ -1414,7 +1414,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
     @Override
     @Transactional
-    @SuppressWarnings({"PMD.CyclomaticComplexity"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     public PoliceCheckStatusDto updatePncStatus(final String jurorNumber, final PoliceCheck policeCheck) {
         log.info("Attempting to update PNC check status for juror {} to be {}", jurorNumber, policeCheck);
         final JurorPool jurorPool = jurorPoolService.getJurorPoolFromUser(jurorNumber);
@@ -1453,7 +1453,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             log.debug("Juror {} is ineligible disqualifying for police check", jurorNumber);
             jurorPool.setStatus(
                 RepositoryUtils.retrieveFromDatabase(IJurorStatus.DISQUALIFIED, jurorStatusRepository));
-            juror.setDisqualifyCode(DisCode.ELECTRONIC_POLICE_CHECK_FAILURE);
+            juror.setDisqualifyCode(DisqualifyCode.E.getCode());
             juror.setDisqualifyDate(LocalDate.now(clock));
 
             jurorHistoryService.createPoliceCheckDisqualifyHistory(jurorPool);
@@ -1747,16 +1747,18 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         final JurorPool jurorPool = JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber,
                                                                              SecurityUtil.getActiveOwner());
-        final Juror juror = jurorPool.getJuror();
 
         if (!jurorPool.getCourt().isDigitalByDefault()) {
             throw new MojException.BusinessRuleViolation(
                 "Juror's court is not part of the DBD pilot", null);
         }
+
         if (jurorPool.getStatus().getStatus() != IJurorStatus.SUMMONED) {
             throw new MojException.BusinessRuleViolation(
                 "Juror must be in Summoned status to send a paper response pack", null);
         }
+
+        final Juror juror = jurorPool.getJuror();
         if (!"Paper".equals(juror.getDbdPreference())) {
             throw new MojException.BusinessRuleViolation(
                 "Juror's communication preference must be Paper", null);
@@ -1824,7 +1826,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         final JurorHistory history = JurorHistory.builder()
             .jurorNumber(jurorNumber)
-            .historyCode(HistoryCodeMod.PRINT_SUMMONS)
+            .historyCode(HistoryCodeMod.REVERTED_TO_SUMMONED)
             .createdBy(auditorUsername)
             .otherInformation("Juror marked as summoned by " + auditorUsername + " on " + LocalDate.now())
             .poolNumber(jurorPool.getPoolNumber())

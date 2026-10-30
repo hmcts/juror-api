@@ -787,7 +787,6 @@ class PoolCreateServiceTest {
 
     private BureauJwtPayload buildPayload(String owner) {
         return BureauJwtPayload.builder()
-            .userLevel("99")
             .login("SOME_USER")
             .owner(owner)
             .build();
