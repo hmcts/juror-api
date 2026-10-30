@@ -104,7 +104,7 @@ public class DashboardResponseDto implements Serializable {
     @Schema(description = "Dashboard Online Auto Processed Responses Counts.")
     public static class AutoOnlineResponseData implements Serializable {
 
-        @Schema(description = "Total online auto processed responses")
+        @Schema(description = "Total online responses auto processed during the selected processing dates")
         @Min(0)
         private Integer autoProcessedOnlineResponseTotal;
 
@@ -112,10 +112,16 @@ public class DashboardResponseDto implements Serializable {
         @Min(0)
         private Integer onlineResponseTotal;
 
-        @Schema(description = "Auto processed online responses as a percentage of online responses.")
+        @Schema(description = "Total summoned in the selected summons months: paper + online + not responded")
         @Min(0)
-        private Float percentAutoProcessedOnlineResponses;       // autoProcessedOnlineResponseTotal /
-        // onlineResponseTotal
+        private Integer summonedTotal;
+
+        // Retain the existing JSON field name; the denominator is now total summoned.
+        @Schema(description = "Online responses auto processed during the selected period as a percentage of "
+            + "total summoned in the selected summons months. "
+            + "Processing and summons dates may refer to different jurors.")
+        @Min(0)
+        private Float percentAutoProcessedOnlineResponses;
 
     }
 
