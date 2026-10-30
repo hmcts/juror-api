@@ -24,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 //Bulk Print Data entity based on the juror Print Files entity.
 @NoArgsConstructor
@@ -66,6 +67,9 @@ public class BulkPrintData {
     @Builder.Default
     @SuppressWarnings({"PMD.RedundantFieldInitializer"}) // Builder.Default needs this value
     private boolean extractedFlag = false;
+
+    @Column(name = "extracted_date")
+    private LocalDateTime extractedDate;
 
     @Column(name = "digital_comms")
     private boolean digitalComms;
