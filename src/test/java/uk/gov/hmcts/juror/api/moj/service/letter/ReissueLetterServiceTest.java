@@ -991,8 +991,8 @@ public class ReissueLetterServiceTest {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"5229", "5229C"})
-        void reissuePostponeLetterHappyPath(String formCode) {
+        @CsvSource({"5229, 7", "5229C, 7", "5229, 2", "5229C, 2"})
+        void reissuePostponeLetterHappyPath(String formCode, int statusCode) {
             String owner = "400";
 
             TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
@@ -1016,13 +1016,18 @@ public class ReissueLetterServiceTest {
             JurorStatus postponedStatus = new JurorStatus();
             postponedStatus.setStatus(IJurorStatus.DEFERRED);
             when(jurorStatusRepository.findById(IJurorStatus.DEFERRED))
-                .thenReturn(Optional.ofNullable(postponedStatus));
+                .thenReturn(Optional.of(postponedStatus));
+
+            JurorStatus respondedStatus = new JurorStatus();
+            respondedStatus.setStatus(IJurorStatus.RESPONDED);
+            when(jurorStatusRepository.findById(IJurorStatus.RESPONDED))
+                .thenReturn(Optional.of(respondedStatus));
 
             PoolRequest pool = new PoolRequest();
             pool.setPoolNumber("1");
             JurorPool jurorPool = new JurorPool();
             jurorPool.setPool(pool);
-            jurorPool.setStatus(postponedStatus);
+            jurorPool.setStatus(statusCode == IJurorStatus.DEFERRED ? postponedStatus : respondedStatus);
 
             when(jurorPoolService.getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber()))
                 .thenReturn(jurorPool);
@@ -1038,6 +1043,8 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.DEFERRED);
+            verify(jurorStatusRepository, times(1)).findById(IJurorStatus.RESPONDED);
+            verify(printDataService, times(1)).printPostponeLetter(jurorPool);
             verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
         }
