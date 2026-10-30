@@ -9,7 +9,7 @@ buildscript {
         envers = '3.5.13'
         jwtVersion = '0.13.0'
         mockitoVersion = '5.15.2'
-        httpclient5Version = '5.6.4'
+        httpclient5Version = '5.6.5'
         httpcore5Version = '5.4.3'
     }
     dependencies {
