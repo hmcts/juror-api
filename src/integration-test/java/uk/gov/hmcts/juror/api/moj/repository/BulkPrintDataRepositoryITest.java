@@ -1,13 +1,17 @@
 package uk.gov.hmcts.juror.api.moj.repository;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
+import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,6 +22,35 @@ class BulkPrintDataRepositoryITest extends AbstractIntegrationTest {
 
     @Autowired
     private BulkPrintDataRepository bulkPrintDataRepository;
+
+    @Autowired
+    private EntityManager entityManager;
+
+    @Test
+    @Transactional
+    @Sql({
+        "/db/mod/truncate.sql",
+        "/db/BulkPrintDataRepository_deleteDbdEmails.sql"
+    })
+    void extractedDateCanBePersistedAndCleared() {
+        BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNo("111111111").get(0);
+        Long id = bulkPrintData.getId();
+        assertThat(bulkPrintData.getExtractedDate()).isNull();
+
+        LocalDateTime extractedDate = LocalDateTime.of(2026, 10, 30, 12, 34, 56);
+        bulkPrintData.setExtractedDate(extractedDate);
+        bulkPrintDataRepository.saveAndFlush(bulkPrintData);
+        entityManager.clear();
+
+        BulkPrintData reloaded = bulkPrintDataRepository.findById(id).orElseThrow();
+        assertThat(reloaded.getExtractedDate()).isEqualTo(extractedDate);
+
+        reloaded.setExtractedDate(null);
+        bulkPrintDataRepository.saveAndFlush(reloaded);
+        entityManager.clear();
+
+        assertThat(bulkPrintDataRepository.findById(id).orElseThrow().getExtractedDate()).isNull();
+    }
 
     @Test
     @Sql({
