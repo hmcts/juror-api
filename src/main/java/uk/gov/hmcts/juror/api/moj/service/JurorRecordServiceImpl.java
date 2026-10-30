@@ -870,6 +870,9 @@ public class JurorRecordServiceImpl implements JurorRecordService {
             .jurorNumber(juror.getJurorNumber())
             .poolNumber(jurorPool.getPoolNumber())
             .createdBy(SecurityUtil.getActiveLogin())
+            .otherInformation(juror.isWelsh()
+                && welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode()) != null
+                ? "Summons letter (Welsh)" : null)
             .historyCode(HistoryCodeMod.PRINT_SUMMONS).build();
         jurorHistoryRepository.save(jurorSummonsHistory);
     }
