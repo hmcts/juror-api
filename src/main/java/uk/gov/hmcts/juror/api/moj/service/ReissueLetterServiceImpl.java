@@ -418,7 +418,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             .contains(formCode)) {
             JurorPool jurorPool =
                 JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber);
-            jurorHistoryService.createDeleteAdditionalInfoLetterHistory(jurorPool);
+            jurorHistoryService.createDeleteAdditionalInfoLetterHistory(jurorPool, FormCode.getFormCode(formCode));
         }
         return true;
     }
