@@ -338,6 +338,35 @@ public class ReissueLetterServiceTest {
                 .findLetters(reissueLetterListRequestDto, LetterType.POSTPONED.getLetterQueryConsumer());
         }
 
+        @ParameterizedTest
+        @ValueSource(strings = {"5229", "5229C"})
+        void reissuePostponeLetterListPopulatesMissingDetails(String formCode) {
+            String jurorNumber = "555555561";
+            TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
+            ReissueLetterListRequestDto request = ReissueLetterListRequestDto.builder()
+                .jurorNumber(jurorNumber).letterType(LetterType.POSTPONED).build();
+            List<Tuple> letters = getPostponementLetters(jurorNumber, formCode);
+            doReturn(null).when(letters.getFirst())
+                .get(ReissueLetterService.DataType.JUROR_POSTPONED_TO.getExpression());
+            doReturn(null).when(letters.getFirst())
+                .get(ReissueLetterService.DataType.JUROR_DEFERRED_TO_REASON.getExpression());
+            doReturn(letters).when(bulkPrintDataRepository)
+                .findLetters(request, LetterType.POSTPONED.getLetterQueryConsumer());
+            JurorPool latest = JurorPool.builder().juror(Juror.builder().jurorNumber(jurorNumber).build())
+                .deferralDate(LocalDate.of(2027, 1, 10)).deferralCode("P").build();
+            JurorPool older = JurorPool.builder().juror(latest.getJuror())
+                .deferralDate(LocalDate.of(2026, 12, 10)).deferralCode("P").build();
+            doReturn(List.of(latest, older)).when(jurorPoolRepository)
+                .findPostponementRecords(List.of(jurorNumber), "400");
+
+            ReissueLetterListResponseDto response = reissueLetterService.reissueLetterList(request);
+
+            assertThat(response.getData().getFirst().get(5)).isEqualTo("2027-01-10");
+            assertThat(response.getData().getFirst().get(6)).isEqualTo("Postponement of service");
+            assertThat(response.getData().getFirst().get(9)).isEqualTo(formCode);
+            verify(jurorPoolRepository).findPostponementRecords(List.of(jurorNumber), "400");
+        }
+
         @Test
         void reissueWithdrawalLetterListHappyPath() {
             String owner = "400";
