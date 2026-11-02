@@ -13,7 +13,6 @@ import uk.gov.hmcts.juror.api.moj.report.AbstractReport;
 import uk.gov.hmcts.juror.api.moj.report.AbstractStandardReport;
 import uk.gov.hmcts.juror.api.moj.report.DataType;
 import uk.gov.hmcts.juror.api.moj.repository.trial.TrialRepository;
-import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.Map;
 
@@ -37,7 +36,7 @@ public class PanelMembersStatusReport extends AbstractStandardReport {
     @Override
     protected void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request) {
         query.where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
-        query.where(QPanel.panel.trial.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
+        query.where(QPanel.panel.trial.courtLocation.locCode.eq(request.getLocCode()));
 
         if (Boolean.TRUE.equals(request.getCurrentJurorsOnly())) {
             query.where(QPanel.panel.result.isNull()

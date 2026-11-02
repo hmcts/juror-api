@@ -37,6 +37,8 @@ public class JurorDashboardDataServiceImplTest {
 
     private Date startDate;
     private Date endDate;
+    private LocalDate startLocalDate;
+    private LocalDate endLocalDate;
 
     private List<StatsResponseTime> responsesList = new ArrayList<>();
     private List<StatsNotResponded> notRespondedList = new ArrayList<>();
@@ -93,15 +95,17 @@ public class JurorDashboardDataServiceImplTest {
         endDate =
             Date.from(today.atTime(23, 59, 59).atZone(ZoneId.systemDefault()).with(TemporalAdjusters.lastDayOfMonth())
                 .toInstant());
+        startLocalDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        endLocalDate = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
         responsesList = new ArrayList<>(Arrays.asList(
-            StatsResponseTime.builder().summonsMonth(getDate(today, 1)).responseMonth(getDate(today, 1))
+            StatsResponseTime.builder().summonsMonth(getLocalDate(today, 1)).responseMonth(getLocalDate(today, 1))
                 .responsePeriod("Over 21 days").locCode("400").responseMethod("Online").responseCount(5).build(),
-            StatsResponseTime.builder().summonsMonth(getDate(today, 1)).responseMonth(getDate(today, 1))
+            StatsResponseTime.builder().summonsMonth(getLocalDate(today, 1)).responseMonth(getLocalDate(today, 1))
                 .responsePeriod("Over 21 days").locCode("401").responseMethod("Online").responseCount(10).build(),
-            StatsResponseTime.builder().summonsMonth(getDate(today, 2)).responseMonth(getDate(today, 0))
+            StatsResponseTime.builder().summonsMonth(getLocalDate(today, 2)).responseMonth(getLocalDate(today, 0))
                 .responsePeriod("Over 21 days").locCode("402").responseMethod("Online").responseCount(15).build(),
-            StatsResponseTime.builder().summonsMonth(getDate(today, 2)).responseMonth(getDate(today, 0))
+            StatsResponseTime.builder().summonsMonth(getLocalDate(today, 2)).responseMonth(getLocalDate(today, 0))
                 .responsePeriod("Over 21 days").locCode("403").responseMethod("Online").responseCount(20).build()
         ));
 
@@ -150,13 +154,18 @@ public class JurorDashboardDataServiceImplTest {
         return Date.from(date.minusMonths(monthsToMinus).atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
+    private LocalDate getLocalDate(LocalDate date, int monthsToMinus) {
+        return date.minusMonths(monthsToMinus);
+    }
+
     @Test
     public void responsesHappyPath() {
-        given(statsResponseTimeRepository.findBySummonsMonthBetween(startDate, endDate)).willReturn(responsesList);
+        given(statsResponseTimeRepository.findBySummonsMonthBetween(startLocalDate, endLocalDate))
+            .willReturn(responsesList);
         List<StatsResponseTime> responsesResult = jurorDashboardDataService.getResponsesOverTime(startDate, endDate);
         assertThat(responsesResult).isNotNull();
         assertThat(responsesResult.size()).isEqualTo(responsesList.size());
-        verify(statsResponseTimeRepository).findBySummonsMonthBetween(startDate, endDate);
+        verify(statsResponseTimeRepository).findBySummonsMonthBetween(startLocalDate, endLocalDate);
 
     }
 

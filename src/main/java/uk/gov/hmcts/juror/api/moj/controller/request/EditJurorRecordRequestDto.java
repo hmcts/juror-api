@@ -122,11 +122,11 @@ public class EditJurorRecordRequestDto {
 
     @JsonProperty("spec_need_value")
     @Length(max = 1)
-    @Schema(description = "Dropdown value for special needs")
+    @Schema(description = "Dropdown value for reasonable adjustments")
     private String specialNeed;
 
     @JsonProperty("spec_need_msg")
-    @Schema(description = "Special needs message")
+    @Schema(description = "Reasonable adjustment message")
     private String specialNeedMessage;
 
     @JsonProperty("optic_reference")

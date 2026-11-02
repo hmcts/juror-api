@@ -463,7 +463,6 @@ public class DisqualifyJurorDueToAgeServiceImplTest {
 
     private BureauJwtPayload buildBureauPayload() {
         return BureauJwtPayload.builder()
-            .userLevel("99")
             .login(BUREAU_USER)
             .owner("400")
             .build();

@@ -317,7 +317,6 @@ class DeceasedResponseServiceTest {
 
     private BureauJwtPayload buildPayload(String owner) {
         return BureauJwtPayload.builder()
-            .userLevel("99")
             .login("BUREAU_USER")
             .owner(owner)
             .build();

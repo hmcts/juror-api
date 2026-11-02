@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 import com.google.common.collect.Lists;
+import jakarta.persistence.EntityManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.controller.request.AutoAssignRequest;
 import uk.gov.hmcts.juror.api.bureau.controller.response.AutoAssignResponse;
-import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
 import uk.gov.hmcts.juror.api.bureau.exception.AutoAssignException;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
@@ -67,6 +67,9 @@ public class AutoAssignmentServiceImplTest {
     @Mock
     private UserJurorResponseAuditRepository auditRepo;
 
+    @Mock
+    private EntityManager entityManager;
+
     private AutoAssignmentServiceImpl autoAssignmentService;
 
     private User user1;
@@ -78,17 +81,17 @@ public class AutoAssignmentServiceImplTest {
     @Before
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void setUp() {
-        autoAssignmentService = new AutoAssignmentServiceImpl(responseRepo, userRepo, appSettingService, auditRepo);
+        autoAssignmentService = new AutoAssignmentServiceImpl(responseRepo, userRepo, appSettingService,
+                                                              auditRepo, entityManager);
         user1 = User.builder().userType(UserType.BUREAU).name("Post Staff 1").username("staff1").active(true).build();
         user2 = User.builder().userType(UserType.BUREAU).name("Post Staff 2").username("staff2").active(true).build();
         user3 = User.builder().userType(UserType.BUREAU).name("Post Staff 3").username("staff3").active(true).build();
         User testUser = User.builder().userType(UserType.BUREAU).name("Test User").username("testUser").active(true)
             .build();
 
-        doReturn(Arrays.asList(user1, user2)).when(userRepo).findAll(UserQueries.activeBureauOfficers());
+        doReturn(Arrays.asList(user1, user2)).when(userRepo).findAllActiveBureauOfficers(entityManager);
         doReturn(testUser).when(userRepo).findByUsername("testUser");
 
-        //doReturn(Arrays.asList(user1, user2, user3)).when(userRepo).findAll(StaffQueries.activeBureauOfficers());
         doReturn(Arrays.asList(user1, user2, user3)).when(userRepo)
             .findAllByUsernameIn(
                 Stream.of(user1, user2, user3).map(User::getUsername).toList());

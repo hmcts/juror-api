@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.bureau.service;
 
 import com.google.common.collect.Lists;
+import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.juror.api.bureau.controller.request.AutoAssignRequest;
 import uk.gov.hmcts.juror.api.bureau.controller.response.AutoAssignResponse;
-import uk.gov.hmcts.juror.api.bureau.domain.UserQueries;
 import uk.gov.hmcts.juror.api.bureau.exception.AutoAssignException;
 import uk.gov.hmcts.juror.api.juror.domain.JurorResponseQueries;
 import uk.gov.hmcts.juror.api.moj.domain.User;
@@ -52,7 +52,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
     private final UserRepository userRepository;
     private final AppSettingService appSettingService;
     private final UserJurorResponseAuditRepository userJurorResponseAuditRepository;
-
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
@@ -100,8 +100,7 @@ public class AutoAssignmentServiceImpl implements AutoAssignmentService {
     @Override
     public AutoAssignResponse getAutoAssignmentData() {
 
-        final List<User> bureauOfficers = Lists.newLinkedList(userRepository
-            .findAll(UserQueries.activeBureauOfficers()));
+        final List<User> bureauOfficers = userRepository.findAllActiveBureauOfficers(entityManager);
 
         List<AutoAssignResponse.StaffCapacityResponse> staffCapacityList = new ArrayList<>(bureauOfficers.size());
 

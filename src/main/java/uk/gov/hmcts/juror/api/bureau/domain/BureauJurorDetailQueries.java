@@ -22,13 +22,11 @@ import static org.apache.commons.lang3.StringUtils.deleteWhitespace;
  * @since JDB-1971
  */
 @SuppressWarnings({"PMD.TooManyMethods"})
-@Deprecated(forRemoval = true)
 public final class BureauJurorDetailQueries {
 
     private static final String INWARD_CODE_FRAGMENT = "^([0-9])([A-Z]{0,2})$";
     private static final String OUTWARD_CODE_FRAGMENT = "^([A-Z]{0,2})([0-9]{1,2})$";
     private static final String TODO = "TODO";
-    private static final String YES = "Y";
     private static final String OWNER_IS_BUREAU = "400";
 
     private static final QModJurorDetail BUREAU_JUROR_DETAIL = QModJurorDetail.modJurorDetail;

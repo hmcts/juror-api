@@ -38,14 +38,14 @@ public interface ResponseUpdateService extends ResponseNotesService, ResponsePho
                                String login);
 
     /**
-     * Update the Reasonable Adjustments (Special Needs) section of a juror response.
+     * Update the Reasonable Adjustments (Special arrangements) section of a juror response.
      *
-     * @param reasonableAdjustmentsDto Updated special needs
+     * @param reasonableAdjustmentsDto Updated reasonable adjustments
      * @param jurorId                  Response id
      * @param login                    Editing user
      */
-    void updateSpecialNeeds(ResponseUpdateController.ReasonableAdjustmentsDto reasonableAdjustmentsDto,
-                            String jurorId, String login);
+    void updateReasonableAdjustments(ResponseUpdateController.ReasonableAdjustmentsDto reasonableAdjustmentsDto,
+                                     String jurorId, String login);
 
     /**
      * Update juror eligibility section of a juror response.

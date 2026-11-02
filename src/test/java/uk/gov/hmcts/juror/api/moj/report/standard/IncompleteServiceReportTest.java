@@ -88,7 +88,6 @@ class IncompleteServiceReportTest extends AbstractStandardReportTestSupport<Inco
             .owner("415")
             .locCode("415")
             .login("COURT_USER")
-            .userLevel("1")
             .userType(UserType.COURT)
             .activeUserType(UserType.COURT)
             .permissions(Set.of()) // Empty set = no SUPER_USER permission
@@ -136,7 +135,6 @@ class IncompleteServiceReportTest extends AbstractStandardReportTestSupport<Inco
             .owner("400")
             .locCode("400")
             .login("BUREAU_SUPER_USER")
-            .userLevel("1")
             .userType(UserType.BUREAU)
             .activeUserType(UserType.BUREAU)
             .permissions(Set.of(Permission.SUPER_USER))

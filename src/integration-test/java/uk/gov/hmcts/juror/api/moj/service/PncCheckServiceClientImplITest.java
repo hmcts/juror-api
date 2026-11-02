@@ -39,8 +39,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = "uk.gov.hmcts.juror.remote.pnc-check-service.security.secret="
-        + "dGhpcy1pcy1hLXRlc3Qta2V5LWZvci11cy13aGVuLWNyZWF0aW5nLXNlY3JldHM="
+    properties = {
+        "uk.gov.hmcts.juror.remote.pnc-check-service.security.secret="
+            + "dGhpcy1pcy1hLXRlc3Qta2V5LWZvci11cy13aGVuLWNyZWF0aW5nLXNlY3JldHM=",
+        "jwt.secret.bureau=dGhpcy1pcy1hLXRlc3Qta2V5LWZvci11cy13aGVuLWNyZWF0aW5nLXNlY3JldHM="
+    }
 )
 @ActiveProfiles("test")
 @DisplayName("Police National Computer Manual Check")
@@ -64,14 +67,8 @@ class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
     }
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
-    private void initHeaders(String... userLevel) throws Exception {
-        String level = "99";
-        if (userLevel.length == 1) {
-            level = userLevel[0];
-        }
-
+    private void initHeaders() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel(level)
             .login("BUREAU_USER")
             .owner("400")
             .build());

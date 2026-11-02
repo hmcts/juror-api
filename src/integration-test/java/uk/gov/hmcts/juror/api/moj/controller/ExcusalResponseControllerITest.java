@@ -31,8 +31,6 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
-import uk.gov.hmcts.juror.api.moj.repository.ExcuseDeniedLetterRepository;
-import uk.gov.hmcts.juror.api.moj.repository.ExcuseLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
@@ -72,10 +70,6 @@ public class ExcusalResponseControllerITest extends AbstractIntegrationTest {
     private JurorStatusRepository jurorStatusRepository;
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
-    @Autowired
-    private ExcuseDeniedLetterRepository excusalDeniedLetterRepository;
-    @Autowired
-    private ExcuseLetterRepository excusalLetterRepository;
     @Autowired
     private JurorPoolRepository jurorPoolRepository;
     @Autowired

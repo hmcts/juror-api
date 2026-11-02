@@ -32,7 +32,7 @@ import java.time.LocalDateTime;
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
-@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.GodClass", "PMD.TooManyMethods"})
+@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.GodClass", "PMD.TooManyMethods", "PMD.CyclomaticComplexity"})
 public class JurorHistoryServiceImpl implements JurorHistoryService {
     private static final String SYSTEM_USER_ID = "SYSTEM";
     private final JurorHistoryRepository jurorHistoryRepository;

@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import uk.gov.hmcts.juror.api.TestConstants;
-import uk.gov.hmcts.juror.api.bureau.domain.QBureauJurorCjs;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.reports.request.StandardReportRequest;
 import uk.gov.hmcts.juror.api.moj.controller.reports.response.AbstractReportResponse;
@@ -25,6 +24,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.QPendingJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolRequest;
+import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QJurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.QReasonableAdjustments;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Courtroom;
 import uk.gov.hmcts.juror.api.moj.domain.trial.Judge;
@@ -750,7 +750,8 @@ class AbstractReportTest {
                 .defaultAnswer(RETURNS_SELF));
 
             DataType dataType = mock(DataType.class);
-            when(dataType.getRequiredTables()).thenReturn(List.of(QBureauJurorCjs.bureauJurorCjs));
+            when(dataType.getRequiredTables()).thenReturn(List.of(
+                QJurorResponseCjsEmployment.jurorResponseCjsEmployment));
 
             MojException.InternalServerError exception = assertThrows(MojException.InternalServerError.class,
                 () -> createReport(
@@ -759,7 +760,7 @@ class AbstractReportTest {
                 ).addJoins(query),
                 "Expected exception to be thrown when primary join is not found");
 
-            assertThat(exception.getMessage()).isEqualTo("No join found for bureauJurorCjs");
+            assertThat(exception.getMessage()).isEqualTo("No join found for jurorResponseCjsEmployment");
             assertThat(exception.getCause()).isNull();
         }
 
@@ -1024,7 +1025,7 @@ class AbstractReportTest {
             Trial trial = mock(Trial.class);
             AbstractReport<Object> report = createReport();
 
-            doReturn(trial).when(report).getTrial(any(), any());
+            doReturn(trial).when(report).getTrial(any(), any(), any());
 
             CourtLocation courtLocation = mock(CourtLocation.class);
 
@@ -1049,6 +1050,7 @@ class AbstractReportTest {
             StandardReportRequest request = mock(StandardReportRequest.class);
 
             when(request.getTrialNumber()).thenReturn(TestConstants.VALID_TRIAL_NUMBER);
+            when(request.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
             assertThat(report.loadStandardTrialHeaders(request, trialRepository))
                 .isEqualTo(Map.of(
@@ -1081,8 +1083,9 @@ class AbstractReportTest {
                 ));
 
             verify(report, times(1))
-                .getTrial(TestConstants.VALID_TRIAL_NUMBER, trialRepository);
+                .getTrial(TestConstants.VALID_TRIAL_NUMBER, TestConstants.VALID_COURT_LOCATION, trialRepository);
             verify(request, times(2)).getTrialNumber();
+            verify(request, times(2)).getLocCode();
             verify(trial, times(2)).getCourtroom();
             verify(trial, times(1)).getDescription();
             verify(courtLocation, times(1)).getLocCode();
@@ -1094,6 +1097,10 @@ class AbstractReportTest {
             TrialRepository trialRepository = mock(TrialRepository.class);
 
             AbstractReport<Object> report = createReport();
+            securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
+            when(trialRepository.findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER,
+                                                                          TestConstants.VALID_COURT_LOCATION))
+                .thenReturn(Optional.empty());
 
             MojException.NotFound notFoundException =
                 assertThrows(MojException.NotFound.class,
@@ -1127,11 +1134,30 @@ class AbstractReportTest {
         }
 
         @Test
+        void positiveTypicalWithLocCode() {
+            TrialRepository trialRepository = mock(TrialRepository.class);
+            Trial trial = mock(Trial.class);
+
+            doReturn(Optional.of(trial)).when(trialRepository)
+                .findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER,
+                                                          TestConstants.VALID_COURT_LOCATION);
+            assertThat(createReport().getTrial(TestConstants.VALID_TRIAL_NUMBER,
+                                               TestConstants.VALID_COURT_LOCATION,
+                                               trialRepository))
+                .isEqualTo(trial);
+
+            verify(trialRepository, times(1)).findByTrialNumberAndCourtLocationLocCode(
+                TestConstants.VALID_TRIAL_NUMBER,
+                TestConstants.VALID_COURT_LOCATION);
+        }
+
+        @Test
         void negativeNotFound() {
             TrialRepository trialRepository = mock(TrialRepository.class);
             when(trialRepository.findByTrialNumberAndCourtLocationLocCode(TestConstants.VALID_TRIAL_NUMBER,
-                "415"))
-                .thenReturn(null);
+                TestConstants.VALID_COURT_LOCATION))
+                .thenReturn(Optional.empty());
+            securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
             MojException.NotFound notFoundException =
                 assertThrows(MojException.NotFound.class,

@@ -76,12 +76,12 @@ class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<Pan
     @Override
     protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         request.setTrialNumber("111111");
+        request.setLocCode(TestConstants.VALID_COURT_LOCATION);
 
-        securityUtilMockedStatic.when(SecurityUtil::getLocCode).thenReturn(TestConstants.VALID_COURT_LOCATION);
         report.preProcessQuery(query, request);
 
         verify(query).where(QPanel.panel.trial.trialNumber.eq(request.getTrialNumber()));
-        verify(query).where(QPanel.panel.trial.courtLocation.locCode.eq(SecurityUtil.getLocCode()));
+        verify(query).where(QPanel.panel.trial.courtLocation.locCode.eq(request.getLocCode()));
         verify(query).orderBy(QPanel.panel.juror.jurorNumber.asc());
     }
 
@@ -99,7 +99,7 @@ class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<Pan
         Courtroom courtroom = mock(Courtroom.class);
         Judge judge = mock(Judge.class);
 
-        doReturn(trial).when(report).getTrial(any(), any());
+        doReturn(trial).when(report).getTrial(any(), any(), any());
 
         when(trial.getCourtLocation()).thenReturn(courtLocation);
         when(trial.getCourtroom()).thenReturn(courtroom);
@@ -111,6 +111,7 @@ class PanelMembersStatusReportTest extends AbstractStandardReportTestSupport<Pan
         when(trial.getCourtLocation().getName()).thenReturn("CHESTER");
 
         when(request.getTrialNumber()).thenReturn("111111");
+        when(request.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
         Map<String, AbstractReportResponse.DataTypeValue> expected = new ConcurrentHashMap<>();
         expected.put("names", AbstractReportResponse.DataTypeValue.builder()

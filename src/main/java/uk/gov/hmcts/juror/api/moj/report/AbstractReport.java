@@ -65,7 +65,6 @@ import static uk.gov.hmcts.juror.api.moj.domain.QLowLevelFinancialAuditDetailsIn
 public abstract class AbstractReport<T> implements IReport {
     static final Map<EntityPath<?>, Map<EntityPath<?>, Predicate[]>> CLASS_TO_JOIN;
 
-
     static {
         CLASS_TO_JOIN = new ConcurrentHashMap<>();
         CLASS_TO_JOIN.put(QJuror.juror, Map.of(
@@ -121,7 +120,8 @@ public abstract class AbstractReport<T> implements IReport {
     final Set<EntityPath<?>> requiredTables;
     final List<IDataType> effectiveDataTypes;
     final EntityPath<?> from;
-    final Map<EntityPath<?>, Map<EntityPath<?>, JoinOverrideDetails>> classToJoinOverrides = new ConcurrentHashMap<>();
+    final Map<EntityPath<?>, Map<EntityPath<?>, JoinOverrideDetails>> classToJoinOverrides =
+        new ConcurrentHashMap<>();
 
     final List<Consumer<StandardReportRequest>> authenticationConsumers;
 
@@ -130,7 +130,7 @@ public abstract class AbstractReport<T> implements IReport {
     }
 
     protected AbstractReport(PoolRequestRepository poolRequestRepository,
-                          EntityPath<?> from, IDataType... dataType) {
+                             EntityPath<?> from, IDataType... dataType) {
         this.poolRequestRepository = poolRequestRepository;
         this.from = from;
         this.dataTypes = List.of(dataType);
@@ -225,9 +225,10 @@ public abstract class AbstractReport<T> implements IReport {
         return report;
     }
 
-    @SuppressWarnings({"PMD.EmptyMethodInAbstractClassShouldBeAbstract"}) // would force every subclass to implement
-    protected void postProcessTableData(StandardReportRequest request, AbstractReportResponse.TableData<T> tableData) {
-        //This method does noting unless overridden
+    @SuppressWarnings({"PMD.EmptyMethodInAbstractClassShouldBeAbstract"})
+    protected void postProcessTableData(StandardReportRequest request,
+                                        AbstractReportResponse.TableData<T> tableData) {
+        //This method does nothing unless overridden
     }
 
     protected abstract AbstractReportResponse<T> createBlankResponse();
@@ -236,13 +237,12 @@ public abstract class AbstractReport<T> implements IReport {
         AbstractReportResponse.TableData<T> tableData =
             new AbstractReportResponse.TableData<>();
         tableData.setHeadings(new ArrayList<>(dataTypes.stream()
-            .map(this::getHeading).toList()));
+                                                  .map(this::getHeading).toList()));
         tableData.setData(getTableData(data));
         return tableData;
     }
 
     protected abstract T getTableData(List<Tuple> data);
-
 
     protected AbstractReportResponse.TableData.Heading getHeading(IDataType dataType) {
         AbstractReportResponse.TableData.Heading heading = AbstractReportResponse.TableData.Heading.builder()
@@ -252,8 +252,8 @@ public abstract class AbstractReport<T> implements IReport {
             .build();
         if (dataType.getReturnTypes() != null) {
             heading.setHeadings(Arrays.stream(dataType.getReturnTypes())
-                .map(this::getHeading)
-                .toList());
+                                    .map(this::getHeading)
+                                    .toList());
         }
         return heading;
     }
@@ -305,8 +305,8 @@ public abstract class AbstractReport<T> implements IReport {
     JPAQuery<Tuple> getQuery() {
         return getQueryFactory()
             .select(effectiveDataTypes.stream()
-                .map(IDataType::getExpression)
-                .toArray(Expression[]::new)).from(from);
+                        .map(IDataType::getExpression)
+                        .toArray(Expression[]::new)).from(from);
     }
 
     @SuppressWarnings({"PMD.CognitiveComplexity"})
@@ -321,7 +321,8 @@ public abstract class AbstractReport<T> implements IReport {
             Map<EntityPath<?>, Predicate[]> joinOptions = CLASS_TO_JOIN.get(requiredTable);
 
             if (joinOptions.containsKey(from)) {
-                JoinOverrideDetails joinOverrideDetails = JoinOverrideDetails.builder().joinType(JoinType.DEFAULT)
+                JoinOverrideDetails joinOverrideDetails = JoinOverrideDetails.builder()
+                    .joinType(JoinType.DEFAULT)
                     .build();
                 log.info("Searching for join overrides from: {} to {}", from, requiredTable);
                 if (classToJoinOverrides.containsKey(from) && classToJoinOverrides.get(from)
@@ -385,10 +386,10 @@ public abstract class AbstractReport<T> implements IReport {
 
     public void addGroupBy(JPAQuery<Tuple> query, IDataType... dataTypes) {
         query.groupBy(Arrays.stream(dataTypes)
-            .map(this::getDataType)
-            .flatMap(List::stream)
-            .map(IDataType::getExpression)
-            .toArray(Expression[]::new));
+                          .map(this::getDataType)
+                          .flatMap(List::stream)
+                          .map(IDataType::getExpression)
+                          .toArray(Expression[]::new));
     }
 
     protected abstract void preProcessQuery(JPAQuery<Tuple> query, StandardReportRequest request);
@@ -411,15 +412,14 @@ public abstract class AbstractReport<T> implements IReport {
         }
     }
 
-
-    public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader(CourtLocation courtLocation) {
+    public Map.Entry<String, AbstractReportResponse.DataTypeValue> getCourtNameHeader(
+        CourtLocation courtLocation) {
         return new AbstractMap.SimpleEntry<>("court_name", AbstractReportResponse.DataTypeValue.builder()
             .displayName("Court Name")
             .dataType(String.class.getSimpleName())
             .value(courtLocation.getNameWithLocCode())
             .build());
     }
-
 
     public ConcurrentHashMap<String, AbstractReportResponse.DataTypeValue> loadStandardPoolHeaders(
         StandardReportRequest request, boolean ownerMustMatch, boolean allowBureau) {
@@ -460,7 +460,13 @@ public abstract class AbstractReport<T> implements IReport {
     public Map<String, AbstractReportResponse.DataTypeValue> loadStandardTrailHeaders(
         StandardReportRequest request, TrialRepository trialRepository, boolean addTrialStartDate) {
 
-        Trial trial = getTrial(request.getTrialNumber(), trialRepository);
+        // Use locCode from request if provided, fall back to SecurityUtil for backward compatibility
+        String locCode = request.getLocCode() != null
+            ? request.getLocCode()
+            : SecurityUtil.getLocCode();
+
+        Trial trial = getTrial(request.getTrialNumber(), locCode, trialRepository);
+
         Map<String, AbstractReportResponse.DataTypeValue> trialHeaders = new ConcurrentHashMap<>(Map.of(
             "trial_number", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Trial Number")
@@ -485,8 +491,7 @@ public abstract class AbstractReport<T> implements IReport {
             "court_name", AbstractReportResponse.DataTypeValue.builder()
                 .displayName("Court Name")
                 .dataType(String.class.getSimpleName())
-                .value(
-                    getCourtNameString(trial.getCourtLocation()))
+                .value(getCourtNameString(trial.getCourtLocation()))
                 .build()
         ));
 
@@ -500,7 +505,6 @@ public abstract class AbstractReport<T> implements IReport {
 
         return trialHeaders;
     }
-
 
     public void addCourtNameHeader(Map<String, AbstractReportResponse.DataTypeValue> headings,
                                    CourtLocation courtLocation) {
@@ -528,42 +532,54 @@ public abstract class AbstractReport<T> implements IReport {
         return poolRequest.get();
     }
 
-    public Trial getTrial(String trialNumber, TrialRepository trialRepository) {
-        Optional<Trial> trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber,
-            SecurityUtil.getLocCode());
+    /**
+     * Look up a trial by trial number and loc code derived from the request.
+     * Use this overload when the loc code should come from the request
+     * (supports satellite courts where loc_code differs from the logged-in user's primary loc_code).
+     */
+    public Trial getTrial(String trialNumber, String locCode, TrialRepository trialRepository) {
+        Optional<Trial> trial = trialRepository.findByTrialNumberAndCourtLocationLocCode(trialNumber, locCode);
         if (trial.isEmpty()) {
             throw new MojException.NotFound("Trial not found", null);
         }
         return trial.get();
     }
 
+    /**
+     * Look up a trial by trial number using the logged-in user's loc code from SecurityUtil.
+     * Kept for backward compatibility with callers that do not have a request-level loc code.
+     * Prefer getTrial(trialNumber, locCode, trialRepository) where possible.
+     */
+    public Trial getTrial(String trialNumber, TrialRepository trialRepository) {
+        return getTrial(trialNumber, SecurityUtil.getLocCode(), trialRepository);
+    }
+
     protected StandardTableData getTableDataAsList(List<Tuple> data) {
         StandardTableData tableData = new StandardTableData();
         tableData.addAll(data.stream()
-            .map(tuple -> dataTypes
-                .stream()
-                .map(dataType -> getDataFromReturnType(tuple, dataType))
-                .filter(entry -> {
-                    Object value = entry.getValue();
-                    return value != null && !(value instanceof Map<?, ?> m && m.isEmpty());
-                })
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> b, LinkedHashMap::new))
-            ).toList());
+                             .map(tuple -> dataTypes
+                                 .stream()
+                                 .map(dataType -> getDataFromReturnType(tuple, dataType))
+                                 .filter(entry -> {
+                                     Object value = entry.getValue();
+                                     return value != null && !(value instanceof Map<?, ?> map && map.isEmpty());
+                                 })
+                                 .collect(Collectors.toMap(Map.Entry::getKey,
+                                                           Map.Entry::getValue,
+                                                           (existing, replacement) -> replacement,
+                                                           LinkedHashMap::new))
+                             ).toList());
         return tableData;
     }
 
-
     public static class Validators {
         public interface AbstractRequestValidator {
-
         }
 
         public interface RequirePoolNumber {
-
         }
 
         public interface RequireTrialNumber {
-
         }
 
         public interface RequireFromDate {

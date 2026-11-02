@@ -1,0 +1,201 @@
+package uk.gov.hmcts.juror.api.moj.controller;
+
+import com.jayway.jsonpath.JsonPath;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.junit4.SpringRunner;
+import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
+import uk.gov.hmcts.juror.api.moj.domain.UserType;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Sql({"/db/mod/truncate.sql", "/db/DbdDashboardControllerITest.sql"})
+@Sql(scripts = "/db/DbdDashboardControllerITest_cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+public class DbdDashboardControllerITest extends AbstractIntegrationTest {
+
+    private static final URI STATISTICS_URI = URI.create("/api/v1/moj/dbd-dashboard/statistics");
+
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+    private HttpHeaders httpHeaders;
+
+    @Before
+    public void setUp() {
+        httpHeaders = initialiseHeaders("BUREAU_USER", UserType.BUREAU, null, "400");
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+    }
+
+    @Test
+    public void statisticsSinglePeriodHappy() {
+        ResponseEntity<String> response = postStatistics(Map.of(
+            "courtGroups", List.of(Map.of(
+                "groupName", "Pilot courts",
+                "groupLocations", List.of(415)
+            )),
+            "dateRangeA", Map.of(
+                "startDate", "20260101",
+                "endDate", "20260131"
+            ),
+            "sumGroups", false
+        ));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThatJson(response.getBody()).node("court_groups[0].group_name").isEqualTo("Pilot courts");
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].location_code").isEqualTo(415);
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].online_response_total")
+            .isEqualTo(8);
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].paper_response_total")
+            .isEqualTo(6);
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].not_responded_total")
+            .isEqualTo(9);
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].total_responses")
+            .isEqualTo(14);
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].response_rate_percent")
+            .isEqualTo(61);
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].digital_responses_percent")
+            .isEqualTo(57);
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].online_response_times")
+            .isObject();
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].paper_response_times")
+            .isObject();
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].response_times_percent")
+            .isObject();
+        assertThatJson(response.getBody())
+            .node("court_groups[0].period_a.locations[0].response_times_percent.within7_days_percent")
+            .isEqualTo(57);
+        assertThatJson(response.getBody())
+            .node("court_groups[0].period_a.locations[0].response_times_percent.within14_days_percent")
+            .isEqualTo(43);
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].age_group_breakdown")
+            .isObject();
+        assertJsonInt(response.getBody(),
+                      "$.court_groups[0].period_a.locations[0].age_group_breakdown_percent['18-24']", 35);
+        assertJsonInt(response.getBody(),
+                      "$.court_groups[0].period_a.locations[0].age_group_breakdown_percent['25-34']", 26);
+        assertJsonInt(response.getBody(),
+                      "$.court_groups[0].period_a.locations[0].age_group_breakdown_percent['35-44']", 39);
+        assertJsonNull(response.getBody(), "$.court_groups[0].period_b");
+        assertJsonNull(response.getBody(), "$.court_groups[0].change");
+    }
+
+    @Test
+    public void statisticsWithComparisonPeriodHappy() {
+        ResponseEntity<String> response = postStatistics(Map.of(
+            "courtGroups", List.of(Map.of(
+                "groupName", "Pilot courts",
+                "groupLocations", List.of(415)
+            )),
+            "dateRangeA", Map.of(
+                "startDate", "20260101",
+                "endDate", "20260131"
+            ),
+            "dateRangeB", Map.of(
+                "startDate", "20260201",
+                "endDate", "20260228"
+            ),
+            "sumGroups", true
+        ));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertJsonNull(response.getBody(), "$.court_groups[0].period_a.locations[0].location_code");
+        assertThatJson(response.getBody()).node("court_groups[0].period_a.locations[0].total_responses")
+            .isEqualTo(14);
+        assertThatJson(response.getBody()).node("court_groups[0].period_b.locations[0].total_responses")
+            .isEqualTo(6);
+        assertThatJson(response.getBody()).node("court_groups[0].period_b.locations[0].response_rate_percent")
+            .isEqualTo(50);
+        assertThatJson(response.getBody()).node("court_groups[0].period_b.locations[0].digital_responses_percent")
+            .isEqualTo(67);
+        assertThatJson(response.getBody())
+            .node("court_groups[0].period_b.locations[0].response_times_percent.within7_days_percent")
+            .isEqualTo(67);
+        assertThatJson(response.getBody())
+            .node("court_groups[0].period_b.locations[0].response_times_percent.within21_days_percent")
+            .isEqualTo(33);
+        assertJsonInt(response.getBody(),
+                      "$.court_groups[0].period_b.locations[0].age_group_breakdown_percent['35-44']", 50);
+        assertThatJson(response.getBody()).node("court_groups[0].change.locations[0].total_responses").isEqualTo(8);
+        assertThatJson(response.getBody()).node("court_groups[0].change.locations[0].not_responded_total")
+            .isEqualTo(3);
+        assertThatJson(response.getBody()).node("court_groups[0].change.locations[0].online_response_total")
+            .isEqualTo(4);
+        assertThatJson(response.getBody()).node("court_groups[0].change.locations[0].paper_response_total")
+            .isEqualTo(4);
+        assertThatJson(response.getBody()).node("court_groups[0].change.locations[0].response_rate_percent")
+            .isEqualTo(11);
+        assertThatJson(response.getBody()).node("court_groups[0].change.locations[0].digital_responses_percent")
+            .isEqualTo(-10);
+        assertThatJson(response.getBody())
+            .node("court_groups[0].change.locations[0].response_times_percent.within7_days_percent")
+            .isEqualTo(-10);
+        assertThatJson(response.getBody())
+            .node("court_groups[0].change.locations[0].response_times_percent.within14_days_percent")
+            .isEqualTo(43);
+        assertThatJson(response.getBody())
+            .node("court_groups[0].change.locations[0].response_times_percent.within21_days_percent")
+            .isEqualTo(-33);
+        assertJsonInt(response.getBody(),
+                      "$.court_groups[0].change.locations[0].age_group_breakdown_percent['18-24']", 2);
+    }
+
+    @Test
+    public void statisticsRejectsDuplicateGroupNames() {
+        ResponseEntity<String> response = postStatistics(Map.of(
+            "courtGroups", List.of(
+                Map.of("groupName", "Pilot courts", "groupLocations", List.of(415)),
+                Map.of("groupName", "Pilot courts", "groupLocations", List.of(416))),
+            "dateRangeA", Map.of("startDate", "20260101", "endDate", "20260131"),
+            "sumGroups", true));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void statisticsWithPartiallyOverlappingPeriods() {
+        ResponseEntity<String> response = postStatistics(Map.of(
+            "courtGroups", List.of(Map.of("groupName", "Pilot courts", "groupLocations", List.of(415))),
+            "dateRangeA", Map.of("startDate", "20260101", "endDate", "20260120"),
+            "dateRangeB", Map.of("startDate", "20260110", "endDate", "20260131"),
+            "sumGroups", true));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertJsonInt(response.getBody(),
+                      "$.monthly_response_rates[0].group_response_rate_percent['Pilot courts']", 61);
+    }
+
+    private ResponseEntity<String> postStatistics(Map<String, Object> request) {
+        return restTemplate.exchange(
+            new RequestEntity<>(request, httpHeaders, HttpMethod.POST, STATISTICS_URI),
+            String.class
+        );
+    }
+
+    private void assertJsonNull(String responseBody, String path) {
+        Object value = JsonPath.read(responseBody, path);
+        assertThat(value).isNull();
+    }
+
+    private void assertJsonInt(String responseBody, String path, int expected) {
+        Number value = JsonPath.read(responseBody, path);
+        assertThat(value.intValue()).isEqualTo(expected);
+    }
+}
