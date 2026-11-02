@@ -53,6 +53,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -1656,7 +1657,7 @@ public class ReissueLetterServiceTest {
     class DeleteLetterTests {
 
         @ParameterizedTest
-        @ValueSource(strings = {"5229A", "5229AC"})
+        @ValueSource(strings = {"5229A", "5229AC", "5227", "5227C"})
         void deleteLetterHappyPath(String formCode) {
             String owner = "400";
 
@@ -1679,12 +1680,24 @@ public class ReissueLetterServiceTest {
                 .findLatestPendingLetterForJuror(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode());
 
+            JurorPool jurorPool = new JurorPool();
+            boolean informationRequest = Set.of("5227", "5227C").contains(formCode);
+            if (informationRequest) {
+                doReturn(jurorPool).when(jurorPoolRepository).findByJurorJurorNumberAndIsActiveAndOwner(
+                    reissueLetterRequestData.getJurorNumber(), true, owner);
+            }
+
             reissueLetterService.deletePendingLetter(reissueLetterRequestDto);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLatestPendingLetterForJuror(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode());
             verify(bulkPrintDataRepository, times(1)).delete(bulkPrintData);
+
+            if (informationRequest) {
+                verify(jurorHistoryService).createDeleteAdditionalInfoLetterHistory(
+                    jurorPool, FormCode.getFormCode(formCode));
+            }
 
         }
 
