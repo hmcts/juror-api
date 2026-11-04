@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -378,13 +379,13 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
 
     private void assertRejectedDecisionLeavesDataUnchanged(ExcusalCodeDto decision, HttpStatus expectedStatus) {
         httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau("testlogin"));
-        var responseBefore = jdbcTemplate.queryForMap(
+        Map<String, Object> responseBefore = jdbcTemplate.queryForMap(
             "SELECT processing_status, processing_complete, version, staff_login "
                 + "FROM juror_mod.juror_response WHERE juror_number = ?", "644892530");
-        var jurorBefore = jdbcTemplate.queryForMap(
+        Map<String, Object> jurorBefore = jdbcTemplate.queryForMap(
             "SELECT responded, excusal_code, date_excused, acc_exc, title, first_name, last_name "
                 + "FROM juror_mod.juror WHERE juror_number = ?", "644892530");
-        var poolBefore = jdbcTemplate.queryForMap(
+        Map<String, Object> poolBefore = jdbcTemplate.queryForMap(
             "SELECT status, next_date, user_edtq FROM juror_mod.juror_pool WHERE juror_number = ?", "644892530");
 
         ResponseEntity<SpringBootErrorResponse> response = template.exchange(new RequestEntity<>(
