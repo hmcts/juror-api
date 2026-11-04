@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +37,7 @@ class BulkPrintDataRepositoryITest extends AbstractIntegrationTest {
         Long id = bulkPrintData.getId();
         assertThat(bulkPrintData.getExtractedDate()).isNull();
 
-        LocalDateTime extractedDate = LocalDateTime.of(2026, 10, 30, 12, 34, 56);
+        LocalDate extractedDate = LocalDate.of(2026, 10, 30);
         bulkPrintData.setExtractedDate(extractedDate);
         bulkPrintDataRepository.saveAndFlush(bulkPrintData);
         entityManager.clear();

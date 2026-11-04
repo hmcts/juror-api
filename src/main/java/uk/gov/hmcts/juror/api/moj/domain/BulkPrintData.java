@@ -24,7 +24,6 @@ import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 //Bulk Print Data entity based on the juror Print Files entity.
 @NoArgsConstructor
@@ -69,7 +68,7 @@ public class BulkPrintData {
     private boolean extractedFlag = false;
 
     @Column(name = "extracted_date")
-    private LocalDateTime extractedDate;
+    private LocalDate extractedDate;
 
     @Column(name = "digital_comms")
     private boolean digitalComms;
