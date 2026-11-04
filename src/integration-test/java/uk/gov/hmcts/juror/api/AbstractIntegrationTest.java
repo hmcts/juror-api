@@ -157,7 +157,6 @@ public abstract class AbstractIntegrationTest extends ContainerTest {
     @Deprecated(forRemoval = true)
     protected String createBureauJwt(String login, String owner, int rank) {
         return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel(String.valueOf(rank))
             .login(login)
             .staff(BureauJwtPayload.Staff.builder()
                 .name("Test User")

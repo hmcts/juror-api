@@ -217,7 +217,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
     @Sql("/db/StaffRepositoryTest_findByActiveOrderByNameAsc.sql")
     public void testGOne_errorPath_notATeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("jpowers")
+            BureauJwtPayload.builder().login("jpowers")
                 .staff(BureauJwtPayload.Staff.builder().name("Joanna Powers").active(1).rank(0).build())
                 .owner("400").build());
 
@@ -240,7 +240,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("smcbob")
+            BureauJwtPayload.builder().login("smcbob")
                 .owner("400").build());
 
         // assert db state before merge.
@@ -300,7 +300,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("smcbob")
+            BureauJwtPayload.builder().login("smcbob")
                 .owner("400").build());
 
         // assert db state before merge.
@@ -359,7 +359,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("smcbob")
+            BureauJwtPayload.builder().login("smcbob")
                 .owner("400").build());
 
         // assert db state before merge.
@@ -414,7 +414,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("smcbob")
+            BureauJwtPayload.builder().login("smcbob")
                 .owner("400").build());
 
         // assert db state before merge.
@@ -469,7 +469,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("smcbob")
+            BureauJwtPayload.builder().login("smcbob")
                 .owner("400").build());
 
         // assert db state before merge.
@@ -524,7 +524,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("smcbob")
+            BureauJwtPayload.builder().login("smcbob")
                 .owner("400").build());
 
         // assert db state before merge.
@@ -579,7 +579,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("smcbob")
+            BureauJwtPayload.builder().login("smcbob")
                 .owner("400").build());
 
         // assert db state before merge.
@@ -634,7 +634,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("jmcbob")
+            BureauJwtPayload.builder().login("jmcbob")
                 .owner("400").build());
 
         // assert db state before merge.
@@ -689,7 +689,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("smcbob")
+            BureauJwtPayload.builder().login("smcbob")
                 .owner("400").build());
 
         // assert db state before merge.
@@ -745,7 +745,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/roster");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("smcbob")
+            BureauJwtPayload.builder().login("smcbob")
                 .owner("400").build());
 
         final int expectedStaffIncludingAutoUser = 6;
@@ -785,7 +785,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assignments-multi");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("smcbob")
+            BureauJwtPayload.builder().login("smcbob")
                 .owner("400").build());
 
         // assert db state before merge.
@@ -835,7 +835,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign-multi");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("smcbob")
+            BureauJwtPayload.builder().login("smcbob")
                 .owner("400").build());
 
         // assert db state before merge.
@@ -900,7 +900,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign-multi");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("smcbob")
+            BureauJwtPayload.builder().login("smcbob")
                 .owner("400").build());
 
         // assert db state before merge.
@@ -964,7 +964,7 @@ public class BureauStaffControllerTest extends AbstractIntegrationTest {
         final URI uri = URI.create("/api/v1/bureau/staff/assign-multi");
 
         final String bureauJwt = mintBureauJwt(
-            BureauJwtPayload.builder().userLevel("99").login("smcbob")
+            BureauJwtPayload.builder().login("smcbob")
                 .owner("400").build());
 
         // assert db state before merge.

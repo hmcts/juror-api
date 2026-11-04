@@ -474,7 +474,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
 
     // If the letter has not been printed previously, the form code will be null (no record in bulk print table),
     // therefore need to set this value before returning the response
-    @SuppressWarnings("PMD.LinguisticNaming")
+    @SuppressWarnings({"PMD.LinguisticNaming", "PMD.CyclomaticComplexity"})
     private List<List<Object>> setFormCode(List<List<Object>> data, List<String> headings,
                                            ReissueLetterListRequestDto request) {
 

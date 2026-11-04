@@ -1950,7 +1950,6 @@ class JurorAppearanceServiceTest {
 
     private BureauJwtPayload buildPayload(String owner, List<String> courts) {
         return BureauJwtPayload.builder()
-            .userLevel("99")
             .login("COURT_USER")
             .owner(owner)
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())

@@ -1,3 +1,4 @@
+DELETE FROM juror_dashboard.dbd_response_stats;
 --DELETE FROM juror_mod.accused;
 DELETE FROM juror_mod.payment_data;
 DELETE FROM juror_mod.app_setting;

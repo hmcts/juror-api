@@ -1256,7 +1256,6 @@ class PanelServiceImplTest {
 
     private BureauJwtPayload buildPayload() {
         return BureauJwtPayload.builder()
-            .userLevel("99")
             .login("SOME_USER")
             .owner("415")
             .build();

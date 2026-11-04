@@ -108,7 +108,7 @@ dependencies {
   //Internal dependency overrides
   implementation 'org.yaml:snakeyaml:2.3'
   implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.60'
-  implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.60'
+  implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.61'
   implementation 'org.apache.logging.log4j:log4j-api:2.26.1'
   implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.26.1'
 
@@ -152,8 +152,9 @@ dependencies {
   implementation('org.projectlombok:lombok:1.18.48')
   annotationProcessor('org.projectlombok:lombok')
 
-  implementation('org.apache.commons:commons-lang3:3.18.0')
-  implementation('org.apache.commons:commons-text:1.13.0')
+  implementation('org.apache.commons:commons-lang3:3.21.0')
+  implementation('org.apache.commons:commons-text:1.15.0')
+  
   implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
 
   runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.7.10')
@@ -182,7 +183,7 @@ dependencies {
   testImplementation 'org.testcontainers:postgresql:1.21.4'
 
   // Validation
-  testImplementation 'org.wiremock:wiremock-standalone:3.10.0'
+  testImplementation 'org.wiremock:wiremock-standalone:3.13.2'
 }
 
 sonarqube {

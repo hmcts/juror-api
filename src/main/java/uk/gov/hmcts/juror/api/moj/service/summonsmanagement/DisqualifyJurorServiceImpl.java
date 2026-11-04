@@ -49,7 +49,7 @@ import static uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils.getActiveJurorPool
 
 @Slf4j
 @Service
-@SuppressWarnings("PMD.ExcessiveImports")
+@SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
 
@@ -90,7 +90,7 @@ public class DisqualifyJurorServiceImpl implements DisqualifyJurorService {
 
     @Override
     @Transactional
-    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
+    @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.CognitiveComplexity", "PMD.AvoidDeeplyNestedIfStmts"})
     public void disqualifyJuror(String jurorNumber, DisqualifyJurorDto disqualifyJurorDto, BureauJwtPayload payload) {
 
         log.trace("Juror Number {} - Api service method disqualifyJuror() started with code {}", jurorNumber,

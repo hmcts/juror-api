@@ -42,7 +42,6 @@ public class TestUtilTest {
     private static final String TEST_BUREAU_LOGIN = "testuser";
     private static final String TEST_BUREAU_OWNER =
         JurorDigitalApplication.JUROR_OWNER;
-    private static final String TEST_BUREAU_USER_LEVEL = "3";
 
     @Test
     public void testMintPublicJwt() throws Exception {
@@ -88,7 +87,6 @@ public class TestUtilTest {
         BureauJwtPayload jwtPayload = new BureauJwtPayload(
             TEST_BUREAU_OWNER,
             TEST_BUREAU_LOGIN,
-            TEST_BUREAU_USER_LEVEL,
             null
         );
 
@@ -122,7 +120,7 @@ public class TestUtilTest {
         assertThat(data).isNotNull();
         assertThat(data.getLogin()).isEqualTo(TEST_BUREAU_LOGIN);
         assertThat(data.getOwner()).isEqualTo(TEST_BUREAU_OWNER);
-        assertThat(data.getUserLevel()).isEqualTo(TEST_BUREAU_USER_LEVEL);
+        assertThat(claimsJws.getPayload()).doesNotContainKey("userLevel");
     }
 
     @Test

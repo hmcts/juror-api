@@ -549,7 +549,7 @@ public class TrialServiceImpl implements TrialService {
                 if (appearance.getTimeIn() == null && StringUtils.isNotEmpty(returnJuryDto.getCheckIn())) {
                     appearance.setAppearanceStage(AppearanceStage.CHECKED_IN);
                     appearance.setTimeIn(LocalTime.parse(returnJuryDto.getCheckIn()));
-                    log.debug("setting time in for juror {}",(jurorNumber));
+                    log.debug("setting time in for juror {}", jurorNumber);
                     jurorAppearanceService.saveAppearance(appearance);
                 }
 
@@ -558,7 +558,7 @@ public class TrialServiceImpl implements TrialService {
 
                     appearance.setAppearanceStage(AppearanceStage.EXPENSE_ENTERED);
                     appearance.setTimeOut(LocalTime.parse(returnJuryDto.getCheckOut()));
-                    log.debug("setting time out for juror {}",(jurorNumber));
+                    log.debug("setting time out for juror {}", jurorNumber);
 
                     if (appearance.getAttendanceAuditNumber() == null) {
                         //Only give them an attendance number if they were checked out via this process

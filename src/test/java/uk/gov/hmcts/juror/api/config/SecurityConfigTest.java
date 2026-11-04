@@ -220,7 +220,6 @@ class SecurityConfigTest {
                 final Map<String, Object> claimsMap = new HashMap<>();
                 claimsMap.put("login", payload.getLogin());
                 claimsMap.put("owner", payload.getOwner());
-                claimsMap.put("userLevel", payload.getUserLevel());
                 claimsMap.put("staff", payload.getStaff());
                 return claimsMap;
             }

@@ -1823,7 +1823,7 @@ public class JurorRecordServiceImpl implements JurorRecordService {
 
         final JurorHistory history = JurorHistory.builder()
             .jurorNumber(jurorNumber)
-            .historyCode(HistoryCodeMod.PRINT_SUMMONS)
+            .historyCode(HistoryCodeMod.REVERTED_TO_SUMMONED)
             .createdBy(auditorUsername)
             .otherInformation("Juror marked as summoned by " + auditorUsername + " on " + LocalDate.now())
             .poolNumber(jurorPool.getPoolNumber())
