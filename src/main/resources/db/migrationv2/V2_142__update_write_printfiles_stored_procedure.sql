@@ -94,7 +94,7 @@ begin
 
             UPDATE juror_mod.bulk_print_data
             SET  extracted_flag = true,
-                 extracted_date = now()
+                 extracted_date = current_date
             WHERE id = v_row_id;
 
             -- increment the loop counter so that the process can be stopped if it reaches the threshold
