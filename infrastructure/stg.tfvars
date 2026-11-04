@@ -14,9 +14,9 @@ pgsql_server_configuration_extra = [
 ]
 
 #postgres_pitr = {
-#  env          = "stg"
-#  name         = "juror-api-pitr"
-#  restore_time = "2026-10-20T10:45:00Z"
+#  env               = "stg"
+#  name              = "juror-api-pitr"
+#  restore_time      = "2026-11-03T11:30:00Z"
 #  import_object_ids = {
 #    "DTS JIT Access Juror DB Admin"                   = "40fa94ec-b4bd-486b-97bc-b65aba129275"
 #    "DTS Platform Operations PostgreSQL Admin Access" = "3c52c98b-07a3-4a97-92b9-298e86bb1ca9"
