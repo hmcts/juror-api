@@ -75,12 +75,12 @@ class FormCodeTypeTest {
 
     @Test
     void englishPostpone() {
-        assertEquals(FormCode.ENG_POSTPONE, "5229", List.of(IJurorStatus.DEFERRED));
+        assertEquals(FormCode.ENG_POSTPONE, "5229", List.of(IJurorStatus.DEFERRED, IJurorStatus.RESPONDED));
     }
 
     @Test
     void welshPostpone() {
-        assertEquals(FormCode.BI_POSTPONE, "5229C", List.of(IJurorStatus.DEFERRED));
+        assertEquals(FormCode.BI_POSTPONE, "5229C", List.of(IJurorStatus.DEFERRED, IJurorStatus.RESPONDED));
     }
 
     @Test
