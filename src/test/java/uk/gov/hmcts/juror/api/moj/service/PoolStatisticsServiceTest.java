@@ -254,7 +254,7 @@ public class PoolStatisticsServiceTest {
     }
 
     @Test
-    public void calculatePoolStatistics_nullNumberRequested_defaultsToZero() {
+    public void calculatePoolStatistics_nullNumberRequested_usesZeroForSurplus() {
         String poolNumber = "123456789";
         PoolRequest poolRequest = initPoolRequest(poolNumber, 0, 10);
         poolRequest.setNumberRequested(null);
@@ -265,7 +265,7 @@ public class PoolStatisticsServiceTest {
 
         PoolSummaryResponseDto response = poolStatisticsService.calculatePoolStatistics(poolNumber);
 
-        assertThat(response.getBureauSummoning().getRequestedFromBureau()).isZero();
+        assertThat(response.getBureauSummoning().getRequestedFromBureau()).isNull();
         assertThat(response.getBureauSummoning().getSurplus()).isEqualTo(poolStatistics.getAvailable());
         assertThat(response.getPoolSummary().getRequiredPoolSize()).isEqualTo(10);
     }
