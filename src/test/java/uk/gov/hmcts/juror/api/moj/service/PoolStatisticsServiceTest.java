@@ -115,8 +115,11 @@ public class PoolStatisticsServiceTest {
                 + "represents the total number of bureau owned members in a pool wih a status of 'Responded'")
             .isEqualTo(poolStatistics.getAvailable());
         assertThat(bureauSummoning.getRequestedFromBureau())
-            .as("Requested from bureau should be mapped from the total required on the pool request")
-            .isEqualTo(poolRequest.getTotalNoRequired());
+            .as("Requested from bureau should be mapped from the number requested on the pool request")
+            .isEqualTo(poolRequest.getNumberRequested());
+        assertThat(bureauSummoning.getSurplus())
+            .as("Surplus should be zero when available is below number requested")
+            .isZero();
         assertThat(bureauSummoning.getUnavailable())
             .as("Unavailable should be mapped from the UNAVAILABLE value in the POOL_STATS view and represents the "
                 + "number of bureau owned members in  a pool with a status that is NOT: 'Responded', 'Summoned', or "
@@ -205,12 +208,12 @@ public class PoolStatisticsServiceTest {
             .isFalse();
 
         assertThat(bureauSummoning.getRequestedFromBureau())
-            .as("Requested from bureau should be mapped from the total required on the pool request")
-            .isEqualTo(poolRequest.getTotalNoRequired());
+            .as("Requested from bureau should be mapped from the number requested on the pool request")
+            .isEqualTo(poolRequest.getNumberRequested());
     }
 
     @Test
-    public void calculatePoolStatistics_courtSupplyGreaterThanTotalRequired_requestedFromBureauIsTotalRequired() {
+    public void calculatePoolStatistics_courtSupplyGreaterThanTotalRequired_usesNumberRequested() {
         String poolNumber = "123456789";
         int totalNumberRequired = 3;
         int numberRequestFromBureau = 0;
@@ -227,11 +230,44 @@ public class PoolStatisticsServiceTest {
         PoolSummaryResponseDto.BureauSummoning bureauSummoning = poolSummaryResponseDto.getBureauSummoning();
 
         assertThat(bureauSummoning.getRequestedFromBureau())
-            .as("Requested from bureau should equal total required even when court supply exceeds it")
-            .isEqualTo(totalNumberRequired);
+            .as("Requested from bureau should equal number requested even when court supply exceeds total required")
+            .isEqualTo(numberRequestFromBureau);
         assertThat(bureauSummoning.getSurplus())
-            .as("Surplus should be calculated as available minus total required")
-            .isEqualTo(poolStatistics.getAvailable() - totalNumberRequired);
+            .as("Surplus should be calculated as available minus number requested")
+            .isEqualTo(poolStatistics.getAvailable() - numberRequestFromBureau);
+    }
+
+    @Test
+    public void calculatePoolStatistics_surplusUsesNumberRequested() {
+        String poolNumber = "123456789";
+        PoolRequest poolRequest = initPoolRequest(poolNumber, 3, 10);
+        PoolStatistics poolStatistics = new PoolStatistics(poolNumber, 8, 2, 8, 0, 0);
+
+        Mockito.doReturn(Optional.of(poolRequest)).when(poolRequestRepository).findByPoolNumber(poolNumber);
+        Mockito.doReturn(Optional.of(poolStatistics)).when(poolStatisticsRepository).findById(poolNumber);
+
+        PoolSummaryResponseDto response = poolStatisticsService.calculatePoolStatistics(poolNumber);
+
+        assertThat(response.getBureauSummoning().getRequestedFromBureau()).isEqualTo(3);
+        assertThat(response.getBureauSummoning().getSurplus()).isEqualTo(5);
+        assertThat(response.getPoolSummary().getRequiredPoolSize()).isEqualTo(10);
+    }
+
+    @Test
+    public void calculatePoolStatistics_nullNumberRequested_defaultsToZero() {
+        String poolNumber = "123456789";
+        PoolRequest poolRequest = initPoolRequest(poolNumber, 0, 10);
+        poolRequest.setNumberRequested(null);
+        PoolStatistics poolStatistics = initPoolStats(poolNumber);
+
+        Mockito.doReturn(Optional.of(poolRequest)).when(poolRequestRepository).findByPoolNumber(poolNumber);
+        Mockito.doReturn(Optional.of(poolStatistics)).when(poolStatisticsRepository).findById(poolNumber);
+
+        PoolSummaryResponseDto response = poolStatisticsService.calculatePoolStatistics(poolNumber);
+
+        assertThat(response.getBureauSummoning().getRequestedFromBureau()).isZero();
+        assertThat(response.getBureauSummoning().getSurplus()).isEqualTo(poolStatistics.getAvailable());
+        assertThat(response.getPoolSummary().getRequiredPoolSize()).isEqualTo(10);
     }
 
     @Test

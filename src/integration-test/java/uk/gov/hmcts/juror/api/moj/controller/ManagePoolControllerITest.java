@@ -197,8 +197,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
                 + "represents the total number of bureau owned members in a pool wih a status of 'Responded'")
             .isEqualTo(2);
         assertThat(bureauSummoning.getRequestedFromBureau())
-            .as("Requested from bureau should be mapped from TOTAL_NO_REQUIRED in the POOL table")
-            .isEqualTo(10);
+            .as("Requested from bureau should be mapped from NO_REQUESTED in the POOL table")
+            .isEqualTo(9);
         assertThat(bureauSummoning.getUnavailable())
             .as("Unavailable should be mapped from the UNAVAILABLE value in the POOL_STATS view and represents the "
                 + "number of bureau owned members in  a pool with a status that is NOT: 'Responded', 'Summoned', or "
@@ -279,8 +279,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
                 + "represents the total number of bureau owned members in a pool wih a status of 'Responded'")
             .isEqualTo(0);
         assertThat(bureauSummoning.getRequestedFromBureau())
-            .as("Requested from bureau should be mapped from TOTAL_NO_REQUIRED in the POOL table")
-            .isEqualTo(10);
+            .as("Requested from bureau should be mapped from NO_REQUESTED in the POOL table")
+            .isEqualTo(9);
         assertThat(bureauSummoning.getUnavailable())
             .as("Unavailable should be mapped from the UNAVAILABLE value in the POOL_STATS view and represents the "
                 + "number of bureau owned members in  a pool with a status that is NOT: 'Responded', 'Summoned', or "
@@ -370,8 +370,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
                 + "represents the total number of bureau owned members in a pool wih a status of 'Responded'")
             .isEqualTo(2);
         assertThat(bureauSummoning.getRequestedFromBureau())
-            .as("Requested from bureau should be zero when TOTAL_NO_REQUIRED is zero")
-            .isEqualTo(0);
+            .as("Requested from bureau should use NO_REQUESTED even when TOTAL_NO_REQUIRED is zero")
+            .isEqualTo(9);
         assertThat(bureauSummoning.getUnavailable())
             .as("Unavailable should be mapped from the UNAVAILABLE value in the POOL_STATS view and represents the "
                 + "number of bureau owned members in  a pool with a status that is NOT: 'Responded', 'Summoned', or "
