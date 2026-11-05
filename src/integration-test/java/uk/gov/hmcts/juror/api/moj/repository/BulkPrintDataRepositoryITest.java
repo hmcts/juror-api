@@ -34,7 +34,7 @@ class BulkPrintDataRepositoryITest extends AbstractIntegrationTest {
     })
     void extractedDateCanBePersistedAndCleared() {
         BulkPrintData bulkPrintData = bulkPrintDataRepository.findByJurorNo("111111111").get(0);
-        Long id = bulkPrintData.getId();
+        final Long id = bulkPrintData.getId();
         assertThat(bulkPrintData.getExtractedDate()).isNull();
 
         LocalDate extractedDate = LocalDate.of(2026, 10, 30);
