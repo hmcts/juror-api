@@ -67,6 +67,9 @@ public class BulkPrintData {
     @SuppressWarnings({"PMD.RedundantFieldInitializer"}) // Builder.Default needs this value
     private boolean extractedFlag = false;
 
+    @Column(name = "extracted_date")
+    private LocalDate extractedDate;
+
     @Column(name = "digital_comms")
     private boolean digitalComms;
 

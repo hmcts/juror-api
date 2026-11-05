@@ -22,6 +22,12 @@ public interface JurorPoolRepository extends IJurorPoolRepository, JpaRepository
     Optional<JurorPool> findByJurorJurorNumberAndOwnerAndDeferralDateAndIsActiveTrue(String jurorNumber, String owner,
                                                                       LocalDate deferralDate);
 
+    @Query("SELECT jp FROM JurorPool jp WHERE jp.juror.jurorNumber IN :jurorNumbers "
+        + "AND jp.owner = :owner AND jp.deferralCode = 'P' "
+        + "ORDER BY jp.lastUpdate DESC NULLS LAST, jp.dateCreated DESC NULLS LAST, jp.pool.poolNumber DESC")
+    List<JurorPool> findPostponementRecords(@Param("jurorNumbers") List<String> jurorNumbers,
+                                           @Param("owner") String owner);
+
     List<JurorPool> findByPoolPoolNumberAndIsActive(String poolNumber, boolean isActive);
 
     Optional<JurorPool> findByJurorJurorNumberAndPoolPoolNumberAndIsActive(String jurorNumber, String poolNumber,

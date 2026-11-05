@@ -115,9 +115,8 @@ public class PoolStatisticsServiceTest {
                 + "represents the total number of bureau owned members in a pool wih a status of 'Responded'")
             .isEqualTo(poolStatistics.getAvailable());
         assertThat(bureauSummoning.getRequestedFromBureau())
-            .as("Requested from bureau should represent the number of jurors requested from the Bureau "
-                + "(total required - court supply)")
-            .isEqualTo(poolRequest.getTotalNoRequired() - poolStatistics.getCourtSupply());
+            .as("Requested from bureau should be mapped from the total required on the pool request")
+            .isEqualTo(poolRequest.getTotalNoRequired());
         assertThat(bureauSummoning.getUnavailable())
             .as("Unavailable should be mapped from the UNAVAILABLE value in the POOL_STATS view and represents the "
                 + "number of bureau owned members in  a pool with a status that is NOT: 'Responded', 'Summoned', or "
@@ -206,19 +205,18 @@ public class PoolStatisticsServiceTest {
             .isFalse();
 
         assertThat(bureauSummoning.getRequestedFromBureau())
-            .as("Requested from bureau should represent the number of jurors requested from the Bureau "
-                + "(total required - court supply)")
+            .as("Requested from bureau should be mapped from the total required on the pool request")
             .isEqualTo(poolRequest.getTotalNoRequired());
     }
 
     @Test
-    public void calculatePoolStatistics_courtSupplyGreaterThanTotalRequired_requestedFromBureauIsZero() {
+    public void calculatePoolStatistics_courtSupplyGreaterThanTotalRequired_requestedFromBureauIsTotalRequired() {
         String poolNumber = "123456789";
         int totalNumberRequired = 3;
         int numberRequestFromBureau = 0;
 
         PoolRequest poolRequest = initPoolRequest(poolNumber, numberRequestFromBureau, totalNumberRequired);
-        PoolStatistics poolStatistics = new PoolStatistics(poolNumber, 4, 5, 0, 0, 0);
+        PoolStatistics poolStatistics = new PoolStatistics(poolNumber, 4, 5, 4, 0, 0);
 
         Mockito.doReturn(Optional.of(poolRequest))
             .when(poolRequestRepository).findByPoolNumber(poolNumber);
@@ -229,11 +227,11 @@ public class PoolStatisticsServiceTest {
         PoolSummaryResponseDto.BureauSummoning bureauSummoning = poolSummaryResponseDto.getBureauSummoning();
 
         assertThat(bureauSummoning.getRequestedFromBureau())
-            .as("Requested from bureau should not be negative when court supply exceeds total required")
-            .isZero();
+            .as("Requested from bureau should equal total required even when court supply exceeds it")
+            .isEqualTo(totalNumberRequired);
         assertThat(bureauSummoning.getSurplus())
-            .as("Surplus should be calculated using the clamped requested from bureau value")
-            .isEqualTo(poolStatistics.getAvailable());
+            .as("Surplus should be calculated as available minus total required")
+            .isEqualTo(poolStatistics.getAvailable() - totalNumberRequired);
     }
 
     @Test
