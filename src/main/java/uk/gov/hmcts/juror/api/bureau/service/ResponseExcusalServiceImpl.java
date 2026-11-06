@@ -31,7 +31,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("Duplicates")
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -93,79 +92,23 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
         }
 
         log.debug("Begin processing excusal-rejection of juror {} with code {}, by user {}.",
-            jurorId, excusalCodeDto.getExcusalCode(), login
+                  jurorId, excusalCodeDto.getExcusalCode(), login
         );
         try {
-            final DigitalResponse savedResponse = responseRepository.findByJurorNumber(jurorId);
-            if (savedResponse == null) {
-                throw new ExcusalException.JurorNotFound(jurorId);
-            }
-
-            if (BooleanUtils.isTrue(savedResponse.isProcessingComplete())) {
-                final String message = "Response " + savedResponse.getJurorNumber() + " has previously been merged!";
-                log.error("Response {} has previously been completed at {}.",
-                    savedResponse.getJurorNumber(), savedResponse.getCompletedAt()
-                );
-                throw new ExcusalException.ResponseAlreadyCompleted(message);
-            }
-
-            //detach the entity so that it will have to reattached by hibernate on save trigger optimistic locking.
-            entityManager.detach(savedResponse);
-
-            // set optimistic lock version from UI
-            log.debug("Version: DB={}, UI={}", savedResponse.getVersion(), excusalCodeDto.getVersion());
-            savedResponse.setVersion(excusalCodeDto.getVersion());
-
-            //update response
-            savedResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
-
-            // JDB-2685: if no staff assigned, assign current login
-            if (null == savedResponse.getStaff()) {
-                assignOnUpdateService.assignToCurrentLogin(savedResponse, login);
-            }
-
-            // save response
-            try {
-                log.debug("Merging juror response for juror {}", savedResponse.getJurorNumber());
-                mergeService.mergeResponse(savedResponse, login);
-                log.debug("Juror response for juror {} merged successfully", savedResponse.getJurorNumber());
-            } catch (ObjectOptimisticLockingFailureException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Optimistic locking failure:", e);
-                }
-                throw new ExcusalException.OptimisticLockingFailure(jurorId, e);
-            }
+            final DigitalResponse savedResponse = closeAndMergeResponse(jurorId, excusalCodeDto, login);
 
             // update juror pool entry
-            JurorPool poolDetails = jurorPoolService.getJurorPoolFromUser(savedResponse.getJurorNumber());
-            poolDetails.getJuror().setResponded(true);
-            poolDetails.getJuror().setExcusalDate(LocalDate.now());
-            poolDetails.getJuror().setExcusalCode(excusalCodeDto.getExcusalCode());
-            poolDetails.setUserEdtq(login);
+            JurorPool poolDetails = applyExcusalDecision(savedResponse, excusalCodeDto, login);
             poolDetails.getJuror().setExcusalRejected("Y");
             poolDetails.setStatus(RepositoryUtils.retrieveFromDatabase(IJurorStatus.RESPONDED, jurorStatusRepository));
             detailsRepository.save(poolDetails);
 
             // audit pool
-            JurorHistory history = new JurorHistory();
-            //  history.setOwner("400");
-            history.setJurorNumber(jurorId);
-            history.setOtherInformationDate(LocalDate.now());
-            history.setHistoryCode(HistoryCodeMod.EXCUSE_POOL_MEMBER);
-            history.setCreatedBy(login);
-            history.setPoolNumber(poolDetails.getPoolNumber());
-            history.setOtherInformation("Refuse Excuse");
-            historyRepository.save(history);
-            history = new JurorHistory();
-            //  history.setOwner("400");
-            history.setJurorNumber(jurorId);
-            history.setOtherInformationDate(LocalDate.now());
-            history.setCreatedBy(login);
-            history.setPoolNumber(poolDetails.getPoolNumber());
+            saveHistory(jurorId, login, poolDetails.getPoolNumber(), HistoryCodeMod.EXCUSE_POOL_MEMBER,
+                        "Refuse Excuse");
             // denied excusals require a second entry into the audit table
-            history.setHistoryCode(HistoryCodeMod.RESPONDED_POSITIVELY);
-            history.setOtherInformation(JurorHistory.RESPONDED);
-            historyRepository.save(history);
+            saveHistory(jurorId, login, poolDetails.getPoolNumber(), HistoryCodeMod.RESPONDED_POSITIVELY,
+                        JurorHistory.RESPONDED);
 
             printDataService.printExcusalDeniedLetter(poolDetails);
 
@@ -181,9 +124,103 @@ public class ResponseExcusalServiceImpl implements ResponseExcusalService {
             throw e;
         }
         log.info("Successfully rejected excusal-request for juror {} using code {}, by user {}",
-            jurorId, excusalCodeDto.getExcusalCode(), login
+                 jurorId, excusalCodeDto.getExcusalCode(), login
         );
         return true;
+    }
+
+    /**
+     * Loads the juror's digital response, closes it and merges it, using the version supplied by the UI
+     * for optimistic locking.
+     *
+     * @param jurorId juror identifier.
+     * @param excusalCodeDto excusal decision details (supplies the optimistic lock version).
+     * @param login current user login.
+     * @return the merged response.
+     * @throws ExcusalException.JurorNotFound if no response exists for the juror.
+     * @throws ExcusalException.ResponseAlreadyCompleted if the response has already been processed.
+     * @throws ExcusalException.OptimisticLockingFailure if the response was changed by someone else.
+     */
+    private DigitalResponse closeAndMergeResponse(String jurorId, ExcusalCodeDto excusalCodeDto, String login) {
+        final DigitalResponse savedResponse = responseRepository.findByJurorNumber(jurorId);
+        if (savedResponse == null) {
+            throw new ExcusalException.JurorNotFound(jurorId);
+        }
+
+        if (BooleanUtils.isTrue(savedResponse.isProcessingComplete())) {
+            final String message = "Response " + savedResponse.getJurorNumber() + " has previously been merged!";
+            log.error("Response {} has previously been completed at {}.",
+                      savedResponse.getJurorNumber(), savedResponse.getCompletedAt()
+            );
+            throw new ExcusalException.ResponseAlreadyCompleted(message);
+        }
+
+        //detach the entity so that it will have to reattached by hibernate on save trigger optimistic locking.
+        entityManager.detach(savedResponse);
+
+        // set optimistic lock version from UI
+        log.debug("Version: DB={}, UI={}", savedResponse.getVersion(), excusalCodeDto.getVersion());
+        savedResponse.setVersion(excusalCodeDto.getVersion());
+
+        //update response
+        savedResponse.setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
+
+        // JDB-2685: if no staff assigned, assign current login
+        if (null == savedResponse.getStaff()) {
+            assignOnUpdateService.assignToCurrentLogin(savedResponse, login);
+        }
+
+        // save response
+        try {
+            log.debug("Merging juror response for juror {}", savedResponse.getJurorNumber());
+            mergeService.mergeResponse(savedResponse, login);
+            log.debug("Juror response for juror {} merged successfully", savedResponse.getJurorNumber());
+        } catch (ObjectOptimisticLockingFailureException e) {
+            if (log.isDebugEnabled()) {
+                log.debug("Optimistic locking failure:", e);
+            }
+            throw new ExcusalException.OptimisticLockingFailure(jurorId, e);
+        }
+        return savedResponse;
+    }
+
+    /**
+     * Applies the juror pool updates for an excusal decision before setting its status and saving it.
+     *
+     * @param savedResponse the merged digital response.
+     * @param excusalCodeDto excusal decision details.
+     * @param login current user login.
+     * @return the updated (unsaved) juror pool entry.
+     */
+    private JurorPool applyExcusalDecision(DigitalResponse savedResponse, ExcusalCodeDto excusalCodeDto,
+                                           String login) {
+        JurorPool poolDetails = jurorPoolService.getJurorPoolFromUser(savedResponse.getJurorNumber());
+        poolDetails.getJuror().setResponded(true);
+        poolDetails.getJuror().setExcusalDate(LocalDate.now());
+        poolDetails.getJuror().setExcusalCode(excusalCodeDto.getExcusalCode());
+        poolDetails.setUserEdtq(login);
+        return poolDetails;
+    }
+
+    /**
+     * Saves a juror history entry dated today.
+     *
+     * @param jurorId juror identifier.
+     * @param login current user login.
+     * @param poolNumber pool the juror belongs to.
+     * @param historyCode history code to record.
+     * @param otherInformation free-text information for the entry.
+     */
+    private void saveHistory(String jurorId, String login, String poolNumber, HistoryCodeMod historyCode,
+                             String otherInformation) {
+        JurorHistory history = new JurorHistory();
+        history.setJurorNumber(jurorId);
+        history.setOtherInformationDate(LocalDate.now());
+        history.setHistoryCode(historyCode);
+        history.setCreatedBy(login);
+        history.setPoolNumber(poolNumber);
+        history.setOtherInformation(otherInformation);
+        historyRepository.save(history);
     }
 
     /**
