@@ -5,10 +5,10 @@ buildscript {
         springDocVersion = '2.9.1'
         queryDslVersion = '5.1.0'
         flywayVersion = '11.20.3'
-        postgresVersion = '42.7.13'  // upgraded from 42.7.12 - CVE-2026-54291 fix
+        postgresVersion = '42.7.14'  // upgraded from 42.7.12 - CVE-2026-54291 fix
         envers = '3.5.13'
         jwtVersion = '0.13.0'
-        mockitoVersion = '5.15.2'
+        mockitoVersion = '5.24.0'
         httpclient5Version = '5.6.4'
         httpcore5Version = '5.4.3'
     }
@@ -64,10 +64,10 @@ bootJar {
 }
 
 jacoco {
-  toolVersion = "0.8.15"
+  toolVersion = "0.8.16"
 }
 
-version = '5.33.0'
+version = '5.34.0'
 
 repositories {
   mavenLocal()
@@ -107,7 +107,7 @@ dependencies {
 
   //Internal dependency overrides
   implementation 'org.yaml:snakeyaml:2.3'
-  implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.60'
+  implementation 'org.apache.tomcat.embed:tomcat-embed-websocket:10.1.61'
   implementation 'org.apache.tomcat.embed:tomcat-embed-core:10.1.61'
   implementation 'org.apache.logging.log4j:log4j-api:2.26.1'
   implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.26.1'
@@ -154,7 +154,7 @@ dependencies {
 
   implementation('org.apache.commons:commons-lang3:3.21.0')
   implementation('org.apache.commons:commons-text:1.15.0')
-  
+
   implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
 
   runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.7.10')
@@ -176,7 +176,7 @@ dependencies {
   testImplementation('org.projectlombok:lombok')
   testAnnotationProcessor('org.projectlombok:lombok')
 
-  testImplementation('net.bytebuddy:byte-buddy:1.18.11')
+  testImplementation('net.bytebuddy:byte-buddy:1.18.17-jdk5')
   testImplementation('junit:junit:4.13.2')
   testImplementation "org.testcontainers:testcontainers:1.21.4"
   testImplementation "org.testcontainers:junit-jupiter:1.21.4"
