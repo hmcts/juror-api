@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.juror.controller;
 
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.Jwts;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,7 +74,7 @@ public class PublicFrontendLogControllerTest extends ContainerTest {
     }
 
     private String createHmacJwt() {
-        return TestUtil.mintHmacJwt(SignatureAlgorithm.HS256, hmacSecret,
+        return TestUtil.mintHmacJwt(Jwts.SIG.HS256, hmacSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 }

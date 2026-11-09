@@ -41,7 +41,7 @@ public class JwtAuthenticationInterceptor implements ClientHttpRequestIntercepto
             this.config.getClaims());
     }
 
-    private Key getSigningKey() {
+    private SecretKey getSigningKey() {
         return jwtService.getSigningKey(this.config.getSecret());
     }
 

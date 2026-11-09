@@ -963,7 +963,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
                     URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
 
-            assertThat(response.getStatusCode()).as("Unprocessable Entity").isEqualTo(UNPROCESSABLE_ENTITY);
+            assertThat(response.getStatusCode()).as("Unprocessable Entity").isEqualTo(UNPROCESSABLE_CONTENT);
 
             Appearance unchangedAppearance = appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415",
                     JUROR3, now().minusDays(2))
@@ -993,7 +993,7 @@ class JurorManagementControllerITest extends AbstractIntegrationTest {
                 restTemplate.exchange(new RequestEntity<>(request, httpHeaders, PATCH,
                     URI.create(URL_ATTENDANCE)), AttendanceDetailsResponse.class);
 
-            assertThat(response.getStatusCode()).as("Unprocessable Entity").isEqualTo(UNPROCESSABLE_ENTITY);
+            assertThat(response.getStatusCode()).as("Unprocessable Entity").isEqualTo(UNPROCESSABLE_CONTENT);
 
             Appearance confirmedAppearance = appearanceRepository.findByLocCodeAndJurorNumberAndAttendanceDate("415",
                     JUROR3, now().minusDays(2))

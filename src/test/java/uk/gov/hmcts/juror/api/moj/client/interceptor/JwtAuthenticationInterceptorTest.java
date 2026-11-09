@@ -56,12 +56,11 @@ class JwtAuthenticationInterceptorTest {
         this.securityConfig.setTokenValidity(160_000);
         this.securityConfig.setSecret(TestConstants.JWT_SECRET);
         this.securityConfig.setClaims(new HashMap<>());
-        this.secretKey = org.mockito.Mockito.mock(SecretKey.class);
+        this.signingKey = org.mockito.Mockito.mock(SecretKey.class);
 
         when(this.request.getHeaders()).thenReturn(this.httpHeaders);
         when(this.clientHttpRequestExecution.execute(this.request, this.body)).thenReturn(this.clientHttpResponse);
         this.jwtAuthenticationInterceptor = new JwtAuthenticationInterceptor(this.jwtService, this.securityConfig);
-        this.signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(this.securityConfig.getSecret()));
         when(jwtService.getSigningKey(this.securityConfig.getSecret())).thenReturn(signingKey);
 
         when(jwtService.generateJwtToken(null,

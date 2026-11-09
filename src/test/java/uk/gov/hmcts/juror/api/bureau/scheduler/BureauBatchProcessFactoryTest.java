@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import uk.gov.hmcts.juror.api.bureau.service.JurorCommsEmailServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsLetterServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsSentToCourtServiceImpl;
 import uk.gov.hmcts.juror.api.bureau.service.JurorCommsWeeklyInfoServiceImpl;
