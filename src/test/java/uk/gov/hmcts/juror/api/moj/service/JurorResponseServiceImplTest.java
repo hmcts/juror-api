@@ -117,7 +117,7 @@ class JurorResponseServiceImplTest {
         Assertions.assertThat(digitalResponse.getProcessingComplete()).isTrue();
         Assertions.assertThat(digitalResponse.getCompletedAt()).isNotNull();
         Mockito.verify(mergeService).mergeDigitalResponse(digitalResponse, "BUREAU_USER");
-        Mockito.verify(mergeService, Mockito.never()).mergePaperResponse(Mockito.any(), Mockito.any());
+        Mockito.verify(mergeService, Mockito.never()).mergePaperResponse(any(), any());
     }
 
     @Test
@@ -134,7 +134,7 @@ class JurorResponseServiceImplTest {
         Assertions.assertThat(responseClosed).isTrue();
         Assertions.assertThat(paperResponse.getProcessingComplete()).isTrue();
         Assertions.assertThat(paperResponse.getCompletedAt()).isNotNull();
-        Mockito.verify(mergeService, Mockito.never()).mergeDigitalResponse(Mockito.any(), Mockito.any());
+        Mockito.verify(mergeService, Mockito.never()).mergeDigitalResponse(any(), any());
         Mockito.verify(mergeService).mergePaperResponse(paperResponse, "BUREAU_USER");
     }
 
@@ -150,8 +150,8 @@ class JurorResponseServiceImplTest {
         boolean responseClosed = jurorResponseService.closeOpenResponseRecord("123456789", "BUREAU_USER");
 
         Assertions.assertThat(responseClosed).isFalse();
-        Mockito.verify(mergeService, Mockito.never()).mergeDigitalResponse(Mockito.any(), Mockito.any());
-        Mockito.verify(mergeService, Mockito.never()).mergePaperResponse(Mockito.any(), Mockito.any());
+        Mockito.verify(mergeService, Mockito.never()).mergeDigitalResponse(any(), any());
+        Mockito.verify(mergeService, Mockito.never()).mergePaperResponse(any(), any());
     }
 
     //Tests related to method updateJurorPersonalDetails()

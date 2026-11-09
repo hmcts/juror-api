@@ -219,7 +219,7 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardRepo
                     continue;
                 }
 
-                final String locCode = stats.get(0);
+                final String locCode = stats.getFirst();
                 final Double publicTransportSoftLimit = parseDoubleOrNull(stats.get(1));
                 final Double taxiSoftLimit = parseDoubleOrNull(stats.get(2));
                 final String changedBy = stats.get(3);
@@ -273,7 +273,7 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardRepo
             return expenseLimitChanges;
         }
 
-        CourtLocationAuditRecord latestRecord = auditRecords.get(0);
+        CourtLocationAuditRecord latestRecord = auditRecords.getFirst();
 
         for (int i = 1; i < auditRecords.size(); i++) {
             CourtLocationAuditRecord previousRecord = auditRecords.get(i);
@@ -365,8 +365,8 @@ public class ManualAdjustmentsToExpenseLimitsReport extends AbstractStandardRepo
         LinkedHashMap<String, Object> row = new LinkedHashMap<>();
         row.put("court_location_name_and_code", change.getCourtLocationNameAndCode());
         row.put("transport_type", change.getTransportType());
-        row.put("old_limit", String.format("£%.2f", change.getOldLimit()));
-        row.put("new_limit", String.format("£%.2f", change.getNewLimit()));
+        row.put("old_limit", "£%.2f".formatted(change.getOldLimit()));
+        row.put("new_limit", "£%.2f".formatted(change.getNewLimit()));
         row.put("changed_by", change.getChangedBy());
         row.put("change_date", change.getChangeDate());  // Actual date from revision_timestamp
         row.put("revision_number", change.getRevisionNumber());  // Hidden field for drill-down

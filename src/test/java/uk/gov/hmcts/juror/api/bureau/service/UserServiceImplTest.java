@@ -354,7 +354,7 @@ public class UserServiceImplTest {
         OperationFailureListDto failureList = userService.multipleChangeAssignment(multipleStaffAssignmentDto,
             ASSIGNING_LOGIN);
         assertThat(failureList.getFailureDtos().size()).isEqualTo(1);
-        assertThat(failureList.getFailureDtos().get(0).getJurorNumber()).isEqualTo(JUROR_NUMBER_3);
+        assertThat(failureList.getFailureDtos().getFirst().getJurorNumber()).isEqualTo(JUROR_NUMBER_3);
 
         verify(mockuserRepository, times(3)).findByUsername(anyString());//Only gets called for the assigning staff
         // members record!

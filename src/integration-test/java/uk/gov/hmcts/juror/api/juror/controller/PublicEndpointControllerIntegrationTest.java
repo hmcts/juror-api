@@ -1,6 +1,6 @@
 package uk.gov.hmcts.juror.api.juror.controller;
 
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.Jwts;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,7 +84,10 @@ import static org.mockito.ArgumentMatchers.anyString;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = "notify.disabled=false")
+    properties = {
+        "notify.disabled=false",
+        "feature-flags.flags.digital-by-default=true"
+    })
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods",
@@ -256,6 +259,11 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Test
     @Sql("/db/mod/truncate.sql")
     @Sql("/db/PublicEndpointControllerTest_retrieveJurorById.sql")
+    @Sql(statements = {
+        "UPDATE juror_mod.court_location SET digital_by_default = true WHERE loc_code = '448'",
+        "UPDATE juror_mod.juror SET digital_by_default = true, dbd_preference = 'Digital' "
+            + "WHERE juror_number = '209092530'"
+    })
     public void retrieveDbdInformation_RequestWithValidNumber_ReturnsDbdInformation() throws Exception {
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
@@ -450,7 +458,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             Iterable<JurorReasonableAdjustment> reasonableAdjustmentList = jurorReasonableAdjustmentRepository
                                                                                                         .findAll();
             assertThat(reasonableAdjustmentList).hasSize(1);
-            JurorResponseCjsEmployment cjsEmployment = cjsEmploymentList.get(0);
+            JurorResponseCjsEmployment cjsEmployment = cjsEmploymentList.getFirst();
             assertThat(cjsEmployment.getCjsEmployer()).isEqualTo("Mega City 1 Hall of Justice");
             JurorReasonableAdjustment reasonableAdjustment = reasonableAdjustmentList.iterator().next();
             assertThat(reasonableAdjustment.getReasonableAdjustment().getCode()).isEqualTo("V");
@@ -975,8 +983,8 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
             List<JurorResponseCjsEmployment> cjsEmploymentList = jurorResponseCjsEmploymentRepositoryMod.findAll();
             assertThat(cjsEmploymentList.size()).isEqualTo(1);
-            assertThat(cjsEmploymentList.get(0).getCjsEmployer()).isEqualTo("police");
-            assertThat(cjsEmploymentList.get(0).getCjsEmployerDetails())
+            assertThat(cjsEmploymentList.getFirst().getCjsEmployer()).isEqualTo("police");
+            assertThat(cjsEmploymentList.getFirst().getCjsEmployerDetails())
                 .isEqualTo("I am invalid because I am a forensic examiner");
 
             // check the response submitted history is present for juror
@@ -1400,7 +1408,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
             List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository.findByJurorNo("644892530");
             assertThat(bulkPrintDataList.size()).isEqualTo(1);
-            assertThat(bulkPrintDataList.get(0).getFormAttribute().getFormType())
+            assertThat(bulkPrintDataList.getFirst().getFormAttribute().getFormType())
                 .as("form code should be withdrawal codes").isIn("5224", "5224C");
 
         });
@@ -1494,7 +1502,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
             List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository.findByJurorNo("644892530");
             assertThat(bulkPrintDataList.size()).isEqualTo(1);
-            assertThat(bulkPrintDataList.get(0).getFormAttribute().getFormType())
+            assertThat(bulkPrintDataList.getFirst().getFormAttribute().getFormType())
                 .as("form code should be withdrawal codes").isIn("5224", "5224C").isIn("5224", "5224C");
         });
 
@@ -2394,7 +2402,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private String mintPublicJwt(final PublicJwtPayload payload) throws Exception {
-        return TestUtil.mintPublicJwt(payload, SignatureAlgorithm.HS256, publicSecret,
+        return TestUtil.mintPublicJwt(payload, Jwts.SIG.HS256, publicSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 }

@@ -1,7 +1,5 @@
 package uk.gov.hmcts.juror.api.moj.client.interceptor;
 
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -58,6 +56,7 @@ class JwtAuthenticationInterceptorTest {
         this.securityConfig.setTokenValidity(160_000);
         this.securityConfig.setSecret(TestConstants.JWT_SECRET);
         this.securityConfig.setClaims(new HashMap<>());
+        this.secretKey = org.mockito.Mockito.mock(SecretKey.class);
 
         when(this.request.getHeaders()).thenReturn(this.httpHeaders);
         when(this.clientHttpRequestExecution.execute(this.request, this.body)).thenReturn(this.clientHttpResponse);
@@ -109,6 +108,7 @@ class JwtAuthenticationInterceptorTest {
 
         verify(request, times(1)).getHeaders();
         verify(httpHeaders, never()).setBearerAuth(any());
+        verify(jwtService, never()).getSigningKey(any());
         verify(jwtService, never())
             .generateJwtToken(any(), any(), any(), any(Long.class), any(), any());
         verifyNoMoreInteractions(jwtService);

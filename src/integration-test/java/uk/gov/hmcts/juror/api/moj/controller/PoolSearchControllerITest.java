@@ -259,7 +259,7 @@ class PoolSearchControllerITest extends AbstractIntegrationTest {
 
             List<FilterCoronerPool> data = responseBody.getData();
             assertThat(data.size()).as("Expect the response body to contain all 1 data items").isEqualTo(1);
-            FilterCoronerPool pool = data.get(0);
+            FilterCoronerPool pool = data.getFirst();
             assertThat(pool.getPoolNumber()).as("Expect the response body to contain the correct pool number")
                 .isEqualTo("923040001");
             assertThat(pool.getCourtName()).as("Expect the response body to contain the correct court name")

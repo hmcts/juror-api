@@ -39,7 +39,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 @Slf4j
 @Service
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateService {
 
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
@@ -141,7 +141,7 @@ public class BureauBacklogAllocateServiceImpl implements BureauBacklogAllocateSe
                 jurorResponseRepository.saveAll(toBeAllocated);
                 userJurorResponseAuditRepository.saveAll(auditEntries);
             } catch (OptimisticLockingFailureException olfe) {
-                log.warn("One or more Juror responses was updated by another user!. Try Allocation again.");
+                log.info("One or more Juror responses was updated by another user!. Try Allocation again.");
                 throw new BureauOptimisticLockingException(olfe);
             } catch (RuntimeException e) {
                 throw new BureauBacklogAllocateException.FailedToSaveAllocations(staffMember.getUsername(), e);

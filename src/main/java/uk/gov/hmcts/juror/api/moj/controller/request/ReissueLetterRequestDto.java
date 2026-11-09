@@ -28,11 +28,12 @@ import java.util.List;
 public class ReissueLetterRequestDto implements Serializable {
 
     @NotEmpty
-    @Schema(description = "List of letters to be reissued", required = true)
+    @Schema(description = "List of letters to be reissued",  requiredMode = Schema.RequiredMode.REQUIRED)
     private List<@NotNull ReissueLetterRequestData> letters;
 
     @Getter
     @Builder
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class ReissueLetterRequestData {
 
         @JurorNumber

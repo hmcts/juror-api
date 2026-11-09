@@ -72,7 +72,7 @@ public class JurorResponseController {
             summonsReplyStatusUpdateService.updateDigitalJurorResponseStatus(jurorNumber, updateDto.getStatus(),
                 payload);
         } catch (OptimisticLockingFailureException olfe) {
-            log.warn("Juror {} response was updated by another user!", jurorNumber);
+            log.info("Juror {} response was updated by another user!", jurorNumber);
             throw new BureauOptimisticLockingException(olfe);
         }
 

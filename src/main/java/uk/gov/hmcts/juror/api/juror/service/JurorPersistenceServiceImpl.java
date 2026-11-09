@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class JurorPersistenceServiceImpl implements JurorPersistenceService {
     private final JurorService jurorService;
     private final StraightThroughProcessor straightThroughProcessor;

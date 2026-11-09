@@ -82,7 +82,7 @@ public class JurorHistory implements Serializable {
 
     /**
      * Additional date information supporting this history event, for example populate the deferred_to date here when
-     * creating a deferral letter printed history event.
+     * creating a deferral letter queued history event.
      */
     @Column(name = "other_info_date")
     private LocalDate otherInformationDate;
@@ -90,7 +90,7 @@ public class JurorHistory implements Serializable {
 
     /**
      * Additional reference data information supporting this history event, for example populate the deferral reason
-     * code here when creating a deferral letter printed history event.
+     * code here when creating a deferral letter queued history event.
      */
     @Column(name = "other_info_reference")
     private String otherInformationRef;

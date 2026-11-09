@@ -300,10 +300,13 @@ class CourtLetterPrintServiceTest {
         private static void verifyResponseDto(List<PrintLetterDataResponseDto> response) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName())
-                    .as("Expect court name to be " + "The Crown Court\n"
-                        + "at COURT NAME")
-                    .isEqualTo("The Crown Court\n"
-                        + "at COURT NAME");
+                    .as("""
+                        Expect court name to be \
+                        The Crown Court
+                        at COURT NAME""")
+                    .isEqualTo("""
+                        The Crown Court
+                        at COURT NAME""");
                 assertThat(dto.getCourtAddressLine1())
                     .as("Expect address line 1 to be 'ADDRESS 1'")
                     .isEqualTo("ADDRESS 1");
@@ -385,7 +388,7 @@ class CourtLetterPrintServiceTest {
             List<String> jurorNumbers = new ArrayList<>();
             final int totalMonths = 12;
             for (int i = 0; i < totalMonths; i++) {
-                String jurorNumber = String.format("1111111%02d", i + 1);
+                String jurorNumber = "1111111%02d".formatted(i + 1);
                 when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
                     true, courtOwner));
                 doReturn(createDeferralDataWelsh(LocalDate.of(2024, i + 1, 1), jurorNumber, "ABERTAWE", "A")).when(
@@ -469,7 +472,7 @@ class CourtLetterPrintServiceTest {
                     CourtLetterType.DEFERRAL_GRANTED), "TEST_COURTUSER");
 
             assertThat(response).as("Expect size to be 1").hasSize(1);
-            assertThat(response.get(0).getCourtName())
+            assertThat(response.getFirst().getCourtName())
                 .as("Expect court name to be The Royal Court\n of Justice")
                 .isEqualTo("The Crown Court\nat " + "COURT NAME");
         }
@@ -494,7 +497,7 @@ class CourtLetterPrintServiceTest {
                     CourtLetterType.DEFERRAL_GRANTED), "TEST_COURTUSER");
 
             assertThat(response).as("Expect size to be 1").hasSize(1);
-            assertThat(response.get(0).getCourtName())
+            assertThat(response.getFirst().getCourtName())
                 .as("Expect court name to be The Royal Court\nof Justice")
                 .isEqualTo("The Royal Court\nof Justice");
         }
@@ -518,7 +521,7 @@ class CourtLetterPrintServiceTest {
             courtNames.add("OOURT NAME");
 
             for (int i = 0; i < courtNames.size(); i++) {
-                String jurorNumber = String.format("1111111%02d", i + 1);
+                String jurorNumber = "1111111%02d".formatted(i + 1);
 
                 when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
                     true, courtOwner));
@@ -601,10 +604,13 @@ class CourtLetterPrintServiceTest {
         private void verifyResponseDto(List<PrintLetterDataResponseDto> response) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName())
-                    .as("Expect court name to be " + "The Crown Court\n"
-                        + "at COURT NAME")
-                    .isEqualTo("The Crown Court\n"
-                        + "at COURT NAME");
+                    .as("""
+                        Expect court name to be \
+                        The Crown Court
+                        at COURT NAME""")
+                    .isEqualTo("""
+                        The Crown Court
+                        at COURT NAME""");
                 assertThat(dto.getCourtAddressLine1())
                     .as("Expect address line 1 to be 'ADDRESS 1'")
                     .isEqualTo("ADDRESS 1");
@@ -849,10 +855,13 @@ class CourtLetterPrintServiceTest {
         private void validateResponseDto(List<PrintLetterDataResponseDto> response) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName())
-                    .as("Expect court name to be " + "The Crown Court\n"
-                        + "at COURT NAME")
-                    .isEqualTo("The Crown Court\n"
-                        + "at COURT NAME");
+                    .as("""
+                        Expect court name to be \
+                        The Crown Court
+                        at COURT NAME""")
+                    .isEqualTo("""
+                        The Crown Court
+                        at COURT NAME""");
                 assertThat(dto.getCourtAddressLine1())
                     .as("Expect address line 1 to be 'ADDRESS 1'")
                     .isEqualTo("ADDRESS 1");
@@ -1066,10 +1075,13 @@ class CourtLetterPrintServiceTest {
         private void validateResponseDto(List<PrintLetterDataResponseDto> response) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName())
-                    .as("Expect court name to be " + "The Crown Court\n"
-                            + "at COURT NAME")
-                    .isEqualTo("The Crown Court\n"
-                                   + "at COURT NAME");
+                    .as("""
+                            Expect court name to be \
+                            The Crown Court
+                            at COURT NAME""")
+                    .isEqualTo("""
+                                   The Crown Court
+                                   at COURT NAME""");
                 assertThat(dto.getCourtAddressLine1())
                     .as("Expect address line 1 to be 'ADDRESS 1'")
                     .isEqualTo("ADDRESS 1");
@@ -1423,10 +1435,13 @@ class CourtLetterPrintServiceTest {
         private static void verifyResponseDto(List<PrintLetterDataResponseDto> response) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName())
-                    .as("Expect court name to be " + "The Crown Court\n"
-                            + "at COURT NAME")
-                    .isEqualTo("The Crown Court\n"
-                                   + "at COURT NAME");
+                    .as("""
+                            Expect court name to be \
+                            The Crown Court
+                            at COURT NAME""")
+                    .isEqualTo("""
+                                   The Crown Court
+                                   at COURT NAME""");
                 assertThat(dto.getCourtAddressLine1())
                     .as("Expect address line 1 to be 'ADDRESS 1'")
                     .isEqualTo("ADDRESS 1");
@@ -1508,7 +1523,7 @@ class CourtLetterPrintServiceTest {
             List<String> jurorNumbers = new ArrayList<>();
             final int totalMonths = 12;
             for (int i = 0; i < totalMonths; i++) {
-                String jurorNumber = String.format("1111111%02d", i + 1);
+                String jurorNumber = "1111111%02d".formatted(i + 1);
                 when(jurorRepository.findByJurorNumber(anyString())).thenReturn(createJuror(jurorNumber,
                                                                                             true, courtOwner));
                 doReturn(createDeferralDataWelsh(LocalDate.of(2024, i + 1, 1), jurorNumber, "ABERTAWE", "P")).when(
@@ -1643,10 +1658,13 @@ class CourtLetterPrintServiceTest {
         private void verifyResponseDto(List<PrintLetterDataResponseDto> response, String judge) {
             for (PrintLetterDataResponseDto dto : response) {
                 assertThat(dto.getCourtName())
-                    .as("Expect court name to be " + "The Crown Court\n"
-                        + "at COURT NAME")
-                    .isEqualTo("The Crown Court\n"
-                        + "at COURT NAME");
+                    .as("""
+                        Expect court name to be \
+                        The Crown Court
+                        at COURT NAME""")
+                    .isEqualTo("""
+                        The Crown Court
+                        at COURT NAME""");
                 assertThat(dto.getCourtAddressLine1())
                     .as("Expect address line 1 to be 'ADDRESS 1'")
                     .isEqualTo("ADDRESS 1");
@@ -2131,12 +2149,15 @@ class CourtLetterPrintServiceTest {
         }
 
         private static void verifyResponseDto(List<PrintLetterDataResponseDto> response) {
-            PrintLetterDataResponseDto dto = response.get(0);
+            PrintLetterDataResponseDto dto = response.getFirst();
             assertThat(dto.getCourtName())
-                .as("Expect court name to be " + "The Crown Court\n"
-                    + "at COURT NAME")
-                .isEqualTo("The Crown Court\n"
-                    + "at COURT NAME");
+                .as("""
+                    Expect court name to be \
+                    The Crown Court
+                    at COURT NAME""")
+                .isEqualTo("""
+                    The Crown Court
+                    at COURT NAME""");
             assertThat(dto.getCourtAddressLine1())
                 .as("Expect address line 1 to be 'ADDRESS 1'")
                 .isEqualTo("ADDRESS 1");
@@ -2250,7 +2271,7 @@ class CourtLetterPrintServiceTest {
         }
 
         private static void verifyWelshResponseDto(List<PrintLetterDataResponseDto> response, String jurorNumber) {
-            PrintLetterDataResponseDto dto = response.get(0);
+            PrintLetterDataResponseDto dto = response.getFirst();
             assertThat(dto.getCourtName()).as("Expect court name to be Llys y Goron\nynAbertawe")
                 .isEqualTo("Llys y Goron\nynAbertawe");
             assertThat(dto.getCourtAddressLine1())
@@ -2343,7 +2364,7 @@ class CourtLetterPrintServiceTest {
                     CourtLetterType.CERTIFICATE_OF_ATTENDANCE), "TEST_COURTUSER");
 
             assertThat(response).as("Expect size to be 1").hasSize(1);
-            assertThat(response.get(0).getCourtName())
+            assertThat(response.getFirst().getCourtName())
                 .as("Expect court name to be The Royal Court\n of Justice")
                 .isEqualTo("The Crown Court\nat " + "COURT NAME");
 
@@ -2387,7 +2408,7 @@ class CourtLetterPrintServiceTest {
                     CourtLetterType.CERTIFICATE_OF_ATTENDANCE), "TEST_COURTUSER");
 
             assertThat(response).as("Expect size to be 1").hasSize(1);
-            assertThat(response.get(0).getCourtName())
+            assertThat(response.getFirst().getCourtName())
                 .as("Expect court name to be The Royal Court\nof Justice")
                 .isEqualTo("The Royal Court\nof Justice");
 
@@ -2431,7 +2452,7 @@ class CourtLetterPrintServiceTest {
             for (int i = 0;
                  i < courtNames.size();
                  i++) {
-                String jurorNumber = String.format("1111111%02d", i + 1);
+                String jurorNumber = "1111111%02d".formatted(i + 1);
 
                 when(jurorRepository.findByJurorNumber(jurorNumber)).thenReturn(
                     createJuror(jurorNumber, true, courtOwner));

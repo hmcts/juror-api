@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
+@SuppressWarnings("PMD.GodClass")
 public class SittingDaysReportServiceImpl implements SittingDaysReportService {
 
     private final StatsSittingDaysRepository statsSittingDaysRepository;
@@ -85,6 +86,7 @@ public class SittingDaysReportServiceImpl implements SittingDaysReportService {
         return Math.max(reportedTotal, minimumTotal);
     }
 
+    @SuppressWarnings("PMD.CyclomaticComplexity")
     private int getSittingDaysCategoryValue(String category) {
         return switch (category) {
             case "0" -> 0;
@@ -106,6 +108,7 @@ public class SittingDaysReportServiceImpl implements SittingDaysReportService {
         };
     }
 
+    @SuppressWarnings("PMD.CyclomaticComplexity")
     private void applyCategory(SittingDaysStatsReportResponse.TableData.DataRow row, String category, Integer value) {
         int count = defaultValue(value);
         switch (category) {

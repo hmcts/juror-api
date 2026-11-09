@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseR
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.service.AssignOnUpdateServiceMod;
+import uk.gov.hmcts.juror.api.moj.service.EmailDataService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
 import uk.gov.hmcts.juror.api.moj.service.SummonsReplyMergeService;
@@ -48,6 +50,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 import static uk.gov.hmcts.juror.api.moj.domain.IJurorStatus.DISQUALIFIED;
 
 @RunWith(MockitoJUnitRunner.Silent.class)
@@ -69,6 +72,10 @@ public class DisqualifyJurorServiceImplTest {
     private SummonsReplyMergeService summonsReplyMergeService;
     @Mock
     private PrintDataService printDataService;
+    @Mock
+    private EmailDataService emailDataService;
+    @Mock
+    private FeatureFlagConfigurationProperties featureFlags;
 
 
     @InjectMocks
@@ -128,10 +135,10 @@ public class DisqualifyJurorServiceImplTest {
         List<DisqualifyReasonsDto.DisqualifyReasons> disqualifyReasonsListActual =
             disqualifyReasonsActual.getDisqualifyReasons();
 
-        assertThat(disqualifyReasonsListActual.get(0).getCode()).isEqualTo("A");
-        assertThat(disqualifyReasonsListActual.get(0).getDescription()).isEqualTo("Age");
-        assertThat(disqualifyReasonsListActual.get(0).getHeritageCode()).isEqualTo("A");
-        assertThat(disqualifyReasonsListActual.get(0).getHeritageDescription())
+        assertThat(disqualifyReasonsListActual.getFirst().getCode()).isEqualTo("A");
+        assertThat(disqualifyReasonsListActual.getFirst().getDescription()).isEqualTo("Age");
+        assertThat(disqualifyReasonsListActual.getFirst().getHeritageCode()).isEqualTo("A");
+        assertThat(disqualifyReasonsListActual.getFirst().getHeritageDescription())
             .isEqualTo("Less Than Eighteen Years of Age or Over 75");
 
         assertThat(disqualifyReasonsListActual.get(1).getCode()).isEqualTo("B");
@@ -253,7 +260,7 @@ public class DisqualifyJurorServiceImplTest {
         assertThat(capturedJurorPool.getNextDate()).isNull();
         assertThat(capturedJurorPool.getStatus().getStatus()).isEqualTo(DISQUALIFIED);
 
-        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"B");
+        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.getFirst(),"B");
 
         // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
 
@@ -324,11 +331,57 @@ public class DisqualifyJurorServiceImplTest {
         assertThat(capturedJurorPool.getNextDate()).isNull();
         assertThat(capturedJurorPool.getStatus().getStatus()).isEqualTo(DISQUALIFIED);
 
-        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"N");
+        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.getFirst(),"N");
         // TODO - verify the printDataServiceArgumentCaptor and approach to letters for disqualification
         //Services or repository methods specific to Paper response
         verify(jurorPaperResponseRepository, never()).findById(anyString());
         verify(summonsReplyMergeService, never()).mergePaperResponse(any(PaperResponse.class), anyString());
+    }
+
+    @Test
+    public void disqualifyJuror_digitalByDefaultEligible_queuesWithdrawalEmail() {
+        String jurorNumber = JUROR_123456789;
+        BureauJwtPayload courtPayload = buildBureauPayload();
+        final DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDtoDigitalN();
+        List<JurorPool> jurorPoolList = createDigitalByDefaultJurorPoolList(jurorNumber, courtPayload.getOwner());
+        DigitalResponse digitalResponse = createDigitalResponse(jurorNumber);
+
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(anyString());
+        doNothing().when(assignOnUpdateService).assignToCurrentLogin(any(DigitalResponse.class), anyString());
+        doNothing().when(summonsReplyMergeService).mergeDigitalResponse(any(DigitalResponse.class), anyString());
+        doReturn(jurorPoolList).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
+        doReturn(null).when(jurorPoolRepository).save(any(JurorPool.class));
+        doReturn(true).when(featureFlags).isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG);
+
+        disqualifyJurorService.disqualifyJuror(jurorNumber, disqualifyJurorDto, courtPayload);
+
+        verify(emailDataService).emailWithdrawalLetter(jurorPoolList.getFirst(), "N");
+        verify(printDataService, never()).printWithdrawalLetter(any(JurorPool.class));
+    }
+
+    @Test
+    public void disqualifyJuror_digitalByDefaultFlagDisabled_printsWithdrawalLetter() {
+        String jurorNumber = JUROR_123456789;
+        BureauJwtPayload courtPayload = buildBureauPayload();
+        final DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDtoDigitalN();
+        List<JurorPool> jurorPoolList = createDigitalByDefaultJurorPoolList(jurorNumber, courtPayload.getOwner());
+        DigitalResponse digitalResponse = createDigitalResponse(jurorNumber);
+
+        doReturn(digitalResponse).when(jurorDigitalResponseRepository).findByJurorNumber(anyString());
+        doNothing().when(assignOnUpdateService).assignToCurrentLogin(any(DigitalResponse.class), anyString());
+        doNothing().when(summonsReplyMergeService).mergeDigitalResponse(any(DigitalResponse.class), anyString());
+        doReturn(jurorPoolList).when(jurorPoolRepository)
+            .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
+        doReturn(null).when(jurorPoolRepository).save(any(JurorPool.class));
+        doReturn(false).when(featureFlags).isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG);
+
+        disqualifyJurorService.disqualifyJuror(jurorNumber, disqualifyJurorDto, courtPayload);
+
+        verify(printDataService).printWithdrawalLetter(jurorPoolList.getFirst());
+        verify(jurorHistoryService).createWithdrawHistoryUser(jurorPoolList.getFirst(), "Withdrawal Letter", "N",
+                                                              CommunicationChannel.LETTER);
+        verify(emailDataService, never()).emailWithdrawalLetter(any(JurorPool.class), anyString());
     }
 
     @Test
@@ -450,7 +503,7 @@ public class DisqualifyJurorServiceImplTest {
 
         //Common
         // TODO add verification for printDataServiceArgumentCaptor
-        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.get(0),"N");
+        verify(jurorHistoryService).createDisqualifyHistory(jurorPoolList.getFirst(),"N");
         verify(jurorPoolRepository, times(1)).save(any(JurorPool.class));
         verify(jurorPoolRepository, times(1))
             .findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(anyString(), anyBoolean());
@@ -533,7 +586,6 @@ public class DisqualifyJurorServiceImplTest {
 
     private BureauJwtPayload buildBureauPayload() {
         return BureauJwtPayload.builder()
-            .userLevel("99")
             .login(BUREAU_USER)
             .owner("400")
             .build();
@@ -591,6 +643,15 @@ public class DisqualifyJurorServiceImplTest {
         jurorPoolList.add(jurorPool);
 
         return jurorPoolList;
+    }
+
+    private List<JurorPool> createDigitalByDefaultJurorPoolList(String jurorNumber, String owner) {
+        List<JurorPool> jurorPools = createJurorPoolList(jurorNumber, owner);
+        JurorPool jurorPool = jurorPools.getFirst();
+        jurorPool.getCourt().setDigitalByDefault(true);
+        jurorPool.getJuror().setDigitalByDefault(true);
+        jurorPool.getJuror().setDbdPreference(ReplyMethod.DIGITAL.getDescription());
+        return jurorPools;
     }
 
 }

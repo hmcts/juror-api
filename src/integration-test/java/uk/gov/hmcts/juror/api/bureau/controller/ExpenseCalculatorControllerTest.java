@@ -53,7 +53,6 @@ public class ExpenseCalculatorControllerTest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
         bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("ksalazar")
             .owner("400")
             .build());
@@ -196,4 +195,3 @@ public class ExpenseCalculatorControllerTest extends AbstractIntegrationTest {
     }
 
 }
-

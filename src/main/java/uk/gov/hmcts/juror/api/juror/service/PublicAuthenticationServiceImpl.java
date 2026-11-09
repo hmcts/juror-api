@@ -19,6 +19,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.service.JurorServiceModImpl;
 import uk.gov.hmcts.juror.api.moj.service.summonsmanagement.JurorResponseServiceImpl;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -56,11 +57,11 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
     @Transactional(noRollbackFor = InvalidJurorCredentialsException.class)
     @SuppressWarnings({"PMD.CyclomaticComplexity"})
     public PublicAuthenticationResponseDto authenticationJuror(final PublicAuthenticationRequestDto credentials) {
-        log.debug("Authenticating juror with {}", credentials);
+        log.info("Authenticating juror: {}", credentials.getJurorNumber());
 
         try {
             if (jurorResponseServiceImpl.getCommonJurorResponseOptional(credentials.getJurorNumber()).isPresent()) {
-                log.debug(JUROR_ALREADY_RESPONDED);
+                log.info("{}: {}", JUROR_ALREADY_RESPONDED, credentials.getJurorNumber());
                 throw new JurorAlreadyRespondedException(JUROR_ALREADY_RESPONDED);
             }
 
@@ -81,7 +82,7 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
                     throw new JurorAccountBlockedException("Juror account is locked");
                 }
             } else if (!isValidCredentials(juror, credentials)) {
-                log.debug("Credentials do not match");
+                log.info("Credentials do not match for juror: {}", credentials.getJurorNumber());
                 saveFailedLoginAttempts(juror);
                 throw new InvalidJurorCredentialsException("Invalid credentials");
             }
@@ -89,7 +90,7 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
             JurorPool jurorPool = jurorPoolRepository.findByJurorJurorNumberAndStatusStatusAndIsActive(
                     credentials.getJurorNumber(), IJurorStatus.SUMMONED, true)
                 .orElseThrow(() -> {
-                    log.debug(JUROR_ALREADY_RESPONDED);
+                    log.info("{}: {}", JUROR_ALREADY_RESPONDED, credentials.getJurorNumber());
                     return new JurorAlreadyRespondedException(JUROR_ALREADY_RESPONDED);
                 });
 
@@ -109,7 +110,7 @@ public class PublicAuthenticationServiceImpl implements PublicAuthenticationServ
                 .lastName(juror.getLastName())
                 .postcode(juror.getPostcode())
                 .digitalByDefault(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
-                    && jurorPool.getCourt().isDigitalByDefault())
+                    && JurorPoolUtils.isDigitalByDefault(jurorPool))
                 .roles(Collections.singletonList(JUROR_ROLE))
                 .build();
         } catch (DataAccessException dae) {

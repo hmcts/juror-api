@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class MessagesServiceImpl implements BureauProcessService {
     private static final String MESSAGE_PLACEHOLDER_MESSAGE = "MESSAGETEXT";
@@ -63,7 +63,7 @@ public class MessagesServiceImpl implements BureauProcessService {
 
     /**
      * Implements a specific job execution.
-     * Processes entries in the Juror.messages table and sends the appropriate email notifications to
+     * Processes entries in the Juror_mod.bulk_print_data table and sends the appropriate email notifications to
      * the juror
      */
     @Override

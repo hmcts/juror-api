@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
@@ -37,6 +38,7 @@ import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PoolRequestService;
 import uk.gov.hmcts.juror.api.moj.utils.DataUtils;
 import uk.gov.hmcts.juror.api.moj.utils.DateUtils;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 
 import java.time.LocalDateTime;
@@ -50,9 +52,11 @@ import java.util.List;
  */
 @Service
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects"})
 public class JurorServiceImpl implements JurorService {
+    private static final String DIGITAL_BY_DEFAULT_FEATURE_FLAG = "digital-by-default";
+
     private final ReplyTypeRepository replyTypeRepository;
 
     private final JurorDigitalResponseRepositoryMod jurorResponseRepository;
@@ -64,6 +68,7 @@ public class JurorServiceImpl implements JurorService {
     private final JurorRepository jurorRepository;
     private final JurorPoolService jurorPoolService;
     private final JurorHistoryService jurorHistoryService;
+    private final FeatureFlagConfigurationProperties featureFlags;
 
 
     @Override
@@ -117,9 +122,22 @@ public class JurorServiceImpl implements JurorService {
             return null;
         }
 
+        if (!featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+            || !JurorPoolUtils.isDigitalByDefault(jurorDetails)) {
+            log.debug("Juror {} is not eligible for DBD information", jurorNumber);
+            return null;
+        }
+
         return DbdInformationResponseDto.builder()
             .courtName(jurorDetails.getCourt().getLocCourtName())
             .serviceStartDate(jurorDetails.getReturnDate())
+            .courtAttendTime(DateUtils.TIME_FORMAT.format(getAttendTime(jurorDetails)))
+            .courtAddress1(jurorDetails.getCourt().getAddress1())
+            .courtAddress2(jurorDetails.getCourt().getAddress2())
+            .courtAddress3(jurorDetails.getCourt().getAddress3())
+            .courtAddress4(jurorDetails.getCourt().getAddress4())
+            .courtAddress5(jurorDetails.getCourt().getAddress5())
+            .courtPostcode(jurorDetails.getCourt().getPostcode())
             .build();
     }
 

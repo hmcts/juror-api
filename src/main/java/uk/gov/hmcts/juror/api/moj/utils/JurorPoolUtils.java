@@ -146,7 +146,7 @@ public final class JurorPoolUtils {
         }
 
         log.debug("{} records retrieved for juror number {}", jurorPools.size(), jurorNumber);
-        return jurorPools.get(0);
+        return jurorPools.getFirst();
     }
 
     /**
@@ -254,6 +254,11 @@ public final class JurorPoolUtils {
     public static boolean isDigitalByDefault(JurorPool jurorPool) {
         return jurorPool.getJuror().isDigitalByDefault()
             && jurorPool.getCourt().isDigitalByDefault();
+    }
+
+    public static boolean isEligibleForDigitalByDefaultEmail(JurorPool jurorPool) {
+        return isDigitalByDefault(jurorPool)
+            && JurorUtils.isDigitalPreference(jurorPool.getJuror());
     }
 
 }

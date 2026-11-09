@@ -67,7 +67,7 @@ import static uk.gov.hmcts.juror.api.bureau.domain.UserQueries.sortNameAsc;
  */
 @Service
 @Slf4j
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ = @Autowired)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects", "PMD.TooManyMethods"})
 public class UserServiceImpl implements UserService {
 
@@ -391,11 +391,11 @@ public class UserServiceImpl implements UserService {
             .collect(Collectors.toList());
 
         if (missingResponses.isEmpty()) {
-            log.warn(String.format(
-                "%s juror responses could not be found when trying to "
-                    + "retrieve staff assignments: %s", 0,
+            log.warn(
+                "{} juror responses could not be found when trying to retrieve staff assignments: {}",
+                0,
                 String.join(", ", missingResponses)
-            ));
+            );
         }
 
         // process list of responses

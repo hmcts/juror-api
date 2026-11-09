@@ -50,8 +50,18 @@ public enum HistoryCodeMod {
     NON_RESPONDED_LETTER("RNRE", "Non Responded Letter"),
     POSTPONED_LETTER("RPST", "Postponed Letter"),
     RESPONDED_LETTER("RRES", "Responded Letter"),
+    RESEND_DEFERRED_LETTER("RLDL", "Reissue Deferred Letter"),
+    RESEND_NON_DEFERRED_LETTER("RLND", "Reissue Non-Deferred Letter"),
+    RESEND_WITHDRAWAL_LETTER("RLWL", "Reissue Withdrawal Letter"),
+    RESEND_NON_EXCUSED_LETTER("RLNE", "Reissue Non-Excused Letter"),
+    RESEND_EXCUSAL_LETTER("RLEL", "Reissue Excusal Letter"),
+    RESEND_POSTPONED_LETTER("RLPT", "Reissue Postponed Letter"),
+    RESEND_NON_RESPONDED_LETTER("RLNR", "Reissue Non Responded Letter"),
+    RESEND_RESPONDED_LETTER("RLRL", "Reissue Responded Letter"),
+    RESEND_RESPONSE_PACK("RLPK", "Reissue Response Pack"),
     PRINT_SUMMONS("RSUM", "Print Summons"),
-    SUMMONS_REPRINTED("RSUP", "Summons Reprinted"),
+    SUMMONS_REPRINTED("RSUP", "Reissue Summons Letter"),
+    REVERTED_TO_SUMMONED("PSUP", "Reverted to Summoned"),
     COMPLETE_SERVICE("SCOM", "Complete Service"),
     JURY_EMPANELMENT("TADD", "Jury Empanelment"),
     ADD_TO_PANEL("VADD", "Add To Panel"),
@@ -75,7 +85,8 @@ public enum HistoryCodeMod {
     FAILED_TO_ATTEND("PFTA", "Failed To Attend"),
     CHANGE_POOL_REQUEST_DETAILS("PREQ", "Change Pool Request Details"),
     PENDING_JUROR_AUTHORISED("AUTH", "Pending Juror Authorised"),
-    ON_CALL("PONC","Juror On Call");
+    ON_CALL("PONC","Juror On Call"),
+    RESPONSE_PACK_PRINTED("RPCK", "Response Pack");
 
     private final String code;
     private final String description;

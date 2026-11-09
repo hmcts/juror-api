@@ -114,7 +114,7 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
                 jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_NUMBER_NO_RESPONSE, true);
             assertThat(jurorPools.size()).isGreaterThan(0);
 
-            JurorPool jurorPoolRecord = jurorPools.get(0);
+            JurorPool jurorPoolRecord = jurorPools.getFirst();
             Juror juror = jurorPoolRecord.getJuror();
             assertThat(juror.isResponded()).isEqualTo(Boolean.FALSE);
             assertThat(juror.getDisqualifyDate()).isNull();
@@ -159,7 +159,7 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
                 jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true);
             assertThat(jurorPools.size()).isGreaterThan(0);
 
-            JurorPool jurorPoolRecord = jurorPools.get(0);
+            JurorPool jurorPoolRecord = jurorPools.getFirst();
             Juror juror = jurorPoolRecord.getJuror();
             assertThat(juror.isResponded()).isEqualTo(Boolean.FALSE);
             assertThat(juror.getDisqualifyDate()).isNull();
@@ -191,7 +191,7 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
 
             assertThat(jurorPools.size()).isGreaterThan(0);
 
-            JurorPool jurorPoolRecord = jurorPools.get(0);
+            JurorPool jurorPoolRecord = jurorPools.getFirst();
             Juror juror = jurorPoolRecord.getJuror();
             assertThat(juror.isResponded()).isEqualTo(Boolean.TRUE);
             assertThat(juror.getDisqualifyDate()).isNotNull();
@@ -224,7 +224,7 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
                 jurorPoolRepository.findByJurorJurorNumberAndIsActive(jurorNumber, true);
             assertThat(jurorPools.size()).isGreaterThan(0);
 
-            JurorPool jurorPoolRecord = jurorPools.get(0);
+            JurorPool jurorPoolRecord = jurorPools.getFirst();
             Juror juror = jurorPoolRecord.getJuror();
             assertThat(juror.isResponded()).isEqualTo(Boolean.FALSE);
             assertThat(juror.getDisqualifyDate()).isNull();
@@ -255,7 +255,7 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
 
             assertThat(jurorPools.size()).isGreaterThan(0);
 
-            JurorPool jurorPoolRecord = jurorPools.get(0);
+            JurorPool jurorPoolRecord = jurorPools.getFirst();
             Juror juror = jurorPoolRecord.getJuror();
             assertThat(juror.isResponded()).isEqualTo(Boolean.TRUE);
             assertThat(juror.getDisqualifyDate()).isNotNull();
@@ -279,7 +279,7 @@ public class DisqualifyJurorDueToAgeControllerITest extends AbstractIntegrationT
                                                        String username,
                                                        String owner,
                                                        HttpStatus httpStatus) {
-        final URI uri = URI.create(String.format(URI_DISQUALIFY_JUROR, jurorNumber));
+        final URI uri = URI.create(URI_DISQUALIFY_JUROR.formatted(jurorNumber));
         HttpHeaders httpHeaders =
             initialiseHeaders(username, userType, Set.of(Role.MANAGER), owner);
 

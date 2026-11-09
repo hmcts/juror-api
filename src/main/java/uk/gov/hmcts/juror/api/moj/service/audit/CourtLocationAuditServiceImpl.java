@@ -143,7 +143,7 @@ public class CourtLocationAuditServiceImpl implements CourtLocationAuditService 
         }
 
         // Return the last record (most recent)
-        return history.get(history.size() - 1);
+        return history.getLast();
     }
 
     /**

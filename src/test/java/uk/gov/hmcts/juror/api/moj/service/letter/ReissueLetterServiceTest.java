@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -15,11 +16,14 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterListRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.ReissueLetterRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.JurorStatusDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.ReissueLetterReponseDto;
+import uk.gov.hmcts.juror.api.moj.controller.response.ValidateReissueLetterListResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.FormAttribute;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
@@ -28,11 +32,18 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
+import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
+import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorCommonResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.EmailDataService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PoolHistoryService;
@@ -57,6 +68,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -70,6 +82,9 @@ public class ReissueLetterServiceTest {
     private JurorPoolRepository jurorPoolRepository;
 
     @Mock
+    private JurorRepository jurorRepository;
+
+    @Mock
     private JurorStatusRepository jurorStatusRepository;
 
     @Mock
@@ -80,6 +95,15 @@ public class ReissueLetterServiceTest {
 
     @Mock
     private JurorPoolService jurorPoolService;
+
+    @Mock
+    private EmailDataService emailDataService;
+
+    @Mock
+    private FeatureFlagConfigurationProperties featureFlags;
+
+    @Mock
+    private JurorCommonResponseRepositoryMod jurorResponseRepository;
 
     @Mock
     private PoolHistoryService poolHistoryService;
@@ -113,7 +137,43 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(10);
+            assertThat(data.getFirst()).hasSize(13);
+            assertThat(data.getFirst().get(9)).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
+            assertThat(data.getFirst().get(10)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(11)).isEqualTo("LETTER");
+            assertThat(data.getFirst().get(12)).isNull();
+
+            verify(bulkPrintDataRepository, times(1))
+                .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_GRANTED.getLetterQueryConsumer());
+        }
+
+        @Test
+        void reissueDeferralLetterListSentByEmailHappyPath() {
+            String owner = "400";
+            String jurorNumber = "123456789";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            final ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+                .jurorNumber(jurorNumber)
+                .letterType(LetterType.DEFERRAL_GRANTED)
+                .build();
+
+            final List<Tuple> deferralGrantedLetters = getDeferralGrantedEmailLetters(jurorNumber);
+
+            doReturn(deferralGrantedLetters).when(bulkPrintDataRepository)
+                .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_GRANTED.getLetterQueryConsumer());
+
+            final ReissueLetterListResponseDto responseDto =
+                reissueLetterService.reissueLetterList(reissueLetterListRequestDto);
+
+            List<List<Object>> data = responseDto.getData();
+            assertThat(data).isNotNull().hasSize(1);
+            assertThat(data.getFirst()).hasSize(13);
+            assertThat(data.getFirst().get(9)).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
+            assertThat(data.getFirst().get(10)).isEqualTo("EMAIL");
+            assertThat(data.getFirst().get(11)).isEqualTo("EMAIL");
+            assertThat(data.getFirst().get(12)).isEqualTo("PENDING");
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_GRANTED.getLetterQueryConsumer());
@@ -133,7 +193,21 @@ public class ReissueLetterServiceTest {
             doReturn(LocalDate.now().minusDays(2)).when(tuple)
                 .get(ReissueLetterService.DataType.DATE_PRINTED.getExpression());
             doReturn("5229A").when(tuple).get(ReissueLetterService.DataType.FORM_CODE.getExpression());
+            doReturn(CommunicationChannel.LETTER).when(tuple)
+                .get(ReissueLetterService.DataType.COMMUNICATION_CHANNEL.getExpression());
             deferralGrantedLetters.add(tuple);
+            return deferralGrantedLetters;
+        }
+
+        private List<Tuple> getDeferralGrantedEmailLetters(String jurorNumber) {
+            final List<Tuple> deferralGrantedLetters = getDeferralGrantedLetters(jurorNumber);
+            Tuple tuple = deferralGrantedLetters.getFirst();
+            doReturn(CommunicationChannel.EMAIL).when(tuple)
+                .get(ReissueLetterService.DataType.COMMUNICATION_CHANNEL.getExpression());
+            doReturn(ReplyMethod.DIGITAL.getDescription()).when(tuple)
+                .get(ReissueLetterService.DataType.JUROR_PREFERENCE.getExpression());
+            doReturn(EmailStatus.PENDING).when(tuple)
+                .get(ReissueLetterService.DataType.EMAIL_STATUS.getExpression());
             return deferralGrantedLetters;
         }
 
@@ -182,7 +256,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(7);
+            assertThat(data.getFirst()).hasSize(10);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.CONFIRMATION.getLetterQueryConsumer());
@@ -225,7 +299,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(10);
+            assertThat(data.getFirst()).hasSize(13);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.DEFERRAL_REFUSED.getLetterQueryConsumer());
@@ -254,12 +328,12 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(10);
+            assertThat(data.getFirst()).hasSize(13);
 
-            assertThat(data.get(0).get(9))
+            assertThat(data.getFirst().get(9))
                 .as("Expect form code to be " + formCode)
                 .isEqualTo(formCode);
-            assertThat(data.get(0).get(4))
+            assertThat(data.getFirst().get(4))
                 .as("Expect status description to be Postponed")
                 .isEqualTo("Postponed");
 
@@ -289,7 +363,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(10);
+            assertThat(data.getFirst()).hasSize(13);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.WITHDRAWAL.getLetterQueryConsumer());
@@ -372,10 +446,99 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(9);
+            assertThat(data.getFirst()).hasSize(9);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.SUMMONS.getLetterQueryConsumer());
+        }
+
+        @Test
+        void reissueDbdResponseLetterListHappyPath() {
+            String owner = "400";
+            String jurorNumber = "123456789";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+            final ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+                .jurorNumber(jurorNumber)
+                .letterType(LetterType.RESPONSE)
+                .build();
+
+            final List<Tuple> dbdResponseLetters = getDbdResponseLetters(jurorNumber);
+
+            doReturn(dbdResponseLetters).when(bulkPrintDataRepository)
+                .findLetters(reissueLetterListRequestDto, LetterType.RESPONSE.getLetterQueryConsumer());
+
+            final ReissueLetterListResponseDto responseDto =
+                reissueLetterService.reissueLetterList(reissueLetterListRequestDto);
+
+            List<List<Object>> data = responseDto.getData();
+            assertThat(data).isNotNull().hasSize(1);
+            assertThat(data.getFirst()).hasSize(9);
+            assertThat(data.getFirst().get(8)).isEqualTo(FormCode.ENG_DBD_RESPONSE.getCode());
+
+            verify(bulkPrintDataRepository, times(1))
+                .findLetters(reissueLetterListRequestDto, LetterType.RESPONSE.getLetterQueryConsumer());
+        }
+
+        @Test
+        void reissueSummonsReminderLetterListDbdJurorWithDbdSummonsReturnsDbdReminderCode() {
+            String owner = "400";
+            String jurorNumber = "123456789";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+                .jurorNumber(jurorNumber)
+                .letterType(LetterType.SUMMONED_REMINDER)
+                .build();
+
+            doReturn(getSummonsReminderLetterListRow(jurorNumber)).when(bulkPrintDataRepository)
+                .findLetters(reissueLetterListRequestDto, LetterType.SUMMONED_REMINDER.getLetterQueryConsumer());
+
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+            juror.setDigitalByDefault(true);
+            doReturn(juror).when(jurorRepository).findByJurorNumber(jurorNumber);
+            doReturn(List.of(BulkPrintData.builder().extractedFlag(false).digitalComms(false).build()))
+                .when(bulkPrintDataRepository)
+                .findByJurorNoAndFormAttributeFormTypeInOrderByCreationDateDesc(
+                    jurorNumber, List.of(FormCode.ENG_DBD_SUMMONS.getCode(), FormCode.BI_DBD_SUMMONS.getCode()));
+
+            ReissueLetterListResponseDto responseDto = reissueLetterService.reissueLetterList(
+                reissueLetterListRequestDto);
+
+            assertThat(responseDto.getData()).hasSize(1);
+            assertThat(responseDto.getData().getFirst().get(6)).isEqualTo(FormCode.ENG_DBD_SUMMONS_REM.getCode());
+        }
+
+        @Test
+        void reissueSummonsReminderLetterListDbdJurorWithNormalSummonsReturnsNormalReminderCode() {
+            String owner = "400";
+            String jurorNumber = "123456789";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            ReissueLetterListRequestDto reissueLetterListRequestDto = ReissueLetterListRequestDto.builder()
+                .jurorNumber(jurorNumber)
+                .letterType(LetterType.SUMMONED_REMINDER)
+                .build();
+
+            doReturn(getSummonsReminderLetterListRow(jurorNumber)).when(bulkPrintDataRepository)
+                .findLetters(reissueLetterListRequestDto, LetterType.SUMMONED_REMINDER.getLetterQueryConsumer());
+
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+            juror.setDigitalByDefault(true);
+            doReturn(juror).when(jurorRepository).findByJurorNumber(jurorNumber);
+            doReturn(List.of()).when(bulkPrintDataRepository)
+                .findByJurorNoAndFormAttributeFormTypeInOrderByCreationDateDesc(
+                    jurorNumber, List.of(FormCode.ENG_DBD_SUMMONS.getCode(), FormCode.BI_DBD_SUMMONS.getCode()));
+
+            ReissueLetterListResponseDto responseDto = reissueLetterService.reissueLetterList(
+                reissueLetterListRequestDto);
+
+            assertThat(responseDto.getData()).hasSize(1);
+            assertThat(responseDto.getData().getFirst().get(6)).isEqualTo(FormCode.ENG_SUMMONS_REMINDER.getCode());
         }
 
         private List<Tuple> getInitialSummonsLetters(String jurorNumber) {
@@ -390,6 +553,25 @@ public class ReissueLetterServiceTest {
             doReturn("5221").when(tuple).get(ReissueLetterService.DataType.FORM_CODE.getExpression());
             initialSummonsLetters.add(tuple);
             return initialSummonsLetters;
+        }
+
+        private List<Tuple> getDbdResponseLetters(String jurorNumber) {
+            final List<Tuple> dbdResponseLetters = getInitialSummonsLetters(jurorNumber);
+            doReturn(FormCode.ENG_DBD_RESPONSE.getCode()).when(dbdResponseLetters.getFirst())
+                .get(ReissueLetterService.DataType.FORM_CODE.getExpression());
+            return dbdResponseLetters;
+        }
+
+        private List<Tuple> getSummonsReminderLetterListRow(String jurorNumber) {
+            Tuple tuple = mock(Tuple.class);
+            doReturn(jurorNumber).when(tuple).get(ReissueLetterService.DataType.JUROR_NUMBER.getExpression());
+            doReturn("FIRSTNAME").when(tuple).get(ReissueLetterService.DataType.JUROR_FIRST_NAME.getExpression());
+            doReturn("LASTNAME").when(tuple).get(ReissueLetterService.DataType.JUROR_LAST_NAME.getExpression());
+            doReturn("ABC 2DE").when(tuple).get(ReissueLetterService.DataType.JUROR_POSTCODE.getExpression());
+            doReturn(null).when(tuple).get(ReissueLetterService.DataType.DATE_PRINTED.getExpression());
+            doReturn(null).when(tuple).get(ReissueLetterService.DataType.EXTRACTED_FLAG.getExpression());
+            doReturn(null).when(tuple).get(ReissueLetterService.DataType.FORM_CODE.getExpression());
+            return List.of(tuple);
         }
 
 
@@ -415,7 +597,7 @@ public class ReissueLetterServiceTest {
 
             List<List<Object>> data = responseDto.getData();
             assertThat(data).isNotNull().hasSize(1);
-            assertThat(data.get(0)).hasSize(7);
+            assertThat(data.getFirst()).hasSize(7);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.INFORMATION.getLetterQueryConsumer());
@@ -489,8 +671,134 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.DEFERRED);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
+        }
+
+        @Test
+        void reissueDeferralLetterQueuesEmailForDigitalByDefaultJuror() {
+            String owner = "400";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            final ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                getReissueLetterRequestData(FormCode.ENG_DEFERRAL.getCode());
+            final ReissueLetterRequestDto reissueLetterRequestDto =
+                getReissueLetterRequestDto(reissueLetterRequestData);
+            final BulkPrintData bulkPrintData = getBulkPrintData(reissueLetterRequestData);
+
+            doReturn(Optional.of(bulkPrintData)).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+            doReturn(Optional.empty()).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
+
+            JurorStatus deferredStatus = new JurorStatus();
+            deferredStatus.setStatus(IJurorStatus.DEFERRED);
+            when(jurorStatusRepository.findById(IJurorStatus.DEFERRED))
+                .thenReturn(Optional.of(deferredStatus));
+
+            JurorPool jurorPool = getJurorPool(deferredStatus);
+            jurorPool.setPool(getDigitalByDefaultPoolRequest());
+            jurorPool.getJuror().setDigitalByDefault(true);
+            jurorPool.getJuror().setDbdPreference(ReplyMethod.DIGITAL.getDescription());
+
+            when(jurorPoolService.getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber()))
+                .thenReturn(jurorPool);
+            when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(true);
+            when(emailDataService.emailReissueLetter(jurorPool, FormCode.ENG_DEFERRAL)).thenReturn(true);
+
+            reissueLetterService.reissueLetter(reissueLetterRequestDto);
+
+            verify(emailDataService, times(1)).emailReissueLetter(jurorPool, FormCode.ENG_DEFERRAL);
+            verify(jurorHistoryService, times(1))
+                .createResendLetterHistory(jurorPool, HistoryCodeMod.RESEND_DEFERRED_LETTER,
+                    CommunicationChannel.EMAIL);
+            verify(printDataService, never()).printDeferralLetter(jurorPool);
+            verify(jurorPoolService, times(2))
+                .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
+        }
+
+        @Test
+        void reissueLetterOnlyExceptionQueuesLetterForDigitalByDefaultJuror() {
+            String owner = "400";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            final ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                getReissueLetterRequestData(FormCode.ENG_REQUESTINFO.getCode());
+            final ReissueLetterRequestDto reissueLetterRequestDto =
+                getReissueLetterRequestDto(reissueLetterRequestData);
+            final BulkPrintData bulkPrintData = getBulkPrintData(reissueLetterRequestData);
+
+            doReturn(Optional.of(bulkPrintData)).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+            doReturn(Optional.empty()).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
+
+            JurorStatus summonedStatus = new JurorStatus();
+            summonedStatus.setStatus(IJurorStatus.SUMMONED);
+            when(jurorStatusRepository.findById(IJurorStatus.SUMMONED))
+                .thenReturn(Optional.of(summonedStatus));
+
+            JurorPool jurorPool = getJurorPool(summonedStatus);
+            jurorPool.setPool(getDigitalByDefaultPoolRequest());
+            jurorPool.getJuror().setDigitalByDefault(true);
+            jurorPool.getJuror().setDbdPreference(ReplyMethod.DIGITAL.getDescription());
+
+            when(jurorPoolService.getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber()))
+                .thenReturn(jurorPool);
+            when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(true);
+            when(emailDataService.emailReissueLetter(jurorPool, FormCode.ENG_REQUESTINFO)).thenReturn(false);
+
+            reissueLetterService.reissueLetter(reissueLetterRequestDto);
+
+            verify(emailDataService, times(1)).emailReissueLetter(jurorPool, FormCode.ENG_REQUESTINFO);
+            verify(printDataService, times(1)).reprintRequestInfoLetter(jurorPool);
+        }
+
+        @Test
+        void reissueUnsupportedEmailForDigitalByDefaultJurorThrowsException() {
+            String owner = "400";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            final ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                getReissueLetterRequestData(FormCode.ENG_SUMMONS.getCode());
+            final ReissueLetterRequestDto reissueLetterRequestDto =
+                getReissueLetterRequestDto(reissueLetterRequestData);
+            final BulkPrintData bulkPrintData = getBulkPrintData(reissueLetterRequestData);
+
+            doReturn(Optional.of(bulkPrintData)).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+            doReturn(Optional.empty()).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
+
+            JurorStatus summonedStatus = new JurorStatus();
+            summonedStatus.setStatus(IJurorStatus.SUMMONED);
+            when(jurorStatusRepository.findById(IJurorStatus.SUMMONED))
+                .thenReturn(Optional.of(summonedStatus));
+
+            JurorPool jurorPool = getJurorPool(summonedStatus);
+            jurorPool.setPool(getDigitalByDefaultPoolRequest());
+            jurorPool.getJuror().setDigitalByDefault(true);
+            jurorPool.getJuror().setDbdPreference(ReplyMethod.DIGITAL.getDescription());
+
+            when(jurorPoolService.getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber()))
+                .thenReturn(jurorPool);
+            when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(true);
+            when(emailDataService.emailReissueLetter(jurorPool, FormCode.ENG_SUMMONS)).thenReturn(false);
+
+            assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+                reissueLetterService.reissueLetter(reissueLetterRequestDto));
+
+            verify(emailDataService, times(1)).emailReissueLetter(jurorPool, FormCode.ENG_SUMMONS);
+            verify(printDataService, never()).reprintSummonsLetter(jurorPool);
         }
 
         @ParameterizedTest
@@ -539,7 +847,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.DISQUALIFIED);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
         }
 
@@ -591,7 +899,7 @@ public class ReissueLetterServiceTest {
                 .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode());
             verify(jurorStatusRepository, times(1)).findById(Mockito.anyInt());
-            verify(jurorPoolService, times(1))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(Mockito.anyString());
         }
 
@@ -635,11 +943,11 @@ public class ReissueLetterServiceTest {
             ReissueLetterReponseDto responseDto = reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
             assertThat(responseDto.getJurors().size()).isEqualTo(1);
-            assertThat(responseDto.getJurors().get(0).getJurorNumber()).isEqualTo(
+            assertThat(responseDto.getJurors().getFirst().getJurorNumber()).isEqualTo(
                 reissueLetterRequestData.getJurorNumber());
-            assertThat(responseDto.getJurors().get(0).getFirstName()).isEqualTo("John");
-            assertThat(responseDto.getJurors().get(0).getLastName()).isEqualTo("Doe");
-            assertThat(responseDto.getJurors().get(0).getJurorStatus()).isEqualTo(
+            assertThat(responseDto.getJurors().getFirst().getFirstName()).isEqualTo("John");
+            assertThat(responseDto.getJurors().getFirst().getLastName()).isEqualTo("Doe");
+            assertThat(responseDto.getJurors().getFirst().getJurorStatus()).isEqualTo(
                 JurorStatusDto.of(disqualifiedStatus));
 
             verify(bulkPrintDataRepository, times(0))
@@ -734,7 +1042,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.DEFERRED);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
         }
 
@@ -785,8 +1093,50 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"6221", "6221C"})
+        void reissueDbdResponseLetterHappyPath(String formCode) {
+            String owner = "400";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            final ReissueLetterRequestDto.ReissueLetterRequestData
+                reissueLetterRequestData = getReissueLetterRequestData(formCode);
+
+            final ReissueLetterRequestDto reissueLetterRequestDto =
+                getReissueLetterRequestDto(reissueLetterRequestData);
+
+            final BulkPrintData bulkPrintData = getBulkPrintData(reissueLetterRequestData);
+
+            doReturn(Optional.of(bulkPrintData)).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+
+            doReturn(Optional.empty()).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
+
+            JurorStatus summoned = new JurorStatus();
+            summoned.setStatus(IJurorStatus.SUMMONED);
+            when(jurorStatusRepository.findById(IJurorStatus.SUMMONED))
+                .thenReturn(Optional.of(summoned));
+
+            PoolRequest pool = new PoolRequest();
+            pool.setPoolNumber("1");
+
+            JurorPool jurorPool = getJurorPool(summoned);
+            jurorPool.setPool(pool);
+            when(jurorPoolService.getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber()))
+                .thenReturn(jurorPool);
+
+            reissueLetterService.reissueLetter(reissueLetterRequestDto);
+
+            verify(printDataService, times(1)).printDbdResponseLetter(jurorPool);
+            verify(printDataService, never()).reprintDbdSummonsLetter(jurorPool);
         }
 
         @ParameterizedTest
@@ -817,11 +1167,12 @@ public class ReissueLetterServiceTest {
 
             doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser("555555561");
 
-            doNothing().when(jurorHistoryService).createSummonsReminderLetterHistory(jurorPool);
+            doNothing().when(jurorHistoryService)
+                .createSummonsReminderLetterHistory(jurorPool);
 
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
-            verify(bulkPrintDataRepository, never())
+            verify(bulkPrintDataRepository, times(1))
                 .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
 
@@ -830,10 +1181,257 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
-            verify(jurorPoolService, times(4))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
+            verify(jurorHistoryService, times(1)).createSummonsReminderLetterHistory(jurorPool);
+            verify(jurorHistoryService, never())
+                .createResendLetterHistory(jurorPool, HistoryCodeMod.RESEND_NON_RESPONDED_LETTER);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"5228", "5228C"})
+        void reissueInitialSummonsReminderWithNoDatePrintedCreatesReminderHistory(String formCode) {
+            String owner = "400";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            final ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                getReissueLetterRequestData("555555561", formCode, null);
+            final ReissueLetterRequestDto reissueLetterRequestDto =
+                getReissueLetterRequestDto(reissueLetterRequestData);
+
+            doReturn(Optional.empty()).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
+
+            JurorStatus summoned = new JurorStatus();
+            when(jurorStatusRepository.findById(IJurorStatus.SUMMONED))
+                .thenReturn(Optional.of(summoned));
+
+            PoolRequest pool = new PoolRequest();
+            pool.setPoolNumber("1");
+            JurorPool jurorPool = getJurorPool(summoned);
+            jurorPool.setPool(pool);
+
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser("555555561");
+
+            reissueLetterService.reissueLetter(reissueLetterRequestDto);
+
+            verify(bulkPrintDataRepository, never())
+                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+            verify(jurorHistoryService, times(1)).createSummonsReminderLetterHistory(jurorPool);
+            verify(jurorHistoryService, never())
+                .createResendLetterHistory(jurorPool, HistoryCodeMod.RESEND_NON_RESPONDED_LETTER);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "5225, 5, RESEND_EXCUSAL_LETTER",
+            "5225C, 5, RESEND_EXCUSAL_LETTER",
+            "5226, 1, RESEND_NON_EXCUSED_LETTER",
+            "5226C, 1, RESEND_NON_EXCUSED_LETTER",
+            "6221, 1, RESEND_RESPONSE_PACK",
+            "6221C, 1, RESEND_RESPONSE_PACK",
+            "5228, 1, RESEND_NON_RESPONDED_LETTER",
+            "5228C, 1, RESEND_NON_RESPONDED_LETTER",
+            "5224A, 2, RESEND_RESPONDED_LETTER",
+            "5224AC, 2, RESEND_RESPONDED_LETTER",
+            "5229A, 7, RESEND_DEFERRED_LETTER",
+            "5229AC, 7, RESEND_DEFERRED_LETTER",
+            "5226A, 2, RESEND_NON_DEFERRED_LETTER",
+            "5226AC, 2, RESEND_NON_DEFERRED_LETTER",
+            "5229, 7, RESEND_POSTPONED_LETTER",
+            "5229C, 7, RESEND_POSTPONED_LETTER",
+            "5224, 6, RESEND_WITHDRAWAL_LETTER",
+            "5224C, 6, RESEND_WITHDRAWAL_LETTER"
+        })
+        void reissueLetterCreatesResendLetterHistory(String formCode, int statusCode,
+                                                     HistoryCodeMod expectedHistoryCode) {
+            String owner = "400";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                getReissueLetterRequestData(formCode);
+            final ReissueLetterRequestDto reissueLetterRequestDto =
+                                                        getReissueLetterRequestDto(reissueLetterRequestData);
+            BulkPrintData bulkPrintData = getBulkPrintData(reissueLetterRequestData);
+
+            doReturn(Optional.of(bulkPrintData)).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+
+            doReturn(Optional.empty()).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
+
+            JurorStatus jurorStatus = new JurorStatus();
+            jurorStatus.setStatus(statusCode);
+            FormCode.getFormCode(formCode).getJurorStatus().forEach(validStatusCode -> {
+                JurorStatus validStatus = validStatusCode == statusCode ? jurorStatus : new JurorStatus();
+                validStatus.setStatus(validStatusCode);
+                when(jurorStatusRepository.findById(validStatusCode)).thenReturn(Optional.of(validStatus));
+            });
+
+            PoolRequest pool = new PoolRequest();
+            pool.setPoolNumber("1");
+            JurorPool jurorPool = getJurorPool(jurorStatus);
+            jurorPool.setPool(pool);
+
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
+
+            reissueLetterService.reissueLetter(reissueLetterRequestDto);
+
+            verify(jurorHistoryService, times(1)).createResendLetterHistory(jurorPool, expectedHistoryCode);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"5221", "5221C", "6220", "6220C"})
+        void reissueSummonsLetterCreatesSummonsReprintedHistory(String formCode) {
+            String owner = "400";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            final ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                getReissueLetterRequestData(formCode);
+            final ReissueLetterRequestDto reissueLetterRequestDto =
+                                                                getReissueLetterRequestDto(reissueLetterRequestData);
+            BulkPrintData bulkPrintData = getBulkPrintData(reissueLetterRequestData);
+
+            doReturn(Optional.of(bulkPrintData)).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+
+            doReturn(Optional.empty()).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
+
+            JurorStatus summoned = new JurorStatus();
+            summoned.setStatus(IJurorStatus.SUMMONED);
+            when(jurorStatusRepository.findById(IJurorStatus.SUMMONED))
+                .thenReturn(Optional.of(summoned));
+
+            PoolRequest pool = new PoolRequest();
+            pool.setPoolNumber("1");
+            JurorPool jurorPool = getJurorPool(summoned);
+            jurorPool.setPool(pool);
+
+            doReturn(jurorPool).when(jurorPoolService)
+                .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
+
+            reissueLetterService.reissueLetter(reissueLetterRequestDto);
+
+            verify(jurorHistoryService, times(1))
+                .createSummonLetterReprintedHistory(jurorPool, FormCode.getFormCode(formCode));
+            verify(jurorHistoryService, never())
+                .createResendLetterHistory(jurorPool, HistoryCodeMod.RESEND_RESPONSE_PACK);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"6228", "6228C"})
+        void reissueInitialDbdSummonsReminderLetterHistory(String formCode) {
+            String owner = "400";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            final ReissueLetterRequestDto.ReissueLetterRequestData
+                reissueLetterRequestData = getReissueLetterRequestData(formCode);
+
+            final ReissueLetterRequestDto reissueLetterRequestDto =
+                getReissueLetterRequestDto(reissueLetterRequestData);
+
+            doReturn(Optional.empty()).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
+
+            JurorStatus summoned = new JurorStatus();
+            when(jurorStatusRepository.findById(IJurorStatus.SUMMONED))
+                .thenReturn(Optional.of(summoned));
+
+            PoolRequest pool = new PoolRequest();
+            pool.setPoolNumber("1");
+            JurorPool jurorPool = getJurorPool(summoned);
+            jurorPool.setPool(pool);
+            jurorPool.getJuror().setDigitalByDefault(true);
+
+            BulkPrintData dbdSummons = BulkPrintData.builder()
+                .jurorNo(reissueLetterRequestData.getJurorNumber())
+                .formAttribute(FormAttribute.builder().formType(FormCode.ENG_DBD_SUMMONS.getCode()).build())
+                .creationDate(reissueLetterRequestData.getDatePrinted())
+                .extractedFlag(false)
+                .digitalComms(false)
+                .build();
+
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser("555555561");
+            doReturn(jurorPool.getJuror()).when(jurorRepository).findByJurorNumber("555555561");
+            doReturn(List.of(dbdSummons)).when(bulkPrintDataRepository)
+                .findByJurorNoAndFormAttributeFormTypeInOrderByCreationDateDesc("555555561",
+                    List.of(FormCode.ENG_DBD_SUMMONS.getCode(), FormCode.BI_DBD_SUMMONS.getCode()));
+            doNothing().when(jurorHistoryService)
+                .createSummonsReminderLetterHistory(jurorPool);
+
+            reissueLetterService.reissueLetter(reissueLetterRequestDto);
+
+            verify(bulkPrintDataRepository, times(1))
+                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+            verify(printDataService, times(1)).printDbdSummonsReminderLetter(jurorPool);
             verify(jurorHistoryService, times(1))
                 .createSummonsReminderLetterHistory(jurorPool);
+            verify(jurorHistoryService, never())
+                .createResendLetterHistory(jurorPool, HistoryCodeMod.RESEND_NON_RESPONDED_LETTER);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"6228", "6228C"})
+        void reissueInitialDbdSummonsReminderWithNoDatePrintedCreatesReminderHistory(String formCode) {
+            String owner = "400";
+
+            TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
+
+            final ReissueLetterRequestDto.ReissueLetterRequestData reissueLetterRequestData =
+                getReissueLetterRequestData("555555561", formCode, null);
+            final ReissueLetterRequestDto reissueLetterRequestDto =
+                getReissueLetterRequestDto(reissueLetterRequestData);
+
+            doReturn(Optional.empty()).when(bulkPrintDataRepository)
+                .findByJurorNumberFormCodeAndPending(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode());
+
+            JurorStatus summoned = new JurorStatus();
+            when(jurorStatusRepository.findById(IJurorStatus.SUMMONED))
+                .thenReturn(Optional.of(summoned));
+
+            PoolRequest pool = new PoolRequest();
+            pool.setPoolNumber("1");
+            JurorPool jurorPool = getJurorPool(summoned);
+            jurorPool.setPool(pool);
+            jurorPool.getJuror().setDigitalByDefault(true);
+
+            BulkPrintData dbdSummons = BulkPrintData.builder()
+                .jurorNo(reissueLetterRequestData.getJurorNumber())
+                .formAttribute(FormAttribute.builder().formType(FormCode.ENG_DBD_SUMMONS.getCode()).build())
+                .extractedFlag(false)
+                .digitalComms(false)
+                .build();
+
+            doReturn(jurorPool).when(jurorPoolService).getJurorPoolFromUser("555555561");
+            doReturn(jurorPool.getJuror()).when(jurorRepository).findByJurorNumber("555555561");
+            doReturn(List.of(dbdSummons)).when(bulkPrintDataRepository)
+                .findByJurorNoAndFormAttributeFormTypeInOrderByCreationDateDesc("555555561",
+                    List.of(FormCode.ENG_DBD_SUMMONS.getCode(), FormCode.BI_DBD_SUMMONS.getCode()));
+
+            reissueLetterService.reissueLetter(reissueLetterRequestDto);
+
+            verify(bulkPrintDataRepository, never())
+                .findByJurorNumberFormCodeDatePrinted(reissueLetterRequestData.getJurorNumber(),
+                    reissueLetterRequestData.getFormCode(), reissueLetterRequestData.getDatePrinted());
+            verify(printDataService, times(1)).printDbdSummonsReminderLetter(jurorPool);
+            verify(jurorHistoryService, times(1)).createSummonsReminderLetterHistory(jurorPool);
+            verify(jurorHistoryService, never())
+                .createResendLetterHistory(jurorPool, HistoryCodeMod.RESEND_NON_RESPONDED_LETTER);
         }
 
 
@@ -888,7 +1486,7 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
         }
 
@@ -903,6 +1501,17 @@ public class ReissueLetterServiceTest {
             jurorPool.setJuror(juror);
             jurorPool.setStatus(status);
             return jurorPool;
+        }
+
+        private static PoolRequest getDigitalByDefaultPoolRequest() {
+            CourtLocation courtLocation = new CourtLocation();
+            courtLocation.setLocCode("415");
+            courtLocation.setDigitalByDefault(true);
+
+            PoolRequest pool = new PoolRequest();
+            pool.setPoolNumber("1");
+            pool.setCourtLocation(courtLocation);
+            return pool;
         }
 
         private static BulkPrintData getBulkPrintData(
@@ -922,13 +1531,13 @@ public class ReissueLetterServiceTest {
         }
 
         @Test
-        void reissueInitialSummonsReminderLetterHistoryNotImplementedForFormCode() {
+        void reissueDbdResponseLetterCreatesResponsePackHistory() {
             String owner = "400";
 
             TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
 
             final ReissueLetterRequestDto.ReissueLetterRequestData
-                reissueLetterRequestData = getReissueLetterRequestData("5221");
+                reissueLetterRequestData = getReissueLetterRequestData("6221");
 
             final ReissueLetterRequestDto reissueLetterRequestDto =
                 getReissueLetterRequestDto(reissueLetterRequestData);
@@ -957,8 +1566,6 @@ public class ReissueLetterServiceTest {
             doReturn(jurorPool).when(jurorPoolService)
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
 
-            doNothing().when(jurorHistoryService).createSummonsReminderLetterHistory(jurorPool);
-
             reissueLetterService.reissueLetter(reissueLetterRequestDto);
 
             verify(bulkPrintDataRepository, times(1))
@@ -970,9 +1577,74 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.SUMMONED);
-            verify(jurorPoolService, times(3))
+            verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
-            verifyNoMoreInteractions(jurorHistoryService);
+            verify(jurorHistoryService, times(1))
+                .createResendLetterHistory(jurorPool, HistoryCodeMod.RESEND_RESPONSE_PACK);
+        }
+    }
+
+    @Nested
+    @DisplayName("Validate Reissue Letter Tests")
+    class ValidateReissueLetterTests {
+
+        @Test
+        void validateSummonsReminderSplitsJurorsByResponse() {
+            final ReissueLetterRequestDto request = ReissueLetterRequestDto.builder()
+                .letters(List.of(
+                    getReissueLetterRequestData("111111111", FormCode.ENG_SUMMONS_REMINDER.getCode()),
+                    getReissueLetterRequestData("222222222", FormCode.ENG_SUMMONS_REMINDER.getCode())
+                ))
+                .build();
+
+            final Juror validJuror = getJuror("111111111", "AA1 1AA");
+            final Juror invalidJuror = getJuror("222222222", "BB2 2BB");
+            JurorStatus summoned = new JurorStatus();
+            summoned.setStatus(IJurorStatus.SUMMONED);
+
+            when(jurorPoolService.getJurorPoolFromUser("111111111")).thenReturn(getJurorPool("111111111", summoned));
+            when(jurorPoolService.getJurorPoolFromUser("222222222")).thenReturn(getJurorPool("222222222", summoned));
+            when(jurorRepository.findByJurorNumber("111111111")).thenReturn(validJuror);
+            when(jurorRepository.findByJurorNumber("222222222")).thenReturn(invalidJuror);
+            when(jurorResponseRepository.findByJurorNumber("222222222"))
+                .thenReturn(mock(JurorCommonResponseRepositoryMod.AbstractResponse.class));
+
+            ValidateReissueLetterListResponseDto response =
+                reissueLetterService.validateReissueLetterRequest(request);
+
+            assertThat(response.getValidSummonedJurors()).hasSize(1);
+            assertThat(response.getValidSummonedJurors().getFirst().getJurorNumber()).isEqualTo("111111111");
+            assertThat(response.getValidSummonedJurors().getFirst().getFirstName()).isEqualTo("John");
+            assertThat(response.getValidSummonedJurors().getFirst().getLastName()).isEqualTo("Doe");
+            assertThat(response.getValidSummonedJurors().getFirst().getPostcode()).isEqualTo("AA1 1AA");
+
+            assertThat(response.getInvalidSummonedJurors()).hasSize(1);
+            assertThat(response.getInvalidSummonedJurors().getFirst().getJurorNumber()).isEqualTo("222222222");
+            assertThat(response.getInvalidSummonedJurors().getFirst().getPostcode()).isEqualTo("BB2 2BB");
+            assertThat(response.getInvalidSummonedJurors().getFirst().getErrorMessage())
+                .isEqualTo("Juror has responded");
+            verifyNoMoreInteractions(printDataService, bulkPrintDataRepository, poolHistoryService,
+                                     jurorHistoryService);
+        }
+
+        @Test
+        void validateReissueLetterRejectsNonSummonsReminderFormCode() {
+            ReissueLetterRequestDto request = ReissueLetterRequestDto.builder()
+                .letters(List.of(getReissueLetterRequestData(FormCode.ENG_DEFERRAL.getCode())))
+                .build();
+
+            assertThatExceptionOfType(MojException.BadRequest.class).isThrownBy(() ->
+                reissueLetterService.validateReissueLetterRequest(request));
+        }
+
+        private JurorPool getJurorPool(String jurorNumber, JurorStatus status) {
+            Juror juror = new Juror();
+            juror.setJurorNumber(jurorNumber);
+
+            JurorPool jurorPool = new JurorPool();
+            jurorPool.setJuror(juror);
+            jurorPool.setStatus(status);
+            return jurorPool;
         }
     }
 
@@ -1043,10 +1715,32 @@ public class ReissueLetterServiceTest {
     }
 
     private static ReissueLetterRequestDto.ReissueLetterRequestData getReissueLetterRequestData(String formCode) {
+        return getReissueLetterRequestData("555555561", formCode);
+    }
+
+    private static ReissueLetterRequestDto.ReissueLetterRequestData getReissueLetterRequestData(
+        String jurorNumber,
+        String formCode) {
+        return getReissueLetterRequestData(jurorNumber, formCode, LocalDate.now().minusDays(1));
+    }
+
+    private static ReissueLetterRequestDto.ReissueLetterRequestData getReissueLetterRequestData(
+        String jurorNumber,
+        String formCode,
+        LocalDate datePrinted) {
         return ReissueLetterRequestDto.ReissueLetterRequestData.builder()
-                .jurorNumber("555555561")
+                .jurorNumber(jurorNumber)
                 .formCode(formCode)
-                .datePrinted(LocalDate.now().minusDays(1))
+                .datePrinted(datePrinted)
                 .build();
+    }
+
+    private static Juror getJuror(String jurorNumber, String postcode) {
+        Juror juror = new Juror();
+        juror.setJurorNumber(jurorNumber);
+        juror.setFirstName("John");
+        juror.setLastName("Doe");
+        juror.setPostcode(postcode);
+        return juror;
     }
 }

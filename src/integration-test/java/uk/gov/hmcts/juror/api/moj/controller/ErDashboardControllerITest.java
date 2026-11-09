@@ -82,7 +82,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
 
             assertThat(localAuthorities).hasSize(350); // Assuming there are 350 local authorities in total
 
-            LocalAuthoritiesResponseDto.LocalAuthorityData firstLa = localAuthorities.get(0);
+            LocalAuthoritiesResponseDto.LocalAuthorityData firstLa = localAuthorities.getFirst();
             assertThat(firstLa.getLocalAuthorityCode()).isEqualTo("001");
             assertThat(firstLa.getLocalAuthorityName()).isEqualTo("West Oxfordshire");
 
@@ -119,7 +119,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
 
             assertThat(localAuthorities).hasSize(317); // Assuming there are 350 local authorities in total
 
-            LocalAuthoritiesResponseDto.LocalAuthorityData firstLa = localAuthorities.get(0);
+            LocalAuthoritiesResponseDto.LocalAuthorityData firstLa = localAuthorities.getFirst();
             assertThat(firstLa.getLocalAuthorityCode()).isEqualTo("001");
             assertThat(firstLa.getLocalAuthorityName()).isEqualTo("West Oxfordshire");
 
@@ -232,7 +232,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
                     statusResponseDto.getLocalAuthorityStatuses();
 
             assertThat(localAuthorities).hasSize(4); // there are 6 local authorities in test data
-            ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus authority = localAuthorities.get(0);
+            ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus authority = localAuthorities.getFirst();
 
             assertThat(authority.getLocalAuthorityCode()).isEqualTo("003");
             assertThat(authority.getLocalAuthorityName()).isEqualTo("Eastleigh");
@@ -285,7 +285,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
                     statusResponseDto.getLocalAuthorityStatuses();
 
             assertThat(localAuthorities).hasSize(2);
-            ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus authority = localAuthorities.get(0);
+            ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus authority = localAuthorities.getFirst();
             assertThat(authority.getLocalAuthorityCode()).isEqualTo("001");
             assertThat(authority.getLocalAuthorityName()).isEqualTo("West Oxfordshire");
             assertThat(authority.getUploadStatus()).isEqualTo(UploadStatus.UPLOADED);
@@ -327,7 +327,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
                     statusResponseDto.getLocalAuthorityStatuses();
 
             assertThat(localAuthorities).hasSize(1);
-            ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus authority = localAuthorities.get(0);
+            ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus authority = localAuthorities.getFirst();
             assertThat(authority.getLocalAuthorityCode()).isEqualTo("003");
             assertThat(authority.getLocalAuthorityName()).isEqualTo("Eastleigh");
             assertThat(authority.getUploadStatus()).isEqualTo(UploadStatus.NOT_UPLOADED);
@@ -391,7 +391,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
                     statusResponseDto.getLocalAuthorityStatuses();
 
             assertThat(localAuthorities).hasSize(1);
-            ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus authority = localAuthorities.get(0);
+            ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus authority = localAuthorities.getFirst();
             assertThat(authority.getLocalAuthorityCode()).isEqualTo("001");
             assertThat(authority.getLocalAuthorityName()).isEqualTo("West Oxfordshire");
             assertThat(authority.getUploadStatus()).isEqualTo(UploadStatus.UPLOADED);
@@ -430,7 +430,7 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
                     statusResponseDto.getLocalAuthorityStatuses();
 
             assertThat(localAuthorities).hasSize(6); // there are 6 local authorities in test data
-            ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus authority = localAuthorities.get(0);
+            ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus authority = localAuthorities.getFirst();
             assertThat(authority.getLocalAuthorityCode()).isEqualTo("001");
             assertThat(authority.getLocalAuthorityName()).isEqualTo("West Oxfordshire");
             assertThat(authority.getUploadStatus()).isEqualTo(UploadStatus.UPLOADED);
@@ -506,7 +506,8 @@ class ErDashboardControllerITest extends AbstractIntegrationTest {
                                            "test_user2@localauthority1.council.uk");
             assertThat(infoResponseDto.getNotes()).isEqualTo("some test notes");
             assertThat(infoResponseDto.getReminderHistory()).hasSize(1);
-            LocalAuthorityInfoResponseDto.ReminderHistoryInfo reminder1 = infoResponseDto.getReminderHistory().get(0);
+            LocalAuthorityInfoResponseDto.ReminderHistoryInfo reminder1 =
+                infoResponseDto.getReminderHistory().getFirst();
             assertThat(reminder1.getSentBy()).isEqualTo("bureau_user");
             assertThat(reminder1.getSentTo()).isEqualTo("test_user1@localauthority1.council.uk");
             // needs to be a range rather than exact time as it will be set to now() in test data

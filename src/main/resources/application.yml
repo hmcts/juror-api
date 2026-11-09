@@ -162,7 +162,11 @@ uk:
             url: /job/{job-key}/task/{task-id}/status
             retry-delay: 1000
             max-retries: 3
-
+        portal:
+          scheme: https
+          host: ${PUBLIC_HOST:localhost:3000}
+          document-path: /assets/documents/
+          map-path: /assets/documents/court-information/
 ---
 spring:
   config:
@@ -214,6 +218,12 @@ welshtranslations:
     - Hydref
     - Tachwedd
     - Rhagfyr
+uk:
+  gov:
+    hmcts:
+      juror:
+        portal:
+          scheme: http
 ---
 spring:
   config:
@@ -221,6 +231,11 @@ spring:
       on-profile: test
 testing:
   fix-clock: true
+server:
+  error:
+    include-message: always
+    include-exception: true
+    include-binding-errors: always
 jwt:
   secret:
     hmac: dGVzdC1obWFjLXNlY3JldC1rZXktZm9yLWludGVncmF0aW9uLXRlc3RzLW1pbmltdW0tMjU2LWJpdHMtcmVxdWlyZWQtZm9yLWhzMjU2LWFsZ29yaXRobQ==
@@ -239,6 +254,8 @@ uk:
             host: localhost
             port: 8090
             scheme: http
+        portal:
+          scheme: http
 ---
 spring:
   config:

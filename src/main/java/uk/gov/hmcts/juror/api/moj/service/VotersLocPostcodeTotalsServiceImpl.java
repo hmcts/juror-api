@@ -48,8 +48,8 @@ public class VotersLocPostcodeTotalsServiceImpl implements VotersLocPostcodeTota
                 totalList.set(0, locPostcodeTotals.getTotal());
 
             }
-            postcodeTotals.computeIfPresent(postcode, (key, val) -> val + totalList.get(0));
-            postcodeTotals.putIfAbsent(postcode, totalList.get(0));
+            postcodeTotals.computeIfPresent(postcode, (key, val) -> val + totalList.getFirst());
+            postcodeTotals.putIfAbsent(postcode, totalList.getFirst());
         }
 
         postcodeTotals.forEach((key, val) -> courtCatchmentItemsList.add(

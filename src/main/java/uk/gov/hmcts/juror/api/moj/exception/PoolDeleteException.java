@@ -16,7 +16,7 @@ public class PoolDeleteException extends RuntimeException {
     public static class UnableToDeletePoolException extends PoolDeleteException {
 
         public UnableToDeletePoolException(String poolNumber) {
-            super(String.format("Could not delete pool with Pool Number: %s", poolNumber));
+            super("Could not delete pool with Pool Number: %s".formatted(poolNumber));
         }
     }
 
@@ -27,7 +27,7 @@ public class PoolDeleteException extends RuntimeException {
     public static class PoolHasMembersException extends PoolDeleteException {
 
         public PoolHasMembersException(String poolNumber) {
-            super(String.format("This pool has members and cannot be deleted, Pool Number: %s", poolNumber));
+            super("This pool has members and cannot be deleted, Pool Number: %s".formatted(poolNumber));
         }
     }
 
@@ -38,8 +38,7 @@ public class PoolDeleteException extends RuntimeException {
     public static class InsufficientPermission extends PoolDeleteException {
 
         public InsufficientPermission(String login, String poolNumber) {
-            super(String.format(
-                "User %s has insufficient permission to delete a pool, Pool Number: %s",
+            super("User %s has insufficient permission to delete a pool, Pool Number: %s".formatted(
                 login,
                 poolNumber
             ));
@@ -53,7 +52,7 @@ public class PoolDeleteException extends RuntimeException {
     public static class PoolIsCurrentlyLocked extends PoolDeleteException {
 
         public PoolIsCurrentlyLocked(String poolNumber) {
-            super(String.format("The pool is currently locked and cannot be deleted, Pool Number: %s", poolNumber));
+            super("The pool is currently locked and cannot be deleted, Pool Number: %s".formatted(poolNumber));
         }
     }
 

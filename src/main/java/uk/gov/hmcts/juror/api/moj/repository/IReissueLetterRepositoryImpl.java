@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.repository;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.EntityPathBase;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
@@ -110,7 +112,7 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
                 query.where(BULK_PRINT_DATA.formAttribute.formType.in(request.getLetterType().getFormCodes().stream()
                     .map(FormCode::getCode).toList()));
             }
-            query.where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false)));
+            query.where(pendingFilter());
         } else if (request.getJurorName() != null) {
             query.where(QJuror.juror.firstName.concat(" ").concat(QJuror.juror.lastName).toLowerCase()
                 .likeIgnoreCase("%" + request.getJurorName().toLowerCase(Settings.LOCALE) + "%"));
@@ -145,7 +147,7 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         JPAQuery<BulkPrintData> query = queryFactory.selectFrom(BULK_PRINT_DATA)
             .where(BULK_PRINT_DATA.jurorNo.eq(jurorNumber))
             .where(BULK_PRINT_DATA.formAttribute.formType.eq(formCode))
-            .where(BULK_PRINT_DATA.extractedFlag.isNull().or(BULK_PRINT_DATA.extractedFlag.eq(false)));
+            .where(pendingFilter());
 
         return Optional.ofNullable(query.fetchOne());
     }
@@ -186,9 +188,15 @@ public class IReissueLetterRepositoryImpl implements IReissueLetterRepository {
         JPAQuery<BulkPrintData> query = queryFactory.selectFrom(BULK_PRINT_DATA)
             .where(BULK_PRINT_DATA.jurorNo.eq(jurorNumber))
             .where(BULK_PRINT_DATA.formAttribute.formType.eq(formCode))
-            .where(BULK_PRINT_DATA.extractedFlag.eq(false))
+            .where(pendingFilter())
             .orderBy(BULK_PRINT_DATA.creationDate.desc());
 
         return Optional.ofNullable(query.fetchFirst());
+    }
+
+    private static BooleanExpression pendingFilter() {
+        return BULK_PRINT_DATA.extractedFlag.isNull()
+            .or(BULK_PRINT_DATA.extractedFlag.eq(false))
+            .or(BULK_PRINT_DATA.emailStatus.eq(EmailStatus.PENDING));
     }
 }

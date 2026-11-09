@@ -60,7 +60,6 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void initHeaders() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("BUREAU_USER")
             .owner("400")
             .build());
@@ -74,7 +73,6 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("COURT_USER")
             .owner(owner)
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
@@ -159,7 +157,7 @@ class CourtLocationControllerITest extends AbstractIntegrationTest {
     private CourtLocationDataDto[] templateExchangeAllCourtLocationsByPostcode(String postcode, String userType,
                                                                                String owner, HttpStatus httpStatus) {
         final URI uri =
-            URI.create(String.format("/api/v1/moj/court-location/catchment-areas?postcode=%s", postcode));
+            URI.create("/api/v1/moj/court-location/catchment-areas?postcode=%s".formatted(postcode));
         httpHeaders = initialiseHeaders(userType, UserType.BUREAU, Set.of(Role.MANAGER), owner);
         RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, GET, uri);
         if (httpStatus.is2xxSuccessful()) {

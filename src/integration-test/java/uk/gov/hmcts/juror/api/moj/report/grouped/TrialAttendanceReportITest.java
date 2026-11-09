@@ -35,6 +35,7 @@ class TrialAttendanceReportITest extends AbstractGroupedReportControllerITest {
     protected StandardReportRequest getValidPayload() {
         return addReportType(StandardReportRequest.builder()
                                  .trialNumber("T100000002")
+                                 .locCode("415")
                                  .build());
     }
 

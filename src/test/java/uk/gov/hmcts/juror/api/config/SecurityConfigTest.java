@@ -220,7 +220,6 @@ class SecurityConfigTest {
                 final Map<String, Object> claimsMap = new HashMap<>();
                 claimsMap.put("login", payload.getLogin());
                 claimsMap.put("owner", payload.getOwner());
-                claimsMap.put("userLevel", payload.getUserLevel());
                 claimsMap.put("staff", payload.getStaff());
                 return claimsMap;
             }
@@ -245,7 +244,7 @@ class SecurityConfigTest {
                 claimsMap.put(Claims.ISSUED_AT, Date.from(Instant.now().atZone(ZoneId.systemDefault()).toInstant()));
                 return Jwts.builder()
                     .claims(claimsMap)
-                    .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)))
+                    .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret)), Jwts.SIG.HS256)
                     .compact();
             }
 

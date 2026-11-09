@@ -63,6 +63,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_AVAILABLE;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.NUMBER_OF_JURORS_EXCEEDS_LIMITS;
+import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.PANEL_MEMBER_ALREADY_PROCESSED;
 
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -106,12 +107,12 @@ class PanelServiceImplTest {
 
         verify(appearanceRepository, times(1)).getAvailableJurors("415");
 
-        assertThat(getAvailableJurors.get(0).getAvailableJurors()).isEqualTo(10);
-        assertThat(getAvailableJurors.get(0).getCourtLocationCode()).isEqualTo("415");
-        assertThat(getAvailableJurors.get(0).getCourtLocation()).isEqualTo("Chester");
-        assertThat(getAvailableJurors.get(0).getServiceStartDate())
+        assertThat(getAvailableJurors.getFirst().getAvailableJurors()).isEqualTo(10);
+        assertThat(getAvailableJurors.getFirst().getCourtLocationCode()).isEqualTo("415");
+        assertThat(getAvailableJurors.getFirst().getCourtLocation()).isEqualTo("Chester");
+        assertThat(getAvailableJurors.getFirst().getServiceStartDate())
             .isEqualTo(now());
-        assertThat(getAvailableJurors.get(0).getPoolNumber()).isEqualTo("111111111");
+        assertThat(getAvailableJurors.getFirst().getPoolNumber()).isEqualTo("111111111");
     }
 
     @Test
@@ -134,7 +135,7 @@ class PanelServiceImplTest {
         doReturn(createJurorPool(jurorNumbers, "415231201")).when(appearanceRepository)
             .retrieveAllJurors(locCode, date);
 
-        doReturn(createJurorPool(jurorNumbers, poolNumbers.get(0))).when(appearanceRepository)
+        doReturn(createJurorPool(jurorNumbers, poolNumbers.getFirst())).when(appearanceRepository)
             .getJurorsInPools(locCode, poolNumbers, date);
         doReturn(Optional.of(createAppearance("121212121"))).when(appearanceRepository)
             .findByCourtLocationLocCodeAndJurorNumberAndAttendanceDate(locCode, "121212121", now());
@@ -155,9 +156,9 @@ class PanelServiceImplTest {
         verify(appearanceRepository, never()).retrieveAllJurors(locCode, date);
         verify(panelRepository, times(2)).saveAndFlush(any());
         assertThat(dtoList).as("Expected size to be two").hasSize(2);
-        assertThat(dtoList.get(0).getFirstName()).as("Expected first name to be FNAME").isEqualTo("FNAME");
-        assertThat(dtoList.get(0).getLastName()).as("Expected first name to be LNAME").isEqualTo("LNAME");
-        assertThat(dtoList.get(0).getJurorStatus()).as("Expected status to be Panelled").isEqualTo("Panelled");
+        assertThat(dtoList.getFirst().getFirstName()).as("Expected first name to be FNAME").isEqualTo("FNAME");
+        assertThat(dtoList.getFirst().getLastName()).as("Expected first name to be LNAME").isEqualTo("LNAME");
+        assertThat(dtoList.getFirst().getJurorStatus()).as("Expected status to be Panelled").isEqualTo("Panelled");
 
     }
 
@@ -192,9 +193,9 @@ class PanelServiceImplTest {
         verify(appearanceRepository, times(1)).retrieveAllJurors(locCode, date);
         verify(panelRepository, times(2)).saveAndFlush(any());
         assertThat(dtoList).as("Expected size to be two").hasSize(2);
-        assertThat(dtoList.get(0).getFirstName()).as("Expected first name to be FNAME").isEqualTo("FNAME");
-        assertThat(dtoList.get(0).getLastName()).as("Expected first name to be LNAME").isEqualTo("LNAME");
-        assertThat(dtoList.get(0).getJurorStatus()).as("Expected status to be Panelled").isEqualTo("Panelled");
+        assertThat(dtoList.getFirst().getFirstName()).as("Expected first name to be FNAME").isEqualTo("FNAME");
+        assertThat(dtoList.getFirst().getLastName()).as("Expected first name to be LNAME").isEqualTo("LNAME");
+        assertThat(dtoList.getFirst().getJurorStatus()).as("Expected status to be Panelled").isEqualTo("Panelled");
 
     }
 
@@ -232,9 +233,9 @@ class PanelServiceImplTest {
         verify(appearanceRepository, times(1)).retrieveAllJurors(locCode, date);
         verify(panelRepository, times(2)).saveAndFlush(any());
         assertThat(dtoList).as("Expected size to be two").hasSize(2);
-        assertThat(dtoList.get(0).getFirstName()).as("Expected first name to be FNAME").isEqualTo("FNAME");
-        assertThat(dtoList.get(0).getLastName()).as("Expected first name to be LNAME").isEqualTo("LNAME");
-        assertThat(dtoList.get(0).getJurorStatus()).as("Expected status to be Panelled").isEqualTo("Panelled");
+        assertThat(dtoList.getFirst().getFirstName()).as("Expected first name to be FNAME").isEqualTo("FNAME");
+        assertThat(dtoList.getFirst().getLastName()).as("Expected first name to be LNAME").isEqualTo("LNAME");
+        assertThat(dtoList.getFirst().getJurorStatus()).as("Expected status to be Panelled").isEqualTo("Panelled");
     }
 
     @Test
@@ -398,9 +399,9 @@ class PanelServiceImplTest {
         verify(panelRepository, times(1))
             .findByTrialTrialNumberAndTrialCourtLocationLocCode("T100000025", "415");
 
-        assertThat(empanelListDtoCall.getEmpanelList().get(0).getFirstName()).isEqualTo("FNAME");
-        assertThat(empanelListDtoCall.getEmpanelList().get(0).getLastName()).isEqualTo("LNAME");
-        assertThat(empanelListDtoCall.getEmpanelList().get(0).getStatus()).isNull();
+        assertThat(empanelListDtoCall.getEmpanelList().getFirst().getFirstName()).isEqualTo("FNAME");
+        assertThat(empanelListDtoCall.getEmpanelList().getFirst().getLastName()).isEqualTo("LNAME");
+        assertThat(empanelListDtoCall.getEmpanelList().getFirst().getStatus()).isNull();
 
     }
 
@@ -410,24 +411,25 @@ class PanelServiceImplTest {
         int totalUnusedJurors = 0;
         List<Panel> panelMembers = createPanelMembers(totalPanelMembers);
         BureauJwtPayload payload = buildPayload();
+        JurorListRequestDto jurorListRequestDto =
+            createEmpanelledListRequestDto(panelMembers);
 
         for (Panel member : panelMembers) {
+            final PanelResult requestedResult = member.getResult();
+            member.setResult(null);
             doReturn(member).when(panelRepository)
                 .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
                     "T100000025", "415", member.getJurorNumber());
             doReturn(Optional.of(createAppearance(member.getJurorNumber()))).when(appearanceRepository)
                 .findByLocCodeAndJurorNumberAndAttendanceDateAndAppearanceStage(
                     "415", member.getJurorNumber(), now(), AppearanceStage.CHECKED_IN);
-            if (member.getResult() != PanelResult.JUROR) {
+            if (requestedResult != PanelResult.JUROR) {
                 totalUnusedJurors++;
             }
         }
 
         doReturn(Optional.of(createTrial())).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),
             anyString());
-
-        JurorListRequestDto jurorListRequestDto =
-            createEmpanelledListRequestDto(panelMembers);
 
         panelService.processEmpanelled(jurorListRequestDto, payload);
 
@@ -447,8 +449,11 @@ class PanelServiceImplTest {
         for (Panel panelMember : panelMembers) {
             panelMember.setResult(PanelResult.CHALLENGED);
         }
+        JurorListRequestDto jurorListRequestDto =
+            createEmpanelledListRequestDto(panelMembers);
 
         for (Panel member : panelMembers) {
+            member.setResult(null);
             doReturn(member).when(panelRepository)
                 .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
                     "T100000025",
@@ -461,9 +466,6 @@ class PanelServiceImplTest {
 
         doReturn(Optional.of(createTrial())).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),
             anyString());
-
-        JurorListRequestDto jurorListRequestDto =
-            createEmpanelledListRequestDto(panelMembers);
 
         BureauJwtPayload payload = buildPayload();
         panelService.processEmpanelled(jurorListRequestDto, payload);
@@ -516,11 +518,13 @@ class PanelServiceImplTest {
     void processEmpanelledWrongJurorStatusSet() {
         Panel panel = createSinglePanelData();
         panel.setResult(PanelResult.RETURNED);
+        panel.setCompleted(false);
         doReturn(panel).when(panelRepository)
             .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(anyString(), anyString(),
                 anyString());
         JurorListRequestDto jurorListRequestDto =
             createEmpanelledListRequestDto(Collections.singletonList(panel));
+        panel.setResult(null);
         jurorListRequestDto.setNumberRequested(1);
         BureauJwtPayload payload = buildPayload();
         assertThrows(MojException.BadRequest.class, () ->
@@ -529,12 +533,37 @@ class PanelServiceImplTest {
     }
 
     @Test
+    void processEmpanelledCompletedPanelMemberCannotBeProcessedAgain() {
+        Panel panel = createSinglePanelData();
+        panel.setResult(PanelResult.NOT_USED);
+        panel.setCompleted(true);
+        doReturn(panel).when(panelRepository)
+            .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(anyString(), anyString(),
+                anyString());
+        JurorListRequestDto jurorListRequestDto =
+            createEmpanelledListRequestDto(Collections.singletonList(panel));
+        jurorListRequestDto.setNumberRequested(1);
+        BureauJwtPayload payload = buildPayload();
+
+        MojException.BusinessRuleViolation exception = assertThrows(MojException.BusinessRuleViolation.class, () ->
+            panelService.processEmpanelled(jurorListRequestDto, payload));
+
+        assertThat(exception.getErrorCode()).isEqualTo(PANEL_MEMBER_ALREADY_PROCESSED);
+        verify(panelRepository, never()).saveAndFlush(any());
+        verify(appearanceRepository, never()).saveAndFlush(any());
+        verify(jurorHistoryService, never()).createReturnFromPanelHistory(any(), any());
+    }
+
+    @Test
     void processEmpanelledNoAppearance() {
         final int totalPanelMembers = 10;
         List<Panel> panelMembers = createPanelMembers(totalPanelMembers);
         BureauJwtPayload payload = buildPayload();
+        JurorListRequestDto jurorListRequestDto =
+            createEmpanelledListRequestDto(panelMembers);
 
         for (Panel member : panelMembers) {
+            member.setResult(null);
             doReturn(member).when(panelRepository)
                 .findByTrialTrialNumberAndTrialCourtLocationLocCodeAndJurorJurorNumber(
                     "T100000025", "415", member.getJurorNumber());
@@ -545,9 +574,6 @@ class PanelServiceImplTest {
 
         doReturn(Optional.of(createTrial())).when(trialRepository).findByTrialNumberAndCourtLocationLocCode(anyString(),
             anyString());
-
-        JurorListRequestDto jurorListRequestDto =
-            createEmpanelledListRequestDto(panelMembers);
 
         assertThatExceptionOfType(MojException.BusinessRuleViolation.class).isThrownBy(() ->
             panelService.processEmpanelled(jurorListRequestDto, payload));
@@ -575,7 +601,7 @@ class PanelServiceImplTest {
 
         List<PanelListDto> dtoList = panelService.getJurySummary("T11111111", "415");
         assertThat(dtoList).as("Expected size to be 1").hasSize(1);
-        assertThat(dtoList.get(0).getJurorStatus()).as("Expected status to be Juror")
+        assertThat(dtoList.getFirst().getJurorStatus()).as("Expected status to be Juror")
             .isEqualTo("Juror");
     }
 
@@ -1234,7 +1260,6 @@ class PanelServiceImplTest {
 
     private BureauJwtPayload buildPayload() {
         return BureauJwtPayload.builder()
-            .userLevel("99")
             .login("SOME_USER")
             .owner("415")
             .build();

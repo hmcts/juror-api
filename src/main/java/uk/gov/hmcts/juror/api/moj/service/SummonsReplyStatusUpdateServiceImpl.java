@@ -116,7 +116,7 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         // need a valid paper response at this stage
         if (paperResponse == null) {
             throw new MojException.NotFound(
-                String.format("Juror: %s. Cannot find paper response", jurorNumber), null);
+                "Juror: %s. Cannot find paper response".formatted(jurorNumber), null);
         }
 
         // if response is closed already and new processing status is closed (responded) and juror is not
@@ -565,8 +565,8 @@ public class SummonsReplyStatusUpdateServiceImpl implements SummonsReplyStatusUp
         Juror juror = jurorPool.getJuror();
         if (reasonableAdjustments.size() > 1) {
             juror.setReasonableAdjustmentCode(multipleAdjustmentsCode);
-        } else if (reasonableAdjustments.size() == 1 && reasonableAdjustments.get(0) != null) {
-            juror.setReasonableAdjustmentCode(reasonableAdjustments.get(0).getReasonableAdjustment().getCode());
+        } else if (reasonableAdjustments.size() == 1 && reasonableAdjustments.getFirst() != null) {
+            juror.setReasonableAdjustmentCode(reasonableAdjustments.getFirst().getReasonableAdjustment().getCode());
         }
         jurorResponseService.getCommonJurorResponseOptional(jurorNumber)
             .ifPresent(abstractResponse ->

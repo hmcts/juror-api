@@ -49,7 +49,7 @@ public class EditPoolServiceImpl implements EditPoolService {
     @Transactional
     public void editPoolJurorsRequested(BureauJwtPayload payload, PoolEditRequestDto poolEditRequestDto) {
         String poolNumber = poolEditRequestDto.getPoolNumber();
-        log.trace(String.format("Enter editPoolJurorsRequested for Pool Number: %s", poolNumber));
+        log.trace("Enter editPoolJurorsRequested for Pool Number: {}", poolNumber);
 
         Optional<PoolRequest> poolRequestOpt = poolRequestRepository.findByPoolNumber(poolNumber);
 
@@ -75,7 +75,7 @@ public class EditPoolServiceImpl implements EditPoolService {
             savePoolComments(payload, poolRequest, noRequested, poolEditRequestDto.getReasonForChange());
         }
 
-        log.trace(String.format("Edited a pool request with Pool Number: %s", poolNumber));
+        log.trace("Edited a pool request with Pool Number: {}", poolNumber);
     }
 
     private void updatePoolHistory(BureauJwtPayload payload, String poolNumber, String otherInformation) {
@@ -112,7 +112,7 @@ public class EditPoolServiceImpl implements EditPoolService {
     @Transactional
     public void editPoolTotalCapacity(BureauJwtPayload payload, PoolEditRequestDto poolEditRequestDto) {
         String poolNumber = poolEditRequestDto.getPoolNumber();
-        log.trace(String.format("Enter editPoolTotalCapacity for Pool Number: %s", poolNumber));
+        log.trace("Enter editPoolTotalCapacity for Pool Number: {}", poolNumber);
 
         Optional<PoolRequest> poolRequestOpt = poolRequestRepository.findByPoolNumber(poolNumber);
 
@@ -145,9 +145,9 @@ public class EditPoolServiceImpl implements EditPoolService {
             }
 
             savePoolComments(payload, poolRequest, totalRequired, poolEditRequestDto.getReasonForChange());
-            log.trace(String.format("Edited a pool request with Pool Number: %s", poolNumber));
+            log.trace("Edited a pool request with Pool Number: {}", poolNumber);
         }
-        log.trace(String.format("Exit editPoolTotalCapacity for Pool Number: %s", poolNumber));
+        log.trace("Exit editPoolTotalCapacity for Pool Number: {}", poolNumber);
     }
 
     private void validateTotalRequested(Integer totalRequested, int noRequested, String poolNumber, String login) {

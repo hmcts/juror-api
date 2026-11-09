@@ -398,7 +398,7 @@ class JurorExpenseControllerTest {
                 when(jurorExpenseService
                     .getEnteredExpense(TestConstants.VALID_COURT_LOCATION,
                         TestConstants.VALID_JUROR_NUMBER,
-                        request.getExpenseDates().get(0))
+                        request.getExpenseDates().getFirst())
                 ).thenReturn(GetEnteredExpenseResponse.builder()
                     .totalPaid(new BigDecimal("1.23"))
                     .build());
@@ -421,7 +421,7 @@ class JurorExpenseControllerTest {
                 verify(jurorExpenseService, times(1))
                     .getEnteredExpense(TestConstants.VALID_COURT_LOCATION,
                         TestConstants.VALID_JUROR_NUMBER,
-                        request.getExpenseDates().get(0));
+                        request.getExpenseDates().getFirst());
             }
         }
     }

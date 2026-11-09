@@ -254,7 +254,7 @@ class PoolCreateServiceTest {
         Mockito.verify(votersServiceImpl, Mockito.times(1)).getVoters(Mockito.any());
         Mockito.verify(poolMemberSequenceService, Mockito.times(1))
             .getPoolMemberSequenceNumber(poolCreateRequestDto.getPoolNumber());
-        Mockito.verify(poolRequestRepository, Mockito.times(1)).findById(Mockito.any());
+        Mockito.verify(poolRequestRepository, Mockito.times(2)).findById(Mockito.any());
 
         Mockito.verify(votersServiceImpl, Mockito.times(1))
             .markVotersAsSelected(Mockito.any(), Mockito.any());
@@ -275,11 +275,17 @@ class PoolCreateServiceTest {
         ArgumentCaptor<List<Juror>> jurorsCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(jurorRepository).saveAll(jurorsCaptor.capture());
 
-        Juror juror = jurorsCaptor.getValue().get(0);
+        Juror juror = jurorsCaptor.getValue().getFirst();
         assertThat(juror.isDigitalByDefault()).isTrue();
         assertThat(juror.getDbdPreference()).isEqualTo(ReplyMethod.DIGITAL.getDescription());
         Mockito.verify(printDataService, Mockito.never()).bulkPrintSummonsLetter(Mockito.any());
-        Mockito.verify(jurorHistoryRepository).saveAll(List.of());
+        Mockito.verify(printDataService).bulkPrintDbdSummonsLetter(Mockito.any());
+
+        ArgumentCaptor<List<JurorHistory>> jurorHistoryCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(jurorHistoryRepository).saveAll(jurorHistoryCaptor.capture());
+        JurorHistory jurorHistory = jurorHistoryCaptor.getValue().getFirst();
+        assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
+        assertThat(jurorHistory.getOtherInformation()).isEqualTo("DBD Summons letter");
     }
 
     @Test
@@ -291,16 +297,41 @@ class PoolCreateServiceTest {
         ArgumentCaptor<List<Juror>> jurorsCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(jurorRepository).saveAll(jurorsCaptor.capture());
 
-        Juror juror = jurorsCaptor.getValue().get(0);
+        Juror juror = jurorsCaptor.getValue().getFirst();
         assertThat(juror.isDigitalByDefault()).isFalse();
         assertThat(juror.getDbdPreference()).isNull();
         Mockito.verify(printDataService).bulkPrintSummonsLetter(Mockito.any());
 
         ArgumentCaptor<List<JurorHistory>> jurorHistoryCaptor = ArgumentCaptor.forClass(List.class);
         Mockito.verify(jurorHistoryRepository).saveAll(jurorHistoryCaptor.capture());
-        JurorHistory jurorHistory = jurorHistoryCaptor.getValue().get(0);
+        JurorHistory jurorHistory = jurorHistoryCaptor.getValue().getFirst();
         assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
         assertThat(jurorHistory.getOtherInformation()).isNull();
+    }
+
+    @Test
+    void createPool_usesPoolCourtForDigitalByDefaultWhenCatchmentCourtDiffers() throws SQLException {
+        PoolCreateRequestDto poolCreateRequestDto = setupCreatePoolDigitalByDefaultTest(true, false);
+        poolCreateRequestDto.setCatchmentArea("419");
+
+        CourtLocation catchmentCourtLocation = new CourtLocation();
+        catchmentCourtLocation.setLocCode("419");
+        catchmentCourtLocation.setDigitalByDefault(true);
+        Mockito.lenient().when(courtLocationRepository.findByLocCode(poolCreateRequestDto.getCatchmentArea()))
+            .thenReturn(Optional.of(catchmentCourtLocation));
+
+        poolCreateService.createPool(buildPayload("400"), poolCreateRequestDto);
+
+        ArgumentCaptor<List<Juror>> jurorsCaptor = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(jurorRepository).saveAll(jurorsCaptor.capture());
+
+        Juror juror = jurorsCaptor.getValue().getFirst();
+        assertThat(juror.isDigitalByDefault()).isFalse();
+        assertThat(juror.getDbdPreference()).isNull();
+        Mockito.verify(printDataService).bulkPrintSummonsLetter(Mockito.any());
+        Mockito.verify(printDataService, Mockito.never()).bulkPrintDbdSummonsLetter(Mockito.any());
+
+        Mockito.verify(courtLocationRepository).findByLocCode("415");
     }
 
     @Test
@@ -735,7 +766,6 @@ class PoolCreateServiceTest {
 
     private BureauJwtPayload buildPayload(String owner) {
         return BureauJwtPayload.builder()
-            .userLevel("99")
             .login("SOME_USER")
             .owner(owner)
             .build();
@@ -773,7 +803,7 @@ class PoolCreateServiceTest {
         courtLocation.setDigitalByDefault(courtDigitalByDefault);
 
         Mockito.when(featureFlags.isEnabled("digital-by-default")).thenReturn(featureFlagEnabled);
-        Mockito.when(courtLocationRepository.findByLocCode(poolCreateRequestDto.getCatchmentArea()))
+        Mockito.when(courtLocationRepository.findByLocCode(courtLocation.getLocCode()))
             .thenReturn(Optional.of(courtLocation));
         Mockito.when(votersServiceImpl.getVoters(Mockito.any())).thenReturn(List.of(createValidVoter()));
         Mockito.when(poolMemberSequenceService.getPoolMemberSequenceNumber(Mockito.any())).thenReturn(1);

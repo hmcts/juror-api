@@ -94,16 +94,14 @@ public class ManagePoolsServiceImpl implements ManagePoolsService {
     private void validateCourtLocationAndOwnership(String locCode, String owner) {
         List<CourtLocation> courtLocations = courtLocationRepository.findByOwner(owner);
         if (courtLocations.isEmpty()) {
-            throw new MojException.NotFound(String.format(
-                "Juror record owner: %s - No records found for the given owner",
+            throw new MojException.NotFound("Juror record owner: %s - No records found for the given owner".formatted(
                 owner
             ), null);
         }
-        if (courtLocations.stream().noneMatch(courtLocation -> courtLocation.getLocCode().equals(locCode))) {
-            throw new MojException.NotFound(String.format(
-                "Court location: %s - No records found for the given location code",
-                locCode
-            ), null);
+        if (courtLocations.stream()
+            .noneMatch(courtLocation -> courtLocation.getLocCode().equals(locCode))) {
+            final String message = "Court location: %s - No records found for the given location code";
+            throw new MojException.NotFound(message.formatted(locCode), null);
         }
     }
 

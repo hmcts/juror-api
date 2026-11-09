@@ -7,8 +7,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Application feature flags.
@@ -20,7 +20,9 @@ import java.util.Map;
 @Setter
 @ToString
 public class FeatureFlagConfigurationProperties {
-    private Map<String, Boolean> flags = new HashMap<>();
+    public static final String DIGITAL_BY_DEFAULT_FEATURE_FLAG = "digital-by-default";
+
+    private Map<String, Boolean> flags = new ConcurrentHashMap<>();
 
     public boolean isEnabled(String featureName) {
         return Boolean.TRUE.equals(flags.get(featureName));

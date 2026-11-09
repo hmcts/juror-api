@@ -72,7 +72,6 @@ public class DeceasedResponseControllerITest extends AbstractIntegrationTest {
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     private void initHeaders() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("BUREAU_USER")
             .owner("400")
             .build());
@@ -86,7 +85,6 @@ public class DeceasedResponseControllerITest extends AbstractIntegrationTest {
     private String initCourtsJwt(String owner, List<String> courts) throws Exception {
 
         return mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("COURT_USER")
             .owner(owner)
             .staff(BureauJwtPayload.Staff.builder().courts(courts).build())
@@ -131,7 +129,7 @@ public class DeceasedResponseControllerITest extends AbstractIntegrationTest {
             List<ContactLog> contactLog = contactLogRepository.findByJurorNumber(jurorNumber);
 
             assertThat(contactLog).isNotEmpty();
-            assertThat(contactLog.get(0).getNotes()).contains(PAPER_RESPONSE_EXISTS_TEXT);
+            assertThat(contactLog.getFirst().getNotes()).contains(PAPER_RESPONSE_EXISTS_TEXT);
 
             // verify the paper response has been created
             PaperResponse jurorPaperResponse =
@@ -182,7 +180,7 @@ public class DeceasedResponseControllerITest extends AbstractIntegrationTest {
             List<ContactLog> contactLog = contactLogRepository.findByJurorNumber(jurorNumber);
 
             assertThat(contactLog).isNotEmpty();
-            assertThat(contactLog.get(0).getNotes()).doesNotContain(PAPER_RESPONSE_EXISTS_TEXT);
+            assertThat(contactLog.getFirst().getNotes()).doesNotContain(PAPER_RESPONSE_EXISTS_TEXT);
         });
     }
 

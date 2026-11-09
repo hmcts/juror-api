@@ -73,6 +73,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
@@ -80,12 +82,11 @@ import java.util.stream.Collectors;
     "PMD.GodClass",
     "PMD.ExcessiveImports",
     "PMD.CyclomaticComplexity",
-    "PMD.CouplingBetweenObjects"})
+    "PMD.CouplingBetweenObjects",
+    "PMD.CognitiveComplexity"})
 public class PoolCreateServiceImpl implements PoolCreateService {
 
     private static final String AGE_DISQ_CODE = "A";
-
-    private static final String DIGITAL_BY_DEFAULT_FEATURE_FLAG = "digital-by-default";
 
     private static final int LOWER_REQUEST_LIMIT = 30;
 
@@ -270,7 +271,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     @Override
     public void createPool(BureauJwtPayload payload, PoolCreateRequestDto poolCreateRequestDto) {
 
-        final boolean isDigitalByDefault = isIsDigitalByDefault(poolCreateRequestDto.getCatchmentArea());
+        final boolean isDigitalByDefault = isIsDigitalByDefault(poolCreateRequestDto.getPoolNumber());
 
         // Get a list of Pool members from voters table
         List<JurorPool> jurorPools =
@@ -293,7 +294,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     @Transactional
     public void summonAdditionalCitizens(BureauJwtPayload payload, PoolAdditionalSummonsDto poolAdditionalSummonsDto) {
 
-        final boolean isDigitalByDefault = isIsDigitalByDefault(poolAdditionalSummonsDto.getCatchmentArea());
+        final boolean isDigitalByDefault = isIsDigitalByDefault(poolAdditionalSummonsDto.getPoolNumber());
 
         //populate the PoolCreateRequestDto object from poolAdditionalSummonsDto
         PoolCreateRequestDto poolCreateRequestDto = setupPoolRequestDto(poolAdditionalSummonsDto);
@@ -314,7 +315,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         processBureauDeferrals(poolCreateRequestDto, userId, false);
     }
 
-    private boolean isIsDigitalByDefault(String locCode) {
+    private boolean isIsDigitalByDefault(String poolNumber) {
+        PoolRequest poolRequest = RepositoryUtils.retrieveFromDatabase(poolNumber, poolRequestRepository);
+        final String locCode = poolRequest.getCourtLocation().getLocCode();
+
         CourtLocation courtLocation = courtLocationRepository.findByLocCode(locCode)
             .orElseThrow(() -> new MojException.BusinessRuleViolation(
                 "Court location not found for locCode: " + locCode,
@@ -350,7 +354,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
     private void updatePoolHistory(String poolNumber, String userId, int numSelected,
                                    String suffix, HistoryCode historyCode) {
-        log.debug(String.format("Update Pool History table for Pool : %s", poolNumber));
+        log.debug("Update Pool History table for Pool : {}", poolNumber);
         poolHistoryRepository.save(new PoolHistory(poolNumber, LocalDateTime.now(), historyCode, userId,
             numSelected + suffix));
     }
@@ -365,10 +369,10 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         List<JurorHistory> historyList = new ArrayList<>();
         jurorPools.forEach(jurorPool -> {
             Juror juror = jurorPool.getJuror();
-            log.trace(String.format(
-                "Update Participant History table for newly summoned juror: %s",
+            log.trace(
+                "Update Participant History table for newly summoned juror: {}",
                 juror.getJurorNumber()
-            ));
+            );
 
             JurorHistory.JurorHistoryBuilder jurorHistBuilder = JurorHistory.builder()
                 .jurorNumber(juror.getJurorNumber())
@@ -381,7 +385,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 jurorHistBuilder.otherInformationRef(HistoryCodeMod.DISQUALIFY_POOL_MEMBER.getCode());
                 historyList.add(jurorHistBuilder.build());
             } else if (isDigitalByDefault) {
-                log.info("To be implemented - Will update juror history for the new light summons letter");
+                jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
+                jurorHistBuilder.otherInformation("DBD Summons letter");
+                historyList.add(jurorHistBuilder.build());
             } else {
                 jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
                 historyList.add(jurorHistBuilder.build());
@@ -389,7 +395,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         });
         jurorHistoryRepository.saveAll(historyList);
     }
-    
+
     @SuppressWarnings("PMD.ExceptionAsFlowControl")
     private List<JurorPool> getJurorPools(String login, String owner, PoolCreateRequestDto poolCreateRequestDto,
                                           boolean isDigitalByDefault) {
@@ -479,10 +485,9 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 .filter(jurorPool -> !Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED))
                 .toList();
 
-            // ToDo need to implement the new light summons letter when we have the specs
             if (!summonedJurors.isEmpty()) {
                 if (isDigitalByDefault) {
-                    log.info("To be implemented - Will send out the new light summons letter");
+                    printDataService.bulkPrintDbdSummonsLetter(summonedJurors);
                 } else {
                     printDataService.bulkPrintSummonsLetter(summonedJurors);
                 }
@@ -548,7 +553,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
         // read the next juror sequence number and assign to the juror
         Long jurorNumber = jurorRepository.getJurorSequenceNumber();
-        juror.setJurorNumber(String.format("%09d", jurorNumber));
+        juror.setJurorNumber("%09d".formatted(jurorNumber));
 
         juror.setPollNumber(voter.getPollNumber());
         juror.setTitle(voter.getTitle());
@@ -698,14 +703,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         if (bureauDeferrals > 0) {
             String poolNumber = poolCreateRequestDto.getPoolNumber();
             PoolRequest poolRequest = RepositoryUtils.retrieveFromDatabase(poolNumber, poolRequestRepository);
-            int deferralsUsed = manageDeferralsService.useBureauDeferrals(poolRequest, bureauDeferrals, userId);
-            if (deferralsUsed > 0) {
-                updatePoolHistory(poolCreateRequestDto.getPoolNumber(), userId, deferralsUsed,
-                    isNewPool
-                        ? PoolHistory.NEW_POOL_REQUEST_SUFFIX
-                        : PoolHistory.ADD_POOL_REQUEST_SUFFIX,
-                    HistoryCode.PHDI);
-            }
+            manageDeferralsService.useBureauDeferrals(poolRequest, bureauDeferrals, userId, isNewPool);
         }
     }
 
@@ -827,7 +825,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         poolRequest.setTotalNoRequired(totalJurorsRequired);
         poolRequestRepository.saveAndFlush(poolRequest);
 
-        String otherInformation = String.format("%s (Pool Total Update)", totalJurorsRequired);
+        String otherInformation = "%s (Pool Total Update)".formatted(totalJurorsRequired);
         updatePoolHistory(poolNumber, payload.getLogin(), otherInformation);
 
         processCourtDeferrals(poolRequest, poolRequestDto.getDeferralsUsed(), payload.getLogin());
@@ -897,7 +895,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
         Optional<CoronerPool> coronerPoolOpt = coronerPoolRepository.findById(poolNumber);
 
         if (coronerPoolOpt.isEmpty()) {
-            log.debug(String.format("Unable to find a coroner pool with number %s", poolNumber));
+            log.debug("Unable to find a coroner pool with number {}", poolNumber);
             throw new PoolCreateException.CoronerPoolNotFound(poolNumber);
         }
 
@@ -1040,7 +1038,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
 
         // read the next juror sequence number and assign to the juror
         Long jurorNumber = jurorRepository.getJurorSequenceNumber();
-        coronerPoolDetail.setJurorNumber(String.format("%09d", jurorNumber));
+        coronerPoolDetail.setJurorNumber("%09d".formatted(jurorNumber));
 
         coronerPoolDetail.setTitle(voter.getTitle());
         coronerPoolDetail.setFirstName(voter.getFirstName());

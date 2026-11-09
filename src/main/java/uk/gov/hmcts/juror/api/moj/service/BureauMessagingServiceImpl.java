@@ -122,7 +122,7 @@ public class BureauMessagingServiceImpl implements BureauMessagingService {
     private EmailNotification createEmailNotification(String emailAddress, String templateId,
                                                       Map<String, String> payload) {
         EmailNotification notification = new EmailNotification(templateId, emailAddress, payload);
-        notification.setReferenceNumber(String.format("BUREAU_EMAIL_%s", emailAddress));
+        notification.setReferenceNumber("BUREAU_EMAIL_%s".formatted(emailAddress));
         return notification;
     }
 

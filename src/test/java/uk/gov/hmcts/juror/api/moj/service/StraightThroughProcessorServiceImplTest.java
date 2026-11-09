@@ -21,6 +21,7 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.ReasonableAdjustments;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorRepository;
@@ -341,8 +342,9 @@ public class StraightThroughProcessorServiceImplTest {
 
         Mockito.verify(mergeService, Mockito.times(1)).mergePaperResponse(any(PaperResponse.class),
             any(String.class));
-        Mockito.verify(jurorHistoryService).createDisqualifyHistory(jurorPool,"A");
-        Mockito.verify(jurorHistoryService).createWithdrawHistoryUser(jurorPool,null,"A");
+        Mockito.verify(jurorHistoryService).createDisqualifyHistory(jurorPool, "A");
+        Mockito.verify(jurorHistoryService).createWithdrawHistoryUser(jurorPool, null, "A",
+                                                                      CommunicationChannel.LETTER);
         Mockito.verify(printDataService, Mockito.times(1)).printWithdrawalLetter(any());
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save(any());
     }
@@ -365,8 +367,9 @@ public class StraightThroughProcessorServiceImplTest {
 
         Mockito.verify(mergeService, Mockito.times(1)).mergeDigitalResponse(any(DigitalResponse.class),
             any(String.class));
-        Mockito.verify(jurorHistoryService).createDisqualifyHistory(jurorPool,"A");
-        Mockito.verify(jurorHistoryService).createWithdrawHistoryUser(jurorPool,null,"A");
+        Mockito.verify(jurorHistoryService).createDisqualifyHistory(jurorPool, "A");
+        Mockito.verify(jurorHistoryService).createWithdrawHistoryUser(jurorPool, null, "A",
+                                                                      CommunicationChannel.LETTER);
         Mockito.verify(printDataService, Mockito.times(1)).printWithdrawalLetter(any());
         Mockito.verify(jurorDigitalResponseRepository, Mockito.times(1)).save(any());
     }
@@ -438,8 +441,9 @@ public class StraightThroughProcessorServiceImplTest {
 
         Mockito.verify(mergeService, Mockito.times(1)).mergePaperResponse(any(PaperResponse.class), any(String.class));
 
-        Mockito.verify(jurorHistoryService).createDisqualifyHistory(jurorPool,"A");
-        Mockito.verify(jurorHistoryService).createWithdrawHistoryUser(jurorPool,null,"A");
+        Mockito.verify(jurorHistoryService).createDisqualifyHistory(jurorPool, "A");
+        Mockito.verify(jurorHistoryService).createWithdrawHistoryUser(jurorPool, null, "A",
+                                                                      CommunicationChannel.LETTER);
         Mockito.verify(printDataService, Mockito.times(1)).printWithdrawalLetter(any());
         Mockito.verify(jurorPaperResponseRepository, Mockito.times(1)).save(any());
     }
@@ -463,8 +467,9 @@ public class StraightThroughProcessorServiceImplTest {
         Mockito.verify(mergeService, Mockito.times(1))
             .mergeDigitalResponse(any(DigitalResponse.class), any(String.class));
 
-        Mockito.verify(jurorHistoryService).createDisqualifyHistory(jurorPool,"A");
-        Mockito.verify(jurorHistoryService).createWithdrawHistoryUser(jurorPool,null,"A");
+        Mockito.verify(jurorHistoryService).createDisqualifyHistory(jurorPool, "A");
+        Mockito.verify(jurorHistoryService).createWithdrawHistoryUser(jurorPool, null, "A",
+                                                                      CommunicationChannel.LETTER);
         Mockito.verify(printDataService, Mockito.times(1)).printWithdrawalLetter(any());
         Mockito.verify(jurorDigitalResponseRepository, Mockito.times(1)).save(any());
     }

@@ -68,7 +68,7 @@ public class JurorAuditChangeServiceTest {
 
         for (String key : changedProperties.keySet()) {
             Assertions.assertThat(changedProperties.get(key))
-                .as(String.format("No changes expected for property: %s", key)).isFalse();
+                .as("No changes expected for property: %s".formatted(key)).isFalse();
         }
     }
 
@@ -126,7 +126,7 @@ public class JurorAuditChangeServiceTest {
 
         for (String key : changedProperties.keySet()) {
             Assertions.assertThat(changedProperties.get(key))
-                .as(String.format("Changes expected for property: %s", key)).isTrue();
+                .as("Changes expected for property: %s".formatted(key)).isTrue();
         }
     }
 
@@ -151,7 +151,7 @@ public class JurorAuditChangeServiceTest {
 
         for (String key : changedProperties.keySet()) {
             Assertions.assertThat(changedProperties.get(key))
-                .as(String.format("No changes expected for property: %s", key)).isFalse();
+                .as("No changes expected for property: %s".formatted(key)).isFalse();
         }
     }
 
@@ -204,7 +204,7 @@ public class JurorAuditChangeServiceTest {
 
         for (String key : changedProperties.keySet()) {
             Assertions.assertThat(changedProperties.get(key))
-                .as(String.format("No changes expected for property: %s", key)).isFalse();
+                .as("No changes expected for property: %s".formatted(key)).isFalse();
         }
     }
 
@@ -231,7 +231,7 @@ public class JurorAuditChangeServiceTest {
 
         for (String key : changedProperties.keySet()) {
             Assertions.assertThat(changedProperties.get(key))
-                .as(String.format("No changes expected for property: %s", key)).isFalse();
+                .as("No changes expected for property: %s".formatted(key)).isFalse();
         }
     }
 
@@ -259,7 +259,7 @@ public class JurorAuditChangeServiceTest {
 
         for (String key : changedProperties.keySet()) {
             Assertions.assertThat(changedProperties.get(key))
-                .as(String.format("No changes expected for property: %s", key)).isFalse();
+                .as("No changes expected for property: %s".formatted(key)).isFalse();
         }
     }
 
@@ -286,7 +286,7 @@ public class JurorAuditChangeServiceTest {
 
         for (String key : changedProperties.keySet()) {
             Assertions.assertThat(changedProperties.get(key))
-                .as(String.format("No changes expected for property: %s", key)).isFalse();
+                .as("No changes expected for property: %s".formatted(key)).isFalse();
         }
     }
 
@@ -514,7 +514,7 @@ public class JurorAuditChangeServiceTest {
         Assertions.assertThat(changedProperties.size()).isEqualTo(4);
         for (String key : changedProperties.keySet()) {
             Assertions.assertThat(changedProperties.get(key))
-                .as(String.format("Changes expected for property: %s", key)).isTrue();
+                .as("Changes expected for property: %s".formatted(key)).isTrue();
         }
     }
 

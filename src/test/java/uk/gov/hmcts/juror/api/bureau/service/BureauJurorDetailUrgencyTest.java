@@ -95,10 +95,12 @@ public class BureauJurorDetailUrgencyTest {
         //when
         final ModJurorDetail flaggedResponse = urgency.flagSlaOverdueForResponse(testDetail);
 
-        //then
+        // then
         assertThat(flaggedResponse)
             .isNotNull()
-            .isEqualToIgnoringGivenFields(testDetail, "urgent", "superUrgent", "slaOverdue")
+            .usingRecursiveComparison()
+            .ignoringFields("urgent", "superUrgent", "slaOverdue")
+            .isEqualTo(testDetail)
         ;
         assertThat(urgency.isUrgent(jurorResponse, poolDetails)).describedAs(URGENT_RESPONSE_DESCRIPTION).isFalse();
         assertThat(flaggedResponse.getSlaOverdue()).describedAs(SLA_OVERDUE_DESCRIPTION).isFalse();
@@ -118,8 +120,13 @@ public class BureauJurorDetailUrgencyTest {
 
         //then
         assertThat(flaggedResponse)
+            .isNotNull();
+        // then
+        assertThat(flaggedResponse)
             .isNotNull()
-            .isEqualToIgnoringGivenFields(testDetail, "urgent", "superUrgent", "slaOverdue")
+            .usingRecursiveComparison()
+            .ignoringFields("urgent", "superUrgent", "slaOverdue")
+            .isEqualTo(testDetail)
         ;
         assertThat(urgency.isUrgent(jurorResponse, poolDetails)).describedAs(URGENT_RESPONSE_DESCRIPTION).isTrue();
         assertThat(flaggedResponse.getSlaOverdue()).describedAs(SLA_OVERDUE_DESCRIPTION).isFalse();
@@ -138,8 +145,13 @@ public class BureauJurorDetailUrgencyTest {
 
         //then
         assertThat(flaggedResponse)
+            .isNotNull();
+        // then
+        assertThat(flaggedResponse)
             .isNotNull()
-            .isEqualToIgnoringGivenFields(testDetail, "urgent", "superUrgent", "slaOverdue")
+            .usingRecursiveComparison()
+            .ignoringFields("urgent", "superUrgent", "slaOverdue")
+            .isEqualTo(testDetail)
         ;
         assertThat(urgency.isUrgent(jurorResponse, poolDetails)).describedAs(URGENT_RESPONSE_DESCRIPTION).isFalse();
         assertThat(flaggedResponse.getSlaOverdue()).describedAs(SLA_OVERDUE_DESCRIPTION).isTrue();

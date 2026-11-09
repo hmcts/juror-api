@@ -8,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseMergeService;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -18,6 +17,8 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
@@ -245,7 +246,7 @@ public class StraightThroughProcessorImplTest {
         verify(jurorPool, times(3)).getJuror();
         verify(juror, times(1)).setResponded(true);
         verify(juror, times(1)).setDisqualifyDate(any(LocalDate.class));
-        verify(juror, times(1)).setDisqualifyCode(DisCode.AGE);
+        verify(juror, times(1)).setDisqualifyCode(DisqualifyCode.A.getCode());
         verify(jurorPool).setUserEdtq(AUTO_USER);
         verify(jurorPool).setStatus(disquallifiedJurorStatus);
         verify(jurorStatusRepository).findById(IJurorStatus.DISQUALIFIED);
@@ -253,7 +254,7 @@ public class StraightThroughProcessorImplTest {
         verify(poolRepository).save(any(JurorPool.class));
 
         verify(partHistRepository, times(1)).save(any(JurorHistory.class));
-        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A");
+        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A", CommunicationChannel.LETTER);
 
         verify(printDataService).printWithdrawalLetter(any(JurorPool.class));
 
@@ -292,14 +293,14 @@ public class StraightThroughProcessorImplTest {
         verify(jurorPool, times(3)).getJuror();
         verify(juror).setResponded(true);
         verify(juror).setDisqualifyDate(any(LocalDate.class));
-        verify(juror).setDisqualifyCode(DisCode.AGE);
+        verify(juror).setDisqualifyCode(DisqualifyCode.A.getCode());
         verify(jurorPool).setUserEdtq(AUTO_USER);
         verify(jurorPool).setStatus(disquallifiedJurorStatus);
         verify(jurorPool).setNextDate(null);
         verify(poolRepository).save(any(JurorPool.class));
 
         verify(partHistRepository, times(1)).save(any(JurorHistory.class));
-        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A");
+        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A",CommunicationChannel.LETTER);
 
         verify(printDataService).printWithdrawalLetter(jurorPool);
 

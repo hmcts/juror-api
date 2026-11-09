@@ -3,7 +3,7 @@ package uk.gov.hmcts.juror.api.moj.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.Jwts;
 import org.apache.hc.core5.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +37,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @WireMockTest(httpPort = 8090)
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {
+        "uk.gov.hmcts.juror.remote.pnc-check-service.security.secret="
+            + "dGhpcy1pcy1hLXRlc3Qta2V5LWZvci11cy13aGVuLWNyZWF0aW5nLXNlY3JldHM=",
+        "jwt.secret.bureau=dGhpcy1pcy1hLXRlc3Qta2V5LWZvci11cy13aGVuLWNyZWF0aW5nLXNlY3JldHM="
+    }
+)
 @ActiveProfiles("test")
 @DisplayName("Police National Computer Manual Check")
 class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
@@ -60,14 +67,8 @@ class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
     }
 
     @SuppressWarnings("PMD.SignatureDeclareThrowsException")
-    private void initHeaders(String... userLevel) throws Exception {
-        String level = "99";
-        if (userLevel.length == 1) {
-            level = userLevel[0];
-        }
-
+    private void initHeaders() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel(level)
             .login("BUREAU_USER")
             .owner("400")
             .build());
@@ -177,7 +178,7 @@ class PncCheckServiceClientImplITest extends AbstractIntegrationTest {
 
     @Override
     protected String mintBureauJwt(final BureauJwtPayload payload) {
-        return TestUtil.mintBureauJwt(payload, SignatureAlgorithm.HS256, bureauSecret,
+        return TestUtil.mintBureauJwt(payload, Jwts.SIG.HS256, bureauSecret,
             Instant.now().plus(100L * 365L, ChronoUnit.DAYS));
     }
 }

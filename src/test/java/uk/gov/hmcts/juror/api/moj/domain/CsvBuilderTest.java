@@ -26,7 +26,7 @@ class CsvBuilderTest {
     void positiveConstructor() {
         assertThat(csvBuilder.rows.size()).isEqualTo(1);
         assertThat(csvBuilder.expectedLength).isEqualTo(3);
-        assertThat(csvBuilder.rows.get(0))
+        assertThat(csvBuilder.rows.getFirst())
             .containsExactly("title1", "title2", "title3");
     }
 

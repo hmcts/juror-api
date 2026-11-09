@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping(value = "/api/v1/bureau/staff", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Bureau Staff API", description = "Bureau operations relating to staff members")
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class BureauStaffController {
 
     private final UserService userService;
@@ -101,7 +101,7 @@ public class BureauStaffController {
             return ResponseEntity.ok()
                 .body(responseDto);
         } catch (OptimisticLockingFailureException olfe) {
-            log.warn("Failed to change assignment: {}.  Updated by another user!", olfe.getMessage());
+            log.info("Failed to change assignment: {}.  Updated by another user!", olfe.getMessage());
             throw new BureauOptimisticLockingException(olfe);
         }
     }
@@ -147,7 +147,7 @@ public class BureauStaffController {
             }
             return ResponseEntity.accepted().body(failuresList);
         } catch (OptimisticLockingFailureException olfe) {
-            log.warn("Failed to change assignment: {}.  Updated by another user!", olfe.getMessage());
+            log.info("Failed to change assignment: {}.  Updated by another user!", olfe.getMessage());
             throw new BureauOptimisticLockingException(olfe);
         }
     }

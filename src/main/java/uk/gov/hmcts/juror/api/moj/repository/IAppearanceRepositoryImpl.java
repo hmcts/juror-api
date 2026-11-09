@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusGroup;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.RetrieveAttendanceDetailsTag;
 import uk.gov.hmcts.juror.api.moj.enumeration.trial.PanelResult;
+import uk.gov.hmcts.juror.api.moj.report.UnpaidAttendanceReportFilter;
 import uk.gov.hmcts.juror.api.moj.utils.PaginationUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
@@ -414,6 +415,7 @@ public class IAppearanceRepositoryImpl implements IAppearanceRepository {
                 AppearanceStage.EXPENSE_ENTERED, AppearanceStage.EXPENSE_EDITED
             )) // JS-777 hide appearances before 1 Jan 2025.
             .where(QAppearance.appearance.attendanceDate.goe(LocalDate.of(2025, 1, 1)))
+            .where(UnpaidAttendanceReportFilter.includeRecentOrNonZeroTotalDue(LocalDate.now()))
             .join(QJuror.juror)
             .on(QJuror.juror.jurorNumber.eq(QAppearance.appearance.jurorNumber))
             .groupBy(

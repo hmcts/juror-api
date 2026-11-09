@@ -33,8 +33,8 @@ public class GroupedTableData extends LinkedHashMap<String, Object>
                     if (o instanceof Collection<?> collection) {
                         return (long) collection.size();
                     }
-                    if (o instanceof GroupedTableData) {
-                        return ((GroupedTableData) o).getSize();
+                    if (o instanceof GroupedTableData data) {
+                        return data.getSize();
                     }
                     throw new IllegalArgumentException("Invalid type");
                 })
@@ -54,8 +54,8 @@ public class GroupedTableData extends LinkedHashMap<String, Object>
         data.forEach(o -> {
             if (o instanceof Collection<?> collection) {
                 removeDataKeyInternal(key, collection);
-            } else if (o instanceof GroupedTableData) {
-                ((GroupedTableData) o).removeDataKey(key);
+            } else if (o instanceof GroupedTableData tableData) {
+                tableData.removeDataKey(key);
             }
         });
     }

@@ -29,7 +29,7 @@ public class UserCourtDto {
         this.primaryCourt = new CourtDto(
             courts.stream()
                 .filter(courtLocation -> courtLocation.getType() == CourtType.MAIN)
-                .toList().get(0));
+                .toList().getFirst());
 
         this.satelliteCourts = courts.stream()
             .filter(courtLocation -> courtLocation.getType() == CourtType.SATELLITE)

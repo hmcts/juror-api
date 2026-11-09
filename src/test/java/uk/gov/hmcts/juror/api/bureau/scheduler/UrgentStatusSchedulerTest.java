@@ -101,7 +101,7 @@ public class UrgentStatusSchedulerTest {
             .and(JurorResponseQueries.isDigital()))).willReturn(
             responseBacklog);
 
-        DigitalResponse jurorResponse = responseBacklog.get(0);
+        DigitalResponse jurorResponse = responseBacklog.getFirst();
         given(poolrepo.findByJurorJurorNumberAndIsActiveAndOwner(
             jurorResponse.getJurorNumber(),
             true,
@@ -113,7 +113,7 @@ public class UrgentStatusSchedulerTest {
         urgentStatusScheduler.process();
 
         verify(jurorResponseRepo, times(1)).save(jurorResponse);
-        verify(urgencyService, times(1)).setUrgencyFlags(responseBacklog.get(0), poolDetails);
+        verify(urgencyService, times(1)).setUrgencyFlags(responseBacklog.getFirst(), poolDetails);
 
         userService.assignUrgentResponse(jurorResponse);
 

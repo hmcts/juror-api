@@ -101,7 +101,7 @@ public class JurorAttendanceDetailsResponseDto {
             if (this.checkOutTime != null && this.checkInTime != null) {
                 hours = (double) Duration.between(this.checkInTime, this.checkOutTime).toMinutes() / 60;
             }
-            this.hours = String.format("%.1f", hours);
+            this.hours = "%.1f".formatted(hours);
         }
     }
 }

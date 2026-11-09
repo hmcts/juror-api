@@ -8,8 +8,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import uk.gov.hmcts.juror.api.bureau.domain.DisCode;
-import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseMergeService;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
@@ -17,6 +15,8 @@ import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -41,7 +41,7 @@ import static uk.gov.hmcts.juror.api.moj.domain.JurorHistory.RESPONDED;
 @SuppressWarnings("PMD")
 @Component
 @Slf4j
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class StraightThroughProcessorImpl implements StraightThroughProcessor {
 
     private final JurorDigitalResponseRepositoryMod jurorDigitalResponseRepository;
@@ -422,7 +422,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             }
 
             //JDB-91 c. the status of the summons on the Juror application must still be Summoned
-            if (jurorDetails.getStatus().getStatus() != IPoolStatus.SUMMONED) {
+            if (jurorDetails.getStatus().getStatus() != IJurorStatus.SUMMONED) {
                 throw new StraightThroughProcessingServiceException.AgeExcusal(
                     "The status of the summons must still be Summoned");
             }
@@ -458,7 +458,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             // update Juror
             jurorDetails.getJuror().setResponded(true);
             jurorDetails.getJuror().setDisqualifyDate(LocalDate.now());
-            jurorDetails.getJuror().setDisqualifyCode(DisCode.AGE);
+            jurorDetails.getJuror().setDisqualifyCode(DisqualifyCode.A.getCode());
             jurorDetails.setUserEdtq(AUTO_USER);
             jurorDetails.setStatus(
                 RepositoryUtils.retrieveFromDatabase(IJurorStatus.DISQUALIFIED, jurorStatusRepository));
@@ -477,7 +477,7 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             jurorHistoryRepository.save(retrieveJurorHistory);
 
             // audit pool second entry
-            jurorHistoryService.createWithdrawHistory(jurorDetails,null,"A");
+            jurorHistoryService.createWithdrawHistory(jurorDetails, null, "A", CommunicationChannel.LETTER);
 
             // disq_lett table entry
             printDataService.printWithdrawalLetter(jurorDetails);

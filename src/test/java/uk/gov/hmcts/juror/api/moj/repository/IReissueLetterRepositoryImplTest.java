@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.domain.QBulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.QJuror;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.QJurorPool;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.letter.LetterType;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
@@ -100,7 +101,10 @@ class IReissueLetterRepositoryImplTest {
                 JUROR.excusalCode.as("excusal_code"),
                 BULK_PRINT_DATA.creationDate.as("date_printed"),
                 BULK_PRINT_DATA.extractedFlag.as("extracted_flag"),
-                BULK_PRINT_DATA.formAttribute.formType.as("form_code")
+                BULK_PRINT_DATA.formAttribute.formType.as("form_code"),
+                BULK_PRINT_DATA.communicationChannel.as("original_sent_by"),
+                JUROR.dbdPreference.as("current_preference"),
+                BULK_PRINT_DATA.emailStatus.as("email_status")
             );
 
         verify(jpaQuery, times(1)).from(JUROR);
@@ -164,7 +168,10 @@ class IReissueLetterRepositoryImplTest {
                 JUROR_POOL.deferralCode.as("deferral_code"),
                 BULK_PRINT_DATA.creationDate.as("date_printed"),
                 BULK_PRINT_DATA.extractedFlag.as("extracted_flag"),
-                BULK_PRINT_DATA.formAttribute.formType.as("form_code")
+                BULK_PRINT_DATA.formAttribute.formType.as("form_code"),
+                BULK_PRINT_DATA.communicationChannel.as("original_sent_by"),
+                JUROR.dbdPreference.as("current_preference"),
+                BULK_PRINT_DATA.emailStatus.as("email_status")
             );
         verify(jpaQuery, times(1)).from(JUROR);
         verify(jpaQuery, times(1)).join(JUROR_POOL);
@@ -244,7 +251,8 @@ class IReissueLetterRepositoryImplTest {
 
         assertThat(bulkPrintData).isNotNull();
         postverifyFindOne(jpaQuery, JUROR_NUMBER, FORM_CODE, BULK_PRINT_DATA.extractedFlag.isNull()
-            .or(BULK_PRINT_DATA.extractedFlag.eq(false)));
+            .or(BULK_PRINT_DATA.extractedFlag.eq(false))
+            .or(BULK_PRINT_DATA.emailStatus.eq(EmailStatus.PENDING)));
     }
 
     @Test
@@ -261,7 +269,48 @@ class IReissueLetterRepositoryImplTest {
 
         assertThat(bulkPrintData).isEmpty();
         postverifyFindOne(jpaQuery, JUROR_NUMBER, FORM_CODE, BULK_PRINT_DATA.extractedFlag.isNull()
-            .or(BULK_PRINT_DATA.extractedFlag.eq(false)));
+            .or(BULK_PRINT_DATA.extractedFlag.eq(false))
+            .or(BULK_PRINT_DATA.emailStatus.eq(EmailStatus.PENDING)));
+    }
+
+    @Test
+    void testFindLatestPendingLetterForJurorIncludesPendingEmail() {
+        JPAQuery<BulkPrintData> jpaQuery = mock(JPAQuery.class);
+
+        when(queryFactory.selectFrom(any(EntityPath.class))).thenReturn(jpaQuery);
+        when(jpaQuery.from(any(EntityPath.class))).thenReturn(jpaQuery);
+        when(jpaQuery.where(any(Predicate.class))).thenReturn(jpaQuery);
+        when(jpaQuery.orderBy(any(OrderSpecifier.class))).thenReturn(jpaQuery);
+        when(jpaQuery.fetchFirst()).thenReturn(BulkPrintData.builder().build());
+
+        Optional<BulkPrintData> bulkPrintData =
+            reissueLetterRepositoryImpl.findLatestPendingLetterForJuror(JUROR_NUMBER, FORM_CODE);
+
+        assertThat(bulkPrintData).isNotNull();
+        postverifyFindOne(jpaQuery, JUROR_NUMBER, FORM_CODE, BULK_PRINT_DATA.extractedFlag.isNull()
+            .or(BULK_PRINT_DATA.extractedFlag.eq(false))
+            .or(BULK_PRINT_DATA.emailStatus.eq(EmailStatus.PENDING)));
+        verify(jpaQuery, times(1)).orderBy(BULK_PRINT_DATA.creationDate.desc());
+    }
+
+    @Test
+    void testFindLatestPendingLetterForJurorNotFound() {
+        JPAQuery<BulkPrintData> jpaQuery = mock(JPAQuery.class);
+
+        when(queryFactory.selectFrom(any(EntityPath.class))).thenReturn(jpaQuery);
+        when(jpaQuery.from(any(EntityPath.class))).thenReturn(jpaQuery);
+        when(jpaQuery.where(any(Predicate.class))).thenReturn(jpaQuery);
+        when(jpaQuery.orderBy(any(OrderSpecifier.class))).thenReturn(jpaQuery);
+        when(jpaQuery.fetchFirst()).thenReturn(null);
+
+        Optional<BulkPrintData> bulkPrintData =
+            reissueLetterRepositoryImpl.findLatestPendingLetterForJuror(JUROR_NUMBER, FORM_CODE);
+
+        assertThat(bulkPrintData).isEmpty();
+        postverifyFindOne(jpaQuery, JUROR_NUMBER, FORM_CODE, BULK_PRINT_DATA.extractedFlag.isNull()
+            .or(BULK_PRINT_DATA.extractedFlag.eq(false))
+            .or(BULK_PRINT_DATA.emailStatus.eq(EmailStatus.PENDING)));
+        verify(jpaQuery, times(1)).orderBy(BULK_PRINT_DATA.creationDate.desc());
     }
 
     private void postverifyFindOne(JPAQuery<BulkPrintData> jpaQuery, String jurorNumber, String formCode,
@@ -324,7 +373,7 @@ class IReissueLetterRepositoryImplTest {
         verify(jpaQuery, times(1)).leftJoin(BULK_PRINT_DATA);
         verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo)
             .and(BULK_PRINT_DATA.formAttribute.formType
-                .in(List.of("5228", "5228C"))));
+                .in(List.of("5228", "5228C", "6228", "6228C"))));
         verify(jpaQuery, times(1))
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.SUMMONED)
             .and(QJuror.juror.responded.eq(false)));
@@ -388,7 +437,7 @@ class IReissueLetterRepositoryImplTest {
         verify(jpaQuery, times(1)).leftJoin(BULK_PRINT_DATA);
         verify(jpaQuery, times(1)).on(JUROR.jurorNumber.eq(BULK_PRINT_DATA.jurorNo)
             .and(BULK_PRINT_DATA.formAttribute.formType
-                .in(List.of("5228", "5228C"))));
+                .in(List.of("5228", "5228C", "6228", "6228C"))));
         verify(jpaQuery, times(1)).where(QJurorPool.jurorPool.status.status
             .eq(IJurorStatus.SUMMONED)
             .and(QJuror.juror.responded.eq(false)));

@@ -116,6 +116,6 @@ public interface JurorRecordService {
 
     void updateJurorAddressFromResponse(JurorPool jurorPool);
 
-    void sendPaperSummonsPack(String jurorNumber);
+    void sendPaperResponsePack(String jurorNumber);
 
 }

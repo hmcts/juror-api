@@ -21,7 +21,7 @@ public class CurrentlyDeferredException extends RuntimeException {
     public static class DeferredMemberNotFound extends CurrentlyDeferredException {
 
         public DeferredMemberNotFound(String jurorNumber) {
-            super(String.format("Unable to find an associated Pool Member for the deferred juror: %s", jurorNumber));
+            super("Unable to find an associated Pool Member for the deferred juror: %s".formatted(jurorNumber));
         }
     }
 

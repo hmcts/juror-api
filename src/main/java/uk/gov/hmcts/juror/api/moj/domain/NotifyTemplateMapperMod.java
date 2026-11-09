@@ -26,6 +26,33 @@ public enum NotifyTemplateMapperMod {
 
     JUROR_POOL_NEXT_DATE(Type.JUROR, context -> context.getJurorPool().getNextDate()),
     JUROR_POOL_LOC_CODE(Type.JUROR, context -> context.getJurorPool().getCourt().getLocCode()),
+    JUROR_POOL_DEF_DATE(Type.JUROR,context -> context.getJurorPool().getDeferralDate()),
+    JUROR_POOL_SERVICE_START_DATE(
+        Type.JUROR,
+            context -> context.getJurorPool().getNextDate() != null
+                ? context.getJurorPool().getNextDate()
+                : context.getJurorPool().getDeferralDate()
+    ),
+    JUROR_OR_RESPONSE_EMAIL(
+        Type.JUROR,
+            context -> {
+                String jurorEmail = context.getJuror().getEmail();
+                if (jurorEmail != null && !jurorEmail.isBlank()) {
+                    return jurorEmail;
+                }
+
+                if (context.getAbstractResponse() == null) {
+                    return null;
+                }
+
+                String responseEmail = context.getAbstractResponse().getEmail();
+                if (responseEmail != null && !responseEmail.isBlank()) {
+                    return responseEmail;
+                }
+
+                return context.getAbstractResponse().getEmailAddress();
+            }
+    ),
 
     POOL_ATTEND_TIME(Type.JUROR, context -> context.getPoolRequest().getAttendTime()),
     POOL_RETURN_DATE(Type.JUROR, context -> context.getPoolRequest().getReturnDate()),
@@ -39,6 +66,13 @@ public enum NotifyTemplateMapperMod {
     COURT_LOC_POSTCODE(Type.COURT, context -> context.getCourtLocation().getPostcode()),
     COURT_LOC_ADDRESS(Type.COURT, context -> context.getActualCourtLocation().getLocationAddress()),
     COURT_JURY_OFFICER_PHONE(Type.COURT, context -> context.getCourtLocation().getJuryOfficerPhone()),
+
+    COURT_MAP_URL(Type.COURT, Context::getCourtMapUrl),
+    EMAIL_ATTACHMENT_ALLOWANCES_URL(Type.COURT, Context::getAllowancesDocUrl),
+    EMAIL_ATTACHMENT_LOSS_OF_EARNINGS_URL(Type.COURT, Context::getLossOfEarningsDocUrl),
+    EMAIL_ATTACHMENT_GUIDANCE_EMPLOYERS_URL(Type.COURT, Context::getGuidanceEmployersDocUrl),
+    EMAIL_ATTACHMENT_JURY_GUIDE_URL(Type.COURT, Context::getJuryGuideDocUrl),
+
 
     TEMPORARY_COURT_JURY_OFFICER_PHONE(Type.COURT, Context::getTemporaryCourtPhone),
     TEMPORARY_COURT_NAME(Type.COURT, Context::getTemporaryCourtName),
@@ -59,6 +93,7 @@ public enum NotifyTemplateMapperMod {
     @Getter
     @Setter
     @Builder
+    @SuppressWarnings("PMD.TooManyFields")
     public static class Context {
         Juror juror;
         JurorPool jurorPool;
@@ -75,6 +110,12 @@ public enum NotifyTemplateMapperMod {
         String temporaryCourtName;
         String temporaryCourtAddress;
         String temporaryCourtPhone;
+
+        String courtMapUrl;
+        String allowancesDocUrl;
+        String lossOfEarningsDocUrl;
+        String guidanceEmployersDocUrl;
+        String juryGuideDocUrl;
 
         public static Context from(JurorPool jurorPool,String temporaryCourtName, String temporaryCourtAddress,
                                     String temporaryCourtPhone) {

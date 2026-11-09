@@ -61,7 +61,7 @@ public interface UserService {
 
     class NoMatchForLoginException extends Exception {
         NoMatchForLoginException(String login) {
-            super(String.format("No match found for login %s", login));
+            super("No match found for login %s".formatted(login));
         }
     }
 

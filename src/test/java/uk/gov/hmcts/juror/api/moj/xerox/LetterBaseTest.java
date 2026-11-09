@@ -664,7 +664,7 @@ class LetterBaseTest {
         verify(letterDataType, times(1)).validateContext(eq(context));
 
         assertThat(letterBase.getData()).hasSize(1);
-        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().get(0);
+        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().getFirst();
 
         assertThat(actualLetterDataShuffle).isNotNull();
         assertThat(actualLetterDataShuffle.getLength()).isEqualTo(10);
@@ -695,7 +695,7 @@ class LetterBaseTest {
         verify(letterDataType3, times(1)).validateContext(eq(context));
 
         assertThat(letterBase.getData()).hasSize(1);
-        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().get(0);
+        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().getFirst();
 
         assertThat(actualLetterDataShuffle).isNotNull();
         assertThat(actualLetterDataShuffle.getLength()).isEqualTo(45);
@@ -726,7 +726,7 @@ class LetterBaseTest {
         verify(letterDataType3, times(1)).validateContext(eq(context));
 
         assertThat(letterBase.getData()).hasSize(1);
-        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().get(0);
+        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().getFirst();
 
         assertThat(actualLetterDataShuffle).isNotNull();
         assertThat(actualLetterDataShuffle.getLength()).isEqualTo(45);
@@ -757,7 +757,7 @@ class LetterBaseTest {
         verify(letterDataType3, times(1)).validateContext(eq(context));
 
         assertThat(letterBase.getData()).hasSize(1);
-        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().get(0);
+        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().getFirst();
 
         assertThat(actualLetterDataShuffle).isNotNull();
         assertThat(actualLetterDataShuffle.getLength()).isEqualTo(45);
@@ -789,7 +789,7 @@ class LetterBaseTest {
         verify(letterDataType3, times(1)).validateContext(eq(context));
 
         assertThat(letterBase.getData()).hasSize(1);
-        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().get(0);
+        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().getFirst();
 
         assertThat(actualLetterDataShuffle).isNotNull();
         assertThat(actualLetterDataShuffle.getLength()).isEqualTo(45);
@@ -821,7 +821,7 @@ class LetterBaseTest {
         verify(letterDataType3, times(1)).validateContext(eq(context));
 
         assertThat(letterBase.getData()).hasSize(1);
-        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().get(0);
+        LetterBase.ILetterData actualLetterDataShuffle = letterBase.getData().getFirst();
 
         assertThat(actualLetterDataShuffle).isNotNull();
         assertThat(actualLetterDataShuffle.getLength()).isEqualTo(45);

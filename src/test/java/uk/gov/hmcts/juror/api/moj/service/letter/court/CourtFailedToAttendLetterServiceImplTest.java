@@ -95,7 +95,7 @@ class CourtFailedToAttendLetterServiceImplTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((FailedToAttendLetterData) data.get(0), "61", null, LocalDate.now().minusDays(10));
+            validateData((FailedToAttendLetterData) data.getFirst(), "61", null, LocalDate.now().minusDays(10));
         }
 
         @Test
@@ -124,7 +124,7 @@ class CourtFailedToAttendLetterServiceImplTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((FailedToAttendLetterData) data.get(0), "61",
+            validateData((FailedToAttendLetterData) data.getFirst(), "61",
                 LocalDate.now().minusDays(8), LocalDate.now().minusDays(10));
         }
 
@@ -172,7 +172,7 @@ class CourtFailedToAttendLetterServiceImplTest {
 
         private void validateHeadings(List<String> headings) {
             assertThat(headings.size()).isEqualTo(5);
-            assertThat(headings.get(0)).isEqualToIgnoringCase("Juror number");
+            assertThat(headings.getFirst()).isEqualToIgnoringCase("Juror number");
             assertThat(headings.get(1)).isEqualToIgnoringCase("First name");
             assertThat(headings.get(2)).isEqualToIgnoringCase("Last name");
             assertThat(headings.get(3)).isEqualToIgnoringCase("Absent date");
@@ -181,7 +181,7 @@ class CourtFailedToAttendLetterServiceImplTest {
 
         private void validateDataTypes(List<String> dataTypes) {
             assertThat(dataTypes.size()).isEqualTo(5);
-            assertThat(dataTypes.get(0)).isEqualToIgnoringCase("string");
+            assertThat(dataTypes.getFirst()).isEqualToIgnoringCase("string");
             assertThat(dataTypes.get(1)).isEqualToIgnoringCase("string");
             assertThat(dataTypes.get(2)).isEqualToIgnoringCase("string");
             assertThat(dataTypes.get(3)).isEqualToIgnoringCase("date");

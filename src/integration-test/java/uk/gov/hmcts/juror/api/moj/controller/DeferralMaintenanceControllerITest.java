@@ -27,10 +27,15 @@ import uk.gov.hmcts.juror.api.moj.controller.response.DeferralOptionsDto;
 import uk.gov.hmcts.juror.api.moj.controller.response.deferralmaintenance.DeferralAgeDisqualificationResponseDto;
 import uk.gov.hmcts.juror.api.moj.domain.BulkPrintData;
 import uk.gov.hmcts.juror.api.moj.domain.CurrentlyDeferred;
+import uk.gov.hmcts.juror.api.moj.domain.FormCode;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
@@ -64,7 +69,9 @@ import static uk.gov.hmcts.juror.api.testvalidation.DeferralMaintenanceValidatio
 
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = "feature-flags.flags.digital-by-default=true")
 @DisplayName("Controller: /api/v1/moj/deferral-maintenance/")
 public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest {
 
@@ -78,6 +85,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
     static final String JUROR_555555560 = "555555560";
     static final String JUROR_555555561 = "555555561";
     static final String JUROR_555555562 = "555555562";
+    static final String JUROR_555555570 = "555555570";
     static final String JUROR_090909090 = "090909090";
 
     static final String POOL_222222222 = "222222222";
@@ -854,13 +862,13 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555561,
                                                                                                    false);
                 assertThat(jurorPools.size()).isGreaterThan(0);
-                verifyActivePoolOldRecord(jurorPools.get(0));
+                verifyActivePoolOldRecord(jurorPools.getFirst());
 
                 Juror newJurorRecord = jurorRepository.findByJurorNumber(JUROR_555555561);
                 verifyActiveJurorNewRecord(newJurorRecord,
                        deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
                 assertThat(newJurorRecord.getOpticRef())
-                    .as(String.format("Expected optic ref to be %s", OPTIC_REF_12345678)).isEqualTo(OPTIC_REF_12345678);
+                    .as("Expected optic ref to be %s".formatted(OPTIC_REF_12345678)).isEqualTo(OPTIC_REF_12345678);
 
                 Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555561);
                 assertThat(deferral.isPresent()).isFalse();
@@ -899,7 +907,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555558,
                                                                                                    false);
                 assertThat(jurorPools.size()).isGreaterThan(0);
-                verifyActivePoolOldRecord(jurorPools.get(0));
+                verifyActivePoolOldRecord(jurorPools.getFirst());
 
                 Juror newJurorRecord = jurorRepository.findByJurorNumber(JUROR_555555558);
                 verifyActiveJurorNewRecord(newJurorRecord,
@@ -909,7 +917,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 assertThat(deferral.isPresent()).isFalse();
 
                 assertThat(newJurorRecord.getOpticRef())
-                    .as(String.format("Expected optic ref to be %s", OPTIC_REF_12345678))
+                    .as("Expected optic ref to be %s".formatted(OPTIC_REF_12345678))
                     .isEqualTo(OPTIC_REF_12345678);
             });
         }
@@ -931,6 +939,50 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
             Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555562);
             assertThat(deferral.isPresent()).isTrue();
+        }
+
+        @Test
+        void bureauProcessJurorDeferralMaintenanceDigitalByDefaultQueuesEmail() {
+            final String bureauJwt = createJwt(BUREAU_USER, OWNER_400);
+
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
+            DeferralReasonRequestDto deferralReasonRequestDto =
+                createDeferralReasonDtoToDeferralMaintenance(ReplyMethod.DIGITAL);
+            RequestEntity<DeferralReasonRequestDto> requestEntity = new RequestEntity<>(deferralReasonRequestDto,
+                httpHeaders, POST, URI.create(URL_PREFIX + JUROR_555555570));
+            ResponseEntity<DeferralAgeDisqualificationResponseDto> response = template.exchange(requestEntity,
+                DeferralAgeDisqualificationResponseDto.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(requireNonNull(response.getBody()).getEligible()).isEqualTo(1);
+            assertThat(requireNonNull(response.getBody()).getAgeDisqualified()).isEmpty();
+
+            executeInTransaction(() -> {
+                Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555570);
+                assertThat(deferral.isPresent()).isTrue();
+
+                List<BulkPrintData> bulkPrintData = bulkPrintDataRepository.findByJurorNo(JUROR_555555570);
+                assertThat(bulkPrintData).hasSize(1);
+
+                BulkPrintData emailData = bulkPrintData.getFirst();
+                assertThat(emailData.getFormAttribute().getFormType()).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
+                assertThat(emailData.isExtractedFlag()).isTrue();
+                assertThat(emailData.isDigitalComms()).isTrue();
+                assertThat(emailData.getDetailRec()).isEqualTo("N/A");
+                assertThat(emailData.getCommunicationChannel()).isEqualTo(CommunicationChannel.EMAIL);
+                assertThat(emailData.getEmailStatus()).isEqualTo(EmailStatus.PENDING);
+                assertThat(emailData.getNotifyTemplateName()).isEqualTo(
+                    DigitalByDefaultEmailTemplate.DEFERRAL_GRANTED_ENGLISH.getTemplateName());
+
+                Integer historyEventCount = jdbcTemplate.queryForObject(
+                    "SELECT count(*) FROM juror_mod.juror_history WHERE juror_number = ? AND history_code = ? "
+                        + "AND other_information = 'Deferral Email'",
+                    Integer.class,
+                    JUROR_555555570,
+                    HistoryCodeMod.DEFERRED_LETTER.getCode()
+                );
+                assertThat(historyEventCount).isEqualTo(1);
+            });
         }
 
         @Test
@@ -969,7 +1021,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             List<JurorPool> jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(juror.getJurorNumber(),
                 true);
             assertThat(jurorPools.size()).isEqualTo(1);
-            JurorPool jurorPool = jurorPools.get(0);
+            JurorPool jurorPool = jurorPools.getFirst();
             assertThat(jurorPool.getPoolNumber()).isEqualTo(poolNumber);
             assertThat(jurorPool.getStatus().getStatusDesc()).isEqualTo(RESPONDED);
             assertThat(jurorPool.getDeferralDate()).isNull();
@@ -1087,11 +1139,11 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                     jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555558, false);
                 assertThat(jurorPools.size()).isGreaterThan(0);
 
-                verifyActivePoolOldRecordChangeDate(jurorPools.get(0), deferralReasonRequestDto.getPoolNumber());
+                verifyActivePoolOldRecordChangeDate(jurorPools.getFirst(), deferralReasonRequestDto.getPoolNumber());
 
                 jurorPools = jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_555555558, true);
 
-                verifyActivePoolNewRecordChangeDate(jurorPools.get(0),
+                verifyActivePoolNewRecordChangeDate(jurorPools.getFirst(),
                                 deferralReasonRequestDto.getPoolNumber(), deferralReasonRequestDto.getDeferralDate());
 
                 Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555558);
@@ -1181,7 +1233,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                     .isEqualTo(1);
 
                 // check to make sure the new pool members record has been updated correctly
-                JurorPool jurorPool = jurorPools.get(0);
+                JurorPool jurorPool = jurorPools.getFirst();
                 Juror juror = jurorPool.getJuror();
                 assertThat(jurorPool.getStatus().getStatusDesc()).isEqualTo(RESPONDED);
                 assertThat(jurorPool.getDeferralDate()).isNull();
@@ -1191,7 +1243,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
                 LocalDate expectedStartDate = LocalDate.now().plusWeeks(1);
                 assertThat(jurorPool.getNextDate()).isEqualTo(expectedStartDate);
                 assertThat(juror.getOpticRef())
-                    .as(String.format("Expected optic ref to be %s", OPTIC_REF_12345678)).isEqualTo(OPTIC_REF_12345678);
+                    .as("Expected optic ref to be %s".formatted(OPTIC_REF_12345678)).isEqualTo(OPTIC_REF_12345678);
             });
         }
 
@@ -1300,7 +1352,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             DeferralListDto dto = response.getBody();
             assertThat(dto.getDeferrals().size()).as("Expected size to be 2").isEqualTo(2);
             //Todo may want to make the following test more determinate as order is not guaranteed
-            assertThat(dto.getDeferrals().get(0).getJurorNumber()).containsAnyOf("555555557", "555555559");
+            assertThat(dto.getDeferrals().getFirst().getJurorNumber()).containsAnyOf("555555557", "555555559");
             assertThat(dto.getDeferrals().get(1).getJurorNumber()).containsAnyOf("555555557", "555555559");
         }
 
@@ -1317,7 +1369,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             DeferralListDto dto = response.getBody();
             assertThat(dto.getDeferrals().size()).as("Expected size to be 2").isEqualTo(2);
             //Todo may want to make the following test more determinate as order is not guaranteed
-            assertThat(dto.getDeferrals().get(0).getJurorNumber()).containsAnyOf("123456789", "444444444");
+            assertThat(dto.getDeferrals().getFirst().getJurorNumber()).containsAnyOf("123456789", "444444444");
             assertThat(dto.getDeferrals().get(1).getJurorNumber()).containsAnyOf("123456789", "444444444");
         }
     }
@@ -1341,10 +1393,10 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
             DeferralOptionsDto dto = response.getBody();
             assertThat(dto).isNotNull();
             assertThat(dto.getDeferralPoolsSummary().size()).isEqualTo(1);
-            assertThat(dto.getDeferralPoolsSummary().get(0).getDeferralOptions().size()).isEqualTo(1);
-            assertThat(dto.getDeferralPoolsSummary().get(0).getWeekCommencing())
+            assertThat(dto.getDeferralPoolsSummary().getFirst().getDeferralOptions().size()).isEqualTo(1);
+            assertThat(dto.getDeferralPoolsSummary().getFirst().getWeekCommencing())
                 .isEqualTo(DateUtils.getStartOfWeekFromDate(LocalDate.now()));
-            assertThat(dto.getDeferralPoolsSummary().get(0).getDeferralOptions().get(0).getUtilisation())
+            assertThat(dto.getDeferralPoolsSummary().getFirst().getDeferralOptions().getFirst().getUtilisation())
                 .isEqualTo(4);
         }
     }
@@ -1463,7 +1515,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
             assertThat(jurorPools.size()).as("Expected size to be one for the postponed pool member record")
                 .isEqualTo(1);
-            JurorPool jurorPool = jurorPools.get(0);
+            JurorPool jurorPool = jurorPools.getFirst();
             assertThat(jurorPool.getStatus().getStatus()).as("Expect Status to be deferred (7)")
                 .isEqualTo(7);
             assertThat(jurorPool.getDeferralCode()).as("Expect reason code to be postponement (P)")
@@ -1475,7 +1527,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
             assertThat(jurorPools.size()).as("Expected size to be one for the new pool member record")
                 .isEqualTo(1);
-            assertThat(jurorPools.get(0).getJurorNumber()).isEqualTo(JUROR_555555551);
+            assertThat(jurorPools.getFirst().getJurorNumber()).isEqualTo(JUROR_555555551);
 
             // check to make sure the juror has not been added to deferral maintenance
             Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555551);
@@ -1508,7 +1560,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
             assertThat(jurorPools.size()).as("Expected size to be one for the postponed pool member record")
                 .isEqualTo(1);
-            JurorPool jurorPool = jurorPools.get(0);
+            JurorPool jurorPool = jurorPools.getFirst();
             assertThat(jurorPool.getStatus().getStatus()).as("Expect Status to be deferred (7)")
                 .isEqualTo(7);
             assertThat(jurorPool.getDeferralCode()).as("Expect reason code to be postponement (P)")
@@ -1520,7 +1572,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
             assertThat(jurorPools.size()).as("Expected size to be one for the new pool member record")
                 .isEqualTo(1);
-            assertThat(jurorPools.get(0).getJurorNumber()).isEqualTo(JUROR_555555559);
+            assertThat(jurorPools.getFirst().getJurorNumber()).isEqualTo(JUROR_555555559);
 
             // check to make sure the juror has not been added to deferral maintenance
             Optional<CurrentlyDeferred> deferral = currentlyDeferredRepository.findById(JUROR_555555559);
@@ -1555,7 +1607,7 @@ public class DeferralMaintenanceControllerITest extends AbstractIntegrationTest 
 
             assertThat(jurorPools.size()).as("Expected size to be one for the postponed pool member record")
                 .isEqualTo(1);
-            JurorPool jurorPool = jurorPools.get(0);
+            JurorPool jurorPool = jurorPools.getFirst();
 
             assertThat(jurorPool.getStatus().getStatus()).as("Expect Status to be deferred (7)")
                 .isEqualTo(7);

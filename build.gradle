@@ -8,6 +8,8 @@ buildscript {
         postgresVersion = '42.7.13'  // upgraded from 42.7.12 - CVE-2026-54291 fix
         jwtVersion = '0.13.0'
         mockitoVersion = '5.15.2'
+        httpclient5Version = '5.6.4'
+        httpcore5Version = '5.4.3'
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -30,6 +32,9 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'maven-publish'
 apply plugin: 'jacoco'
 apply plugin: 'io.spring.dependency-management'
+
+ext['httpclient5.version'] = httpclient5Version
+ext['httpcore5.version'] = httpcore5Version
 
 java {
   toolchain {
@@ -61,14 +66,15 @@ jacoco {
   toolVersion = "0.8.15"
 }
 
-version = '5.29.0'
+version = '5.33.0'
 
 repositories {
   mavenLocal()
-  mavenCentral()
-  maven {
-    url 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1'
+  if (!System.getenv('GITHUB_ACTIONS')) {
+    maven { url'https://artifactory.platform.hmcts.net/artifactory/maven-remotes'}
   }
+  maven { url 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1' }
+  mavenCentral()
 }
 
 configurations {
@@ -99,9 +105,9 @@ configurations {
 dependencies {
 
   //Internal dependency overrides
-  implementation 'org.apache.logging.log4j:log4j-api:2.25.5'
-  implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.25.5'         // kept in sync with log4j-api
-  //
+  implementation 'org.apache.logging.log4j:log4j-api:2.26.1'
+  implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.26.1'        // kept in sync with log4j-api
+  
   implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
   implementation("org.springframework.data:spring-data-envers")
@@ -123,7 +129,7 @@ dependencies {
   implementation 'javax.mail:mail:1.4.7'
   runtimeOnly "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
   runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}"
-  implementation 'org.apache.httpcomponents.client5:httpclient5:5.4.4'
+  implementation "org.apache.httpcomponents.client5:httpclient5:${httpclient5Version}"
 
     implementation('com.google.guava:guava:33.6.0-jre')
 
@@ -131,26 +137,29 @@ dependencies {
   implementation("com.querydsl:querydsl-core:${queryDslVersion}")
   implementation("com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta")
 
-  testImplementation platform("org.junit:junit-bom:5.12.2")
+  testImplementation platform("org.junit:junit-bom:5.14.4")
   testImplementation 'junit:junit:4.13.2'
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation 'org.junit.jupiter:junit-jupiter-api'
 
+  testImplementation 'com.github.hmcts:fortify-client:1.4.10:all'
+
   annotationProcessor("com.querydsl:querydsl-apt:${queryDslVersion}:jakarta")
   annotationProcessor('jakarta.persistence:jakarta.persistence-api:3.2.0')
 
-  implementation('org.projectlombok:lombok:1.18.46')
+  implementation('org.projectlombok:lombok:1.18.48')
   annotationProcessor('org.projectlombok:lombok')
 
-  implementation('org.apache.commons:commons-lang3:3.18.0')
-  implementation('org.apache.commons:commons-text:1.13.0')
+  implementation('org.apache.commons:commons-lang3:3.21.0')
+  implementation('org.apache.commons:commons-text:1.15.0')
+  
   implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
 
-  runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.7.9')
+  runtimeOnly(group: 'com.microsoft.azure', name: 'applicationinsights-core', version: '3.7.10')
 
   implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
-  implementation group: 'io.rest-assured', name: 'rest-assured', version: '5.4.0'
+  implementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.7'
 
   testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
   testImplementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
@@ -159,25 +168,25 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-restclient-test:${springBootVersion}")
   testImplementation("org.springframework.boot:spring-boot-resttestclient:${springBootVersion}")
 
-    testImplementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
-    testImplementation 'net.javacrumbs.json-unit:json-unit-fluent:4.1.1'
-    testImplementation('org.assertj:assertj-core:3.27.7')
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-    mockitoAgent("org.mockito:mockito-core:${mockitoVersion}") {
-        transitive = false
-    }
+  testImplementation "org.apache.httpcomponents.client5:httpclient5:${httpclient5Version}"
+  testImplementation 'net.javacrumbs.json-unit:json-unit-assertj:4.1.1'
+  testImplementation('org.assertj:assertj-core:3.27.7')
+  testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+  mockitoAgent("org.mockito:mockito-core:${mockitoVersion}") {
+      transitive = false
+  }
 
   testImplementation('org.projectlombok:lombok')
   testAnnotationProcessor('org.projectlombok:lombok')
 
-    testImplementation('net.bytebuddy:byte-buddy:1.18.11')
-    testImplementation('junit:junit:4.13.2')
-    testImplementation "org.testcontainers:testcontainers:1.21.4"
-    testImplementation "org.testcontainers:junit-jupiter:1.21.4"
-    testImplementation 'org.testcontainers:postgresql:1.21.4'
+  testImplementation('net.bytebuddy:byte-buddy:1.18.11')
+  testImplementation('junit:junit:4.13.2')
+  testImplementation "org.testcontainers:testcontainers:1.21.4"
+  testImplementation "org.testcontainers:junit-jupiter:1.21.4"
+  testImplementation 'org.testcontainers:postgresql:1.21.4'
 
   // Validation
-  testImplementation 'org.wiremock:wiremock-standalone:3.10.0'
+  testImplementation 'org.wiremock:wiremock-standalone:3.13.2'
 }
 
 sonarqube {
@@ -231,7 +240,7 @@ flyway {
   def dbUrl = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/juror"
   def dbUserName = System.getenv("DB_USERNAME") ?: "system"
   def dbPassword = System.getenv("DB_PASSWORD") ?: "postgres"
-  def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: "db/**/*.sql"
+  def flywayLocations = System.getenv("FLYWAY_LOC_OVERRIDE") ?: "classpath:db/**/*.sql"
 
   url = "$dbUrl"
   user = "$dbUserName"
@@ -244,6 +253,7 @@ flyway {
 }
 
 task migratePostgresDatabase(type: org.flywaydb.gradle.task.FlywayMigrateTask) {
+  dependsOn processResources
   if (project.hasProperty("dburl")) {
     url = "jdbc:postgresql://${dburl}"
   }
@@ -410,6 +420,12 @@ task runAllStyleChecks {
   dependsOn 'pmdIntegrationTest'
   dependsOn 'pmdSmokeTest'
   dependsOn 'pmdFunctionalTest'
+}
+
+task fortifyScan(type: JavaExec) {
+  main = "uk.gov.hmcts.fortifyclient.FortifyClientMainApp"
+  classpath += sourceSets.test.runtimeClasspath
+  jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
 }
 
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083

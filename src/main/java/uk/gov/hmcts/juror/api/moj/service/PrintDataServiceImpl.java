@@ -16,6 +16,9 @@ import uk.gov.hmcts.juror.api.moj.repository.FormAttributeRepository;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.xerox.LetterBase;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ConfirmLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.DbdResponseLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.DbdSummonsLetter;
+import uk.gov.hmcts.juror.api.moj.xerox.letters.DbdSummonsReminderLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralDeniedLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.DeferralLetter;
 import uk.gov.hmcts.juror.api.moj.xerox.letters.ExcusalDeniedLetter;
@@ -45,7 +48,6 @@ public class PrintDataServiceImpl implements PrintDataService {
     private final WelshCourtLocationRepository welshCourtLocationRepository;
 
     public static final String BUREAU_LOC_CODE = "400";
-    private final JurorHistoryService jurorHistoryService;
 
     @Override
     public void bulkPrintSummonsLetter(List<JurorPool> jurorPools) {
@@ -67,9 +69,60 @@ public class PrintDataServiceImpl implements PrintDataService {
     }
 
     @Override
+    public void bulkPrintDbdSummonsLetter(List<JurorPool> jurorPools) {
+        if (jurorPools == null || jurorPools.isEmpty()) {
+            throw new MojException.InternalServerError(
+                "Attempted to print DBD summons letters for empty jurorPool list", null);
+        }
+
+        jurorPools.forEach(jurorPool -> {
+            //queue a letter if juror is not disqualified
+            if (!Objects.equals(jurorPool.getStatus().getStatus(), IJurorStatus.DISQUALIFIED)) {
+                commitData(new DbdSummonsLetter(jurorPool,
+                                        jurorPool.getCourt(),
+                                        courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
+                                        welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+                ));
+            }
+        });
+    }
+
+    @Override
     public void reprintSummonsLetter(JurorPool jurorPool) {
         bulkPrintSummonsLetter(List.of(jurorPool));
-        jurorHistoryService.createSummonLetterReprintedHistory(jurorPool);
+    }
+
+    @Override
+    public void reprintDbdSummonsLetter(JurorPool jurorPool) {
+        bulkPrintDbdSummonsLetter(List.of(jurorPool));
+    }
+
+    @Override
+    public void printDbdResponseLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to print digital by default response letter for null jurorPool", null);
+        }
+
+        commitData(new DbdResponseLetter(
+            jurorPool, jurorPool.getCourt(),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
+            welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+        ));
+    }
+
+    @Override
+    public void printDbdSummonsReminderLetter(JurorPool jurorPool) {
+        if (jurorPool == null) {
+            throw new MojException.InternalServerError(
+                "Attempted to print summons reminder letter for null jurorPool", null);
+        }
+
+        commitData(new DbdSummonsReminderLetter(
+            jurorPool, jurorPool.getCourt(),
+            courtLocationService.getCourtLocation(BUREAU_LOC_CODE),
+            welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode())
+        ));
     }
 
     @Override
@@ -193,7 +246,7 @@ public class PrintDataServiceImpl implements PrintDataService {
                 "Attempted to reprint request info letter for juror with no existing request info letter", null);
         }
 
-        BulkPrintData bulkPrintData = bulkPrintDataList.get(0);
+        BulkPrintData bulkPrintData = bulkPrintDataList.getFirst();
         BulkPrintData newBulkPrintData = BulkPrintData.builder()
             .creationDate(LocalDate.now())
             .formAttribute(bulkPrintData.getFormAttribute())

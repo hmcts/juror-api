@@ -90,8 +90,8 @@ public class CourtsWithIncompleteServiceReport extends AbstractStandardReport {
         int totalIncompleteJurors = tableData.getData().stream()
                 .mapToInt(row -> {
                     Object countObj = row.get("incomplete_jurors_count");
-                    if (countObj instanceof Number) {
-                        return ((Number) countObj).intValue();
+                    if (countObj instanceof Number number) {
+                        return number.intValue();
                     }
                     return 0;
                 })

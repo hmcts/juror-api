@@ -23,7 +23,7 @@ import uk.gov.hmcts.juror.api.config.jurorer.JurorErPreAuthenticationTokenFilter
 import uk.gov.hmcts.juror.api.config.public1.PublicPreAuthenticationTokenFilter;
 
 @Configuration
-@AllArgsConstructor(onConstructor = @__(@Autowired))
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class SecurityConfigEndpoints {
     private static final String ERROR = "/error";
 

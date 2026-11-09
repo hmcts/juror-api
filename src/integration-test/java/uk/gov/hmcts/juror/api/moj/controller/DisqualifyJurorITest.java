@@ -24,7 +24,10 @@ import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.PaperResponse;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCodeEnum;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -44,7 +47,9 @@ import static uk.gov.hmcts.juror.api.moj.utils.DataUtils.getJurorPaperResponse;
  * Integration tests for the API endpoints defined in DisqualifyJurorController.
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = "feature-flags.flags.digital-by-default=true")
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
@@ -79,8 +84,8 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         DisqualifyReasonsDto disqualifyReasonsDto = templateExchangeDisqualifyReasons();
 
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().size()).isEqualTo(10);
-        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(0).getCode()).isEqualTo("A");
-        assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(0).getDescription()).isEqualTo("Age");
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().getFirst().getCode()).isEqualTo("A");
+        assertThat(disqualifyReasonsDto.getDisqualifyReasons().getFirst().getDescription()).isEqualTo("Age");
 
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(1).getCode()).isEqualTo("B");
         assertThat(disqualifyReasonsDto.getDisqualifyReasons().get(1).getDescription()).isEqualTo("Bail");
@@ -137,6 +142,24 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/summonsmanagement/DisqualifyJurorControllerTestData.sql"})
+    public void disqualifyJurorDigitalResponse_digitalByDefaultEligible_queuesWithdrawalEmail() {
+        jdbcTemplate.update("UPDATE juror_mod.juror SET digital_by_default = true, dbd_preference = 'Digital' "
+            + "WHERE juror_number = ?", JUROR_NUMBER_123456789);
+        jdbcTemplate.update("UPDATE juror_mod.court_location SET digital_by_default = true WHERE loc_code = ?",
+            "415");
+        insertDbdWithdrawalTemplateMapping();
+
+        DisqualifyJurorDto disqualifyJurorDto = createDisqualifyJurorDigitalDto();
+
+        assertTemplateExchangeDisqualifyJuror(UserType.BUREAU, disqualifyJurorDto,
+            JUROR_NUMBER_123456789, BUREAU_USER, "400", HttpStatus.OK);
+
+        assertQueuedWithdrawalEmail(JUROR_NUMBER_123456789);
+        assertWithdrawalEmailHistory(JUROR_NUMBER_123456789, "N");
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/summonsmanagement/DisqualifyJurorControllerTestData.sql"})
     public void disqualifyPaperResponseCourtUserHappy() {
 
         //Pre-verification: Verify status of tables before the juror is disqualified
@@ -178,7 +201,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
             assertThat(jurorPools.size()).isGreaterThan(0);
 
-            JurorPool jurorPoolRecord = jurorPools.get(0);
+            JurorPool jurorPoolRecord = jurorPools.getFirst();
             Juror juror = jurorPoolRecord.getJuror();
             assertThat(juror.isResponded()).isEqualTo(Boolean.TRUE);
             assertThat(juror.getDisqualifyDate()).isNotNull();
@@ -210,7 +233,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
 
             assertThat(jurorPools.size()).isGreaterThan(0);
 
-            JurorPool jurorPoolRecord = jurorPools.get(0);
+            JurorPool jurorPoolRecord = jurorPools.getFirst();
             Juror juror = jurorPoolRecord.getJuror();
 
             assertThat(juror.isResponded()).isEqualTo(Boolean.TRUE);
@@ -242,7 +265,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
                 jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_NUMBER_123456789, true);
             assertThat(jurorPools.size()).isGreaterThan(0);
 
-            JurorPool jurorPoolRecord = jurorPools.get(0);
+            JurorPool jurorPoolRecord = jurorPools.getFirst();
             Juror juror = jurorPoolRecord.getJuror();
 
             assertThat(juror.isResponded()).isEqualTo(Boolean.FALSE);
@@ -273,7 +296,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
                 jurorPoolRepository.findByJurorJurorNumberAndIsActive(JUROR_NUMBER_987654321, true);
             assertThat(jurorPools.size()).isGreaterThan(0);
 
-            JurorPool jurorPoolRecord = jurorPools.get(0);
+            JurorPool jurorPoolRecord = jurorPools.getFirst();
             Juror juror = jurorPoolRecord.getJuror();
 
             assertThat(juror.isResponded()).isEqualTo(Boolean.FALSE);
@@ -291,6 +314,42 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         });
     }
 
+    private void assertQueuedWithdrawalEmail(String jurorNumber) {
+        executeInTransaction(() -> {
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.bulk_print_data WHERE "
+                    + "juror_no = ? AND form_type = '5224' AND digital_comms = true AND extracted_flag = true "
+                    + "AND communication_channel = ? AND email_status = ? AND notify_template_name = ?",
+                Integer.class,
+                jurorNumber,
+                CommunicationChannel.EMAIL.name(),
+                EmailStatus.PENDING.name(),
+                DigitalByDefaultEmailTemplate.WITHDRAWAL_ENGLISH.getTemplateName()))
+                .as("A pending DBD withdrawal email should be queued")
+                .isEqualTo(1);
+        });
+    }
+
+    private void assertWithdrawalEmailHistory(String jurorNumber, String disqualifyCode) {
+        executeInTransaction(() -> {
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM juror_mod.juror_history WHERE "
+                    + "juror_number = ? AND history_code = 'RDIS' "
+                    + "AND other_information = 'Withdrawal Email' AND other_info_reference = ?",
+                Integer.class,
+                jurorNumber,
+                disqualifyCode))
+                .as("Juror history should record the queued withdrawal email")
+                .isEqualTo(1);
+        });
+    }
+
+    private void insertDbdWithdrawalTemplateMapping() {
+        jdbcTemplate.update("INSERT INTO juror_mod.notify_template_mapping "
+            + "(template_id, template_name, notify_name, form_type, notification_type, version) "
+            + "VALUES ('2d7e9717-829b-4dcc-8f18-f0cdf047fc8d', ?, 'DBD withdrawal English', '5224', 1, 0) "
+            + "ON CONFLICT (template_name) DO NOTHING",
+            DigitalByDefaultEmailTemplate.WITHDRAWAL_ENGLISH.getTemplateName());
+    }
+
     private void assertTemplateExchangeDisqualifyJuror(
         UserType userType,
         DisqualifyJurorDto disqualifyJurorDto,
@@ -298,7 +357,7 @@ public class DisqualifyJurorITest extends AbstractIntegrationTest {
         String login,
         String owner,
         HttpStatus httpStatus) {
-        final URI uri = URI.create(String.format(URI_DISQUALIFY_JUROR, jurorNumber));
+        final URI uri = URI.create(URI_DISQUALIFY_JUROR.formatted(jurorNumber));
         HttpHeaders httpHeaders = initialiseHeaders(login, userType, Set.of(Role.MANAGER), owner);
 
         RequestEntity<DisqualifyJurorDto> requestEntity = new RequestEntity<>(disqualifyJurorDto, httpHeaders,

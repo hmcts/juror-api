@@ -1,8 +1,8 @@
 package uk.gov.hmcts.juror.api.moj.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.hmcts.juror.api.bureau.domain.IPoolStatus;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import static uk.gov.hmcts.juror.api.moj.service.deferralmaintenance.ManageDeferralsService.AGE_DISQUALIFICATION_THRESHOLD;
 
 @Slf4j
+@SuppressWarnings("PMD")
 public final class JurorUtils {
 
     private JurorUtils() {
@@ -95,7 +96,7 @@ public final class JurorUtils {
         log.debug("Retrieving juror record for juror number {}", jurorNumber);
 
         Juror juror = jurorRepository.findById(jurorNumber).orElseThrow(() ->
-            new MojException.NotFound(String.format("Unable to find valid juror record for Juror Number: %s",
+            new MojException.NotFound("Unable to find valid juror record for Juror Number: %s".formatted(
                 jurorNumber), null));
 
         log.debug("retrieved juror record for juror number {}", jurorNumber);
@@ -159,8 +160,8 @@ public final class JurorUtils {
     public static List<Juror> getSourceJurors(List<String> jurorNumbers, String poolNumber,
                                               CourtLocation courtLocation, JurorRepository jurorRepository) {
         List<Integer> validSourceStatusList = new ArrayList<>();
-        validSourceStatusList.add(Math.toIntExact(IPoolStatus.SUMMONED));
-        validSourceStatusList.add(Math.toIntExact(IPoolStatus.RESPONDED));
+        validSourceStatusList.add(Math.toIntExact(IJurorStatus.SUMMONED));
+        validSourceStatusList.add(Math.toIntExact(IJurorStatus.RESPONDED));
 
         log.debug("Find summoned/responded jurors from Pool: {} and location {}", poolNumber, courtLocation);
 
@@ -210,6 +211,10 @@ public final class JurorUtils {
             return paper.getDateOfBirth();
         }
         return null;
+    }
+
+    public static boolean isDigitalPreference(Juror juror) {
+        return ReplyMethod.DIGITAL.getDescription().equalsIgnoreCase(juror.getDbdPreference());
     }
 
 }

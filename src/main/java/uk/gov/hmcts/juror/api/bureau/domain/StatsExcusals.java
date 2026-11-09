@@ -15,7 +15,7 @@ import org.hibernate.annotations.Immutable;
 import java.io.Serializable;
 
 /**
- * Entity representing data for JUROR_DIGITAL.STATS_EXCUSALS.
+ * Entity representing data for JUROR_DASHBOARD.STATS_EXCUSALS.
  */
 
 @Data

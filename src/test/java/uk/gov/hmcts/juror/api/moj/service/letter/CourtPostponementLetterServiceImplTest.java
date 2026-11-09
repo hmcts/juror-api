@@ -98,7 +98,7 @@ class CourtPostponementLetterServiceImplTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((PostponeLetterData) data.get(0), jurorNumber, postponedTo, reason, poolNumber, null);
+            validateData((PostponeLetterData) data.getFirst(), jurorNumber, postponedTo, reason, poolNumber, null);
         }
 
         @Test
@@ -136,7 +136,7 @@ class CourtPostponementLetterServiceImplTest {
             validateDataTypes(dataTypes);
 
             List<? extends LetterResponseData> data = response.getData();
-            validateData((PostponeLetterData) data.get(0), jurorNumber, postponedTo, reason, poolNumber,
+            validateData((PostponeLetterData) data.getFirst(), jurorNumber, postponedTo, reason, poolNumber,
                 datePrinted.toLocalDate());
         }
 
@@ -193,7 +193,7 @@ class CourtPostponementLetterServiceImplTest {
 
         private void validateHeadings(List<String> headings) {
             Assertions.assertThat(headings.size()).isEqualTo(9);
-            Assertions.assertThat(headings.get(0)).isEqualToIgnoringCase("Juror number");
+            Assertions.assertThat(headings.getFirst()).isEqualToIgnoringCase("Juror number");
             Assertions.assertThat(headings.get(1)).isEqualToIgnoringCase("First name");
             Assertions.assertThat(headings.get(2)).isEqualToIgnoringCase("Last name");
             Assertions.assertThat(headings.get(3)).isEqualToIgnoringCase("Postcode");
@@ -206,7 +206,7 @@ class CourtPostponementLetterServiceImplTest {
 
         private void validateDataTypes(List<String> dataTypes) {
             Assertions.assertThat(dataTypes.size()).isEqualTo(9);
-            Assertions.assertThat(dataTypes.get(0)).isEqualToIgnoringCase("string");
+            Assertions.assertThat(dataTypes.getFirst()).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(1)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(2)).isEqualToIgnoringCase("string");
             Assertions.assertThat(dataTypes.get(3)).isEqualToIgnoringCase("string");

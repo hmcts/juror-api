@@ -9,7 +9,7 @@ import uk.gov.hmcts.juror.api.config.JwtSecurityConfig;
 import uk.gov.hmcts.juror.api.moj.service.JwtService;
 
 import java.io.IOException;
-import java.security.Key;
+import javax.crypto.SecretKey;
 
 
 public class JwtAuthenticationInterceptor implements ClientHttpRequestInterceptor {
@@ -34,7 +34,7 @@ public class JwtAuthenticationInterceptor implements ClientHttpRequestIntercepto
     }
 
     private String generateJwt() {
-        return jwtService.generateJwtToken(null,this.config.getIssuer(),
+        return jwtService.generateJwtToken(null, this.config.getIssuer(),
             this.config.getSubject(),
             this.config.getTokenValidity(),
             getSigningKey(),

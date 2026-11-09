@@ -81,7 +81,7 @@ class PanelListDetailedReportTest extends AbstractStandardReportTestSupport<Pane
         verify(query, times(1))
             .where(QPanel.panel.trial.trialNumber.eq(TestConstants.VALID_TRIAL_NUMBER));
         verify(query, times(1))
-            .where(QPanel.panel.trial.courtLocation.owner.eq(request.getLocCode()));
+            .where(QPanel.panel.trial.courtLocation.locCode.eq(request.getLocCode()));
         verify(query, times(1))
             .orderBy(QJuror.juror.jurorNumber.asc());
     }
@@ -95,7 +95,7 @@ class PanelListDetailedReportTest extends AbstractStandardReportTestSupport<Pane
 
         Trial trial = mock(Trial.class);
 
-        doReturn(trial).when(report).getTrial(any(), any());
+        doReturn(trial).when(report).getTrial(any(), any(), any());
 
         CourtLocation courtLocation = mock(CourtLocation.class);
 
@@ -116,6 +116,7 @@ class PanelListDetailedReportTest extends AbstractStandardReportTestSupport<Pane
         when(trial.getJudge().getName()).thenReturn("Judge Dredd");
 
         when(request.getTrialNumber()).thenReturn("T000000001");
+        when(request.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
         when(data.size()).thenReturn(2);
         Map<String, StandardReportResponse.DataTypeValue> map = report.getHeadings(request, tableData);

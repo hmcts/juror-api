@@ -89,7 +89,7 @@ class SummonsRepliesReportServiceImplTest {
         }
 
         private void validateTableHeadings(DigitalSummonsRepliesReportResponse.TableData tableData) {
-            DigitalSummonsRepliesReportResponse.TableData.Heading tablHeading = tableData.getHeadings().get(0);
+            DigitalSummonsRepliesReportResponse.TableData.Heading tablHeading = tableData.getHeadings().getFirst();
             assertThat(tablHeading.getId()).isEqualTo(DATE);
             assertThat(tablHeading.getName()).isEqualTo("Date");
             assertThat(tablHeading.getDataType()).isEqualTo("LocalDate");
@@ -180,7 +180,7 @@ class SummonsRepliesReportServiceImplTest {
 
         private void validateTableData(ResponsesCompletedReportResponse.TableData tableData) {
             Assertions.assertThat(tableData.getData()).hasSize(1);
-            ResponsesCompletedReportResponse.TableData.DataRow dataRow = tableData.getData().get(0);
+            ResponsesCompletedReportResponse.TableData.DataRow dataRow = tableData.getData().getFirst();
             assertThat(dataRow.getStaffName()).isEqualTo("Total Responses");
             Assertions.assertThat(dataRow.getDailyTotals()).hasSize(30);
             for (Integer dailyTotal : dataRow.getDailyTotals()) {
@@ -190,7 +190,7 @@ class SummonsRepliesReportServiceImplTest {
         }
 
         private void validateTableHeadings(ResponsesCompletedReportResponse.TableData tableData) {
-            ResponsesCompletedReportResponse.TableData.Heading tablHeading = tableData.getHeadings().get(0);
+            ResponsesCompletedReportResponse.TableData.Heading tablHeading = tableData.getHeadings().getFirst();
             assertThat(tablHeading.getId()).isEqualTo(0);
             assertThat(tablHeading.getName()).isEqualTo("Staff Name");
             assertThat(tablHeading.getDataType()).isEqualTo("String");

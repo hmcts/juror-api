@@ -45,6 +45,7 @@ import java.util.Map;
 @Tag(name = "Message")
 @RequiredArgsConstructor(onConstructor_ = {@Autowired})
 @IsCourtUser
+@SuppressWarnings("PMD.ExcessiveImports")
 public class MessagingController {
 
     private final MessagingService messagingService;

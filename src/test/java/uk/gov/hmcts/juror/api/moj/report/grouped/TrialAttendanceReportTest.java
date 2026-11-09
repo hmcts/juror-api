@@ -85,6 +85,7 @@ class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAt
         return StandardReportRequest.builder()
             .reportType(report.getName())
             .trialNumber("TRIALNUMBER")
+            .locCode(TestConstants.VALID_COURT_LOCATION)
             .build();
     }
 
@@ -92,6 +93,7 @@ class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAt
     protected void positivePreProcessQueryTypical(JPAQuery<Tuple> query, StandardReportRequest request) {
         String locCode = "415";
         TestUtils.mockSecurityUtil(BureauJwtPayload.builder().locCode(locCode).userType(UserType.COURT).build());
+        request.setLocCode(locCode);
 
         report.preProcessQuery(query, request);
         verify(query, times(1))
@@ -115,6 +117,7 @@ class TrialAttendanceReportTest extends AbstractGroupedReportTestSupport<TrialAt
 
         String trialNumber = "TRIALNUMBER";
         when(request.getTrialNumber()).thenReturn(trialNumber);
+        when(request.getLocCode()).thenReturn(TestConstants.VALID_COURT_LOCATION);
 
         String courtName = "CHESTER";
         CourtLocation courtLocation = new CourtLocation();

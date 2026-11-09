@@ -2367,7 +2367,6 @@ public class SummonsReplyStatusUpdateServiceImplTest {
 
     private BureauJwtPayload buildPayload() {
         return BureauJwtPayload.builder()
-            .userLevel("99")
             .login("test_user")
             .owner("400")
             .build();

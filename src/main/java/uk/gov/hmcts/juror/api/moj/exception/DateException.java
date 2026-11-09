@@ -19,8 +19,7 @@ public class DateException extends RuntimeException {
     public static class DateParseException extends DateException {
 
         public DateParseException(String dateString, String dateFormat) {
-            super(String.format(
-                "Unable to parse the String value of %s into a valid date in the format: %s",
+            super("Unable to parse the String value of %s into a valid date in the format: %s".formatted(
                 dateString,
                 dateFormat
             ));

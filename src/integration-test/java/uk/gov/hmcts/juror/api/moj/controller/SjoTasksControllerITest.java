@@ -124,7 +124,7 @@ class SjoTasksControllerITest extends AbstractIntegrationTest {
 
             List<JurorDetailsDto> data = body.getData();
             assertThat(data).isNotNull().hasSize(4);
-            validateCompleteJurorResponse641500005(data.get(0));
+            validateCompleteJurorResponse641500005(data.getFirst());
             validateCompleteJurorResponse641500007(data.get(1));
             validateCompleteJurorResponse641500008(data.get(2));
             validateCompleteJurorResponse641500009(data.get(3));
@@ -151,7 +151,7 @@ class SjoTasksControllerITest extends AbstractIntegrationTest {
 
             List<JurorDetailsDto> data = body.getData();
             assertThat(data).isNotNull().hasSize(5);
-            validateCompleteJurorResponse641500010(data.get(0));
+            validateCompleteJurorResponse641500010(data.getFirst());
             validateCompleteJurorResponse641500011(data.get(1));
             validateCompleteJurorResponse641500012(data.get(2));
             validateCompleteJurorResponse641500013(data.get(3));
@@ -179,7 +179,7 @@ class SjoTasksControllerITest extends AbstractIntegrationTest {
 
             List<JurorDetailsDto> data = body.getData();
             assertThat(data).isNotNull().hasSize(1);
-            validateCompleteJurorResponse641500007(data.get(0));
+            validateCompleteJurorResponse641500007(data.getFirst());
         }
 
         @Test
@@ -203,7 +203,7 @@ class SjoTasksControllerITest extends AbstractIntegrationTest {
 
             List<JurorDetailsDto> data = body.getData();
             assertThat(data).isNotNull().hasSize(4);
-            validateCompleteJurorResponse641500005(data.get(0));
+            validateCompleteJurorResponse641500005(data.getFirst());
             validateCompleteJurorResponse641500007(data.get(1));
             validateCompleteJurorResponse641500008(data.get(2));
             validateCompleteJurorResponse641500009(data.get(3));
@@ -230,7 +230,7 @@ class SjoTasksControllerITest extends AbstractIntegrationTest {
 
             List<JurorDetailsDto> data = body.getData();
             assertThat(data).isNotNull().hasSize(2);
-            validateCompleteJurorResponse641500005(data.get(0));
+            validateCompleteJurorResponse641500005(data.getFirst());
             validateCompleteJurorResponse641500007(data.get(1));
         }
 
@@ -255,7 +255,7 @@ class SjoTasksControllerITest extends AbstractIntegrationTest {
 
             List<JurorDetailsDto> data = body.getData();
             assertThat(data).isNotNull().hasSize(3);
-            validateCompleteJurorResponse641500010(data.get(0));
+            validateCompleteJurorResponse641500010(data.getFirst());
             validateCompleteJurorResponse641500011(data.get(1));
             validateCompleteJurorResponse641500012(data.get(2));
         }
@@ -281,7 +281,7 @@ class SjoTasksControllerITest extends AbstractIntegrationTest {
 
             List<JurorDetailsDto> data = body.getData();
             assertThat(data).isNotNull().hasSize(5);
-            validateCompleteJurorResponse641500005(data.get(0));
+            validateCompleteJurorResponse641500005(data.getFirst());
             validateCompleteJurorResponse641500007(data.get(1));
             validateCompleteJurorResponse641500008(data.get(2));
             validateCompleteJurorResponse641500009(data.get(3));
@@ -304,7 +304,7 @@ class SjoTasksControllerITest extends AbstractIntegrationTest {
 
             List<JurorDetailsDto> data2 = body2.getData();
             assertThat(data2).isNotNull().hasSize(4);
-            validateCompleteJurorResponse641500011(data2.get(0));
+            validateCompleteJurorResponse641500011(data2.getFirst());
             validateCompleteJurorResponse641500012(data2.get(1));
             validateCompleteJurorResponse641500013(data2.get(2));
             validateCompleteJurorResponse641500014(data2.get(3));
@@ -525,7 +525,7 @@ class SjoTasksControllerITest extends AbstractIntegrationTest {
 
             List<JurorHistory> jurorHistories = jurorHistoryRepository.findByJurorNumberOrderById(jurorNumber);
             assertEquals(1, jurorHistories.size(), "Should only be one history entry");
-            JurorHistory jurorHistory = jurorHistories.get(0);
+            JurorHistory jurorHistory = jurorHistories.getFirst();
             assertEquals(poolNumber, jurorHistory.getPoolNumber(), "Pool number should match");
             assertEquals(jurorNumber, jurorHistory.getJurorNumber(), "Juror number should match");
             assertEquals("COURT_USER", jurorHistory.getCreatedBy(), "User id should match");

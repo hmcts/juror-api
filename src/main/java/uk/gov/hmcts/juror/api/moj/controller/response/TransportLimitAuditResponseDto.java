@@ -141,7 +141,7 @@ public class TransportLimitAuditResponseDto implements Serializable {
         if (value == null) {
             return "null";
         }
-        return String.format("£%.2f", value);
+        return "£%.2f".formatted(value);
     }
 
 

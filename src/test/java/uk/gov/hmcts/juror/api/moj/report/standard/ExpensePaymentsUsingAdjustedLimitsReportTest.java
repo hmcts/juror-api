@@ -96,7 +96,7 @@ class ExpensePaymentsUsingAdjustedLimitsReportTest {
         assertThat(response.getTableData().getData()).hasSize(2);
 
         StandardTableData data = response.getTableData().getData();
-        LinkedHashMap<String, Object> firstRow = data.get(0);
+        LinkedHashMap<String, Object> firstRow = data.getFirst();
 
         assertThat(firstRow.get("juror_number")).isEqualTo("123456789");
         assertThat(firstRow.get("first_name")).isEqualTo("John");
@@ -135,7 +135,7 @@ class ExpensePaymentsUsingAdjustedLimitsReportTest {
         assertThat(response.getTableData().getData()).isNotEmpty();
 
         StandardTableData data = response.getTableData().getData();
-        LinkedHashMap<String, Object> firstRow = data.get(0);
+        LinkedHashMap<String, Object> firstRow = data.getFirst();
 
         assertThat(firstRow.get("total_paid")).asString().matches("£\\d+\\.\\d{2}");
 
@@ -341,7 +341,7 @@ class ExpensePaymentsUsingAdjustedLimitsReportTest {
         StandardTableData data = response.getTableData().getData();
         assertThat(data).hasSize(1);
 
-        LinkedHashMap<String, Object> row = data.get(0);
+        LinkedHashMap<String, Object> row = data.getFirst();
         assertThat(row.get("trial_number")).isEqualTo("");
     }
 

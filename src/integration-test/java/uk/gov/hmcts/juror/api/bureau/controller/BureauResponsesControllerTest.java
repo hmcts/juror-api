@@ -71,7 +71,6 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void positiveGetTodo() throws Exception {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("ncrawford")
             .owner("400")
             .build());
@@ -105,7 +104,6 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     public void positiveGetRepliesPending() throws Exception {
 
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("ncrawford")
             .owner("400")
             .build());
@@ -140,7 +138,6 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void testGCompletedToday() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("ncrawford")
             .owner("400")
             .build());
@@ -174,7 +171,6 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void testGOverview() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("ncrawford")
             .owner("400")
             .build());
@@ -203,7 +199,6 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void searchForResponses_jurorNumberOnly_errorPath_notANumber() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("ncrawford")
             .owner("400")
             .build());
@@ -228,7 +223,6 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void searchForResponses_lastNameOnly_errorPath_blank() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("ncrawford")
             .owner("400")
             .build());
@@ -253,7 +247,6 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void searchForResponses_postcodeOnly_errorPath_blank() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("ncrawford")
             .owner("400")
             .build());
@@ -278,7 +271,6 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void searchForResponses_poolNumber_errorPath_notANumber() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("ncrawford")
             .owner("400")
             .build());
@@ -303,7 +295,6 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void searchForResponses_lastNameOnly() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("ncrawford")
             .owner("400")
             .build());
@@ -490,7 +481,6 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void autoAssign_post_errorPath_userIsNotTeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("carneson")
             .owner("400")
             .staff(BureauJwtPayload.Staff.builder().rank(0).active(1).name("Chad Arneson").build())
@@ -730,7 +720,6 @@ public class BureauResponsesControllerTest extends AbstractIntegrationTest {
     })
     public void autoAssign_get_errorPath_userIsNotTeamLeader() throws Exception {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("99")
             .login("sbell")
             .owner("400")
             .staff(BureauJwtPayload.Staff.builder().rank(0).active(1).name("Sandra Bell").build())

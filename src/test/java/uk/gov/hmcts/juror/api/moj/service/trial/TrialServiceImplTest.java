@@ -958,7 +958,6 @@ class TrialServiceImplTest {
 
         bureauJwtPayload.setOwner(owner);
         bureauJwtPayload.setLogin(userType);
-        bureauJwtPayload.setUserLevel("99");
         return bureauJwtPayload;
     }
 
@@ -1025,7 +1024,7 @@ class TrialServiceImplTest {
             JurorDetailRequestDto detailRequestDto = new JurorDetailRequestDto();
             detailRequestDto.setFirstName("FNAME");
             detailRequestDto.setLastName("LNAME");
-            detailRequestDto.setJurorNumber(String.format("1111111%02d", i + 1));
+            detailRequestDto.setJurorNumber("1111111%02d".formatted(i + 1));
             detailRequestDto.setResult(PanelResult.JUROR);
             jurorDetailRequestDtos.add(detailRequestDto);
         }
@@ -1040,7 +1039,7 @@ class TrialServiceImplTest {
         for (int i = 0;
              i < totalMembers;
              i++) {
-            Panel temp = createSinglePanelData(panelResult, trialNumber, status, String.format(jurorNumber, i + 1));
+            Panel temp = createSinglePanelData(panelResult, trialNumber, status, jurorNumber.formatted(i + 1));
             temp.getJuror().setJurorNumber(jurorNumber.formatted(i + 1));
             temp.setDateSelected(now().atStartOfDay());
             temp.setResult(panelResult);

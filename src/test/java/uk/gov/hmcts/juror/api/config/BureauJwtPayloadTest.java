@@ -1,8 +1,10 @@
 package uk.gov.hmcts.juror.api.config;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.GrantedAuthority;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
@@ -51,7 +53,6 @@ class BureauJwtPayloadTest {
         assertThat(payload.getOwner()).isEqualTo("400");
         assertThat(payload.getLocCode()).isEqualTo("401");
         assertThat(payload.getLogin()).isEqualTo("username");
-        assertThat(payload.getUserLevel()).isEqualTo("3");
         assertThat(payload.getUserType()).isEqualTo(UserType.COURT);
         assertThat(payload.getRoles()).containsExactly(Role.MANAGER);
         assertThat(payload.getStaff()).isEqualTo(
@@ -86,7 +87,6 @@ class BureauJwtPayloadTest {
         assertThat(payload.getOwner()).isEqualTo("400");
         assertThat(payload.getLocCode()).isEqualTo("401");
         assertThat(payload.getLogin()).isEqualTo("username");
-        assertThat(payload.getUserLevel()).isEqualTo("3");
         assertThat(payload.getUserType()).isEqualTo(UserType.ADMINISTRATOR);
         assertThat(payload.getRoles()).containsExactly(Role.values());
         assertThat(payload.getStaff()).isEqualTo(
@@ -106,7 +106,6 @@ class BureauJwtPayloadTest {
             "owner",
             "locCode",
             "login",
-            "userLevel",
             new BureauJwtPayload.Staff(
                 "staffName",
                 1,
@@ -119,13 +118,13 @@ class BureauJwtPayloadTest {
             Collections.emptyList()
         );
         assertThat(payload.toClaims())
-            .hasSize(10)
+            .hasSize(9)
+            .doesNotContainKey("userLevel")
             .containsEntry("email", "email@email.com")
             .containsEntry("owner", "owner")
             .containsEntry("permissions", Collections.emptyList())
             .containsEntry("locCode", "locCode")
             .containsEntry("login", "login")
-            .containsEntry("userLevel", "userLevel")
             .containsEntry("userType", UserType.COURT)
             .containsEntry("activeUserType", UserType.COURT)
             .containsEntry("roles", Set.of(Role.MANAGER))
@@ -160,10 +159,6 @@ class BureauJwtPayloadTest {
         when(claims.get("login", String.class)).thenReturn("login");
         when(claims.get("owner", String.class)).thenReturn("owner");
         when(claims.get("locCode", String.class)).thenReturn("locCode");
-        when(claims.containsKey("userLevel")).thenReturn(true);
-
-        when(claims.get("userLevel", String.class)).thenReturn("userLevel");
-
 
         assertThat(BureauJwtPayload.fromClaims(claims))
             .isEqualTo(
@@ -172,7 +167,6 @@ class BureauJwtPayloadTest {
                     "owner",
                     "locCode",
                     "login",
-                    "userLevel",
                     new BureauJwtPayload.Staff(
                         "staffName",
                         1,
@@ -211,8 +205,6 @@ class BureauJwtPayloadTest {
         when(claims.get("owner", String.class)).thenReturn("owner");
         when(claims.get("locCode", String.class)).thenReturn("locCode");
         when(claims.get("passwordWarning", Boolean.class)).thenReturn(false);
-        when(claims.containsKey("userLevel")).thenReturn(true);
-        when(claims.get("userLevel", String.class)).thenReturn("userLevel");
 
 
         assertThat(BureauJwtPayload.fromClaims(claims))
@@ -222,7 +214,6 @@ class BureauJwtPayloadTest {
                     "owner",
                     "locCode",
                     "login",
-                    "userLevel",
                     new BureauJwtPayload.Staff(
                         "staffName",
                         1,
@@ -236,6 +227,34 @@ class BureauJwtPayloadTest {
                 )
             );
 
+    }
+
+    @Test
+    void fromClaimsIgnoresLegacyUserLevel() {
+        Claims claims = Jwts.claims()
+            .add("userLevel", "99")
+            .add("roles", List.of(Role.MANAGER.name()))
+            .build();
+
+        BureauJwtPayload payload = BureauJwtPayload.fromClaims(claims);
+
+        assertThat(payload.getGrantedAuthority())
+            .extracting(GrantedAuthority::getAuthority)
+            .containsExactly("ROLE_MANAGER");
+    }
+
+    @Test
+    void legacyUserLevelDoesNotGrantAuthority() {
+        Claims claims = Jwts.claims()
+            .add("userLevel", "99")
+            .build();
+
+        assertThat(BureauJwtPayload.fromClaims(claims).getGrantedAuthority()).isEmpty();
+    }
+
+    @Test
+    void grantedAuthorityWithoutRolesIsEmpty() {
+        assertThat(BureauJwtPayload.builder().build().getGrantedAuthority()).isEmpty();
     }
 
     @Nested

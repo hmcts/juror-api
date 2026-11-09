@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.controller.request.JurorManagementRequestDto;
@@ -28,6 +29,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.PoolRequestRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorPaperResponseRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.EmailDataService;
 import uk.gov.hmcts.juror.api.moj.service.GeneratePoolNumberService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.PoolMemberSequenceService;
@@ -50,6 +52,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViolation.ErrorCode.UNCONFIRMED_ATTENDANCE_EXISTS;
 
 @Service
@@ -59,7 +62,8 @@ import static uk.gov.hmcts.juror.api.moj.exception.MojException.BusinessRuleViol
     "PMD.TooManyMethods",
     "PMD.ExcessiveImports",
     "PMD.AvoidInstantiatingObjectsInLoops",
-    "PMD.CouplingBetweenObjects"
+    "PMD.CouplingBetweenObjects",
+    "PMD.CyclomaticComplexity"
 })
 public class JurorManagementServiceImpl implements JurorManagementService {
 
@@ -77,11 +81,18 @@ public class JurorManagementServiceImpl implements JurorManagementService {
     private final JurorResponseService jurorResponseService;
     private final JurorPaperResponseRepositoryMod paperResponseRepository;
     private final JurorDigitalResponseRepositoryMod digitalResponseRepository;
+    private final EmailDataService emailDataService;
+    private final FeatureFlagConfigurationProperties featureFlags;
 
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @SuppressWarnings({"PMD.ExceptionAsFlowControl", "PMD.CyclomaticComplexity", "PMD.CognitiveComplexity"})
+    @SuppressWarnings({
+        "PMD.ExceptionAsFlowControl",
+        "PMD.CyclomaticComplexity",
+        "PMD.CognitiveComplexity",
+        "PMD.NPathComplexity"
+    })
     public ReassignPoolMembersResultDto reassignJurors(BureauJwtPayload payload,
                                                        JurorManagementRequestDto jurorManagementRequestDto) {
         log.trace("Entered reassignJurors method");
@@ -221,7 +232,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         }
 
         // remove a target pool created for court users if no jurors were reassigned into it
-        if (reassignedJurorsCount == 0 && !owner.equals(JurorDigitalApplication.JUROR_OWNER)
+        if (reassignedJurorsCount == 0 && !JurorDigitalApplication.JUROR_OWNER.equals(owner)
             && targetPoolRequest.getLastUpdate().isAfter(LocalDateTime.now().minusMinutes(1))
             && targetPoolRequest.getNumberRequested() == null) {
             poolRequestRepository.delete(targetPoolRequest);
@@ -234,11 +245,17 @@ public class JurorManagementServiceImpl implements JurorManagementService {
         return new ReassignPoolMembersResultDto(reassignedJurorsCount, targetPoolNumber, ageDisqualifiedJurorDtoList);
     }
 
+    @SuppressWarnings("PMD.AvoidDeeplyNestedIfStmts")
     private void processLetters(JurorPool targetJurorPool, String jurorNumber) {
         if (SecurityUtil.isBureau()) {
             if (targetJurorPool.getStatus().getStatus() == IJurorStatus.RESPONDED
                 && targetJurorPool.getJuror().getPoliceCheck().isChecked()) {
-                printDataService.printConfirmationLetter(targetJurorPool);
+                if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                    && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(targetJurorPool)) {
+                    emailDataService.emailConfirmationLetter(targetJurorPool);
+                } else {
+                    printDataService.printConfirmationLetter(targetJurorPool);
+                }
             }
             if (targetJurorPool.getStatus().getStatus() == IJurorStatus.SUMMONED) {
                 reissueLetterService.updatePendingLetters(
@@ -580,7 +597,7 @@ public class JurorManagementServiceImpl implements JurorManagementService {
             if (jurorPool.getStatus().getStatus() > 2 && !(jurorPool.getStatus().getStatus() == 7
                 && requestDto.getDeferralMaintenance() != null && requestDto.getDeferralMaintenance().equals(true))) {
                 failedTransfers.put(jurorPool.getJurorNumber(),
-                    new Triple<>(String.format(JurorManagementConstants.INVALID_STATUS_MESSAGE, jurorPool.getStatus()
+                    new Triple<>(JurorManagementConstants.INVALID_STATUS_MESSAGE.formatted(jurorPool.getStatus()
                         .getStatusDesc()), jurorPool.getJuror().getFirstName(), jurorPool.getJuror().getLastName()));
                 return;
             }
@@ -785,5 +802,3 @@ public class JurorManagementServiceImpl implements JurorManagementService {
 
 
 }
-
-

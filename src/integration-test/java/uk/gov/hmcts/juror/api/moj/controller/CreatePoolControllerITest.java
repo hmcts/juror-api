@@ -4,8 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -42,9 +40,7 @@ import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.Role;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 import uk.gov.hmcts.juror.api.moj.domain.VotersLocPostcodeTotals;
-import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.repository.BulkPrintDataRepository;
-import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolDetailRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CoronerPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -75,19 +71,14 @@ import static org.assertj.core.api.Assertions.assertThat;
     "PMD.CouplingBetweenObjects"})
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = "feature-flags.flags.digital-by-default=true")
+    properties = "feature-flags.flags.digital-by-default=false")
 public class CreatePoolControllerITest extends AbstractIntegrationTest {
-
-    @Value("${jwt.secret.bureau}")
-    private String bureauSecret;
 
     @Autowired
     private TestRestTemplate template;
 
     @Autowired
     private BulkPrintDataRepository bulkPrintDataRepository;
-    @Autowired
-    private ConfirmationLetterRepository confirmLetterRepository;
     @Autowired
     private CoronerPoolRepository coronerPoolRepository;
     @Autowired
@@ -111,7 +102,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_requestPoolDetails.sql"})
     public void testGPoolRequestItem_happyPath() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("rprice")
             .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
             .owner("400")
@@ -198,7 +188,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_requestPoolDetails.sql"})
     public void testGSummaryFormData_happyPath() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("rprice")
             .staff(BureauJwtPayload.Staff.builder().name("Roxanne Price").active(1).rank(1).build())
             .owner("400")
@@ -256,7 +245,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
             assertThat(jurors.size()).isEqualTo(8);
 
             // check the address details have been saved correctly, not shuffled
-            Juror juror = jurors.get(0);
+            Juror juror = jurors.getFirst();
             assertThat(juror.getAddressLine2()).isEqualTo("2nd ADDRESS LINE");
             assertThat(juror.getAddressLine3()).isEqualTo("ADDRESS LINE 3");
             assertThat(juror.getAddressLine4()).isEqualTo("ANYTOWN");
@@ -270,52 +259,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
                 assertThat(expectedJurorStatus.getStatus()).isEqualTo(IJurorStatus.SUMMONED);
                 assertThat(jurorPool.getIsActive()).isTrue();
             }
-        });
-    }
-
-    @Test
-    @Sql(
-        scripts = {
-            "/db/mod/truncate.sql",
-            "/db/CreatePoolController_loadVoters.sql"
-        },
-        statements = {
-            "INSERT INTO juror_mod.court_catchment_area (postcode, loc_code) VALUES ('CH1', '419')",
-            "INSERT INTO juror_mod.court_catchment_area (postcode, loc_code) VALUES ('CH2', '419')",
-            "INSERT INTO juror_mod.court_catchment_area (postcode, loc_code) VALUES ('CH3', '419')",
-            "INSERT INTO juror_mod.pool (owner, pool_no, return_date, total_no_required, no_requested, pool_type, "
-                + "loc_code, new_request, last_update, additional_summons, attend_time) VALUES ('400', '419221201', "
-                + "TIMESTAMP'2022-12-04 00:00:00.0', 5, 5, 'CRO', '419', 'N', "
-                + "TIMESTAMP'2022-10-02 09:22:09.0', NULL, NULL)"
-        })
-    public void createPool_digitalByDefaultCourt_doesNotCreateSummonsLetter() {
-        final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userType(UserType.BUREAU)
-            .roles(Set.of(Role.MANAGER))
-            .login("BUREAU_USER")
-            .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).build())
-            .owner("400")
-            .build());
-
-        PoolCreateRequestDto poolCreateRequest = setUpDigitalByDefaultPoolCreateRequestDto();
-
-        final URI uri = URI.create("/api/v1/moj/pool-create/create-pool");
-
-        httpHeaders.set(HttpHeaders.AUTHORIZATION, bureauJwt);
-        RequestEntity<PoolCreateRequestDto> requestEntity = new RequestEntity<>(poolCreateRequest, httpHeaders,
-            HttpMethod.POST, uri);
-        ResponseEntity<String> response = template.exchange(requestEntity, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-
-        executeInTransaction(() -> {
-            List<Juror> jurors = jurorRepository.findAll();
-            assertThat(jurors).hasSize(8);
-            assertThat(jurors).allSatisfy(juror -> {
-                assertThat(juror.isDigitalByDefault()).isTrue();
-                assertThat(juror.getDbdPreference()).isEqualTo(ReplyMethod.DIGITAL.getDescription());
-            });
-
-            assertThat(bulkPrintDataRepository.count()).isZero();
         });
     }
 
@@ -458,7 +401,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
                                             .findByJurorJurorNumberAndIsActive(juror.getJurorNumber(), true);
             assertThat(jurorPool).isNotEmpty();
             assertThat(jurorPool.size()).isEqualTo(1);
-            JurorStatus expectedJurorStatus = jurorPool.get(0).getStatus();
+            JurorStatus expectedJurorStatus = jurorPool.getFirst().getStatus();
             // juror could be summoned or disqualified (there is one disqualified juror)
             assertThat(expectedJurorStatus.getStatus()).isIn(IJurorStatus.SUMMONED, IJurorStatus.DISQUALIFIED);
         });
@@ -824,7 +767,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         "/db/CreatePoolController_requestPoolDetails.sql"})
     public void createPool_tooManyCitizens() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("BUREAU_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
             .owner("400")
@@ -862,14 +804,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         return poolCreateRequestDto;
     }
 
-    private PoolCreateRequestDto setUpDigitalByDefaultPoolCreateRequestDto() {
-        PoolCreateRequestDto poolCreateRequestDto = setUpPoolCreateRequestDto();
-        poolCreateRequestDto.setPoolNumber("419221201");
-        poolCreateRequestDto.setCatchmentArea("419");
-        return poolCreateRequestDto;
-    }
-
-
     /* A Court user should not be able to create a pool */
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_loadVoters.sql",
@@ -898,7 +832,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGThinPoolMembersHappyPath() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .owner("415")
@@ -921,7 +854,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGThinPoolMembersNoInaccessibleJurors() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .owner("415")
@@ -937,7 +869,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         assertThat(response.getBody()).hasSize(1);
-        assertThat(response.getBody().get(0)).isEqualTo("333333333");
+        assertThat(response.getBody().getFirst()).isEqualTo("333333333");
         assertThat(response.getBody().indexOf("444444444")).isEqualTo(-1);
         assertThat(response.getBody().indexOf("111111111")).isEqualTo(-1);
         assertThat(response.getBody().indexOf("777777777")).isEqualTo(-1);
@@ -947,7 +879,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGThinPoolMembersMissingPool() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .owner("415")
@@ -968,7 +899,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGThinPoolMembersInvalidPool() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .owner("415")
@@ -988,7 +918,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGThinPoolMembersEmptyPool() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .owner("415")
@@ -1010,7 +939,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGThinPoolMembersUnauthorised() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .owner("414")
@@ -1031,7 +959,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGPoolMembers_bureauUser_bureauOwnedPool() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("BUREAU_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
             .owner("400")
@@ -1053,7 +980,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         List<FilterPoolMember> poolMembers = response.getBody().getData();
         assertThat(poolMembers.size()).isEqualTo(2);
 
-        FilterPoolMember responseData1 = poolMembers.get(0);
+        FilterPoolMember responseData1 = poolMembers.getFirst();
         assertThat(responseData1.getJurorNumber()).isEqualToIgnoringCase("111111111");
         assertThat(responseData1.getFirstName()).isEqualToIgnoringCase("TEST");
         assertThat(responseData1.getLastName()).isEqualToIgnoringCase("ONE");
@@ -1080,7 +1007,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGPoolMembers_bureauUser_courtOwnedPool() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("BUREAU_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Bureau User").active(1).rank(1).build())
             .owner("400")
@@ -1102,7 +1028,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         List<FilterPoolMember> poolMembers = response.getBody().getData();
         assertThat(poolMembers.size()).isEqualTo(2);
 
-        FilterPoolMember responseData1 = poolMembers.get(0);
+        FilterPoolMember responseData1 = poolMembers.getFirst();
         assertThat(responseData1.getJurorNumber()).isEqualToIgnoringCase("666666666");
         assertThat(responseData1.getFirstName()).isEqualToIgnoringCase("TEST");
         assertThat(responseData1.getLastName()).isEqualToIgnoringCase("SIX");
@@ -1129,7 +1055,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGPoolMembers_courtUser_bureauOwnedPool() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .owner("415")
@@ -1151,7 +1076,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         List<FilterPoolMember> poolMembers = response.getBody().getData();
         assertThat(poolMembers.size()).isEqualTo(1);
 
-        FilterPoolMember responseData = poolMembers.get(0);
+        FilterPoolMember responseData = poolMembers.getFirst();
         assertThat(responseData.getJurorNumber()).isEqualToIgnoringCase("333333333");
         assertThat(responseData.getFirstName()).isEqualToIgnoringCase("TEST");
         assertThat(responseData.getLastName()).isEqualToIgnoringCase("THREE");
@@ -1166,7 +1091,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGPoolMembers_courtUser_courtOwnedPool_withBureauOwnedJurors() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .owner("415")
@@ -1188,7 +1112,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         List<FilterPoolMember> poolMembers = response.getBody().getData();
         assertThat(poolMembers.size()).isEqualTo(1);
 
-        FilterPoolMember responseData = poolMembers.get(0);
+        FilterPoolMember responseData = poolMembers.getFirst();
         assertThat(responseData.getJurorNumber()).isEqualToIgnoringCase("999999999");
         assertThat(responseData.getFirstName()).isEqualToIgnoringCase("TEST");
         assertThat(responseData.getLastName()).isEqualToIgnoringCase("NINE");
@@ -1204,7 +1128,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGPoolMembers_noPoolMembers() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .owner("415")
@@ -1231,7 +1154,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGPoolMembers_noFilters() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
@@ -1260,7 +1182,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGPoolMembers_filterByAttendance() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
@@ -1284,15 +1205,14 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(filteredResponse.getBody()).isNotNull();
         List<FilterPoolMember> filteredPoolMembers = filteredResponse.getBody().getData();
         assertThat(filteredPoolMembers.size()).isEqualTo(1);
-        assertThat(filteredPoolMembers.get(0).getLastName()).isEqualToIgnoringCase("SEVEN");
-        assertThat(filteredPoolMembers.get(0).getStatus()).isEqualTo("Responded");
+        assertThat(filteredPoolMembers.getFirst().getLastName()).isEqualToIgnoringCase("SEVEN");
+        assertThat(filteredPoolMembers.getFirst().getStatus()).isEqualTo("Responded");
     }
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGPoolMembers_filterByCheckedIn() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
@@ -1315,15 +1235,14 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(filteredResponse2.getBody()).isNotNull();
         List<FilterPoolMember> filteredPoolMembers2 = filteredResponse2.getBody().getData();
         assertThat(filteredPoolMembers2.size()).isEqualTo(1);
-        assertThat(filteredPoolMembers2.get(0).getLastName()).isEqualToIgnoringCase("SEVEN");
-        assertThat(filteredPoolMembers2.get(0).getCheckedIn()).isEqualTo("09:00:00");
+        assertThat(filteredPoolMembers2.getFirst().getLastName()).isEqualToIgnoringCase("SEVEN");
+        assertThat(filteredPoolMembers2.getFirst().getCheckedIn()).isEqualTo("09:00:00");
     }
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGPoolMembers_filterByNextDueTrue() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
@@ -1346,8 +1265,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(filteredResponse3.getBody()).isNotNull();
         List<FilterPoolMember> filteredPoolMembers3 = filteredResponse3.getBody().getData();
         assertThat(filteredPoolMembers3.size()).isEqualTo(1);
-        assertThat(filteredPoolMembers3.get(0).getLastName()).isEqualToIgnoringCase("seven");
-        assertThat(filteredPoolMembers3.get(0).getNextDate()).isEqualTo(LocalDate.parse("2023-01-01"));
+        assertThat(filteredPoolMembers3.getFirst().getLastName()).isEqualToIgnoringCase("seven");
+        assertThat(filteredPoolMembers3.getFirst().getNextDate()).isEqualTo(LocalDate.parse("2023-01-01"));
 
     }
 
@@ -1355,7 +1274,6 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGPoolMembers_filterByNextDueFalse() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User")
                 .active(1).rank(1).build())
@@ -1378,15 +1296,14 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(filteredResponse3.getBody()).isNotNull();
         List<FilterPoolMember> filteredPoolMembers3 = filteredResponse3.getBody().getData();
         assertThat(filteredPoolMembers3.size()).isEqualTo(1);
-        assertThat(filteredPoolMembers3.get(0).getLastName()).isEqualToIgnoringCase("eight");
-        assertThat(filteredPoolMembers3.get(0).getNextDate()).isNull();
+        assertThat(filteredPoolMembers3.getFirst().getLastName()).isEqualToIgnoringCase("eight");
+        assertThat(filteredPoolMembers3.getFirst().getNextDate()).isNull();
     }
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/CreatePoolController_getPoolMemberList.sql"})
     public void testGPoolMembers_filterByBothNextDueValues() {
         final String bureauJwt = mintBureauJwt(BureauJwtPayload.builder()
-            .userLevel("1")
             .login("COURT_USER")
             .staff(BureauJwtPayload.Staff.builder().name("Court User").active(1).rank(1).build())
             .owner("415")
@@ -1408,8 +1325,8 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         assertThat(filteredResponse3.getBody()).isNotNull();
         List<FilterPoolMember> filteredPoolMembers3 = filteredResponse3.getBody().getData();
         assertThat(filteredPoolMembers3.size()).isEqualTo(2);
-        assertThat(filteredPoolMembers3.get(0).getLastName()).isEqualToIgnoringCase("seven");
-        assertThat(filteredPoolMembers3.get(0).getNextDate()).isEqualTo(LocalDate.parse("2023-01-01"));
+        assertThat(filteredPoolMembers3.getFirst().getLastName()).isEqualToIgnoringCase("seven");
+        assertThat(filteredPoolMembers3.getFirst().getNextDate()).isEqualTo(LocalDate.parse("2023-01-01"));
         assertThat(filteredPoolMembers3.get(1).getLastName()).isEqualToIgnoringCase("eight");
         assertThat(filteredPoolMembers3.get(1).getNextDate()).isNull();
     }
@@ -1778,7 +1695,7 @@ public class CreatePoolControllerITest extends AbstractIntegrationTest {
         List<CoronerPool> coronerPools = coronerPoolRepository.findAll();
         assertThat(coronerPools.size()).as("Expect there to be 1 record in database")
             .isEqualTo(1);
-        CoronerPool coronerPool = coronerPools.get(0);
+        CoronerPool coronerPool = coronerPools.getFirst();
 
 
         confirmCoronerPoolDataSavedSuccessfully(coronerPoolRequestDto, coronerPool);

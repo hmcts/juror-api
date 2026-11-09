@@ -33,7 +33,6 @@ import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
 import uk.gov.hmcts.juror.api.moj.domain.PoolRequest;
 import uk.gov.hmcts.juror.api.moj.domain.QPoolHistory;
 import uk.gov.hmcts.juror.api.moj.exception.MojException;
-import uk.gov.hmcts.juror.api.moj.repository.ConfirmationLetterRepository;
 import uk.gov.hmcts.juror.api.moj.repository.CurrentlyDeferredRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
@@ -81,8 +80,6 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
     private PoolHistoryRepository poolHistoryRepository;
     @Autowired
     private JurorHistoryRepository jurorHistoryRepository;
-    @Autowired
-    private ConfirmationLetterRepository confirmLetterRepository;
 
     private HttpHeaders httpHeaders;
     @Autowired
@@ -118,7 +115,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Expect the response body to contain a list of Court Locations (not empty)")
             .isFalse();
 
-        CourtLocationDataDto dataItem = responseBody.getData().get(0);
+        CourtLocationDataDto dataItem = responseBody.getData().getFirst();
         assertThat(dataItem.getLocationCode().isEmpty())
             .as("Expect the location code to be populated in the list of data items")
             .isFalse();
@@ -150,7 +147,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Expect the response body to contain a single Court Location in the returned list")
             .isEqualTo(1);
 
-        CourtLocationDataDto dataItem = responseBody.getData().get(0);
+        CourtLocationDataDto dataItem = responseBody.getData().getFirst();
         assertThat(dataItem.getLocationCode())
             .as("Expect the location code to be populated in the list of data items")
             .isEqualTo("799");
@@ -264,7 +261,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .as("Expect the response data to contain 2 Pool Requests")
             .isEqualTo(2);
 
-        PoolRequestActiveDataDto data = responseBody.getData().get(0);
+        PoolRequestActiveDataDto data = responseBody.getData().getFirst();
         assertThat(data.getCourtName())
             .as("Court Name should be CHESTER for the pool request with LOC_CODE 415")
             .isEqualTo("CHESTER");
@@ -1359,7 +1356,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.getFirst();
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221201")
@@ -1418,7 +1415,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(4);
 
         // get first element in the page
-        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.getFirst();
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221234")
@@ -1477,7 +1474,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.getFirst();
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 462221207")
@@ -1538,7 +1535,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(1);
 
         // get first element in the page
-        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.getFirst();
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 416221203")
@@ -1599,7 +1596,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.getFirst();
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221201")
@@ -1662,7 +1659,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(1);
 
         // get first element in the page
-        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.getFirst();
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 462221207")
@@ -1721,7 +1718,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.getFirst();
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221306")
@@ -1780,7 +1777,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(3);
 
         // get first element in the page
-        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.getFirst();
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221331")
@@ -1841,7 +1838,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.getFirst();
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221306")
@@ -1902,7 +1899,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.getFirst();
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221306")
@@ -1990,7 +1987,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(2);
 
         // get first element in the page
-        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.getFirst();
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 415221331")
@@ -2075,7 +2072,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(25);
 
         // get first element in the page
-        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.getFirst();
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 767221206")
@@ -2153,7 +2150,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(2);
 
         // get first element in the page
-        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.get(0);
+        PoolRequestActiveDataDto poolRequestActiveDataDto = poolRequestActiveDataDtos.getFirst();
 
         assertThat(poolRequestActiveDataDto.getPoolNumber())
             .as("Expect the number to be equal to 416221336")
@@ -2282,7 +2279,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(1);
 
         PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto
-            = poolsAtCourtLocationDataDtos.get(0);
+            = poolsAtCourtLocationDataDtos.getFirst();
         assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 417230101")
             .isEqualTo("417230101");
         assertThat(poolsAtCourtLocationDataDto.getJurorsInAttendance())
@@ -2335,7 +2332,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
                 .PoolsAtCourtLocationDataDto::getPoolNumber)).collect(Collectors.toList());
 
         PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto
-            = poolsAtCourtLocationDataDtos.get(0);
+            = poolsAtCourtLocationDataDtos.getFirst();
         LocalDate serviceStartDate = LocalDate.now().minusDays(10);
 
         assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 418230101")
@@ -2388,7 +2385,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
             .isEqualTo(1);
 
         PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto
-            = poolsAtCourtLocationDataDtosUnsorted.get(0);
+            = poolsAtCourtLocationDataDtosUnsorted.getFirst();
 
         assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 419230101")
             .isEqualTo("419230101");
@@ -2433,7 +2430,7 @@ public class RequestPoolControllerITest extends AbstractIntegrationTest {
                 .PoolsAtCourtLocationDataDto::getPoolNumber)).collect(Collectors.toList());
 
         PoolsAtCourtLocationListDto.PoolsAtCourtLocationDataDto poolsAtCourtLocationDataDto
-            = poolsAtCourtLocationDataDtos.get(0);
+            = poolsAtCourtLocationDataDtos.getFirst();
         LocalDate serviceStartDate = LocalDate.now().minusDays(10);
 
         assertThat(poolsAtCourtLocationDataDto.getPoolNumber()).as("Expect the pool number to be 418230101")

@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.service.UrgencyService;
 import uk.gov.hmcts.juror.api.bureau.service.UserService;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.juror.controller.request.JurorResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.DbdInformationResponseDto;
 import uk.gov.hmcts.juror.api.juror.controller.response.JurorDetailDto;
@@ -62,6 +63,7 @@ import static org.mockito.Mockito.when;
     "PMD.TooManyFields"})
 @RunWith(MockitoJUnitRunner.StrictStubs.class)
 public class JurorServiceImplTest {
+    private static final String DIGITAL_BY_DEFAULT_FEATURE_FLAG = "digital-by-default";
 
     private static final String TEST_JUROR_NUMBER = "209092530";
 
@@ -104,6 +106,8 @@ public class JurorServiceImplTest {
     private JurorService mockJurorService;
     @Mock
     private JurorPoolService jurorPoolService;
+    @Mock
+    private FeatureFlagConfigurationProperties featureFlags;
 
     @InjectMocks
     private JurorServiceImpl defaultService;
@@ -303,15 +307,15 @@ public class JurorServiceImplTest {
         assertThat(entity.getMentalHealthActDetails()).isEqualTo(mentalHealthActDetail);
 
         assertThat(entity.getCjsEmployments()).hasSize(1);
-        assertThat(entity.getCjsEmployments().get(0).getJurorNumber()).isEqualTo(jurorNumber);
-        assertThat(entity.getCjsEmployments().get(0).getCjsEmployer()).isEqualTo(cjsEmployer);
-        assertThat(entity.getCjsEmployments().get(0).getCjsEmployerDetails()).isEqualTo(cjsEmployerDetails);
+        assertThat(entity.getCjsEmployments().getFirst().getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(entity.getCjsEmployments().getFirst().getCjsEmployer()).isEqualTo(cjsEmployer);
+        assertThat(entity.getCjsEmployments().getFirst().getCjsEmployerDetails()).isEqualTo(cjsEmployerDetails);
 
         assertThat(entity.getReasonableAdjustments()).hasSize(1);
-        assertThat(entity.getReasonableAdjustments().get(0).getJurorNumber()).isEqualTo(jurorNumber);
-        assertThat(entity.getReasonableAdjustments().get(0).getReasonableAdjustment().getCode())
+        assertThat(entity.getReasonableAdjustments().getFirst().getJurorNumber()).isEqualTo(jurorNumber);
+        assertThat(entity.getReasonableAdjustments().getFirst().getReasonableAdjustment().getCode())
             .isEqualTo(reasonableAdjustmentType);
-        assertThat(entity.getReasonableAdjustments().get(0).getReasonableAdjustmentDetail())
+        assertThat(entity.getReasonableAdjustments().getFirst().getReasonableAdjustmentDetail())
             .isEqualTo(reasonableAdjustmentNeedDetail);
         assertThat(entity.getReasonableAdjustmentsArrangements()).isEqualTo(reasonableAdjustmentArrangements);
 
@@ -467,20 +471,44 @@ public class JurorServiceImplTest {
     public void getDbdInformation_WithJurorNumber_ReturnsDbdInformation() {
         final LocalDate serviceStartDate = LocalDate.of(2026, 8, 10);
         jurorPoolDetails.getCourt().setLocCourtName("Test Court");
+        jurorPoolDetails.getCourt().setAddress1("Address line 1");
+        jurorPoolDetails.getCourt().setAddress2("Address line 2");
+        jurorPoolDetails.getCourt().setAddress3("Address line 3");
+        jurorPoolDetails.getCourt().setAddress4("Address line 4");
+        jurorPoolDetails.getCourt().setAddress5("Address line 5");
+        jurorPoolDetails.getCourt().setPostcode("AB1 2CD");
         jurorPoolDetails.getPool().setReturnDate(serviceStartDate);
 
         when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPoolDetails);
+        when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(true);
+        jurorPoolUtilsMockedStatic.when(() -> JurorPoolUtils.isDigitalByDefault(jurorPoolDetails)).thenReturn(true);
 
         final DbdInformationResponseDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
 
         assertThat(dbdInformationDto).isNotNull();
         assertThat(dbdInformationDto.getCourtName()).isEqualTo("Test Court");
         assertThat(dbdInformationDto.getServiceStartDate()).isEqualTo(serviceStartDate);
+        assertThat(dbdInformationDto)
+            .extracting("courtAddress1", "courtAddress2", "courtAddress3", "courtAddress4", "courtAddress5",
+                "courtPostcode")
+            .containsExactly("Address line 1", "Address line 2", "Address line 3", "Address line 4", "Address line 5",
+                "AB1 2CD");
     }
 
     @Test
     public void getDbdInformation_WithNoPoolEntry_ReturnsNull() {
         when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(null);
+
+        final DbdInformationResponseDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
+
+        assertThat(dbdInformationDto).isNull();
+    }
+
+    @Test
+    public void getDbdInformation_WithNonDbdJuror_ReturnsNull() {
+        when(jurorPoolService.getJurorPoolFromUser(TEST_JUROR_NUMBER)).thenReturn(jurorPoolDetails);
+        when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(true);
+        jurorPoolUtilsMockedStatic.when(() -> JurorPoolUtils.isDigitalByDefault(jurorPoolDetails)).thenReturn(false);
 
         final DbdInformationResponseDto dbdInformationDto = defaultService.getDbdInformation(TEST_JUROR_NUMBER);
 
