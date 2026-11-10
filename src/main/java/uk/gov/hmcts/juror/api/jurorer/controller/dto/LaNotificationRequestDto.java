@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,6 +13,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.juror.api.jurorer.enumeration.LaEmailNotificationType;
 
 import java.util.List;
 
@@ -28,4 +30,12 @@ public class LaNotificationRequestDto {
     @NotEmpty(message = "At least one LA code must be provided")
     @Schema(description = "List of LA codes to send notifications to", requiredMode = Schema.RequiredMode.REQUIRED)
 private List<@Size(min = 3, max = 3, message = "LA code must be 3 characters") String> laCodes;
+
+    @JsonProperty("notification_type")
+    @NotNull(message = "Notification type must be provided")
+    @Schema(description = "Which email to send", example = "INITIAL_EMAIL",
+        requiredMode = Schema.RequiredMode.REQUIRED)
+    private LaEmailNotificationType notificationType;
 }
+
+

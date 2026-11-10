@@ -15,6 +15,7 @@ import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.domain.ReminderHistory;
+import uk.gov.hmcts.juror.api.jurorer.enumeration.LaEmailNotificationType;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
 import uk.gov.hmcts.juror.api.jurorer.repository.LaUserRepository;
 import uk.gov.hmcts.juror.api.jurorer.repository.LocalAuthorityRepository;
@@ -22,15 +23,17 @@ import uk.gov.hmcts.juror.api.jurorer.repository.ReminderHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.service.AppSettingService;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
 
 @Slf4j
 @Service
@@ -48,7 +51,7 @@ public class LaNotificationServiceImpl implements LaNotificationService {
     // Template placeholders
     private static final String TEMPLATE_PLACEHOLDER_GREETING = "GREETING";
     private static final String TEMPLATE_PLACEHOLDER_DEADLINE = "DEADLINEDATE";
-
+    private static final String TEMPLATE_PLACEHOLDER_OPEN_PORTAL ="OPENPORTALDATE";
     // Greeting values
     private static final String GREETING_MORNING = "Morning";
     private static final String GREETING_AFTERNOON = "Afternoon";
@@ -65,12 +68,11 @@ public class LaNotificationServiceImpl implements LaNotificationService {
 
         List<LaNotificationResponseDto.FailedNotification> failedNotifications = new ArrayList<>();
 
-        // Retrieve template ID once for all notifications
-        String templateId = appSettingService.getNotifyErReminderTemplateId();
-        if (!StringUtils.hasText(templateId)) {
-            log.error("Notify ER Reminder Template ID not configured in APP_SETTING table");
-            throw new IllegalStateException("NOTIFY_ER_REMINDER not configured in APP_SETTING table");
-        }
+        LaEmailNotificationType type = request.getNotificationType();
+        log.info("Processing {} notifications for {} LA codes", type, request.getLaCodes().size());
+        String templateId = resolveTemplateId(type);
+        Map<String, String> payload = buildEmailPayload(type);   // once, before the loop
+
 
         // Get current user for audit
         String currentUser = SecurityUtil.getActiveLogin();
@@ -150,11 +152,12 @@ public class LaNotificationServiceImpl implements LaNotificationService {
                             continue;
                         }
 
-                        Map<String, String> payload = buildEmailPayload(localAuthority);
+            //            Map<String, String> payload = buildEmailPayload(localAuthority);
                         EmailNotification emailNotification = createEmailNotification(
                             user.getUsername(),
                             templateId,
-                            payload
+                           payload,
+                            type
                         );
 
                         notifyAdapter.sendCommsEmail(emailNotification);
@@ -162,7 +165,7 @@ public class LaNotificationServiceImpl implements LaNotificationService {
                                  user.getUsername(), localAuthority.getLaName(), laCode);
 
                         // Record the sent notification in reminder_history
-                        recordReminderHistory(laCode, currentUser, user.getUsername());
+                        recordReminderHistory(laCode, currentUser, user.getUsername(), type);
 
                         successCount++;
 
@@ -204,9 +207,10 @@ public class LaNotificationServiceImpl implements LaNotificationService {
     @Override
     public EmailNotification createEmailNotification(String emailAddress,
                                                      String templateId,
-                                                     Map<String, String> payload) {
+                                                     Map<String, String> payload,
+                                                     LaEmailNotificationType type) {
         EmailNotification notification = new EmailNotification(templateId, emailAddress, payload);
-        notification.setReferenceNumber("LA_REMINDER_%s".formatted(emailAddress));
+        notification.setReferenceNumber(type.reference(emailAddress));
         return notification;
     }
 
@@ -236,39 +240,53 @@ public class LaNotificationServiceImpl implements LaNotificationService {
      * @param sentBy the username of who sent the reminder
      * @param sentTo the email address (username) of the recipient
      */
-    private void recordReminderHistory(String laCode, String sentBy, String sentTo) {
+    private void recordReminderHistory(String laCode, String sentBy, String sentTo,
+                                       LaEmailNotificationType type) {
         try {
             ReminderHistory reminderHistory = ReminderHistory.builder()
                 .laCode(laCode)
                 .sentBy(sentBy)
                 .sentTo(sentTo)
                 .timeSent(LocalDateTime.now())
+                .notificationType(type)
                 .build();
-
             reminderHistoryRepository.save(reminderHistory);
-            log.debug("Recorded reminder history for LA code: {} sent by: {} to: {}",
-                      laCode, sentBy, sentTo);
-
         } catch (Exception e) {
-            log.error("Failed to record reminder history for LA code: {} to: {}", laCode, sentTo, e);
-            // Don't throw - we don't want history recording failure to break the notification
+            log.error("Failed to record {} history for LA code: {} to: {}", type, laCode, sentTo, e);
         }
     }
 
-    private Map<String, String> buildEmailPayload(LocalAuthority localAuthority) {
-        Map<String, String> payload = new ConcurrentHashMap<>();
+ //   private static final String TEMPLATE_PLACEHOLDER_OPEN_PORTAL = "OPENPORTALDATE";
 
-        // Add greeting based on time of day
+    private Map<String, String> buildEmailPayload(LaEmailNotificationType type) {
+        Map<String, String> payload = new HashMap<>();
         payload.put(TEMPLATE_PLACEHOLDER_GREETING, getGreeting());
+        payload.put(TEMPLATE_PLACEHOLDER_DEADLINE, getCurrentDeadlineDate());
 
-        // Add deadline date - get current deadline and format it
-        String deadlineDate = getCurrentDeadlineDate();
-        payload.put(TEMPLATE_PLACEHOLDER_DEADLINE, deadlineDate);
-
-        log.debug("Built email payload for LA {}: greeting={}, deadline={}",
-                  localAuthority.getLaCode(), getGreeting(), deadlineDate);
-
+        if (type == LaEmailNotificationType.INITIAL_EMAIL) {
+            payload.put(TEMPLATE_PLACEHOLDER_OPEN_PORTAL, getOpenPortalDate());
+        }
         return payload;
+    }
+
+    private String getOpenPortalDate() {
+        // TODO: source of the portal opening date
+        LocalDate openDate = LocalDate.of(2027, 1, 4);
+        if (openDate == null) {
+            throw new IllegalStateException("Portal open date not configured - cannot send initial email");
+        }
+        return openDate.format(DEADLINE_FORMATTER);
+    }
+
+    private String resolveTemplateId(LaEmailNotificationType type) {
+        String templateId = switch (type) {
+            case INITIAL_EMAIL -> appSettingService.getNotifyErInitialTemplateId();
+            case REMINDER_EMAIL -> appSettingService.getNotifyErReminderTemplateId();
+        };
+        if (!StringUtils.hasText(templateId)) {
+            throw new IllegalStateException("Notify template ID for " + type + " not configured in APP_SETTING table");
+        }
+        return templateId;
     }
 
     /**

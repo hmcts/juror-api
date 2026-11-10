@@ -2,6 +2,8 @@ package uk.gov.hmcts.juror.api.jurorer.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -13,6 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.juror.api.jurorer.enumeration.LaEmailNotificationType;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -50,5 +53,8 @@ public class ReminderHistory implements Serializable {
     @Column(name = "time_sent", nullable = false)
     private LocalDateTime timeSent;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "notification_type", nullable = false, length = 20)
+    private LaEmailNotificationType notificationType;
 }
 
