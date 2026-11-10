@@ -6,4 +6,4 @@ ALTER TABLE juror_er.reminder_history
 
 
     INSERT INTO juror_mod.app_setting (setting, value) VALUES
-    (NOTIFY_ER_INITIAL ,'5238501b-146a-462e-894c-e629db5a854b');
+    ('NOTIFY_ER_INITIAL' ,'5238501b-146a-462e-894c-e629db5a854b');
