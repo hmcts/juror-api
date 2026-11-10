@@ -1,11 +1,15 @@
 package uk.gov.hmcts.juror.api.jurorer.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.juror.api.jurorer.domain.ReminderHistory;
+import uk.gov.hmcts.juror.api.jurorer.enumeration.LaEmailNotificationType;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface ReminderHistoryRepository extends JpaRepository<ReminderHistory, Long> {
@@ -26,4 +30,14 @@ public interface ReminderHistoryRepository extends JpaRepository<ReminderHistory
      * @return list of reminder history records
      */
     List<ReminderHistory> findByTimeSentBetweenOrderByTimeSentDesc(LocalDateTime startDate, LocalDateTime endDate);
+
+    /**
+     *
+     * @param type
+     * @return
+     */
+    @Query("select distinct r.laCode from ReminderHistory r where r.notificationType = :type")
+    Set<String> findLaCodesByNotificationType(@Param("type") LaEmailNotificationType type);
 }
+
+
