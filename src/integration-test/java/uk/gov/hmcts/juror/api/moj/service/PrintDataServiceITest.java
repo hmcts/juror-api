@@ -18,7 +18,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
 @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissueDbdSummons.sql",
     "/db/letter/PrintDataService_refactoredLetters.sql"})
