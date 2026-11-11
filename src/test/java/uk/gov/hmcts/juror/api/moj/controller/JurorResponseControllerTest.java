@@ -2,7 +2,6 @@ package uk.gov.hmcts.juror.api.moj.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,7 +13,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -82,10 +82,8 @@ class JurorResponseControllerTest {
     @MockitoBean
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;
 
-    @AfterEach
-    void clearSecurityContext() {
-        SecurityContextHolder.clearContext();
-    }
+    @MockitoBean
+    private SecurityContextHolderStrategy securityContextStrategy;
 
     @ParameterizedTest
     @MethodSource("validRequests")
@@ -312,19 +310,26 @@ class JurorResponseControllerTest {
         BureauJwtAuthentication authentication = mock(BureauJwtAuthentication.class);
         when(authentication.getPrincipal()).thenReturn(payload);
 
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authentication);
-        SecurityContextHolder.setContext(context);
+        SecurityContext context = new SecurityContextImpl(authentication);
+        when(securityContextStrategy.getContext()).thenReturn(context);
 
         return authentication;
     }
 
     @TestConfiguration
     static class TestMvcConfiguration implements WebMvcConfigurer {
+        private final SecurityContextHolderStrategy securityContextHolderStrategy;
+
+        TestMvcConfiguration(SecurityContextHolderStrategy securityContextHolderStrategy) {
+            this.securityContextHolderStrategy = securityContextHolderStrategy;
+        }
 
         @Override
         public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-            resolvers.add(new AuthenticationPrincipalArgumentResolver());
+            AuthenticationPrincipalArgumentResolver resolver = new AuthenticationPrincipalArgumentResolver();
+
+            resolver.setSecurityContextHolderStrategy(securityContextHolderStrategy);
+            resolvers.add(resolver);
         }
     }
 }
