@@ -56,6 +56,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -339,6 +340,35 @@ public class ReissueLetterServiceTest {
 
             verify(bulkPrintDataRepository, times(1))
                 .findLetters(reissueLetterListRequestDto, LetterType.POSTPONED.getLetterQueryConsumer());
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"5229", "5229C"})
+        void reissuePostponeLetterListPopulatesMissingDetails(String formCode) {
+            String jurorNumber = "555555561";
+            TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
+            ReissueLetterListRequestDto request = ReissueLetterListRequestDto.builder()
+                .jurorNumber(jurorNumber).letterType(LetterType.POSTPONED).build();
+            List<Tuple> letters = getPostponementLetters(jurorNumber, formCode);
+            doReturn(null).when(letters.getFirst())
+                .get(ReissueLetterService.DataType.JUROR_POSTPONED_TO.getExpression());
+            doReturn(null).when(letters.getFirst())
+                .get(ReissueLetterService.DataType.JUROR_DEFERRED_TO_REASON.getExpression());
+            doReturn(letters).when(bulkPrintDataRepository)
+                .findLetters(request, LetterType.POSTPONED.getLetterQueryConsumer());
+            JurorPool latest = JurorPool.builder().juror(Juror.builder().jurorNumber(jurorNumber).build())
+                .deferralDate(LocalDate.of(2027, 1, 10)).deferralCode("P").build();
+            JurorPool older = JurorPool.builder().juror(latest.getJuror())
+                .deferralDate(LocalDate.of(2026, 12, 10)).deferralCode("P").build();
+            doReturn(List.of(latest, older)).when(jurorPoolRepository)
+                .findPostponementRecords(List.of(jurorNumber), "400");
+
+            ReissueLetterListResponseDto response = reissueLetterService.reissueLetterList(request);
+
+            assertThat(response.getData().getFirst().get(5)).isEqualTo("2027-01-10");
+            assertThat(response.getData().getFirst().get(6)).isEqualTo("Postponement of service");
+            assertThat(response.getData().getFirst().get(9)).isEqualTo(formCode);
+            verify(jurorPoolRepository).findPostponementRecords(List.of(jurorNumber), "400");
         }
 
         @Test
@@ -995,8 +1025,8 @@ public class ReissueLetterServiceTest {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"5229", "5229C"})
-        void reissuePostponeLetterHappyPath(String formCode) {
+        @CsvSource({"5229, 7", "5229C, 7", "5229, 2", "5229C, 2"})
+        void reissuePostponeLetterHappyPath(String formCode, int statusCode) {
             String owner = "400";
 
             TestUtils.setUpMockAuthentication(owner, "Bureau", "1", List.of("400"));
@@ -1020,13 +1050,18 @@ public class ReissueLetterServiceTest {
             JurorStatus postponedStatus = new JurorStatus();
             postponedStatus.setStatus(IJurorStatus.DEFERRED);
             when(jurorStatusRepository.findById(IJurorStatus.DEFERRED))
-                .thenReturn(Optional.ofNullable(postponedStatus));
+                .thenReturn(Optional.of(postponedStatus));
+
+            JurorStatus respondedStatus = new JurorStatus();
+            respondedStatus.setStatus(IJurorStatus.RESPONDED);
+            when(jurorStatusRepository.findById(IJurorStatus.RESPONDED))
+                .thenReturn(Optional.of(respondedStatus));
 
             PoolRequest pool = new PoolRequest();
             pool.setPoolNumber("1");
             JurorPool jurorPool = new JurorPool();
             jurorPool.setPool(pool);
-            jurorPool.setStatus(postponedStatus);
+            jurorPool.setStatus(statusCode == IJurorStatus.DEFERRED ? postponedStatus : respondedStatus);
 
             when(jurorPoolService.getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber()))
                 .thenReturn(jurorPool);
@@ -1042,6 +1077,8 @@ public class ReissueLetterServiceTest {
                     reissueLetterRequestData.getFormCode());
 
             verify(jurorStatusRepository, times(1)).findById(IJurorStatus.DEFERRED);
+            verify(jurorStatusRepository, times(1)).findById(IJurorStatus.RESPONDED);
+            verify(printDataService, times(1)).printPostponeLetter(jurorPool);
             verify(jurorPoolService, times(2))
                 .getJurorPoolFromUser(reissueLetterRequestData.getJurorNumber());
         }
@@ -1653,7 +1690,7 @@ public class ReissueLetterServiceTest {
     class DeleteLetterTests {
 
         @ParameterizedTest
-        @ValueSource(strings = {"5229A", "5229AC"})
+        @ValueSource(strings = {"5229A", "5229AC", "5227", "5227C"})
         void deleteLetterHappyPath(String formCode) {
             String owner = "400";
 
@@ -1676,12 +1713,24 @@ public class ReissueLetterServiceTest {
                 .findLatestPendingLetterForJuror(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode());
 
+            JurorPool jurorPool = new JurorPool();
+            boolean informationRequest = Set.of("5227", "5227C").contains(formCode);
+            if (informationRequest) {
+                doReturn(jurorPool).when(jurorPoolRepository).findByJurorJurorNumberAndIsActiveAndOwner(
+                    reissueLetterRequestData.getJurorNumber(), true, owner);
+            }
+
             reissueLetterService.deletePendingLetter(reissueLetterRequestDto);
 
             verify(bulkPrintDataRepository, times(1))
                 .findLatestPendingLetterForJuror(reissueLetterRequestData.getJurorNumber(),
                     reissueLetterRequestData.getFormCode());
             verify(bulkPrintDataRepository, times(1)).delete(bulkPrintData);
+
+            if (informationRequest) {
+                verify(jurorHistoryService).createDeleteAdditionalInfoLetterHistory(
+                    jurorPool, FormCode.getFormCode(formCode));
+            }
 
         }
 

@@ -33,6 +33,7 @@ import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -206,7 +207,12 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
                                 return rec.substring(308, 340).trim();
                             }
                         }
-                        return dataType.transform(tuple.get(dataType.getExpression()));
+                        Object value = tuple.get(dataType.getExpression());
+                        if (letterType == LetterType.POSTPONED && value == null
+                            && dataType == DataType.JUROR_DEFERRED_TO_REASON) {
+                            return null;
+                        }
+                        return dataType.transform(value);
                     })
                     .toList();
             })
@@ -219,10 +225,46 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             .map(DataType::getDataType)
             .toList();
 
+        if (letterType == LetterType.POSTPONED) {
+            data = populateMissingPostponementDetails(data, headings);
+        }
         data = setStatusDesc(data, headings);
         data = setFormCode(data, headings, request);
 
         return new ReissueLetterListResponseDto(headings, dataTypes, data);
+    }
+
+    private List<List<Object>> populateMissingPostponementDetails(List<List<Object>> data, List<String> headings) {
+        int jurorNumberIndex = headings.indexOf(DataType.JUROR_NUMBER.getDisplayText());
+        int dateIndex = headings.indexOf(DataType.JUROR_POSTPONED_TO.getDisplayText());
+        int reasonIndex = headings.indexOf(DataType.JUROR_DEFERRED_TO_REASON.getDisplayText());
+        List<String> jurorNumbers = data.stream()
+            .filter(row -> row.get(dateIndex) == null || row.get(reasonIndex) == null)
+            .map(row -> (String) row.get(jurorNumberIndex))
+            .distinct()
+            .toList();
+        if (jurorNumbers.isEmpty()) {
+            return data;
+        }
+
+        Map<String, JurorPool> latestPostponements = new HashMap<>();
+        jurorPoolRepository.findPostponementRecords(jurorNumbers, SecurityUtil.BUREAU_OWNER)
+            .forEach(jurorPool -> latestPostponements.putIfAbsent(jurorPool.getJurorNumber(), jurorPool));
+
+        return data.stream().map(row -> {
+            List<Object> updatedRow = new ArrayList<>(row);
+            JurorPool jurorPool = latestPostponements.get((String) row.get(jurorNumberIndex));
+            if (jurorPool != null) {
+                if (row.get(dateIndex) == null) {
+                    updatedRow.set(dateIndex, DataType.JUROR_POSTPONED_TO.transform(jurorPool.getDeferralDate()));
+                }
+                if (row.get(reasonIndex) == null) {
+                    updatedRow.set(reasonIndex,
+                        DataType.JUROR_DEFERRED_TO_REASON.transform(jurorPool.getDeferralCode()));
+                }
+            }
+            return updatedRow;
+        }).toList();
     }
 
     @Override
@@ -418,7 +460,7 @@ public class ReissueLetterServiceImpl implements ReissueLetterService {
             .contains(formCode)) {
             JurorPool jurorPool =
                 JurorPoolUtils.getActiveJurorPoolForUser(jurorPoolRepository, jurorNumber);
-            jurorHistoryService.createDeleteAdditionalInfoLetterHistory(jurorPool);
+            jurorHistoryService.createDeleteAdditionalInfoLetterHistory(jurorPool, FormCode.getFormCode(formCode));
         }
         return true;
     }
