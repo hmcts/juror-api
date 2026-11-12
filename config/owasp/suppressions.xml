@@ -1,4 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions
   xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+  <suppress>
+    <notes><![CDATA[
+      Suppression requested for findings reported by HMCTS_juror-api_PR-1365.
+      Scoped to the reported dependency version; applicability has not been assessed.
+    ]]></notes>
+    <packageUrl regex="false">pkg:maven/org.hibernate.validator/hibernate-validator@9.0.1.Final</packageUrl>
+    <cve>CVE-2025-15104</cve>
+  </suppress>
+
+  <suppress>
+    <notes><![CDATA[
+      Suppression requested for findings reported by HMCTS_juror-api_PR-1365.
+      Scoped to the reported dependency version; applicability has not been assessed.
+    ]]></notes>
+    <packageUrl regex="false">pkg:maven/org.apache.tomcat.embed/tomcat-embed-core@11.0.24</packageUrl>
+    <cve>CVE-2026-65637</cve>
+    <cve>CVE-2026-65905</cve>
+    <cve>CVE-2026-65182</cve>
+    <cve>CVE-2026-68525</cve>
+    <cve>CVE-2026-65183</cve>
+    <cve>CVE-2026-66422</cve>
+    <cve>CVE-2026-68569</cve>
+    <cve>CVE-2026-65927</cve>
+    <cve>CVE-2026-68763</cve>
+    <cve>CVE-2026-73180</cve>
+    <cve>CVE-2026-66299</cve>
+  </suppress>
+
+  <suppress>
+    <notes><![CDATA[
+      Suppression requested for findings reported by HMCTS_juror-api_PR-1365.
+      Scoped to the reported dependency version; applicability has not been assessed.
+    ]]></notes>
+    <packageUrl regex="false">pkg:maven/org.apache.tomcat.embed/tomcat-embed-websocket@11.0.24</packageUrl>
+    <cve>CVE-2026-65637</cve>
+    <cve>CVE-2026-65905</cve>
+    <cve>CVE-2026-65182</cve>
+    <cve>CVE-2026-68525</cve>
+    <cve>CVE-2026-65183</cve>
+    <cve>CVE-2026-66422</cve>
+    <cve>CVE-2026-68569</cve>
+    <cve>CVE-2026-65927</cve>
+    <cve>CVE-2026-68763</cve>
+    <cve>CVE-2026-73180</cve>
+    <cve>CVE-2026-66299</cve>
+  </suppress>
 </suppressions>
