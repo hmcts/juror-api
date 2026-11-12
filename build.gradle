@@ -67,7 +67,7 @@ jacoco {
   toolVersion = "0.8.16"
 }
 
-version = '5.34.0'
+version = '5.34.1'
 
 repositories {
   mavenLocal()
@@ -108,7 +108,7 @@ dependencies {
   //Internal dependency overrides
   implementation 'org.apache.logging.log4j:log4j-api:2.26.1'
   implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.26.1'        // kept in sync with log4j-api
-  
+
   implementation("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
   implementation("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
   implementation("org.springframework.data:spring-data-envers")
