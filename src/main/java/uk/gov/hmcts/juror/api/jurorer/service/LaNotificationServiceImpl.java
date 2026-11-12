@@ -259,24 +259,27 @@ public class LaNotificationServiceImpl implements LaNotificationService {
  //   private static final String TEMPLATE_PLACEHOLDER_OPEN_PORTAL = "OPENPORTALDATE";
 
     private Map<String, String> buildEmailPayload(LaEmailNotificationType type) {
+        Deadline deadline = deadlineRepository.getCurrentDeadline()
+            .orElseThrow(() -> new IllegalStateException("No current deadline found - cannot send " + type));
+
         Map<String, String> payload = new HashMap<>();
         payload.put(TEMPLATE_PLACEHOLDER_GREETING, getGreeting());
-        payload.put(TEMPLATE_PLACEHOLDER_DEADLINE, getCurrentDeadlineDate());
+        payload.put(TEMPLATE_PLACEHOLDER_DEADLINE, formatRequired(deadline.getDeadlineDate(), "deadline_date"));
 
         if (type == LaEmailNotificationType.INITIAL_EMAIL) {
-            payload.put(TEMPLATE_PLACEHOLDER_OPEN_PORTAL, getOpenPortalDate());
+            payload.put(TEMPLATE_PLACEHOLDER_OPEN_PORTAL,
+                        formatRequired(deadline.getUploadStartDate(), "upload_start_date"));
         }
         return payload;
     }
 
-    private String getOpenPortalDate() {
-        // TODO: source of the portal opening date
-        LocalDate openDate = LocalDate.of(2027, 1, 4);
-        if (openDate == null) {
-            throw new IllegalStateException("Portal open date not configured - cannot send initial email");
+    private String formatRequired(LocalDate date, String column) {
+        if (date == null) {
+            throw new IllegalStateException("Current deadline has no " + column);
         }
-        return openDate.format(DEADLINE_FORMATTER);
+        return date.format(DEADLINE_FORMATTER);
     }
+
 
     private String resolveTemplateId(LaEmailNotificationType type) {
         String templateId = switch (type) {
