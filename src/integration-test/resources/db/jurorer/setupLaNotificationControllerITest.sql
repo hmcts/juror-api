@@ -2,7 +2,7 @@ DELETE FROM juror_er.reminder_history;
 DELETE FROM juror_er."user";
 DELETE FROM juror_er.local_authority;
 DELETE FROM juror_er.deadline;
-DELETE FROM juror_mod.app_setting WHERE setting = 'NOTIFY_ER_REMINDER';
+DELETE FROM juror_mod.app_setting WHERE setting IN ('NOTIFY_ER_REMINDER', 'NOTIFY_ER_INITIAL');
 
 
 INSERT INTO juror_er.local_authority (la_code, la_name, is_active, upload_status, notes, inactive_reason, updated_by, last_updated) VALUES
@@ -27,4 +27,5 @@ INSERT INTO juror_er.deadline (id, deadline_date, upload_start_date, updated_by,
 
 -- Setup Notify template ID in app_setting
 INSERT INTO juror_mod.app_setting (setting, value) VALUES
-    ('NOTIFY_ER_REMINDER', 'test-template-id-12345');
+    ('NOTIFY_ER_REMINDER', 'test-template-id-12345'),
+    ('NOTIFY_ER_INITIAL', 'test-initial-template');

@@ -5,6 +5,7 @@ public enum LaEmailNotificationType {
     REMINDER_EMAIL("LA_REMINDER_EMAIL_%s");
 
     private final String referenceFormat;
+
     LaEmailNotificationType(String referenceFormat) {
         this.referenceFormat = referenceFormat;
     }
