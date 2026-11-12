@@ -9,12 +9,10 @@ import java.util.Map;
 
 public interface LaNotificationService {
 
-    // LaNotificationService
     EmailNotification createEmailNotification(String emailAddress,
                                               String templateId,
                                               Map<String, String> payload,
                                               LaEmailNotificationType type);
 
-    //void sendNotificationsToLocalAuthorities(List<String> laCodes);
     LaNotificationResponseDto sendNotificationsToLocalAuthorities(LaNotificationRequestDto request);
 }

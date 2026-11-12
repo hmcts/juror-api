@@ -32,9 +32,10 @@ public interface ReminderHistoryRepository extends JpaRepository<ReminderHistory
     List<ReminderHistory> findByTimeSentBetweenOrderByTimeSentDesc(LocalDateTime startDate, LocalDateTime endDate);
 
     /**
+     * Finds authorities with at least one notification of the requested type.
      *
-     * @param type
-     * @return
+     * @param type notification type to match
+     * @return distinct Local Authority codes
      */
     @Query("select distinct r.laCode from ReminderHistory r where r.notificationType = :type")
     Set<String> findLaCodesByNotificationType(@Param("type") LaEmailNotificationType type);

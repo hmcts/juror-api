@@ -29,7 +29,7 @@ public class LaNotificationRequestDto {
     @JsonProperty("la_codes")
     @NotEmpty(message = "At least one LA code must be provided")
     @Schema(description = "List of LA codes to send notifications to", requiredMode = Schema.RequiredMode.REQUIRED)
-private List<@Size(min = 3, max = 3, message = "LA code must be 3 characters") String> laCodes;
+    private List<@Size(min = 3, max = 3, message = "LA code must be 3 characters") String> laCodes;
 
     @JsonProperty("notification_type")
     @NotNull(message = "Notification type must be provided")

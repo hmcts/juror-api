@@ -28,10 +28,10 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 
@@ -51,7 +51,7 @@ public class LaNotificationServiceImpl implements LaNotificationService {
     // Template placeholders
     private static final String TEMPLATE_PLACEHOLDER_GREETING = "GREETING";
     private static final String TEMPLATE_PLACEHOLDER_DEADLINE = "DEADLINEDATE";
-    private static final String TEMPLATE_PLACEHOLDER_OPEN_PORTAL ="OPENPORTALDATE";
+    private static final String TEMPLATE_PLACEHOLDER_OPEN_PORTAL = "OPENPORTALDATE";
     // Greeting values
     private static final String GREETING_MORNING = "Morning";
     private static final String GREETING_AFTERNOON = "Afternoon";
@@ -64,14 +64,12 @@ public class LaNotificationServiceImpl implements LaNotificationService {
     @Transactional
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.CognitiveComplexity"})
     public LaNotificationResponseDto sendNotificationsToLocalAuthorities(LaNotificationRequestDto request) {
-        log.info("Processing notifications for {} LA codes", request.getLaCodes().size());
-
         List<LaNotificationResponseDto.FailedNotification> failedNotifications = new ArrayList<>();
 
         LaEmailNotificationType type = request.getNotificationType();
         log.info("Processing {} notifications for {} LA codes", type, request.getLaCodes().size());
         String templateId = resolveTemplateId(type);
-        Map<String, String> payload = buildEmailPayload(type);   // once, before the loop
+        Map<String, String> payload = buildEmailPayload(type);
 
 
         // Get current user for audit
@@ -152,17 +150,15 @@ public class LaNotificationServiceImpl implements LaNotificationService {
                             continue;
                         }
 
-            //            Map<String, String> payload = buildEmailPayload(localAuthority);
                         EmailNotification emailNotification = createEmailNotification(
                             user.getUsername(),
                             templateId,
-                           payload,
+                            payload,
                             type
                         );
 
                         notifyAdapter.sendCommsEmail(emailNotification);
-                        log.info("Successfully sent notification to user: {} for LA: {} ({})",
-                                 user.getUsername(), localAuthority.getLaName(), laCode);
+                        log.info("Successfully sent {} notification for LA code: {}", type, laCode);
 
                         // Record the sent notification in reminder_history
                         recordReminderHistory(laCode, currentUser, user.getUsername(), type);
@@ -170,14 +166,13 @@ public class LaNotificationServiceImpl implements LaNotificationService {
                         successCount++;
 
                     } catch (NotifyApiException e) {
-                        log.error("Failed to send notification to user: {} for LA code: {}",
-                                  user.getUsername(), laCode, e);
+                        log.error("Failed to send {} notification for LA code: {}", type, laCode);
                         failedNotifications.add(createFailedNotification(
                             laCode,
                             localAuthority.getLaName(),
                             user.getUsername(),
                             LaNotificationResponseDto.FailureReason.NOTIFY_API_ERROR,
-                            "Failed to send email via GOV.UK Notify: " + e.getMessage()
+                            "Failed to send email via GOV.UK Notify"
                         ));
                     }
                 }
@@ -189,7 +184,7 @@ public class LaNotificationServiceImpl implements LaNotificationService {
                     null,
                     null,
                     LaNotificationResponseDto.FailureReason.UNEXPECTED_ERROR,
-                    "Unexpected error: " + e.getMessage()
+                    "Unexpected error processing notification"
                 ));
             }
         }
@@ -252,17 +247,16 @@ public class LaNotificationServiceImpl implements LaNotificationService {
                 .build();
             reminderHistoryRepository.save(reminderHistory);
         } catch (Exception e) {
-            log.error("Failed to record {} history for LA code: {} to: {}", type, laCode, sentTo, e);
+            log.error("Failed to record {} history for LA code: {}", type, laCode);
         }
     }
 
- //   private static final String TEMPLATE_PLACEHOLDER_OPEN_PORTAL = "OPENPORTALDATE";
 
     private Map<String, String> buildEmailPayload(LaEmailNotificationType type) {
         Deadline deadline = deadlineRepository.getCurrentDeadline()
             .orElseThrow(() -> new IllegalStateException("No current deadline found - cannot send " + type));
 
-        Map<String, String> payload = new HashMap<>();
+        Map<String, String> payload = new ConcurrentHashMap<>();
         payload.put(TEMPLATE_PLACEHOLDER_GREETING, getGreeting());
         payload.put(TEMPLATE_PLACEHOLDER_DEADLINE, formatRequired(deadline.getDeadlineDate(), "deadline_date"));
 
@@ -303,24 +297,4 @@ public class LaNotificationServiceImpl implements LaNotificationService {
             : GREETING_AFTERNOON;
     }
 
-    /**
-     * Gets the current deadline date from the repository and formats it.
-     * @return Formatted deadline date string (dd/MM/yyyy)
-     */
-    private String getCurrentDeadlineDate() {
-        Optional<Deadline> currentDeadline = deadlineRepository.getCurrentDeadline();
-
-        if (currentDeadline.isPresent()) {
-            Deadline deadline = currentDeadline.get();
-            if (deadline.getDeadlineDate() != null) {
-                return deadline.getDeadlineDate().format(DEADLINE_FORMATTER);
-            } else {
-                log.warn("Deadline record exists but deadline_date is null");
-                return "N/A";
-            }
-        }
-
-        log.warn("No current deadline found in database");
-        return "N/A";
-    }
 }
