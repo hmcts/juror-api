@@ -69,13 +69,13 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
     void negativeInvalidCourtLocCode() throws Exception {
         StandardReportRequest request = getValidPayload();
         request.setLocCode("999");
-        ControllerTest.ControllerTestResponseString res = testBuilder()
+        ControllerTest<StandardReportRequest, StandardReportResponse>.ControllerTestResponseString res = testBuilder()
             .payload(request)
             .triggerInvalid();
         assertThat(res.body()).isNotNull();
         JSONAssert.assertEquals(
             "{\"status\":400,\"error\":\"Bad Request\",\"message\":\"Invalid loc code: 999\"}",
-            (String) res.body(), false);
+            res.body(), false);
     }
 
     protected String getValidBureauJwt() {
