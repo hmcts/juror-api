@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseMergeService;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.EmailDataService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
@@ -40,10 +42,12 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.JurorDigitalApplication.AUTO_USER;
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 
 /**
  * Unit test of {@link StraightThroughProcessorImpl}.
@@ -72,6 +76,10 @@ public class StraightThroughProcessorImplTest {
     private JurorHistoryService jurorHistoryService;
     @Mock
     private JurorPoolService jurorPoolService;
+    @Mock
+    private EmailDataService emailDataService;
+    @Mock
+    private FeatureFlagConfigurationProperties featureFlags;
     @InjectMocks
     private StraightThroughProcessorImpl straightThroughProcessor;
 
@@ -234,6 +242,7 @@ public class StraightThroughProcessorImplTest {
         // Juror turns too old on first day of hearing
         LocalDate hearingDate = addTime(birthDate, TOO_OLD_JUROR_AGE, 0);
         given(jurorPool.getNextDate()).willReturn(hearingDate);
+        given(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).willReturn(false);
 
 
         // process response
@@ -257,6 +266,7 @@ public class StraightThroughProcessorImplTest {
         verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A", CommunicationChannel.LETTER);
 
         verify(printDataService).printWithdrawalLetter(any(JurorPool.class));
+        verify(emailDataService, never()).emailWithdrawalLetter(any(JurorPool.class), any(String.class));
 
         verify(userRepository).findByUsername(AUTO_USER);
     }
@@ -282,6 +292,9 @@ public class StraightThroughProcessorImplTest {
         // set Juror to be one day too young on first day of hearing
         LocalDate hearingDate = addTime(birthDate, YOUNGEST_JUROR_AGE_ALLOWED - 1, 364);
         given(jurorPool.getNextDate()).willReturn(hearingDate);
+        given(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).willReturn(true);
+        jurorPoolUtilsMockedStatic.when(() -> JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool))
+            .thenReturn(true);
 
         // process response
         straightThroughProcessor.processAgeExcusal(jurorResponse);
@@ -300,12 +313,38 @@ public class StraightThroughProcessorImplTest {
         verify(poolRepository).save(any(JurorPool.class));
 
         verify(partHistRepository, times(1)).save(any(JurorHistory.class));
-        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A",CommunicationChannel.LETTER);
-
-        verify(printDataService).printWithdrawalLetter(jurorPool);
+        verify(emailDataService).emailWithdrawalLetter(jurorPool, DisqualifyCode.A.getCode());
+        verify(jurorHistoryService, never()).createWithdrawHistory(any(), any(), any(), any());
+        verify(printDataService, never()).printWithdrawalLetter(any(JurorPool.class));
 
         //verify(staffRepository).findOne(StaffQueries.byLogin(AUTO_USER));
         verify(userRepository).findByUsername(AUTO_USER);
+    }
+
+    @Test
+    public void processAgeExcusal_digitalByDefaultEnabledButIneligible_printsWithdrawalLetter() {
+        JurorStatus disqualifiedJurorStatus = mock(JurorStatus.class);
+        when(jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED))
+            .thenReturn(Optional.of(disqualifiedJurorStatus));
+        given(jurorResponse.getJurorNumber()).willReturn(TEST_JUROR_NUMBER);
+        given(jurorResponse.getRelationship()).willReturn(null);
+        JurorStatus jurorStatus = mock(JurorStatus.class);
+        when(jurorStatus.getStatus()).thenReturn(IJurorStatus.SUMMONED);
+        given(jurorPool.getStatus()).willReturn(jurorStatus);
+
+        LocalDate birthDate = LocalDate.of(1901, 1, 1);
+        given(jurorResponse.getDateOfBirth()).willReturn(birthDate);
+        given(jurorPool.getNextDate()).willReturn(addTime(birthDate, TOO_OLD_JUROR_AGE, 0));
+        given(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).willReturn(true);
+        jurorPoolUtilsMockedStatic.when(() -> JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorPool))
+            .thenReturn(false);
+
+        straightThroughProcessor.processAgeExcusal(jurorResponse);
+
+        verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, DisqualifyCode.A.getCode(),
+            CommunicationChannel.LETTER);
+        verify(printDataService).printWithdrawalLetter(jurorPool);
+        verify(emailDataService, never()).emailWithdrawalLetter(any(JurorPool.class), any(String.class));
     }
 
     @Test

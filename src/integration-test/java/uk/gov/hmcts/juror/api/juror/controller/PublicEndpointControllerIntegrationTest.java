@@ -44,7 +44,10 @@ import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorReasonableAdjustment;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseCjsEmployment;
+import uk.gov.hmcts.juror.api.moj.enumeration.CommunicationChannel;
+import uk.gov.hmcts.juror.api.moj.enumeration.DigitalByDefaultEmailTemplate;
 import uk.gov.hmcts.juror.api.moj.enumeration.DisqualifyCode;
+import uk.gov.hmcts.juror.api.moj.enumeration.EmailStatus;
 import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.moj.enumeration.jurormanagement.JurorStatusEnum;
@@ -1329,7 +1332,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
     @Sql("/db/standing_data.sql")
     @Sql("/db/app_settings.sql")
     @Sql("/db/PublicEndpointControllerTest.respondToSummons_ageExcusal.sql")
+    @Sql(statements = "UPDATE juror_mod.court_location SET digital_by_default = false WHERE loc_code = '448'",
+        executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
     public void respondToSummons_happy_ageExcusal_successfulStraightThrough_young() throws Exception {
+
+        jdbcTemplate.update("UPDATE juror_mod.court_location SET digital_by_default = true WHERE loc_code = '448'");
+        jdbcTemplate.update("UPDATE juror_mod.juror SET digital_by_default = true, dbd_preference = 'Digital' "
+            + "WHERE juror_number = '644892530'");
+        insertDbdWithdrawalTemplateMapping();
 
         final URI uri = URI.create("/api/v1/public/juror/respond");
         httpHeaders.set(HttpHeaders.AUTHORIZATION, mintPublicJwt(PublicJwtPayload.builder()
@@ -1389,6 +1399,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             assertThat(jurorRecord.getDateOfBirth()).isEqualTo(dob); // juror DOB should have been updated
             assertThat(jurorRecord.isResponded()).isTrue();
             assertThat(jurorRecord.getDisqualifyCode()).isEqualTo("A");
+            assertThat(jurorRecord.getDisqualifyDate()).isEqualTo(LocalDate.now());
 
             // get the juror pool record and check status
             JurorPool jurorPool = jurorPoolRepository
@@ -1396,6 +1407,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             assertThat(jurorPool).isNotNull();
             // status should be DISQUALIFIED
             assertThat(jurorPool.getStatus().getStatus()).isEqualTo(JurorStatusEnum.DISQUALIFIED.getStatus());
+            assertThat(jurorPool.getNextDate()).isNull();
 
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
             assertThat(history).isNotEmpty();
@@ -1403,13 +1415,19 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
             checkResponseSubmittedHistory(history);
             checkDisqualifyPoolMemberHistory(history);
-            checkWithdrawalLetterHistory(history);
+            checkWithdrawalEmailHistory(history);
             // there are two juror details updated history records too for dob and postcode
 
             List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository.findByJurorNo("644892530");
             assertThat(bulkPrintDataList.size()).isEqualTo(1);
-            assertThat(bulkPrintDataList.getFirst().getFormAttribute().getFormType())
-                .as("form code should be withdrawal codes").isIn("5224", "5224C");
+            BulkPrintData withdrawalEmail = bulkPrintDataList.getFirst();
+            assertThat(withdrawalEmail.getFormAttribute().getFormType()).isEqualTo("5224");
+            assertThat(withdrawalEmail.getCommunicationChannel()).isEqualTo(CommunicationChannel.EMAIL);
+            assertThat(withdrawalEmail.getEmailStatus()).isEqualTo(EmailStatus.PENDING);
+            assertThat(withdrawalEmail.getNotifyTemplateName())
+                .isEqualTo(DigitalByDefaultEmailTemplate.WITHDRAWAL_ENGLISH.getTemplateName());
+            assertThat(withdrawalEmail.isDigitalComms()).isTrue();
+            assertThat(withdrawalEmail.isExtractedFlag()).isTrue();
 
         });
     }
@@ -1483,6 +1501,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             assertThat(jurorRecord.getDateOfBirth()).isEqualTo(dob); // juror DOB should have been updated
             assertThat(jurorRecord.isResponded()).isTrue();
             assertThat(jurorRecord.getDisqualifyCode()).isEqualTo("A");
+            assertThat(jurorRecord.getDisqualifyDate()).isEqualTo(LocalDate.now());
 
             // get the juror pool record and check status
             JurorPool jurorPool = jurorPoolRepository
@@ -1490,6 +1509,7 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
             assertThat(jurorPool).isNotNull();
             // status should be DISQUALIFIED
             assertThat(jurorPool.getStatus().getStatus()).isEqualTo(JurorStatusEnum.DISQUALIFIED.getStatus());
+            assertThat(jurorPool.getNextDate()).isNull();
 
             Collection<JurorHistory> history = jurorHistoryRepository.findByJurorNumberOrderById("644892530");
             assertThat(history).isNotEmpty();
@@ -1502,8 +1522,14 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
 
             List<BulkPrintData> bulkPrintDataList = bulkPrintDataRepository.findByJurorNo("644892530");
             assertThat(bulkPrintDataList.size()).isEqualTo(1);
-            assertThat(bulkPrintDataList.getFirst().getFormAttribute().getFormType())
-                .as("form code should be withdrawal codes").isIn("5224", "5224C").isIn("5224", "5224C");
+            BulkPrintData withdrawalLetter = bulkPrintDataList.getFirst();
+            assertThat(withdrawalLetter.getFormAttribute().getFormType())
+                .as("form code should be withdrawal codes").isIn("5224", "5224C");
+            assertThat(withdrawalLetter.getCommunicationChannel()).isEqualTo(CommunicationChannel.LETTER);
+            assertThat(withdrawalLetter.getEmailStatus()).isNull();
+            assertThat(withdrawalLetter.getNotifyTemplateName()).isNull();
+            assertThat(withdrawalLetter.isDigitalComms()).isFalse();
+            assertThat(withdrawalLetter.isExtractedFlag()).isFalse();
         });
 
         Mockito.verify(this.notificationClientApi).sendEmail(anyString(), anyString(), anyMap(), anyString());
@@ -2390,6 +2416,24 @@ public class PublicEndpointControllerIntegrationTest extends AbstractIntegration
         assertThat(historyRecord).isPresent();
         assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
         assertThat(historyRecord.get().getOtherInformationRef()).isEqualTo("A");
+        assertThat(historyRecord.get().getOtherInformation()).isNotEqualTo("Withdrawal Email");
+    }
+
+    private void checkWithdrawalEmailHistory(Collection<JurorHistory> history) {
+        Optional<JurorHistory> historyRecord = history.stream().filter(h ->
+                                            h.getHistoryCode() == HistoryCodeMod.WITHDRAWAL_LETTER).findFirst();
+        assertThat(historyRecord).isPresent();
+        assertThat(historyRecord.get().getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(historyRecord.get().getOtherInformationRef()).isEqualTo("A");
+        assertThat(historyRecord.get().getOtherInformation()).isEqualTo("Withdrawal Email");
+    }
+
+    private void insertDbdWithdrawalTemplateMapping() {
+        jdbcTemplate.update("INSERT INTO juror_mod.notify_template_mapping "
+            + "(template_id, template_name, notify_name, form_type, notification_type, version) "
+            + "VALUES ('2d7e9717-829b-4dcc-8f18-f0cdf047fc8d', ?, 'DBD withdrawal English', '5224', 1, 0) "
+            + "ON CONFLICT (template_name) DO NOTHING",
+            DigitalByDefaultEmailTemplate.WITHDRAWAL_ENGLISH.getTemplateName());
     }
 
     private void checkDisqualifyPoolMemberHistory(Collection<JurorHistory> history) {
