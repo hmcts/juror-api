@@ -347,6 +347,7 @@ test {
 
 task integration(type: Test) {
   useJUnitPlatform()
+  systemProperty 'spring.test.context.cache.maxSize', '4'
   description = 'Runs integration tests.'
   group = 'verification'
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
