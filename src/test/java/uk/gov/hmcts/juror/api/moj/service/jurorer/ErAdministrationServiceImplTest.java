@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
@@ -36,7 +39,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("all")
-@ExtendWith(SpringExtension.class)
+@ExtendWith({SpringExtension.class, MockitoExtension.class})
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ErAdministrationServiceImplTest {
 
     @Mock
@@ -274,6 +278,8 @@ class ErAdministrationServiceImplTest {
 
     @Test
     void markAsDeliveredLaNotFoundGoesToErrors() {
+        TestUtils.setUpMockAuthentication("400", "Bureau", "1", List.of("400"));
+
         MarkAsDeliveredRequestDto request = new MarkAsDeliveredRequestDto();
         request.setLaCodes(List.of("001", "002"));
 

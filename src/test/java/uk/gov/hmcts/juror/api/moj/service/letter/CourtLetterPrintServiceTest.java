@@ -144,6 +144,10 @@ class CourtLetterPrintServiceTest {
             assertThat(response).as("Expect size to be 1").hasSize(1);
             verifyResponseDto(response);
 
+            ArgumentCaptor<JurorHistory> historyCaptor = ArgumentCaptor.forClass(JurorHistory.class);
+            verify(jurorHistoryRepository).save(historyCaptor.capture());
+            assertThat(historyCaptor.getValue().getOtherInformation()).isEqualTo("Print deferral letter");
+
             verify(systemParameterRepositoryMod, times(1)).findById(102); // English URL param
             verify(jurorRepository, times(1)).findByJurorNumber(jurorNumber);
             verify(welshCourtLocationRepository, times(0)).findById("415");
@@ -175,6 +179,10 @@ class CourtLetterPrintServiceTest {
 
             assertThat(response).as("Expect size to be 1").hasSize(1);
             verifyWelshResponseDto(response);
+
+            ArgumentCaptor<JurorHistory> historyCaptor = ArgumentCaptor.forClass(JurorHistory.class);
+            verify(jurorHistoryRepository).save(historyCaptor.capture());
+            assertThat(historyCaptor.getValue().getOtherInformation()).isEqualTo("Print deferral letter (Welsh)");
 
             verify(systemParameterRepositoryMod, times(1)).findById(103);
             verify(jurorRepository, times(1)).findByJurorNumber("111111112");
@@ -1846,7 +1854,7 @@ class CourtLetterPrintServiceTest {
                 .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS));
             assertThat(history.getOtherInformation())
                 .as("Other information")
-                .isEqualTo("Print Certificate of Exemption");
+                .isEqualTo("Print Certificate of Exemption (Welsh)");
             assertThat(history.getOtherInformationDate())
                 .as("Other information date")
                 .isEqualTo(LocalDate.now());
@@ -2266,7 +2274,7 @@ class CourtLetterPrintServiceTest {
             assertThat(jurorHistory.getJurorNumber()).isEqualTo(jurorNumber);
             assertThat(jurorHistory.getDateCreated()).isNotNull();
             assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.CERTIFICATE_OF_RECOGNITION);
-            assertThat(jurorHistory.getOtherInformation()).isEqualTo("Certificate of Attendance");
+            assertThat(jurorHistory.getOtherInformation()).isEqualTo("Certificate of Attendance (Welsh)");
             assertThat(jurorHistory.getCreatedBy()).isEqualTo("TEST_COURTUSER");
         }
 

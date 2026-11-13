@@ -6,12 +6,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -47,9 +48,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.juror.api.TestUtils.createJwt;
+import static uk.gov.hmcts.juror.api.TestUtils.jackson2HttpMessageConverter;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(controllers = JudgeController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
+@WebMvcTest(
+    controllers = JudgeController.class,
+    excludeAutoConfiguration = {SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class}
+)
+@org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = {JudgeController.class})
 @SuppressWarnings("PMD.ExcessiveImports")
 class JudgeControllerTest {
@@ -58,9 +64,9 @@ class JudgeControllerTest {
     private BureauJwtPayload jwtPayload;
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private JudgeService judgeService;
-    @MockBean
+    @MockitoBean
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;
 
     @Before
@@ -69,6 +75,7 @@ class JudgeControllerTest {
         jwtPayload = null;
         mockMvc = MockMvcBuilders
             .standaloneSetup(new JudgeController(judgeService))
+            .setMessageConverters(jackson2HttpMessageConverter())
             .setCustomArgumentResolvers(new PrincipalDetailsArgumentResolver())
             .build();
     }

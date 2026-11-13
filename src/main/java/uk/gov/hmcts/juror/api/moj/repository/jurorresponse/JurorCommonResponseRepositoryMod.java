@@ -52,7 +52,7 @@ public interface JurorCommonResponseRepositoryMod
 
     AbstractResponse findByJurorNumber(String jurorNumber);
 
-    @Query(nativeQuery = true, value = "SELECT u.name AS staff, DATE(jr.completed_at) AS day, COUNT(*) AS work_count "
+    @Query(nativeQuery = true, value = "SELECT CONCAT(u.name, ',', DATE(jr.completed_at), ',', COUNT(*)) "
         + "FROM juror_mod.juror_response jr "
         + "JOIN juror_mod.users u ON jr.staff_login = u.username "
         + "WHERE jr.processing_status = 'CLOSED' "

@@ -3,11 +3,11 @@ package uk.gov.hmcts.juror.api.moj.client.interceptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.config.JwtSecurityConfig;
 import uk.gov.hmcts.juror.api.moj.service.JwtService;
@@ -30,22 +30,22 @@ class JwtAuthenticationInterceptorTest {
 
     private JwtAuthenticationInterceptor jwtAuthenticationInterceptor;
 
-    @MockBean
+    @MockitoBean
     private ClientHttpRequestExecution clientHttpRequestExecution;
-    @MockBean
+    @MockitoBean
     private HttpRequest request;
-    @MockBean
+    @MockitoBean
     private HttpHeaders httpHeaders;
-    @MockBean
+    @MockitoBean
     private ClientHttpResponse clientHttpResponse;
 
-    @MockBean
+    @MockitoBean
     private JwtService jwtService;
 
     private JwtSecurityConfig securityConfig;
 
     private byte[] body;
-    private SecretKey secretKey;
+    private SecretKey signingKey;
 
     @BeforeEach
     void beforeEach() throws IOException {
@@ -56,25 +56,25 @@ class JwtAuthenticationInterceptorTest {
         this.securityConfig.setTokenValidity(160_000);
         this.securityConfig.setSecret(TestConstants.JWT_SECRET);
         this.securityConfig.setClaims(new HashMap<>());
-        this.secretKey = org.mockito.Mockito.mock(SecretKey.class);
+        this.signingKey = org.mockito.Mockito.mock(SecretKey.class);
 
         when(this.request.getHeaders()).thenReturn(this.httpHeaders);
         when(this.clientHttpRequestExecution.execute(this.request, this.body)).thenReturn(this.clientHttpResponse);
         this.jwtAuthenticationInterceptor = new JwtAuthenticationInterceptor(this.jwtService, this.securityConfig);
-        when(jwtService.getSigningKey(this.securityConfig.getSecret())).thenReturn(secretKey);
+        when(jwtService.getSigningKey(this.securityConfig.getSecret())).thenReturn(signingKey);
 
         when(jwtService.generateJwtToken(null,
             this.securityConfig.getIssuer(),
             this.securityConfig.getSubject(),
             this.securityConfig.getTokenValidity(),
-            secretKey,
+            signingKey,
             this.securityConfig.getClaims()
         )).thenReturn(TestConstants.JWT);
     }
 
     @Test
     void positiveInterceptValid() throws IOException {
-        when(httpHeaders.containsKey("Authorization")).thenReturn(false);
+        when(httpHeaders.containsHeader("Authorization")).thenReturn(false);
 
         assertEquals(clientHttpResponse,
             jwtAuthenticationInterceptor.intercept(request, body, clientHttpRequestExecution),
@@ -88,7 +88,7 @@ class JwtAuthenticationInterceptorTest {
                 this.securityConfig.getIssuer(),
                 this.securityConfig.getSubject(),
                 this.securityConfig.getTokenValidity(),
-                secretKey,
+                signingKey,
                 this.securityConfig.getClaims()
             );
         verify(jwtService, times(1)).getSigningKey(this.securityConfig.getSecret());
@@ -98,7 +98,7 @@ class JwtAuthenticationInterceptorTest {
 
     @Test
     void negativeInterceptAlreadyHasHeader() throws IOException {
-        when(httpHeaders.containsKey("Authorization")).thenReturn(true);
+        when(httpHeaders.containsHeader("Authorization")).thenReturn(true);
 
         assertEquals(clientHttpResponse,
             jwtAuthenticationInterceptor.intercept(request, body, clientHttpRequestExecution),

@@ -104,7 +104,7 @@ public interface FileUploadsRepository extends JpaRepository<FileUploads, Long> 
     boolean existsByLaCode(@Param("laCode") String laCode);
 
     // get the latest upload for each LA (one per LA)
-    @Query(value = "SELECT la_code, la_username, upload_date  "
+    @Query(value = "SELECT CONCAT(la_code, ',', la_username, ',', upload_date)  "
         + "        FROM ( "
         + "          SELECT la_code, la_username, upload_date,  "
         + "                 ROW_NUMBER() OVER (PARTITION BY la_code ORDER BY upload_date DESC, id DESC) AS rownum  "

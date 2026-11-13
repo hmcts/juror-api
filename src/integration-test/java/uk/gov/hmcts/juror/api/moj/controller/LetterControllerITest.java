@@ -13,8 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -1917,6 +1917,45 @@ class LetterControllerITest extends AbstractIntegrationTest {
             assertThat(response).isNotNull();
             assertThat(response.getStatusCode()).as("Expect HTTP Response to be Not Found")
                 .isEqualTo(NOT_FOUND);
+        }
+
+        @Test
+        @Sql({"/db/mod/truncate.sql", "/db/letter/LetterController_initReissuePostponeLetter.sql",
+            "/db/letter/LetterController_postponeIntoNewPool.sql"})
+        void reissuePostponeLetterListBureauAfterPoolMove() {
+            final URI uri = URI.create("/api/v1/moj/letter/reissue-letter-list");
+            httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau("BUREAU_USER"));
+
+            ReissueLetterListRequestDto requestDto = ReissueLetterListRequestDto.builder()
+                .showAllQueued(true)
+                .letterType(LetterType.POSTPONED)
+                .build();
+
+            RequestEntity<ReissueLetterListRequestDto> request = new RequestEntity<>(requestDto,
+                httpHeaders, POST, uri);
+            ResponseEntity<ReissueLetterListResponseDto> response =
+                template.exchange(request, ReissueLetterListResponseDto.class);
+
+            assertThat(response.getStatusCode()).isEqualTo(OK);
+            ReissueLetterListResponseDto responseBody = response.getBody();
+            assertThat(responseBody).isNotNull();
+            assertThat(responseBody.getData()).hasSize(2);
+
+            int jurorNumberIndex = responseBody.getHeadings().indexOf("Juror number");
+            int extractedFlagIndex = responseBody.getHeadings().indexOf("hidden_extracted_flag");
+            int formCodeIndex = responseBody.getHeadings().indexOf("hidden_form_code");
+            assertThat(responseBody.getData()).extracting(row -> row.get(jurorNumberIndex))
+                .containsExactlyInAnyOrder("555555551", "555555552");
+            assertThat(responseBody.getData()).extracting(row -> row.get(extractedFlagIndex))
+                .containsOnly(false);
+            assertThat(responseBody.getData()).extracting(row -> row.get(formCodeIndex))
+                .containsExactlyInAnyOrder(FormCode.ENG_POSTPONE.getCode(), FormCode.BI_POSTPONE.getCode());
+            int postponedToIndex = responseBody.getHeadings().indexOf("Postponed to");
+            int reasonIndex = responseBody.getHeadings().indexOf("Reason");
+            assertThat(responseBody.getData()).extracting(row -> row.get(postponedToIndex))
+                .containsOnly(LocalDate.now().plusDays(90).toString());
+            assertThat(responseBody.getData()).extracting(row -> row.get(reasonIndex))
+                .containsOnly("Postponement of service");
         }
 
         @Test

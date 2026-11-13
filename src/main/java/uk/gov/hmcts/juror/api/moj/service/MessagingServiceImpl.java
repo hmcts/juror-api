@@ -14,6 +14,7 @@ import uk.gov.hmcts.juror.api.moj.controller.response.messages.ViewMessageTempla
 import uk.gov.hmcts.juror.api.moj.domain.CsvBuilder;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.PaginatedList;
+import uk.gov.hmcts.juror.api.moj.domain.messages.DataType;
 import uk.gov.hmcts.juror.api.moj.domain.messages.Message;
 import uk.gov.hmcts.juror.api.moj.domain.messages.MessagePlaceholders;
 import uk.gov.hmcts.juror.api.moj.domain.messages.MessageSearch;
@@ -31,6 +32,8 @@ import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -368,6 +371,9 @@ public class MessagingServiceImpl implements MessagingService {
         if (messagePlaceholder.getSourceTableName() != null
             && messagePlaceholder.getSourceColumnName() != null) {
             defaultValue = messageTemplateRepository.getDefaultValue(messagePlaceholder, locCode);
+        }
+        if (DataType.TIME.equals(messagePlaceholder.getType()) && defaultValue != null) {
+            defaultValue = LocalTime.parse(defaultValue).format(DateTimeFormatter.ISO_LOCAL_TIME);
         }
         return ViewMessageTemplateDto.Placeholder.builder()
             .displayName(messagePlaceholder.getDisplayName())

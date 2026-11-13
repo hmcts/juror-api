@@ -312,7 +312,7 @@ public class Juror extends Address implements Serializable {
     @NotAudited
     private JurorResponseCommon jurorResponse;
 
-    @Column(name = "phone_number_combined")
+    @Column(name = "phone_number_combined", insertable = false, updatable = false)
     @Setter(AccessLevel.NONE)
     @NotAudited
     @Generated

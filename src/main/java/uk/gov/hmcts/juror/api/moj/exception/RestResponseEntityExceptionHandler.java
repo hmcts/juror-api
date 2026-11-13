@@ -44,7 +44,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<FinancialLossLimitExceededException.RequestBody> handleFinancialLossLimitExceededException(
         FinancialLossLimitExceededException ex,
         WebRequest request) {
-        return new ResponseEntity<>(ex.getResponseBody(), HttpStatus.UNPROCESSABLE_ENTITY);
+        return new ResponseEntity<>(ex.getResponseBody(), HttpStatus.UNPROCESSABLE_CONTENT);
     }
 
     @ExceptionHandler({PoolRequestException.DuplicatePoolRequest.class,
@@ -149,7 +149,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         if (ex.getMetaData() != null) {
             body.put("meta_data", ex.getMetaData());
         }
-        return new ResponseEntity<>(body, HttpStatus.UNPROCESSABLE_ENTITY);
+        return new ResponseEntity<>(body, HttpStatus.UNPROCESSABLE_CONTENT);
     }
 
     @ExceptionHandler({

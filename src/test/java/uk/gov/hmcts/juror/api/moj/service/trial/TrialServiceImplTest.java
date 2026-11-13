@@ -1,6 +1,7 @@
 package uk.gov.hmcts.juror.api.moj.service.trial;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,6 +9,9 @@ import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
@@ -76,7 +80,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.TestUtils.staffBuilder;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith({SpringExtension.class, MockitoExtension.class})
+@MockitoSettings(strictness = Strictness.LENIENT)
 @SuppressWarnings({
     "PMD.ExcessiveImports",
     "PMD.TooManyMethods"})
@@ -117,6 +122,10 @@ class TrialServiceImplTest {
 
     BureauJwtPayload payload = createJwtPayload("415", "COURT_USER");
 
+    @BeforeEach
+    void beforeEach() {
+        TestUtils.setUpMockAuthentication("415", "COURT_USER", "99", createCourtList());
+    }
 
     @Test
     void testCreateTrial() {

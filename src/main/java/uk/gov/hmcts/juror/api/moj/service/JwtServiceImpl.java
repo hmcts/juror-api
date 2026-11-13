@@ -3,7 +3,6 @@ package uk.gov.hmcts.juror.api.moj.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,11 +69,7 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public SecretKey getSigningKey(String jwtSecret) {
-        try {
-            return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
-        } catch (DecodingException exception) {
-            return Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(jwtSecret));
-        }
+        return Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(jwtSecret));
     }
 
     @Override

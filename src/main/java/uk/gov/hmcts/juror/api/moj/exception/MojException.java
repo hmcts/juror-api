@@ -28,7 +28,7 @@ public class MojException extends RuntimeException {
         }
     }
 
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_CONTENT)
     @Getter
     public static class BusinessRuleViolation extends MojException {
 

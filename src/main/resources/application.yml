@@ -48,17 +48,20 @@ smartsurvey:
 feature-flags:
   flags:
     digital-by-default: ${DIGITAL_BY_DEFAULT:false}
+
 server:
-  error:
-    include-message: always
-    include-exception: true
-    include-binding-errors: always
   tomcat:
     basedir: "my-tomcat"
     accesslog:
       enabled: true
       pattern: "%h %l %u %t %a %r %s (%D ms)"
 spring:
+  web:
+    error:
+      include-message: always
+      include-exception: true
+      include-binding-errors: always
+      include-path: always
   jpa:
     hibernate:
       ddl-auto: none
@@ -94,7 +97,10 @@ spring:
       validationQueryTimeout: 5
   cache:
     type: simple
-  jackson:
+  http:
+    converters:
+      preferred-json-mapper: jackson2
+  jackson2:
     serialization:
       write-dates-as-timestamps: true
   # Flyway must align with build.gradle
@@ -167,7 +173,7 @@ spring:
     import: "optional:configtree:/mnt/secrets/juror/"
     activate:
       on-profile: development
-  jackson:
+  jackson2:
     serialization:
       INDENT_OUTPUT: true
   jpa:
@@ -232,9 +238,10 @@ server:
     include-binding-errors: always
 jwt:
   secret:
-    hmac: test-hmac-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256-algorithm
-    bureau: test-bureau-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256
-    er-portal: test-er-portal-secret-key-for-integration-tests-minimum-256-bits-required-for-hs256
+    hmac: dGVzdC1obWFjLXNlY3JldC1rZXktZm9yLWludGVncmF0aW9uLXRlc3RzLW1pbmltdW0tMjU2LWJpdHMtcmVxdWlyZWQtZm9yLWhzMjU2LWFsZ29yaXRobQ==
+    public: dGVzdC1wdWJsaWMtc2VjcmV0LWtleS1mb3ItaW50ZWdyYXRpb24tdGVzdHMtbWluaW11bS0yNTYtYml0cy1yZXF1aXJlZC1mb3ItaHMyNTY=
+    bureau: dGVzdC1idXJlYXUtc2VjcmV0LWtleS1mb3ItaW50ZWdyYXRpb24tdGVzdHMtbWluaW11bS0yNTYtYml0cy1yZXF1aXJlZC1mb3ItaHMyNTY=
+    er-portal: dGVzdC1lci1wb3J0YWwtc2VjcmV0LWtleS1mb3ItaW50ZWdyYXRpb24tdGVzdHMtbWluaW11bS0yNTYtYml0cy1yZXF1aXJlZC1mb3ItaHMyNTY=
 uk:
   gov:
     hmcts:
@@ -242,8 +249,8 @@ uk:
         remote:
           pnc-check-service:
             security:
-              secret: ${PNC_CHECK_SERVICE_SECRET}
-              subject: ${PNC_CHECK_SERVICE_SUBJECT}
+              secret: ${PNC_CHECK_SERVICE_SECRET:dGVzdC1wdWJsaWMtc2VjcmV0LWtleS1mb3ItaW50ZWdyYXRpb24tdGVzdHMtbWluaW11bS0yNTYtYml0cy1yZXF1aXJlZC1mb3ItaHMyNTY=}
+              subject: ${PNC_CHECK_SERVICE_SUBJECT:test-pnc-check-service}
             host: localhost
             port: 8090
             scheme: http

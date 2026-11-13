@@ -5,11 +5,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -56,16 +57,20 @@ import static uk.gov.hmcts.juror.api.TestUtils.asJsonString;
 })
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(controllers = JurorManagementController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
+@WebMvcTest(
+    controllers = JurorManagementController.class,
+    excludeAutoConfiguration = {SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class}
+)
+@org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = {JurorManagementController.class})
 class JurorManagementControllerTest {
     private static final String BASE_URL = "/api/v1/moj/juror-management/attendance";
 
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private JurorAppearanceService jurorAppearanceService;
-    @MockBean
+    @MockitoBean
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;
 
     @Before
@@ -73,6 +78,7 @@ class JurorManagementControllerTest {
     void setupMocks() {
         mockMvc = MockMvcBuilders
             .standaloneSetup(new JurorManagementController(jurorAppearanceService))
+            .setMessageConverters(TestUtils.jackson2HttpMessageConverter())
             .setCustomArgumentResolvers(new CustomArgumentResolver())
             .build();
     }
@@ -321,6 +327,7 @@ class JurorManagementControllerTest {
     private void buildMockMvcBureau() {
         mockMvc = MockMvcBuilders
             .standaloneSetup(new JurorManagementController(jurorAppearanceService))
+            .setMessageConverters(TestUtils.jackson2HttpMessageConverter())
             .setCustomArgumentResolvers(new CustomArgumentResolverBureau())
             .build();
     }
