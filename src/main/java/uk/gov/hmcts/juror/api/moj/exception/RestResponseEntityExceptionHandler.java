@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -220,6 +221,12 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleUnhandledException(Exception ex, WebRequest request) {
+        if (ex instanceof AccessDeniedException accessDeniedException) {
+            throw accessDeniedException;
+        }
+        if (ex.getCause() instanceof JurorServiceImpl.JurorResponseAlreadyExistsException duplicateResponse) {
+            return handleJurorResponseAlreadyExists(duplicateResponse, request);
+        }
         ResponseStatus responseStatus = AnnotatedElementUtils.findMergedAnnotation(ex.getClass(), ResponseStatus.class);
         if (responseStatus != null && responseStatus.code() != HttpStatus.INTERNAL_SERVER_ERROR) {
             HttpStatus status = responseStatus.code();

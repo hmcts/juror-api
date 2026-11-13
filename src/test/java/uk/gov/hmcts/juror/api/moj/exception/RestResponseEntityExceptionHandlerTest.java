@@ -4,16 +4,39 @@ import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import uk.gov.hmcts.juror.api.juror.service.JurorServiceImpl;
 import uk.gov.hmcts.juror.api.juror.service.PublicAuthenticationServiceImpl;
 
 import java.sql.SQLException;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RestResponseEntityExceptionHandlerTest {
 
     private final RestResponseEntityExceptionHandler handler = new RestResponseEntityExceptionHandler();
+
+    @Test
+    void handleUnhandledException_wrappedDuplicateResponse_returnsNotModified() {
+        RuntimeException exception = new RuntimeException(
+            new JurorServiceImpl.JurorResponseAlreadyExistsException("Response already exists",
+                new DataIntegrityViolationException("sensitive database detail")));
+
+        ResponseEntity<Object> response = handler.handleUnhandledException(exception, null);
+
+        assertApplicationError(response, HttpStatus.NOT_MODIFIED, "Response already exists",
+            JurorServiceImpl.JurorResponseAlreadyExistsException.class);
+    }
+
+    @Test
+    void handleUnhandledException_accessDenied_delegatesToSpringSecurity() {
+        AuthorizationDeniedException exception = new AuthorizationDeniedException("Access Denied");
+
+        assertThatThrownBy(() -> handler.handleUnhandledException(exception, null))
+            .isSameAs(exception);
+    }
 
     @Test
     void handleInternalServerError_sqlException_returnsGenericMessage() {
