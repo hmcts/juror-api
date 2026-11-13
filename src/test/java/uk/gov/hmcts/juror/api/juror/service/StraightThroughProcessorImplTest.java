@@ -9,6 +9,8 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseMergeService;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
+import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.Juror;
@@ -25,6 +27,7 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.EmailDataService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
@@ -40,10 +43,12 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.JurorDigitalApplication.AUTO_USER;
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 
 /**
  * Unit test of {@link StraightThroughProcessorImpl}.
@@ -77,6 +82,10 @@ public class StraightThroughProcessorImplTest {
 
     @Mock
     private PrintDataService printDataService;
+    @Mock
+    private EmailDataService emailDataService;
+    @Mock
+    private FeatureFlagConfigurationProperties featureFlags;
 
     MockedStatic<JurorPoolUtils> jurorPoolUtilsMockedStatic;
 
@@ -306,6 +315,73 @@ public class StraightThroughProcessorImplTest {
 
         //verify(staffRepository).findOne(StaffQueries.byLogin(AUTO_USER));
         verify(userRepository).findByUsername(AUTO_USER);
+    }
+
+    @Test
+    public void processAgeExcusal_emailsEligibleJuror() {
+        verifyAgeDisqualificationCommunication(true, true, true, "DIGITAL", true);
+    }
+
+    @Test
+    public void processAgeExcusal_printsWhenFeatureDisabled() {
+        verifyAgeDisqualificationCommunication(false, true, true, "DIGITAL", false);
+    }
+
+    @Test
+    public void processAgeExcusal_printsWhenJurorNotDbd() {
+        verifyAgeDisqualificationCommunication(true, false, true, "DIGITAL", false);
+    }
+
+    @Test
+    public void processAgeExcusal_printsWhenCourtNotDbd() {
+        verifyAgeDisqualificationCommunication(true, true, false, "DIGITAL", false);
+    }
+
+    @Test
+    public void processAgeExcusal_printsWhenPreferenceIsPaper() {
+        verifyAgeDisqualificationCommunication(true, true, true, "PAPER", false);
+    }
+
+    @Test
+    public void processAgeExcusal_printsWhenPreferenceMissing() {
+        verifyAgeDisqualificationCommunication(true, true, true, null, false);
+    }
+
+    private void verifyAgeDisqualificationCommunication(boolean featureEnabled, boolean jurorDbd,
+                                                       boolean courtDbd, String preference, boolean expectEmail) {
+        jurorPoolUtilsMockedStatic.close();
+        jurorPoolUtilsMockedStatic = null;
+        when(featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)).thenReturn(featureEnabled);
+        // Lenient because the eligibility checks short circuit when an earlier condition fails.
+        org.mockito.Mockito.lenient().when(juror.isDigitalByDefault()).thenReturn(jurorDbd);
+        org.mockito.Mockito.lenient().when(juror.getDbdPreference()).thenReturn(preference);
+        CourtLocation court = mock(CourtLocation.class);
+        org.mockito.Mockito.lenient().when(court.isDigitalByDefault()).thenReturn(courtDbd);
+        org.mockito.Mockito.lenient().when(jurorPool.getCourt()).thenReturn(court);
+        when(jurorResponse.getJurorNumber()).thenReturn(TEST_JUROR_NUMBER);
+        JurorStatus summoned = mock(JurorStatus.class);
+        when(summoned.getStatus()).thenReturn(IJurorStatus.SUMMONED);
+        when(jurorPool.getStatus()).thenReturn(summoned);
+        when(jurorStatusRepository.findById(IJurorStatus.DISQUALIFIED))
+            .thenReturn(Optional.of(mock(JurorStatus.class)));
+        LocalDate birthDate = LocalDate.of(1901, 1, 1);
+        when(jurorResponse.getDateOfBirth()).thenReturn(birthDate);
+        when(jurorPool.getNextDate()).thenReturn(birthDate.plusYears(TOO_OLD_JUROR_AGE));
+
+        straightThroughProcessor.processAgeExcusal(jurorResponse);
+
+        if (expectEmail) {
+            verify(emailDataService).emailWithdrawalLetter(jurorPool, DisqualifyCode.A.getCode());
+            verify(printDataService, never()).printWithdrawalLetter(any());
+            verify(jurorHistoryService, never()).createWithdrawHistory(
+                jurorPool, null, "A", CommunicationChannel.LETTER);
+        } else {
+            verify(emailDataService, never()).emailWithdrawalLetter(any(), any());
+            verify(printDataService).printWithdrawalLetter(jurorPool);
+            verify(jurorHistoryService).createWithdrawHistory(jurorPool, null, "A", CommunicationChannel.LETTER);
+        }
+        verify(jurorPool).setStatus(any(JurorStatus.class));
+        verify(juror).setDisqualifyCode(DisqualifyCode.A.getCode());
     }
 
     @Test

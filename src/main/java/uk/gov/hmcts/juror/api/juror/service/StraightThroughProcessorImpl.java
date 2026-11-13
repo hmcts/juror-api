@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseMergeService;
+import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
 import uk.gov.hmcts.juror.api.moj.domain.IJurorStatus;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
@@ -24,15 +25,18 @@ import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
 import uk.gov.hmcts.juror.api.moj.repository.UserRepository;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorDigitalResponseRepositoryMod;
 import uk.gov.hmcts.juror.api.moj.repository.jurorresponse.JurorResponseAuditRepositoryMod;
+import uk.gov.hmcts.juror.api.moj.service.EmailDataService;
 import uk.gov.hmcts.juror.api.moj.service.JurorHistoryService;
 import uk.gov.hmcts.juror.api.moj.service.JurorPoolService;
 import uk.gov.hmcts.juror.api.moj.service.PrintDataService;
+import uk.gov.hmcts.juror.api.moj.utils.JurorPoolUtils;
 import uk.gov.hmcts.juror.api.moj.utils.RepositoryUtils;
 import uk.gov.hmcts.juror.api.validation.ResponseInspector;
 
 import java.time.LocalDate;
 
 import static uk.gov.hmcts.juror.api.JurorDigitalApplication.AUTO_USER;
+import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 import static uk.gov.hmcts.juror.api.moj.domain.JurorHistory.RESPONDED;
 
 /**
@@ -57,6 +61,8 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
     private final JurorStatusRepository jurorStatusRepository;
     private final JurorHistoryService jurorHistoryService;
     private final PrintDataService printDataService;
+    private final EmailDataService emailDataService;
+    private final FeatureFlagConfigurationProperties featureFlags;
     private final JurorPoolService jurorPoolService;
 
     private static final String THIRD_PARTY_REASON_DECEASED = "deceased";
@@ -476,11 +482,13 @@ public class StraightThroughProcessorImpl implements StraightThroughProcessor {
             retrieveJurorHistory.setPoolNumber(jurorDetails.getPoolNumber());
             jurorHistoryRepository.save(retrieveJurorHistory);
 
-            // audit pool second entry
-            jurorHistoryService.createWithdrawHistory(jurorDetails, null, "A", CommunicationChannel.LETTER);
-
-            // disq_lett table entry
-            printDataService.printWithdrawalLetter(jurorDetails);
+            if (featureFlags.isEnabled(DIGITAL_BY_DEFAULT_FEATURE_FLAG)
+                && JurorPoolUtils.isEligibleForDigitalByDefaultEmail(jurorDetails)) {
+                emailDataService.emailWithdrawalLetter(jurorDetails, DisqualifyCode.A.getCode());
+            } else {
+                jurorHistoryService.createWithdrawHistory(jurorDetails, null, "A", CommunicationChannel.LETTER);
+                printDataService.printWithdrawalLetter(jurorDetails);
+            }
 
         } catch (StraightThroughProcessingServiceException.AgeExcusal stpse) {
             // log and rethrow that the response cannot be processed as a straight through.
