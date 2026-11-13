@@ -262,10 +262,15 @@ public class JurorDashboardServiceImplTest {
     public void autoResponseDataHappyPath() {
         given(jurorDashboardData.getResponsesOverTime(startDate, endDate)).willReturn(responsesList);
         given(jurorDashboardData.getAutoOnlineResponses(startDate, endDate)).willReturn(autoOnlineResponseList);
+        given(jurorDashboardData.getNotResponded(startDate, endDate)).willReturn(notRespondedList);
+        given(jurorDashboardCalculateService.totalNoOfResponses(responsesList)).willReturn(80);
+        given(jurorDashboardCalculateService.totalNoOfNotResponded(notRespondedList)).willReturn(30);
+        given(jurorDashboardCalculateService.totalNoOfSummoned(80, 30)).willReturn(110);
 
         given(jurorDashboardCalculateService.reponsesByMethod(responsesList)).willReturn(channelResp);
 
-        given(jurorDashboardCalculateService.percentage(30f, 45f)).willReturn(66.7f);   // welsh online resp
+        // Use all 110 summoned jurors, including non-responders, rather than the 45 online replies.
+        given(jurorDashboardCalculateService.percentage(30f, 110f)).willReturn(27.3f);
         given(jurorDashboardCalculateService.totalNoofAutoOnlineResponses(autoOnlineResponseList)).willReturn(30);
 
         requestDto = DashboardRequestDto.builder().startDate(startDate).endDate(endDate).build();
@@ -275,7 +280,28 @@ public class JurorDashboardServiceImplTest {
         assertThat(autoResponses).isNotNull();
         assertThat(autoResponses.getAutoProcessedOnlineResponseTotal()).isEqualTo(30);
         assertThat(autoResponses.getOnlineResponseTotal()).isEqualTo(45);
-        assertThat(autoResponses.getPercentAutoProcessedOnlineResponses()).isEqualTo(66.7f);
+        assertThat(autoResponses.getSummonedTotal()).isEqualTo(110);
+        assertThat(autoResponses.getPercentAutoProcessedOnlineResponses()).isEqualTo(27.3f);
+        verify(jurorDashboardCalculateService).percentage(30f, 110f);
+    }
+
+    @Test
+    public void autoResponseDataWithNoSummonsReturnsZeroPercentage() {
+        given(jurorDashboardData.getResponsesOverTime(startDate, endDate)).willReturn(responsesList);
+        given(jurorDashboardData.getAutoOnlineResponses(startDate, endDate)).willReturn(autoOnlineResponseList);
+        given(jurorDashboardCalculateService.reponsesByMethod(responsesList)).willReturn(channelResp);
+        given(jurorDashboardCalculateService.totalNoofAutoOnlineResponses(autoOnlineResponseList)).willReturn(30);
+        // A processing count may exist even when no summonses were issued in the selected months.
+        given(jurorDashboardCalculateService.percentage(30f, 0f))
+            .willAnswer(invocation -> new JurorDashboardCalculateServiceImpl().percentage(30f, 0f));
+
+        requestDto = DashboardRequestDto.builder().startDate(startDate).endDate(endDate).build();
+        DashboardResponseDto.AutoOnlineResponseData autoResponses =
+            jurorDashboardService.getAutoProcessedResponses(requestDto);
+
+        assertThat(autoResponses.getSummonedTotal()).isZero();
+        assertThat(autoResponses.getPercentAutoProcessedOnlineResponses()).isZero();
+        verify(jurorDashboardCalculateService).percentage(30f, 0f);
     }
 
     @Test

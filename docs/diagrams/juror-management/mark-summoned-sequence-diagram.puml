@@ -1,0 +1,100 @@
+@startuml
+title Mark Juror as Summoned - Call Sequence
+autonumber
+skinparam shadowing false
+hide footbox
+
+actor "API client" as Client
+participant JurorRecordController as Controller
+participant "JurorRecordServiceImpl\n(via JurorRecordService)" as Service
+participant SecurityUtil as Security
+participant JurorPoolUtils as PoolUtils
+participant JurorPoolRepository as Pools
+participant RepositoryUtils as RepositoryUtils
+participant JurorStatusRepository as Statuses
+participant JurorHistoryRepository as History
+
+Client -> Controller : PATCH /api/v1/moj/juror-record/mark-summoned/{juror_number}
+note right of Controller
+  @Validated / @JurorNumber validates the path variable.
+  Invalid requests do not reach the service.
+end note
+Controller -> Service : markSummoned(jurorNumber)
+activate Service
+note right of Service : @Transactional
+
+Service -> Security : getActiveOwner()
+Security --> Service : owner
+Service -> PoolUtils : getActiveJurorPoolForUser(poolRepository, jurorNumber, owner)
+
+alt Owner is Bureau
+  PoolUtils -> Pools : findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber, true)
+  Pools --> PoolUtils : active pool associations
+else Owner is a court
+  PoolUtils -> Pools : findByJurorJurorNumberAndIsActive(jurorNumber, true)
+  Pools --> PoolUtils : active pool associations
+end
+
+break No active pool associations
+  PoolUtils --> Service : throw MojException.NotFound
+  Service --> Controller : exception propagates
+  Controller --> Client : HTTP 404 via exception handling
+end
+
+alt Owner is Bureau
+  PoolUtils -> PoolUtils : Select first association (latest return date)
+else Owner is a court
+  PoolUtils -> PoolUtils : Select first association matching owner (case insensitive)
+  break Court user owns no active association
+    PoolUtils --> Service : throw MojException.Forbidden
+    Service --> Controller : exception propagates
+    Controller --> Client : HTTP 403 via exception handling
+  end
+end
+PoolUtils --> Service : jurorPool
+
+Service -> Service : Check jurorPool.status.code
+break Status is not UNDELIVERABLE
+  Service --> Controller : throw MojException.BusinessRuleViolation\n(JUROR_MUST_UNDELIVERABLE)
+  Controller --> Client : HTTP 422 via exception handling
+end
+
+Service -> Security : getActiveLogin()
+Security --> Service : auditorUsername
+Service -> Service : jurorPool.nextDate = pool.returnDate\njurorPool.userEdtq = auditorUsername
+Service -> RepositoryUtils : retrieveFromDatabase(SUMMONED, statusRepository)
+RepositoryUtils -> Statuses : findById(SUMMONED)
+Statuses --> RepositoryUtils : Optional<JurorStatus>
+
+break SUMMONED status record is missing
+  RepositoryUtils --> Service : throw IllegalArgumentException
+  Service --> Controller : exception propagates
+end
+
+RepositoryUtils --> Service : summonedStatus
+Service -> Service : jurorPool.status = summonedStatus
+Service -> Pools : save(jurorPool)
+Pools --> Service : saved jurorPool
+
+Service -> Service : Build JurorHistory
+note right of Service
+  jurorNumber = requested juror number
+  historyCode = REVERTED_TO_SUMMONED
+  createdBy = auditorUsername
+  poolNumber = jurorPool.poolNumber
+  dateCreated = current date/time
+  otherInformation = "Juror marked as summoned by "
+    + auditorUsername + " on " + current date
+end note
+Service -> History : save(history)
+History --> Service : saved history
+Service --> Controller : completed
+deactivate Service
+Controller --> Client : HTTP 200 OK (empty body)
+
+legend bottom
+  Pool update and history insert share the service transaction.
+  Unchecked exceptions roll back the transaction.
+  Repository persistence internals and framework exception handling are omitted.
+endlegend
+@enduml

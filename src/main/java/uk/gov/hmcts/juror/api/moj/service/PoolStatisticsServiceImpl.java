@@ -40,9 +40,7 @@ public class PoolStatisticsServiceImpl implements PoolStatisticsService {
 
         PoolSummaryResponseDto poolSummaryResponse = new PoolSummaryResponseDto();
         populatePoolDetailsData(poolSummaryResponse, poolRequest);
-        final int noRequestedFromBureau = Math.max(poolRequest.getTotalNoRequired() - poolStatistics.getCourtSupply(),
-            0);
-        populateBureauSummoningData(poolSummaryResponse, poolStatistics, noRequestedFromBureau);
+        populateBureauSummoningData(poolSummaryResponse, poolStatistics, poolRequest.getNumberRequested());
         populatePoolSummaryData(poolSummaryResponse, poolStatistics, poolRequest.getTotalNoRequired());
         populateAdditionalStatsData(poolSummaryResponse, poolStatistics, poolRequest);
 

@@ -1,0 +1,156 @@
+@startuml
+title Reissue Letter - Call Sequence
+autonumber
+skinparam shadowing false
+hide footbox
+
+actor "Bureau user / API client" as Client
+participant "Spring Security /\nrequest validation" as Security
+participant LetterController as Controller
+participant "ReissueLetterServiceImpl\n(via ReissueLetterService)" as Service
+participant JurorPoolService as Pools
+participant "Repositories\n(grouped for readability)" as Repos
+participant "FeatureFlagConfigurationProperties /\nJurorPoolUtils" as Eligibility
+participant EmailDataService as Email
+participant PrintDataService as Print
+participant JurorHistoryService as History
+participant PoolHistoryService as PoolHistory
+
+Client -> Security : POST /api/v1/moj/letter/reissue-letter
+note over Security
+  @IsBureauUser requires Bureau access.
+  Request body is subject to @Valid / @NotNull validation.
+  Rejected requests do not reach the service.
+end note
+Security -> Controller : reissueLetter(request)
+Controller -> Service : reissueLetter(request)
+activate Service
+Service -> Service : Read SecurityUtil.getActiveLogin()\nand initialise response.jurors = []
+
+group validateReissueRequest(request, response)
+  loop Each requested letter
+    Service -> Service : FormCode.getFormCode(letter.formCode)
+    Service -> Pools : getJurorPoolFromUser(jurorNumber)
+    Pools --> Service : jurorPool
+    loop Each allowed status for the form code
+      Service -> Repos : Retrieve JurorStatus from JurorStatusRepository
+      Repos --> Service : allowed status
+    end
+    opt Current juror status is not allowed
+      Service -> Service : Add juror and current status to response.jurors
+    end
+  end
+end
+
+alt Status mismatches exist
+  note over Service
+    Skip reissuing ALL requested letters.
+    Pool-letter counts remain empty, so no pool history is created.
+  end note
+else All requested juror statuses are allowed
+  loop Each requested letter
+    Service -> Pools : getJurorPoolFromUser(jurorNumber)
+    Pools --> Service : jurorPool
+    Service -> Service : reissueLetterOrEmail(letter, jurorPool, true)
+
+    group validateRequestedLetter(letter, true)
+      opt Form code is not a summons-reminder code
+        Service -> Repos : BulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(...)
+        Repos --> Service : optional printed letter
+        note right of Service
+          Missing printed letter throws MojException.NotFound.
+        end note
+      end
+      Service -> Repos : BulkPrintDataRepository.findByJurorNumberFormCodeAndPending(...)
+      Repos --> Service : optional pending letter
+      note right of Service
+        A pending reprint throws MojException.BadRequest.
+      end note
+      opt Form code is a DBD summons reminder
+        Service -> Repos : JurorRepository.findByJurorNumber(jurorNumber)
+        Repos --> Service : juror
+        opt Juror is digital by default
+          Service -> Repos : BulkPrintDataRepository.findByJurorNoAndFormAttributeFormTypeInOrderByCreationDateDesc(\njurorNumber, DBD_SUMMONS_CODES)
+          Repos --> Service : prior DBD summons records
+        end
+        note right of Service
+          Requires a digital-by-default juror and a prior DBD summons.
+          Otherwise throws MojException.BadRequest.
+        end note
+      end
+    end
+
+    Service -> Eligibility : Check feature flag and DBD email eligibility
+    note over Service, Eligibility
+      Email is attempted only when the feature is enabled,
+      the juror pool is eligible and the form is not letter-only.
+      DBD summons and DBD summons reminders are letter-only.
+    end note
+    opt Email path is eligible
+      Service -> Email : emailReissueLetter(jurorPool, formCode)
+      Email --> Service : email reissue result
+      opt Email unsuccessful and form is ineligible for DBD letter reissue
+        note right of Service
+          Throw MojException.BadRequest; stop processing.
+        end note
+      end
+    end
+
+    alt Email reissue succeeded
+      Service -> Service : createLetterHistory(..., false, EMAIL)
+      ref over Service, History
+        Record juror history (rules below)
+      end ref
+    else Email not attempted, or unsuccessful with permitted letter fallback
+      Service -> Service : isInitialSummonsReminderLetter(letter, formCode)
+      opt Summons reminder with non-null datePrinted
+        Service -> Repos : BulkPrintDataRepository.findByJurorNumberFormCodeDatePrinted(...)
+        Repos --> Service : optional printed letter
+      end
+      note right of Service
+        Initial reminder when datePrinted is null
+        or no matching printed record exists.
+      end note
+      Service -> Service : printLetter(jurorNumber, jurorPool, formCode)
+      Service -> Service : formCode.getLetterPrinter()
+      note right of Service
+        Missing printer function throws MojException.InternalServerError.
+      end note
+      Service -> Print : Invoke form-specific letter printer with jurorPool
+      Service -> Service : createLetterHistory(..., initialReminder, LETTER)
+      ref over Service, History
+        Record juror history (rules below)
+      end ref
+    end
+
+    Service -> Service : Increment poolLetterCount for this pool
+  end
+end
+
+group createPoolHistory(request, poolLetterCount)
+  opt First requested form code is a summons-reminder code
+    loop Each pool with a processed-letter count
+      Service -> PoolHistory : createPoolHistory(poolNumber, PHRS, reminder count message)
+    end
+  end
+end
+
+Service --> Controller : ReissueLetterReponseDto
+deactivate Service
+Controller --> Client : HTTP 200 OK with response
+
+legend bottom
+  Juror history rules:
+  - Summons: createSummonLetterReprintedHistory(jurorPool, formCode).
+  - Mapped reminder history sets jurorPool.reminderSent = true.
+  - Initial reminder: createSummonsReminderLetterHistory(jurorPool).
+  - Other mapped reissues: createResendLetterHistory(...), with EMAIL for email reissues.
+  - Unmapped form codes produce no juror-history call.
+
+  The service entry method is @Transactional.
+  Exceptions terminate processing and propagate to framework exception handling.
+  Status mismatches return HTTP 200 with affected jurors; no letters are reissued.
+  An empty response.jurors list indicates no status mismatches.
+  Supporting-service internals are omitted; PrintDataService prepares print data.
+endlegend
+@enduml

@@ -5,6 +5,8 @@ import com.querydsl.jpa.impl.JPAQuery;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -15,6 +17,8 @@ import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocation;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.PoolCreateRequestDto;
@@ -116,6 +120,8 @@ class PoolCreateServiceTest {
     private CoronerPoolRepository coronerPoolRepository;
     @Mock
     private FeatureFlagConfigurationProperties featureFlags;
+    @Mock
+    private WelshCourtLocationRepository welshCourtLocationRepository;
 
     private MockedStatic<PaginationUtil> mockStaticPaginationUtil;
     @InjectMocks
@@ -263,9 +269,18 @@ class PoolCreateServiceTest {
         Mockito.verify(jurorHistoryRepository, Mockito.times(1)).saveAll(Mockito.any());
     }
 
-    @Test
-    void createPool_setsDigitalByDefaultWhenFeatureFlagAndCourtEnabled() throws SQLException {
+    @ParameterizedTest
+    @CsvSource({"true, DBD Summons letter (Welsh)", "false, DBD Summons letter"})
+    void createPool_setsDigitalByDefaultWhenFeatureFlagAndCourtEnabled(boolean welshCourt, String expectedInfo)
+        throws SQLException {
         PoolCreateRequestDto poolCreateRequestDto = setupCreatePoolDigitalByDefaultTest(true, true);
+        Mockito.when(jurorRepository.saveAll(Mockito.any())).thenAnswer(invocation -> {
+            List<Juror> jurors = invocation.getArgument(0);
+            jurors.forEach(juror -> juror.setWelsh(true));
+            return jurors;
+        });
+        Mockito.when(welshCourtLocationRepository.findByLocCode("415"))
+            .thenReturn(welshCourt ? new WelshCourtLocation() : null);
 
         poolCreateService.createPool(buildPayload("400"), poolCreateRequestDto);
 
@@ -282,12 +297,21 @@ class PoolCreateServiceTest {
         Mockito.verify(jurorHistoryRepository).saveAll(jurorHistoryCaptor.capture());
         JurorHistory jurorHistory = jurorHistoryCaptor.getValue().getFirst();
         assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
-        assertThat(jurorHistory.getOtherInformation()).isEqualTo("DBD Summons letter");
+        assertThat(jurorHistory.getOtherInformation()).isEqualTo(expectedInfo);
     }
 
-    @Test
-    void createPool_doesNotSetDigitalByDefaultWhenFeatureFlagDisabled() throws SQLException {
+    @ParameterizedTest
+    @CsvSource(value = {"true, Summons letter (Welsh)", "false, null"}, nullValues = "null")
+    void createPool_doesNotSetDigitalByDefaultWhenFeatureFlagDisabled(boolean welshCourt, String expectedInfo)
+        throws SQLException {
         PoolCreateRequestDto poolCreateRequestDto = setupCreatePoolDigitalByDefaultTest(false, true);
+        Mockito.when(jurorRepository.saveAll(Mockito.any())).thenAnswer(invocation -> {
+            List<Juror> jurors = invocation.getArgument(0);
+            jurors.forEach(juror -> juror.setWelsh(true));
+            return jurors;
+        });
+        Mockito.when(welshCourtLocationRepository.findByLocCode("415"))
+            .thenReturn(welshCourt ? new WelshCourtLocation() : null);
 
         poolCreateService.createPool(buildPayload("400"), poolCreateRequestDto);
 
@@ -303,7 +327,7 @@ class PoolCreateServiceTest {
         Mockito.verify(jurorHistoryRepository).saveAll(jurorHistoryCaptor.capture());
         JurorHistory jurorHistory = jurorHistoryCaptor.getValue().getFirst();
         assertThat(jurorHistory.getHistoryCode()).isEqualTo(HistoryCodeMod.PRINT_SUMMONS);
-        assertThat(jurorHistory.getOtherInformation()).isNull();
+        assertThat(jurorHistory.getOtherInformation()).isEqualTo(expectedInfo);
     }
 
     @Test

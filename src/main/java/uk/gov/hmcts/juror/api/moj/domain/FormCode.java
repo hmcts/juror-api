@@ -26,8 +26,10 @@ public enum FormCode {
     BI_DEFERRAL("5229AC", PrintDataService::printDeferralLetter, List.of(IJurorStatus.DEFERRED)),
     ENG_DEFERRALDENIED("5226A", PrintDataService::printDeferralDeniedLetter, List.of(IJurorStatus.RESPONDED)),
     BI_DEFERRALDENIED("5226AC", PrintDataService::printDeferralDeniedLetter, List.of(IJurorStatus.RESPONDED)),
-    ENG_POSTPONE("5229", PrintDataService::printPostponeLetter, List.of(IJurorStatus.DEFERRED)),
-    BI_POSTPONE("5229C", PrintDataService::printPostponeLetter, List.of(IJurorStatus.DEFERRED)),
+    ENG_POSTPONE("5229", PrintDataService::printPostponeLetter, List.of(IJurorStatus.DEFERRED,
+                                                                        IJurorStatus.RESPONDED)),
+    BI_POSTPONE("5229C", PrintDataService::printPostponeLetter, List.of(IJurorStatus.DEFERRED,
+                                                                        IJurorStatus.RESPONDED)),
     // The additional information status on juror is not used in modernisation code
     ENG_REQUESTINFO("5227", PrintDataService::reprintRequestInfoLetter, List.of(IJurorStatus.SUMMONED)),
     BI_REQUESTINFO("5227C", PrintDataService::reprintRequestInfoLetter, List.of(IJurorStatus.SUMMONED)),
