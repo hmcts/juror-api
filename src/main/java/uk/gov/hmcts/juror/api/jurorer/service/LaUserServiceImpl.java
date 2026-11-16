@@ -47,10 +47,10 @@ public class LaUserServiceImpl implements LaUserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LocalAuthority> getLocalAuthorities(String email) {
+    public List<LocalAuthority> getLocalAuthorities(String objectId) {
 
-        // read the user by email and get the local authority
-        List<LaUser> user = userRepository.findByUsernameIgnoreCase(email);
+        // Read the user by their Entra object ID and get their local authorities.
+        List<LaUser> user = userRepository.findByObjectIdIgnoreCase(objectId);
 
         if (user.isEmpty()) {
             throw new MojException.NotFound("User not found", null);
@@ -65,8 +65,8 @@ public class LaUserServiceImpl implements LaUserService {
 
     @Override
     @Transactional
-    public LaJwtDto createJwt(String email, String laCode) {
-        final List<LaUser> userList = findUserByUsername(email);
+    public LaJwtDto createJwt(String objectId, String laCode) {
+        final List<LaUser> userList = userRepository.findByObjectIdIgnoreCase(objectId);
 
         LaUser user = userList.stream()
             .filter(u -> u.getLocalAuthority().getLaCode().equals(laCode))

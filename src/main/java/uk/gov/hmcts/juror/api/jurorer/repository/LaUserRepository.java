@@ -12,6 +12,8 @@ import java.util.Optional;
 @Repository
 public interface LaUserRepository extends CrudRepository<LaUser, String>, QuerydslPredicateExecutor<LaUser> {
 
+    List<LaUser> findByObjectIdIgnoreCase(String objectId);
+
     // there could be multiple users with the same email address but different local authorities
     List<LaUser> findByUsernameIgnoreCase(String username);
 

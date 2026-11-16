@@ -24,10 +24,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractControllerIntegrationTest;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtPayload;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaEmailDto;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaRoles;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
-import uk.gov.hmcts.juror.api.moj.domain.authentication.EmailDto;
 import uk.gov.hmcts.juror.api.moj.domain.authentication.JwtDto;
+import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 
 import java.time.Clock;
 import java.util.Collections;
@@ -42,9 +43,9 @@ import static org.springframework.http.HttpMethod.POST;
 @DisplayName("Controller: " + LaAuthenticationControllerITest.BASE_URL)
 @Sql({"/db/jurorer/teardownUsers.sql", "/db/jurorer/createUsers.sql"})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@SuppressWarnings("PMD.ExcessiveImports")
 public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
     public static final String BASE_URL = "/api/v1/auth/juror-er";
-    private static final String EMAIL_SUFFIX = "@localauthority1.council.uk";
 
     @Autowired
     private TestRestTemplate template;
@@ -64,7 +65,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("GET Juror ER JWT")
-    class CreateJwt extends AbstractControllerIntegrationTest<EmailDto, JwtDto> {
+    class CreateJwt extends AbstractControllerIntegrationTest<LaEmailDto, JwtDto> {
         private static final String URL = BASE_URL + "/jwt";
 
         protected CreateJwt() {
@@ -82,8 +83,8 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
         }
 
         @Override
-        protected EmailDto getValidPayload() {
-            return new EmailDto("test_user1" + EMAIL_SUFFIX);
+        protected LaEmailDto getValidPayload() {
+            return new LaEmailDto("11111111-1111-1111-1111-111111111111");
         }
 
 
@@ -149,7 +150,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             @Test
             void primaryCourt() {
                 testBuilder()
-                    .payload(new EmailDto("test_user1" + EMAIL_SUFFIX))
+                    .payload(new LaEmailDto("11111111-1111-1111-1111-111111111111"))
                     .url(URL + "/001")
                     .triggerValid()
                     .assertValid((controllerTest, response) -> responseValidator(
@@ -168,7 +169,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             @Test
             void multipleLas() {
                 testBuilder()
-                    .payload(new EmailDto("test_user3@localauthority2.council.uk"))
+                    .payload(new LaEmailDto("33333333-3333-3333-3333-333333333333"))
                     .url(URL + "/003")
                     .triggerValid()
                     .assertValid((controllerTest, response) -> responseValidatorLite(
@@ -199,10 +200,29 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             }
 
             @Test
+            void missingObjectId() {
+                testBuilder()
+                    .url(BASE_URL + "/jwt/001")
+                    .payload(new LaEmailDto(null))
+                    .triggerInvalid()
+                    .assertInvalidPayload(new RestResponseEntityExceptionHandler.FieldError(
+                        "objectId", "must not be blank"));
+            }
+
+            @Test
+            void localAuthorityNotAssigned() {
+                testBuilder()
+                    .url(BASE_URL + "/jwt/002")
+                    .payload(new LaEmailDto("11111111-1111-1111-1111-111111111111"))
+                    .triggerInvalid()
+                    .assertNotFound("User not found");
+            }
+
+            @Test
             void userNotFound() {
                 testBuilder()
                     .url(URL + "/001")
-                    .payload(new EmailDto("not_found" + EMAIL_SUFFIX))
+                    .payload(new LaEmailDto("99999999-9999-9999-9999-999999999999"))
                     .triggerInvalid()
                     .assertNotFound("User not found");
             }
@@ -211,7 +231,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             void userNotActive() {
                 testBuilder()
                     .url(URL + "/004")
-                    .payload(new EmailDto("test_user1@localauthority4.council.uk"))
+                    .payload(new LaEmailDto("55555555-5555-5555-5555-555555555555"))
                     .triggerInvalid()
                     .assertMojForbiddenResponse("User is not active");
             }
@@ -221,7 +241,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             void invalidLaCode() {
                 testBuilder()
                     .url(URL + "/0T1")
-                    .payload(new EmailDto("test_user1@localauthority4.council.uk"))
+                    .payload(new LaEmailDto("55555555-5555-5555-5555-555555555555"))
                     .triggerInvalid();
             }
 
@@ -231,7 +251,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
 
     @Nested
     @DisplayName("GET local authorities for user")
-    class GetLocalAuthorities extends AbstractControllerIntegrationTest<EmailDto, List<LocalAuthority>> {
+    class GetLocalAuthorities extends AbstractControllerIntegrationTest<LaEmailDto, List<LocalAuthority>> {
         private static final String URL = BASE_URL + "/local-authorities";
 
         GetLocalAuthorities() {
@@ -249,8 +269,8 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
         }
 
         @Override
-        protected EmailDto getValidPayload() {
-            return new EmailDto("test_user1" + EMAIL_SUFFIX);
+        protected LaEmailDto getValidPayload() {
+            return new LaEmailDto("11111111-1111-1111-1111-111111111111");
         }
 
 
@@ -261,7 +281,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             @Test
             void singleCourt() {
                 testBuilder()
-                    .payload(new EmailDto("test_user1" + EMAIL_SUFFIX))
+                    .payload(new LaEmailDto("11111111-1111-1111-1111-111111111111"))
                     .triggerValid()
                     .assertValid((controllerTest, response) -> assertThat(response)
                         .hasSize(1)
@@ -272,7 +292,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             @Test
             void twoCourts() {
                 testBuilder()
-                    .payload(new EmailDto("test_user3@localauthority2.council.uk"))
+                    .payload(new LaEmailDto("33333333-3333-3333-3333-333333333333"))
                     .triggerValid()
                     .assertValid((controllerTest, response) -> assertThat(response)
                         .hasSize(2)
@@ -283,7 +303,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             @Test
             void twoCourtsOneActive() {
                 testBuilder()
-                    .payload(new EmailDto("test_user4@another.council.uk"))
+                    .payload(new LaEmailDto("44444444-4444-4444-4444-444444444444"))
                     .triggerValid()
                     .assertValid((controllerTest, response) -> assertThat(response)
                         .hasSize(1)
@@ -301,16 +321,25 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
             @Test
             void singleCourtInactive() {
                 testBuilder()
-                    .payload(new EmailDto("test_user1@localauthority4.council.uk"))
+                    .payload(new LaEmailDto("55555555-5555-5555-5555-555555555555"))
                     .triggerValid()
                     .assertValid((controllerTest, response) -> assertThat(response)
                         .hasSize(0));
             }
 
             @Test
+            void missingObjectId() {
+                testBuilder()
+                    .payload(new LaEmailDto(null))
+                    .triggerInvalid()
+                    .assertInvalidPayload(new RestResponseEntityExceptionHandler.FieldError(
+                        "objectId", "must not be blank"));
+            }
+
+            @Test
             void userNotFound() {
                 testBuilder()
-                    .payload(new EmailDto("test_user1@somela.council.uk"))
+                    .payload(new LaEmailDto("99999999-9999-9999-9999-999999999999"))
                     .triggerInvalid()
                     .assertNotFound("User not found");
             }

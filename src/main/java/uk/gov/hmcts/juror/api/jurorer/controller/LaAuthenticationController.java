@@ -20,7 +20,6 @@ import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaEmailDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaJwtDto;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
-import uk.gov.hmcts.juror.api.moj.domain.authentication.EmailDto;
 
 import java.util.List;
 
@@ -36,9 +35,9 @@ public class LaAuthenticationController {
     @PostMapping("/local-authorities")
     @Operation(summary = "Get a users local authorities")
     public ResponseEntity<List<LocalAuthority>> viewLocalAuthorities(
-        @RequestBody @Valid EmailDto emailDto
+        @RequestBody @Valid LaEmailDto loginDto
     ) {
-        return ResponseEntity.ok(userService.getLocalAuthorities(emailDto.getEmail()));
+        return ResponseEntity.ok(userService.getLocalAuthorities(loginDto.getObjectId()));
     }
 
     @PostMapping("/jwt/{la_code}")
@@ -46,8 +45,8 @@ public class LaAuthenticationController {
     public ResponseEntity<LaJwtDto> createJwt(
         @P("la_code") @PathVariable("la_code") @Valid @NotBlank
         @Pattern(regexp = "^\\d{3}$") String laCode,
-        @RequestBody @Valid LaEmailDto emailDto
+        @RequestBody @Valid LaEmailDto loginDto
     ) {
-        return ResponseEntity.ok(userService.createJwt(emailDto.getEmail(), laCode));
+        return ResponseEntity.ok(userService.createJwt(loginDto.getObjectId(), laCode));
     }
 }
