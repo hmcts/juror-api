@@ -14,6 +14,8 @@ public interface LaUserService {
 
     List<LocalAuthority> getLocalAuthorities(String objectId);
 
+    String getObjectIdByEmail(String email);
+
     LaJwtDto createJwt(String objectId, String laCode);
 
     List<LaUser> findUserByUsername(String username);

@@ -24,10 +24,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.AbstractControllerIntegrationTest;
 import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.jurorer.JurorErJwtPayload;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaDevLoginDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaEmailDto;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaJwtDto;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaObjectIdDto;
 import uk.gov.hmcts.juror.api.jurorer.domain.LaRoles;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
-import uk.gov.hmcts.juror.api.moj.domain.authentication.JwtDto;
 import uk.gov.hmcts.juror.api.moj.exception.RestResponseEntityExceptionHandler;
 
 import java.time.Clock;
@@ -64,8 +66,75 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
 
 
     @Nested
+    @DisplayName("POST dev login")
+    class DevLogin extends AbstractControllerIntegrationTest<LaDevLoginDto, LaObjectIdDto> {
+
+        protected DevLogin() {
+            super(POST, template, HttpStatus.OK);
+        }
+
+        @Override
+        protected String getValidUrl() {
+            return BASE_URL + "/dev-login";
+        }
+
+        @Override
+        protected String getValidJwt() {
+            return createHmacJwt();
+        }
+
+        @Override
+        protected LaDevLoginDto getValidPayload() {
+            return new LaDevLoginDto("test_user1@localauthority1.council.uk");
+        }
+
+        @Test
+        void returnsObjectId() {
+            testBuilder()
+                .payload(new LaDevLoginDto("TEST_USER1@LOCALAUTHORITY1.COUNCIL.UK"))
+                .triggerValid()
+                .assertValid((controllerTest, response) ->
+                    assertThat(response.getObjectId()).isEqualTo("11111111-1111-1111-1111-111111111111"));
+        }
+
+        @Test
+        void unknownEmail() {
+            testBuilder()
+                .payload(new LaDevLoginDto("unknown@example.com"))
+                .triggerInvalid()
+                .assertNotFound("User object ID not found");
+        }
+
+        @Test
+        void rejectsBureauJwt() {
+            testBuilder()
+                .jwt(createJwt("test_court_standard", "415"))
+                .triggerInvalid()
+                .assertInvalidJwtAuthenticationException();
+        }
+
+        @Test
+        void missingEmail() {
+            testBuilder()
+                .payload(new LaDevLoginDto(null))
+                .triggerInvalid()
+                .assertInvalidPayload(new RestResponseEntityExceptionHandler.FieldError(
+                    "email", "must not be blank"));
+        }
+
+        @Test
+        void invalidEmail() {
+            testBuilder()
+                .payload(new LaDevLoginDto("invalid"))
+                .triggerInvalid()
+                .assertInvalidPayload(new RestResponseEntityExceptionHandler.FieldError(
+                    "email", "must be a well-formed email address"));
+        }
+    }
+
+    @Nested
     @DisplayName("GET Juror ER JWT")
-    class CreateJwt extends AbstractControllerIntegrationTest<LaEmailDto, JwtDto> {
+    class CreateJwt extends AbstractControllerIntegrationTest<LaEmailDto, LaJwtDto> {
         private static final String URL = BASE_URL + "/jwt";
 
         protected CreateJwt() {
@@ -92,7 +161,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
         @Nested
         class Positive {
 
-            private void responseValidator(JwtDto response,
+            private void responseValidator(LaJwtDto response,
                                            String username, JurorErJwtPayload expectedJwtClaims) {
                 Jwt<JwsHeader, Claims> jwt = Jwts.parser()
                     .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(erPortalSecret)))
@@ -119,7 +188,8 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
                 assertThat(claims.getIssuedAt()).isAfter(new Date(clock.millis() - 60_000));
 
                 assertThat(claims)
-                    .hasSize(9)
+                    .hasSize(10)
+                    .containsEntry("objectId", "11111111-1111-1111-1111-111111111111")
                     .containsEntry("username", expectedJwtClaims.getUsername())
                     .containsEntry("laCode", expectedJwtClaims.getLaCode())
                     .containsEntry("laName", expectedJwtClaims.getLaName())
@@ -127,7 +197,7 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
                     .containsEntry("localAuthorities", List.of("001"));
             }
 
-            private void responseValidatorLite(JwtDto response,
+            private void responseValidatorLite(LaJwtDto response,
                                            String username, JurorErJwtPayload expectedJwtClaims) {
                 Jwt<JwsHeader, Claims> jwt = Jwts.parser()
                     .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(erPortalSecret)))
@@ -139,7 +209,8 @@ public class LaAuthenticationControllerITest extends AbstractIntegrationTest {
                 assertThat(claims.getId()).isEqualTo(username);
 
                 assertThat(claims)
-                    .hasSize(9)
+                    .hasSize(10)
+                    .containsEntry("objectId", "33333333-3333-3333-3333-333333333333")
                     .containsEntry("username", expectedJwtClaims.getUsername())
                     .containsEntry("laCode", expectedJwtClaims.getLaCode())
                     .containsEntry("laName", expectedJwtClaims.getLaName())

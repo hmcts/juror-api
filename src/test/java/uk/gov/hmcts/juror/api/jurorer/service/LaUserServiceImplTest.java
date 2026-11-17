@@ -100,6 +100,43 @@ class LaUserServiceImplTest {
     }
 
     @Test
+    void getObjectIdByEmailReturnsSameIdAcrossLocalAuthorities() {
+        String objectId = "aaaaaaaa-1111-1111-1111-111111111111";
+        when(userRepository.findByUsernameIgnoreCase("test@example.com")).thenReturn(List.of(
+            LaUser.builder().objectId(objectId).build(),
+            LaUser.builder().objectId(objectId.toUpperCase(java.util.Locale.ROOT)).build()));
+
+        assertEquals(objectId, laUserService.getObjectIdByEmail("test@example.com"));
+    }
+
+    @Test
+    void getObjectIdByEmailUnknownUser() {
+        when(userRepository.findByUsernameIgnoreCase("unknown@example.com")).thenReturn(List.of());
+
+        assertThrows(MojException.NotFound.class,
+            () -> laUserService.getObjectIdByEmail("unknown@example.com"));
+    }
+
+    @Test
+    void getObjectIdByEmailMissingId() {
+        when(userRepository.findByUsernameIgnoreCase("test@example.com")).thenReturn(List.of(
+            LaUser.builder().build(), LaUser.builder().objectId(" ").build()));
+
+        assertThrows(MojException.NotFound.class,
+            () -> laUserService.getObjectIdByEmail("test@example.com"));
+    }
+
+    @Test
+    void getObjectIdByEmailInconsistentIds() {
+        when(userRepository.findByUsernameIgnoreCase("test@example.com")).thenReturn(List.of(
+            LaUser.builder().objectId("11111111-1111-1111-1111-111111111111").build(),
+            LaUser.builder().objectId("22222222-2222-2222-2222-222222222222").build()));
+
+        assertThrows(MojException.InternalServerError.class,
+            () -> laUserService.getObjectIdByEmail("test@example.com"));
+    }
+
+    @Test
     void createJwtHappy() {
 
         String objectId = "11111111-1111-1111-1111-111111111111";
@@ -113,6 +150,7 @@ class LaUserServiceImplTest {
 
         LaUser laUser = LaUser.builder()
                 .username(email)
+                .objectId(objectId)
                 .active(true)
                 .localAuthority(localAuthority)
                 .build();
@@ -141,6 +179,7 @@ class LaUserServiceImplTest {
         verify(jwtService).getSigningKey(null);
 
         Map<String, Object> expectedClaims = Map.of(
+            "objectId", objectId,
             "laCode", "001",
             "role", List.of("LA_USER"),
             "laName", "Local Authority 1",
