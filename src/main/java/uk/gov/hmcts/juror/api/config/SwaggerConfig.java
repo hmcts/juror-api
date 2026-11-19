@@ -4,7 +4,6 @@ import com.google.common.io.Files;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.parameters.HeaderParameter;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
@@ -102,13 +101,6 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
             .group("API - Juror Digital")
             .packagesToScan(JurorDigitalApplication.class.getPackage().getName())
-            .addOperationCustomizer((operation, handlerMethod) -> operation.addParametersItem(
-                    new HeaderParameter()
-                        .name("Authorization")
-                        .description("JWT Auth header (Base64 encoded)")
-                        .required(true)
-                )
-            )
             .addOpenApiCustomizer(openApi ->
                 openApi.info(
                         new Info()
@@ -126,13 +118,6 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
             .group("Spring Boot Actuator")
             .packagesToScan(org.springframework.boot.actuate.endpoint.Operation.class.getPackage().getName())
-            .addOperationCustomizer((operation, handlerMethod) -> operation.addParametersItem(
-                    new HeaderParameter()
-                        .name("Authorization")
-                        .description("HMAC Auth header (Base64 encoded)")
-                        .required(true)
-                )
-            )
             .addOpenApiCustomizer(openApi ->
                 openApi.info(
                         new Info()
