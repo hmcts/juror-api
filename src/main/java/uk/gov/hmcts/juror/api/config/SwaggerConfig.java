@@ -1,11 +1,15 @@
 package uk.gov.hmcts.juror.api.config;
 
 import com.google.common.io.Files;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.parameters.HeaderParameter;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +18,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 
 import java.io.FileNotFoundException;
@@ -31,6 +36,8 @@ import java.util.List;
 @Configuration
 @Slf4j
 public class SwaggerConfig {
+    private static final String JWT_AUTH = "jwtAuth";
+
     @Value("${git.commit.id}")
     private String gitCommitId;
 
@@ -55,6 +62,29 @@ public class SwaggerConfig {
     @Value("${docs.licence-url}")
     private String licenceUrl;
 
+
+    @Bean
+    public GlobalOpenApiCustomizer authenticationSecurity() {
+        return openApi -> {
+            if (openApi.getComponents() == null) {
+                openApi.setComponents(new Components());
+            }
+            openApi.getComponents().addSecuritySchemes(JWT_AUTH, new SecurityScheme()
+                .type(SecurityScheme.Type.APIKEY)
+                .in(SecurityScheme.In.HEADER)
+                .name(HttpHeaders.AUTHORIZATION)
+                .description("Raw signed JWT, without a Bearer prefix. Use a token issued for the target API."));
+            openApi.setSecurity(List.of(new SecurityRequirement().addList(JWT_AUTH)));
+            if (openApi.getPaths() != null) {
+                for (String publicPath : List.of("/", "/login", "/health", "/info")) {
+                    var pathItem = openApi.getPaths().get(publicPath);
+                    if (pathItem != null && pathItem.getGet() != null) {
+                        pathItem.getGet().setSecurity(List.of());
+                    }
+                }
+            }
+        };
+    }
 
     @Bean
     public GroupedOpenApi jurorDigitalApi() throws IOException {
