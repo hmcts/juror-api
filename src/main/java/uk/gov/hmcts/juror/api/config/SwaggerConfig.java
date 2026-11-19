@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.config;
 
 import com.google.common.io.Files;
 import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
@@ -36,6 +37,9 @@ import java.util.List;
 @Slf4j
 public class SwaggerConfig {
     private static final String JWT_AUTH = "jwtAuth";
+    private static final String PUBLIC_AUTH = "publicJwtAuth";
+    private static final String ER_AUTH = "electoralRegisterJwtAuth";
+    private static final String HMAC_AUTH = "hmacJwtAuth";
 
     @Value("${git.commit.id}")
     private String gitCommitId;
@@ -68,21 +72,42 @@ public class SwaggerConfig {
             if (openApi.getComponents() == null) {
                 openApi.setComponents(new Components());
             }
-            openApi.getComponents().addSecuritySchemes(JWT_AUTH, new SecurityScheme()
-                .type(SecurityScheme.Type.APIKEY)
-                .in(SecurityScheme.In.HEADER)
-                .name(HttpHeaders.AUTHORIZATION)
-                .description("Raw signed JWT, without a Bearer prefix. Use a token issued for the target API."));
+            openApi.getComponents()
+                .addSecuritySchemes(JWT_AUTH, jwtSecurityScheme("Bureau and MOJ API token"))
+                .addSecuritySchemes(PUBLIC_AUTH, jwtSecurityScheme("Public juror API token"))
+                .addSecuritySchemes(ER_AUTH, jwtSecurityScheme("Electoral register portal API token"))
+                .addSecuritySchemes(HMAC_AUTH, jwtSecurityScheme("HMAC-signed authentication API token"));
             openApi.setSecurity(List.of(new SecurityRequirement().addList(JWT_AUTH)));
             if (openApi.getPaths() != null) {
-                for (String publicPath : List.of("/", "/login", "/health", "/info")) {
-                    var pathItem = openApi.getPaths().get(publicPath);
-                    if (pathItem != null && pathItem.getGet() != null) {
+                openApi.getPaths().forEach((path, pathItem) -> {
+                    if (path.startsWith("/api/v1/auth/")) {
+                        requireSecurity(pathItem, HMAC_AUTH);
+                    } else if (path.startsWith("/api/v1/public/")) {
+                        requireSecurity(pathItem, PUBLIC_AUTH);
+                    } else if (path.startsWith("/api/v1/juror-er/")) {
+                        requireSecurity(pathItem, ER_AUTH);
+                    } else if ("/error".equals(path)) {
+                        pathItem.readOperations().forEach(operation -> operation.setSecurity(List.of()));
+                    } else if (List.of("/", "/login", "/health", "/info").contains(path)
+                        && pathItem.getGet() != null) {
                         pathItem.getGet().setSecurity(List.of());
                     }
-                }
+                });
             }
         };
+    }
+
+    private SecurityScheme jwtSecurityScheme(String description) {
+        return new SecurityScheme()
+            .type(SecurityScheme.Type.APIKEY)
+            .in(SecurityScheme.In.HEADER)
+            .name(HttpHeaders.AUTHORIZATION)
+            .description(description + ". Enter the raw signed JWT without a Bearer prefix.");
+    }
+
+    private void requireSecurity(PathItem pathItem, String scheme) {
+        pathItem.readOperations().forEach(operation ->
+            operation.setSecurity(List.of(new SecurityRequirement().addList(scheme))));
     }
 
     @Bean
