@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.bureau.controller;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.jsonwebtoken.lang.Assert;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.juror.api.bureau.service.ResponseUpdateService;
+import uk.gov.hmcts.juror.api.moj.controller.request.BlankEmailToNullDeserializer;
 import uk.gov.hmcts.juror.api.validation.LocalDateOfBirth;
 import uk.gov.hmcts.juror.api.validation.ValidationConstants;
 
@@ -178,6 +180,7 @@ public class ResponseUpdateController {
         @Pattern(regexp = EMAIL_ADDRESS_REGEX)
         @Length(max = 254)
         @Schema(description = "Juror email address")
+        @JsonDeserialize(using = BlankEmailToNullDeserializer.class)
         private String emailAddress;
     }
 
@@ -262,6 +265,7 @@ public class ResponseUpdateController {
         @Length(max = 254)
         @Pattern(regexp = EMAIL_ADDRESS_REGEX)
         @Schema(description = "Third party respondents email address")
+        @JsonDeserialize(using = BlankEmailToNullDeserializer.class)
         private String thirdPartyEmail;
 
         @Builder

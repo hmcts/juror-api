@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.juror.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -16,6 +17,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.ScriptAssert;
+import uk.gov.hmcts.juror.api.moj.controller.request.BlankEmailToNullDeserializer;
 import uk.gov.hmcts.juror.api.moj.enumeration.ReplyMethod;
 import uk.gov.hmcts.juror.api.validation.LocalDateOfBirth;
 import uk.gov.hmcts.juror.api.validation.ThirdPartyRequireAtLeastOneOf;
@@ -129,6 +131,7 @@ public class JurorResponseDto {
     @Pattern(regexp = EMAIL_ADDRESS_REGEX)
     @Null(groups = ThirdPartyDeceasedValidationGroup.class)
     @Schema(description = "Juror email address")
+    @JsonDeserialize(using = BlankEmailToNullDeserializer.class)
     private String emailAddress;
 
     @Null(groups = ThirdPartyDeceasedValidationGroup.class)
@@ -375,6 +378,7 @@ public class JurorResponseDto {
          */
         @Length(max = 254)
         @Schema(description = "Third party personal email address", requiredMode = Schema.RequiredMode.REQUIRED)
+        @JsonDeserialize(using = BlankEmailToNullDeserializer.class)
         private String emailAddress;
 
         @Schema(description = "Third party reason", requiredMode = Schema.RequiredMode.REQUIRED)

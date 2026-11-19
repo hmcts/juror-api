@@ -115,6 +115,7 @@ public class EditJurorRecordRequestDto {
     private String secondaryPhone;
 
     @JsonProperty("email_address")
+    @JsonDeserialize(using = BlankEmailToNullDeserializer.class)
     @Length(max = 254)
     @Pattern(regexp = EMAIL_ADDRESS_REGEX)
     @Schema(description = "Juror email address")
