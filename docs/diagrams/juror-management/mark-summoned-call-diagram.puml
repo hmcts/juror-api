@@ -1,0 +1,73 @@
+@startuml
+title Mark Juror as Summoned - High-Level Public Method Calls
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide empty members
+
+class JurorRecordController {
+  +markSummoned(jurorNumber: String): void
+}
+interface JurorRecordService {
+  +markSummoned(jurorNumber: String): void
+}
+class JurorRecordServiceImpl {
+  +markSummoned(jurorNumber: String): void
+}
+class SecurityUtil {
+  {static} +getActiveOwner(): String
+  {static} +getActiveLogin(): String
+}
+class JurorPoolUtils {
+  {static} +getActiveJurorPoolForUser(repository: JurorPoolRepository, jurorNumber: String, owner: String): JurorPool
+  {static} +getActiveJurorPoolRecords(repository: JurorPoolRepository, jurorNumber: String): List<JurorPool>
+}
+interface JurorPoolRepository {
+  +findByJurorJurorNumberAndIsActive(jurorNumber: String, isActive: boolean): List<JurorPool>
+  +findByJurorJurorNumberAndIsActiveOrderByPoolReturnDateDesc(jurorNumber: String, isActive: boolean): List<JurorPool>
+  +save(entity: JurorPool): JurorPool
+}
+class RepositoryUtils {
+  {static} +retrieveFromDatabase(id: I, repository: ReadOnlyRepository<T, I>): T
+}
+interface JurorStatusRepository {
+  +findById(id: Integer): Optional<JurorStatus>
+}
+interface JurorHistoryRepository {
+  +save(entity: JurorHistory): JurorHistory
+}
+
+JurorRecordController --> JurorRecordService : markSummoned
+JurorRecordService <|.. JurorRecordServiceImpl
+JurorRecordServiceImpl --> SecurityUtil : current owner and login
+JurorRecordServiceImpl --> JurorPoolUtils : select active association
+JurorPoolUtils --> JurorPoolRepository : lookup active associations
+JurorRecordServiceImpl --> RepositoryUtils : retrieve SUMMONED status
+RepositoryUtils --> JurorStatusRepository : findById
+JurorRecordServiceImpl --> JurorPoolRepository : save updated association
+JurorRecordServiceImpl --> JurorHistoryRepository : save REVERTED_TO_SUMMONED history
+
+note bottom of JurorRecordController
+  PATCH /api/v1/moj/juror-record/mark-summoned/{juror_number}
+  HTTP 200 OK with an empty body.
+end note
+
+note bottom of JurorRecordServiceImpl
+  @Transactional
+  Requires current status UNDELIVERABLE.
+  Sets status to SUMMONED, nextDate to pool return date,
+  and userEdtq to the active login; records history.
+end note
+
+note bottom of JurorPoolUtils
+  Bureau: select latest active association by return date.
+  Court: select an active association matching the owner.
+  getActiveJurorPoolRecords is called on the court path.
+end note
+
+legend bottom
+  Only public methods relevant to this endpoint are shown.
+  Entity accessors, builders, private helpers, and framework internals are omitted.
+  Repository save and findById methods are inherited; concrete entity types are shown.
+  retrieveFromDatabase uses I = Integer and T = JurorStatus here.
+endlegend
+@enduml

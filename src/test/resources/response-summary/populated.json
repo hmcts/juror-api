@@ -1,0 +1,33 @@
+{
+  "juror_number": "123456789",
+  "title": "Dr",
+  "first_name": "Test",
+  "last_name": "Juror",
+  "postcode": "AA1 1AA",
+  "court_name": "Test Court",
+  "court_code": "415",
+  "reply_method": "Digital",
+  "processing_status": "CLOSED",
+  "residency": true,
+  "mental_health_act": false,
+  "bail": false,
+  "convictions": true,
+  "deferral_date": "2026-11-02",
+  "deferral": true,
+  "excusal_reason": "Synthetic reason",
+  "excusal": false,
+  "pool_number": "415260101",
+  "urgent": true,
+  "sla_overdue": false,
+  "date_received": "2026-10-01",
+  "assigned_staff_member": {
+    "active": true,
+    "team_leader": true,
+    "login": "teststaff",
+    "name": "Test Staff",
+    "isTeamLeader": true,
+    "isActive": true
+  },
+  "version": 7,
+  "completed_at": "2026-10-02 13:14:15"
+}

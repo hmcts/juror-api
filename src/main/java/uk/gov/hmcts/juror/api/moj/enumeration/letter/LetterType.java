@@ -185,7 +185,9 @@ public enum LetterType {
         ReissueLetterService.DataType.EMAIL_STATUS),
         tupleJPAQuery -> tupleJPAQuery
             .where(QJurorPool.jurorPool.status.status.eq(IJurorStatus.DEFERRED)
-                .and(QJurorPool.jurorPool.deferralCode.eq("P"))),
+                       .and(QJurorPool.jurorPool.deferralCode.eq("P"))
+                       .or(QJurorPool.jurorPool.status.status.eq(IJurorStatus.RESPONDED)
+                )),
         datePrintedComparator()
     ),
     INFORMATION(List.of(FormCode.ENG_REQUESTINFO, FormCode.BI_REQUESTINFO), List.of(

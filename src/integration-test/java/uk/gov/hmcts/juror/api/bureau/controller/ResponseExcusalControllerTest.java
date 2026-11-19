@@ -25,8 +25,10 @@ import uk.gov.hmcts.juror.api.moj.enumeration.ExcusalCodeEnum;
 
 import java.net.URI;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -199,6 +201,14 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
                 + "JUROR_NUMBER = '644892530'", String.class))
             .as("As response was in the backlog, it needs assigned to the logged in user changing it.")
             .isEqualTo(loginName);
+        softly.assertThat(jdbcTemplate.queryForObject(
+            "SELECT date_excused FROM juror_mod.juror WHERE juror_number = ?", LocalDate.class, "644892530"))
+            .isEqualTo(LocalDate.now());
+        softly.assertThat(jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM juror_mod.juror_history WHERE juror_number = ? "
+                + "AND history_code IN ('PEXC', 'RESP') AND user_id = ? AND pool_number = ? "
+                + "AND other_info_date = CURRENT_DATE", Integer.class, "644892530", loginName, "555"))
+            .isEqualTo(2);
         softly.assertAll();
     }
 
@@ -209,7 +219,7 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
         "/db/standing_data.sql",
         "/db/ResponseDisqualifyAndExcusalControllerTestData.sql"
     })
-    public void rejectExcusalRequest_unhappy_invalidExcusalCode() throws Exception {
+    public void rejectExcusalRequest_unhappy_missingVersion() throws Exception {
         final String loginName = "testlogin";
         httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau(loginName));
 
@@ -330,5 +340,74 @@ public class ResponseExcusalControllerTest extends AbstractIntegrationTest {
             .as("Juror's excusal letter should not be queued for printing")
             .isEqualTo(0);
         softly.assertAll();
+    }
+
+    @Test
+    @Sql({
+        "/db/truncate.sql",
+        "/db/mod/truncate.sql",
+        "/db/standing_data.sql",
+        "/db/ResponseDisqualifyAndExcusalControllerTestData.sql"
+    })
+    public void rejectExcusalRequest_staleVersionRollsBack() {
+        assertRejectedDecisionLeavesDataUnchanged(new ExcusalCodeDto(554, "B", ""), HttpStatus.CONFLICT);
+    }
+
+    @Test
+    @Sql({
+        "/db/truncate.sql",
+        "/db/mod/truncate.sql",
+        "/db/standing_data.sql",
+        "/db/ResponseDisqualifyAndExcusalControllerTestData.sql"
+    })
+    public void rejectExcusalRequest_completedResponse() {
+        jdbcTemplate.update("UPDATE juror_mod.juror_response SET processing_complete = true WHERE juror_number = ?",
+                            "644892530");
+        assertRejectedDecisionLeavesDataUnchanged(new ExcusalCodeDto(555, "B", ""), HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    @Sql({
+        "/db/truncate.sql",
+        "/db/mod/truncate.sql",
+        "/db/standing_data.sql",
+        "/db/ResponseDisqualifyAndExcusalControllerTestData.sql"
+    })
+    public void rejectExcusalRequest_invalidCode() {
+        assertRejectedDecisionLeavesDataUnchanged(new ExcusalCodeDto(555, "INVALID", ""), HttpStatus.BAD_REQUEST);
+    }
+
+    private void assertRejectedDecisionLeavesDataUnchanged(ExcusalCodeDto decision, HttpStatus expectedStatus) {
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau("testlogin"));
+        Map<String, Object> responseBefore = jdbcTemplate.queryForMap(
+            "SELECT processing_status, processing_complete, version, staff_login "
+                + "FROM juror_mod.juror_response WHERE juror_number = ?", "644892530");
+        Map<String, Object> jurorBefore = jdbcTemplate.queryForMap(
+            "SELECT responded, excusal_code, date_excused, acc_exc, title, first_name, last_name "
+                + "FROM juror_mod.juror WHERE juror_number = ?", "644892530");
+        Map<String, Object> poolBefore = jdbcTemplate.queryForMap(
+            "SELECT status, next_date, user_edtq FROM juror_mod.juror_pool WHERE juror_number = ?", "644892530");
+
+        ResponseEntity<SpringBootErrorResponse> response = template.exchange(new RequestEntity<>(
+            decision, httpHeaders, HttpMethod.POST,
+            URI.create("/api/v1/bureau/juror/excuse/reject/644892530")), SpringBootErrorResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(expectedStatus);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(jdbcTemplate.queryForMap(
+            "SELECT processing_status, processing_complete, version, staff_login "
+                + "FROM juror_mod.juror_response WHERE juror_number = ?", "644892530")).isEqualTo(responseBefore);
+        assertThat(jdbcTemplate.queryForMap(
+            "SELECT responded, excusal_code, date_excused, acc_exc, title, first_name, last_name "
+                + "FROM juror_mod.juror WHERE juror_number = ?", "644892530")).isEqualTo(jurorBefore);
+        assertThat(jdbcTemplate.queryForMap(
+            "SELECT status, next_date, user_edtq FROM juror_mod.juror_pool WHERE juror_number = ?", "644892530"))
+            .isEqualTo(poolBefore);
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM juror_mod.juror_history WHERE juror_number = ?", Integer.class, "644892530"))
+            .isZero();
+        assertThat(jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM juror_mod.bulk_print_data WHERE juror_no = ?", Integer.class, "644892530"))
+            .isZero();
     }
 }

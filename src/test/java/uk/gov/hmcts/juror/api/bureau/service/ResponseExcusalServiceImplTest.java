@@ -3,9 +3,11 @@ package uk.gov.hmcts.juror.api.bureau.service;
 import jakarta.persistence.EntityManager;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import uk.gov.hmcts.juror.api.bureau.controller.ResponseExcusalController.ExcusalCodeDto;
 import uk.gov.hmcts.juror.api.bureau.domain.ExcusalCodeRepository;
 import uk.gov.hmcts.juror.api.bureau.exception.ExcusalException;
@@ -16,8 +18,10 @@ import uk.gov.hmcts.juror.api.moj.domain.Juror;
 import uk.gov.hmcts.juror.api.moj.domain.JurorHistory;
 import uk.gov.hmcts.juror.api.moj.domain.JurorPool;
 import uk.gov.hmcts.juror.api.moj.domain.JurorStatus;
+import uk.gov.hmcts.juror.api.moj.domain.User;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.DigitalResponse;
 import uk.gov.hmcts.juror.api.moj.domain.jurorresponse.JurorResponseAuditMod;
+import uk.gov.hmcts.juror.api.moj.enumeration.HistoryCodeMod;
 import uk.gov.hmcts.juror.api.moj.repository.JurorHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorPoolRepository;
 import uk.gov.hmcts.juror.api.moj.repository.JurorStatusRepository;
@@ -33,9 +37,12 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -93,6 +100,15 @@ public class ResponseExcusalServiceImplTest {
 
     @Test
     public void rejectExcusalRequest_happy() throws Exception {
+        assertSuccessfulRejection(false);
+    }
+
+    @Test
+    public void rejectExcusalRequest_preservesAssignedStaff() throws Exception {
+        assertSuccessfulRejection(true);
+    }
+
+    private void assertSuccessfulRejection(boolean alreadyAssigned) throws Exception {
         JurorStatus respondedStatus = mock(JurorStatus.class);
         when(jurorStatusRepository.findById(IJurorStatus.RESPONDED))
             .thenReturn(Optional.of(respondedStatus));
@@ -102,9 +118,13 @@ public class ResponseExcusalServiceImplTest {
         // configure mocks
         DigitalResponse jurorResponse = mock(DigitalResponse.class);
         given(jurorResponse.getJurorNumber()).willReturn(jurorId);
+        if (alreadyAssigned) {
+            given(jurorResponse.getStaff()).willReturn(mock(User.class));
+        }
         given(jurorResponseRepository.findByJurorNumber(any(String.class))).willReturn(jurorResponse);
 
         JurorPool poolDetails = mock(JurorPool.class);
+        given(poolDetails.getPoolNumber()).willReturn("555");
         Juror juror = mock(Juror.class);
         when(poolDetails.getJuror()).thenReturn(juror);
         given(jurorPoolService.getJurorPoolFromUser(any(String.class))).willReturn(poolDetails);
@@ -126,7 +146,6 @@ public class ResponseExcusalServiceImplTest {
         verify(jurorResponse).setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
         verify(mergeService).mergeResponse(jurorResponse, login);
 
-        verify(poolDetails, times(4)).getJuror();
         verify(juror).setResponded(true);
         verify(juror).setExcusalDate(any(LocalDate.class));
         verify(juror).setExcusalCode(excusalCode);
@@ -136,7 +155,28 @@ public class ResponseExcusalServiceImplTest {
         verify(jurorStatusRepository).findById(IJurorStatus.RESPONDED);
         verify(poolRepository).save(poolDetails);
 
-        verify(partHistRepository, times(2)).save(any(JurorHistory.class));
+        ArgumentCaptor<JurorHistory> histories = ArgumentCaptor.forClass(JurorHistory.class);
+        verify(partHistRepository, times(2)).save(histories.capture());
+        assertThat(histories.getAllValues()).extracting(JurorHistory::getHistoryCode)
+            .containsExactly(HistoryCodeMod.EXCUSE_POOL_MEMBER, HistoryCodeMod.RESPONDED_POSITIVELY);
+        assertThat(histories.getAllValues()).extracting(JurorHistory::getOtherInformation)
+            .containsExactly("Refuse Excuse", JurorHistory.RESPONDED);
+        assertThat(histories.getAllValues()).allSatisfy(history -> {
+            assertThat(history.getJurorNumber()).isEqualTo(jurorId);
+            assertThat(history.getCreatedBy()).isEqualTo(login);
+            assertThat(history.getPoolNumber()).isEqualTo("555");
+            assertThat(history.getOtherInformationDate()).isEqualTo(LocalDate.now());
+        });
+        var ordered = inOrder(entityManager, jurorResponse, assignOnUpdateService, mergeService);
+        ordered.verify(entityManager).detach(jurorResponse);
+        ordered.verify(jurorResponse).setVersion(excusalCodeDto.getVersion());
+        ordered.verify(jurorResponse).setProcessingStatus(jurorResponseAuditRepository, ProcessingStatus.CLOSED);
+        if (alreadyAssigned) {
+            verifyNoInteractions(assignOnUpdateService);
+        } else {
+            ordered.verify(assignOnUpdateService).assignToCurrentLogin(jurorResponse, login);
+        }
+        ordered.verify(mergeService).mergeResponse(jurorResponse, login);
         verify(printDataService).printExcusalDeniedLetter(poolDetails);
     }
 
@@ -218,5 +258,79 @@ public class ResponseExcusalServiceImplTest {
             verify(partHistRepository, times(0)).save(any(JurorHistory.class));
             verifyNoInteractions(printDataService);
         }
+    }
+
+    @Test
+    public void completedResponseCannotBeRejected() {
+        DigitalResponse response = prepareResponse("B");
+        given(response.isProcessingComplete()).willReturn(true);
+        ExcusalCodeDto decision = new ExcusalCodeDto(7, "B", "");
+
+        assertThatThrownBy(() -> responseExcusalService.rejectExcusalRequest("123456789", decision, "login"))
+            .isInstanceOf(ExcusalException.ResponseAlreadyCompleted.class);
+
+        verifyNoInteractions(entityManager, mergeService, assignOnUpdateService, jurorPoolService,
+                             poolRepository, partHistRepository, printDataService);
+    }
+
+    @Test
+    public void mergeLockingFailurePreventsRejection() {
+        DigitalResponse response = prepareResponse("B");
+        ObjectOptimisticLockingFailureException failure =
+            new ObjectOptimisticLockingFailureException(DigitalResponse.class, "123456789");
+        doThrow(failure).when(mergeService).mergeResponse(response, "login");
+        ExcusalCodeDto decision = new ExcusalCodeDto(7, "B", "");
+
+        assertThatThrownBy(() -> responseExcusalService.rejectExcusalRequest("123456789", decision, "login"))
+            .isInstanceOf(ExcusalException.OptimisticLockingFailure.class).hasCause(failure);
+
+        verifyNoInteractions(jurorPoolService, poolRepository, partHistRepository, printDataService);
+    }
+
+    @Test
+    public void disabledExcusalCodeCannotBeUsed() {
+        given(excusalCodeRepository.findAll()).willReturn(List.of(
+            new ExcusalCode("B", "Description", false, false, false, false)));
+
+        assertThatThrownBy(() -> responseExcusalService.rejectExcusalRequest(
+            "123456789", new ExcusalCodeDto(7, "B", ""), "login"))
+            .isInstanceOf(ExcusalException.RequestedCodeNotValid.class);
+
+        verifyNoInteractions(jurorResponseRepository, entityManager, mergeService, poolRepository,
+                             partHistRepository, printDataService);
+    }
+
+    @Test
+    public void missingExcusalReasonsFailsBeforeLoadingResponse() {
+        given(excusalCodeRepository.findAll()).willReturn(List.of());
+
+        assertThatThrownBy(() -> responseExcusalService.rejectExcusalRequest(
+            "123456789", new ExcusalCodeDto(7, "B", ""), "login"))
+            .isInstanceOf(ExcusalException.UnableToRetrieveExcusalCodeList.class);
+
+        verifyNoInteractions(jurorResponseRepository, entityManager, mergeService, poolRepository,
+                             partHistRepository, printDataService);
+    }
+
+    @Test
+    public void unexpectedMergeFailureIsPropagated() {
+        DigitalResponse response = prepareResponse("B");
+        IllegalStateException failure = new IllegalStateException("Merge failed");
+        doThrow(failure).when(mergeService).mergeResponse(response, "login");
+
+        assertThatThrownBy(() -> responseExcusalService.rejectExcusalRequest(
+            "123456789", new ExcusalCodeDto(7, "B", ""), "login"))
+            .isSameAs(failure);
+
+        verifyNoInteractions(jurorPoolService, poolRepository, partHistRepository, printDataService);
+    }
+
+    private DigitalResponse prepareResponse(String code) {
+        given(excusalCodeRepository.findAll()).willReturn(List.of(
+            new ExcusalCode(code, "Description", false, true, false, false)));
+        DigitalResponse response = mock(DigitalResponse.class);
+        given(response.getJurorNumber()).willReturn("123456789");
+        given(jurorResponseRepository.findByJurorNumber("123456789")).willReturn(response);
+        return response;
     }
 }
