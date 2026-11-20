@@ -9,7 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
@@ -70,7 +70,7 @@ import static org.mockito.ArgumentMatchers.anyString;
     "PMD.TooManyMethods",
     "PMD.CyclomaticComplexity"
 })
-@RunWith(SpringRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class JurorPaperResponseServiceImplTest {
 
     private static final String VALID_JUROR_NUMBER_BUREAU = "123456789";
