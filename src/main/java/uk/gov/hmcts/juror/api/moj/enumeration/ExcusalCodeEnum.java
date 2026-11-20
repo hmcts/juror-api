@@ -39,7 +39,8 @@ public enum ExcusalCodeEnum {
     Z("Z", "Bereavement"),
     CE("CE", "CJS employee (unable to transfer"),
     DC("DC", "Deferred by court - too many jurors"),
-    PE("PE", "Personal engagement");
+    PE("PE", "Personal engagement"),
+    SE("SE", "Social engagement");
 
     private final String code;
     private final String description;
