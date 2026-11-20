@@ -137,6 +137,31 @@ public class JurorPaperResponseControllerITest extends AbstractIntegrationTest {
 
     @Test
     @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
+    public void respondToSummons_blankEmailsStoredAsNull() {
+        httpHeaders.set(HttpHeaders.AUTHORIZATION, createJwtBureau(BUREAU_USER));
+        JurorPaperResponseDto requestDto = buildJurorPaperResponseDto();
+        setThirdPartyDetails(requestDto);
+        requestDto.setEmailAddress(" ");
+        requestDto.setThirdParty(JurorPaperResponseDto.ThirdParty.builder()
+            .relationship("Spouse")
+            .thirdPartyReason("Some test reason")
+            .emailAddress("")
+            .build());
+
+        ResponseEntity<SaveJurorPaperReplyResponseDto> response = template.exchange(
+            new RequestEntity<>(requestDto, httpHeaders, HttpMethod.POST,
+                URI.create("/api/v1/moj/juror-paper-response/response")), SaveJurorPaperReplyResponseDto.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        executeInTransaction(() -> {
+            PaperResponse paperResponse = jurorPaperResponseRepository.findByJurorNumber(requestDto.getJurorNumber());
+            assertThat(paperResponse.getEmail()).isNull();
+            assertThat(paperResponse.getEmailAddress()).isNull();
+        });
+    }
+
+    @Test
+    @Sql({"/db/mod/truncate.sql", "/db/JurorPaperResponse_initPoolMembers.sql"})
     public void respondToSummons_bureauUser_happyPath_straightThroughAcceptance() {
         final String bureauJwt = createJwtBureau("BUREAU_USER");
         final URI uri = URI.create("/api/v1/moj/juror-paper-response/response");

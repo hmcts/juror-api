@@ -221,12 +221,14 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         httpHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(strings = {"test@mail.com", "", " ", "\t\r\n"})
     @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_createJurorRecord.sql"})
-    void createJurorRecordHappyPath() throws Exception {
+    void createJurorRecordHappyPath(String email) throws Exception {
 
         String poolNumber = "415220502";
         JurorCreateRequestDto requestDto = createJurorRequestDto(poolNumber);
+        requestDto.setEmailAddress(email);
 
         httpHeaders.set(HttpHeaders.AUTHORIZATION, initCourtsJwt("415", Collections.singletonList("415"),
                                                                  UserType.COURT));
@@ -239,6 +241,8 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
         assertThat(response.getStatusCode())
             .as("Expect the HTTP POST request to be CREATED")
             .isEqualTo(HttpStatus.CREATED);
+        executeInTransaction(() -> assertThat(pendingJurorRepository.findAll()).singleElement()
+            .extracting(PendingJuror::getEmail).isEqualTo(email.isBlank() ? null : email));
 
     }
 
@@ -507,6 +511,28 @@ class JurorRecordControllerITest extends AbstractIntegrationTest {
             assertThat(juror.getPendingFirstName()).isEqualTo(requestDto.getPendingFirstName());
             assertThat(juror.getPendingLastName()).isEqualTo(requestDto.getPendingLastName());
             assertThat(juror.getWelsh()).isEqualTo(requestDto.getWelshLanguageRequired());
+        });
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "\t\r\n"})
+    @Sql({"/db/mod/truncate.sql", "/db/JurorRecordController_editJurorRecord.sql"})
+    void editJurorDetailsBlankEmailStoredAsNull(String email) {
+        String jurorNumber = "123456789";
+        EditJurorRecordRequestDto requestDto = createEditJurorRecordRequestDto(true);
+        requestDto.setEmailAddress(email);
+        requestDto.setAddressLineTwo("");
+
+        ResponseEntity<?> response =
+            restTemplate.exchange(new RequestEntity<>(requestDto, httpHeaders, HttpMethod.PATCH,
+                                                      URI.create(BASE_URL + "/edit-juror/" + jurorNumber)),
+                                  String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        executeInTransaction(() -> {
+            Juror juror = jurorRepository.findByJurorNumber(jurorNumber);
+            assertThat(juror.getEmail()).isNull();
+            assertThat(juror.getAddressLine2()).isEmpty();
         });
     }
 
