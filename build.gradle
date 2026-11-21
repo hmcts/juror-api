@@ -132,7 +132,7 @@ dependencies {
   runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}"
   implementation "org.apache.httpcomponents.client5:httpclient5:${httpclient5Version}"
 
-    implementation('com.google.guava:guava:33.6.0-jre')
+    implementation('com.google.guava:guava:33.7.2-jre')
 
   // QueryDSL
   implementation("com.querydsl:querydsl-core:${queryDslVersion}")
