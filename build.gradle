@@ -36,6 +36,8 @@ apply plugin: 'io.spring.dependency-management'
 
 ext['httpclient5.version'] = httpclient5Version
 ext['httpcore5.version'] = httpcore5Version
+// Keep all embedded Tomcat modules aligned on the security patch release.
+ext['tomcat.version'] = '11.0.29'
 
 java {
   toolchain {
