@@ -17,6 +17,7 @@ import uk.gov.hmcts.juror.api.moj.utils.NotifyUtil;
 import uk.gov.hmcts.juror.api.moj.utils.SecurityUtil;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -144,7 +145,9 @@ public class JurorCommsEmailServiceImpl implements BureauProcessService {
                 "Unable to update bulk print data after Juror Comms sent.");
         }
 
-        bulkPrintDataDetail.getFirst().setEmailStatus(EmailStatus.SENT);
+        BulkPrintData bulkPrintDataDetailFirst = bulkPrintDataDetail.getFirst();
+        bulkPrintDataDetailFirst.setEmailStatus(EmailStatus.SENT);
+        bulkPrintDataDetailFirst.setExtractedDate(LocalDate.now());
         bulkPrintDataRepository.saveAll(bulkPrintDataDetail);
         log.trace("Saving updated bulk_print_data - updated status to SENT .....");
 
