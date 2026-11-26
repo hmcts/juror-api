@@ -482,7 +482,19 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
             type = ValidateIf.Type.REQUIRE,
             fields = {"field2", "field3"},
             message = "Some message that I have overridden")
-        private final String field3 = "abc";
+        private final String field1;
+        private final String field2;
+        private final String field3;
+
+        public MethodExceptionTestObject() {
+            field1 = null;
+            field2 = "abc";
+            field3 = "abc";
+        }
+
+        public String getField2() {
+            throw new IllegalStateException("Some exception");
+        }
     }
 
     public static class MissingReferencedFieldTestObject {
@@ -491,9 +503,13 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
             fields = {"field2", "field3"},
             message = "Some message that I have overridden")
         @Getter
-        private final String field1 = null;
+        private final String field1;
         @Getter
-        private final String field3 = "abc";
+        private final String field3;
 
+        public MissingReferencedFieldTestObject() {
+            field1 = null;
+            field3 = "abc";
+        }
     }
 }
