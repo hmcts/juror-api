@@ -45,6 +45,10 @@ public class LaUser implements Serializable {
     @Builder.Default
     private boolean active = true;
 
+    @Column(name = "object_id", length = 36)
+    @Size(max = 36)
+    private String objectId;
+
     @JsonProperty("last_logged_in")
     private LocalDateTime lastLoggedIn;
 
