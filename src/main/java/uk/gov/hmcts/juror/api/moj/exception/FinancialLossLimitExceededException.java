@@ -12,7 +12,7 @@ import uk.gov.hmcts.juror.api.moj.enumeration.AttendanceType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+@ResponseStatus(HttpStatus.UNPROCESSABLE_CONTENT)
 @Getter
 public class FinancialLossLimitExceededException extends MojException.BusinessRuleViolation {
 

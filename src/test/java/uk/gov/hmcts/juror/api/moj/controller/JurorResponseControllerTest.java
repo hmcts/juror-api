@@ -8,9 +8,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
@@ -51,8 +53,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(
     controllers = JurorResponseController.class,
-    excludeAutoConfiguration = SecurityAutoConfiguration.class
+    excludeAutoConfiguration = {SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class}
 )
+@AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = {
     JurorResponseController.class,
     RestResponseEntityExceptionHandler.class,
@@ -312,6 +315,7 @@ class JurorResponseControllerTest {
 
         SecurityContext context = new SecurityContextImpl(authentication);
         when(securityContextStrategy.getContext()).thenReturn(context);
+        when(securityContextStrategy.createEmptyContext()).thenAnswer(invocation -> new SecurityContextImpl());
 
         return authentication;
     }
