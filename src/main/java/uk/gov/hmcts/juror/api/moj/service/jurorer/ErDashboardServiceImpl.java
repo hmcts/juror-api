@@ -11,6 +11,7 @@ import uk.gov.hmcts.juror.api.jurorer.domain.LaUser;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.domain.ReminderHistory;
 import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
+import uk.gov.hmcts.juror.api.jurorer.enumeration.LaEmailNotificationType;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
 import uk.gov.hmcts.juror.api.jurorer.repository.ReminderHistoryRepository;
 import uk.gov.hmcts.juror.api.jurorer.service.FileUploadsService;
@@ -30,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static uk.gov.hmcts.juror.api.validation.LaCodeValidator.isValidLaCode;
 
@@ -105,6 +107,8 @@ public class ErDashboardServiceImpl implements ErDashboardService {
         }
 
         List<ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus> localAuthorityStatuses = new ArrayList<>();
+        Set<String> laCodesWithInitialEmail =
+            reminderHistoryRepository.findLaCodesByNotificationType(LaEmailNotificationType.INITIAL_EMAIL);
 
         localAuthorities.forEach(la -> {
             FileUploadsService.FileUploadStatus fileUpload = fileUploadsList.stream()
@@ -119,6 +123,9 @@ public class ErDashboardServiceImpl implements ErDashboardService {
                 .localAuthorityName(la.getLaName())
                 .uploadStatus(la.getUploadStatus())
                 .lastUploadDate(lastUploadDate)
+                .initialEmailStatus(laCodesWithInitialEmail.contains(la.getLaCode())
+                       ? LaEmailNotificationType.InitialEmailStatus.SENT
+                       : LaEmailNotificationType.InitialEmailStatus.NOT_SENT)
                 .build());
         });
 

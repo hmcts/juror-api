@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,17 +35,18 @@ public class LaNotificationController {
     private final LaNotificationService laNotificationService;
 
     @PostMapping("/send-la-reminder")
-    @Operation(summary = "Send reminder notifications to selected Local Authorities")
+    @Operation(summary = "Send initial or reminder email notifications to selected Local Authorities, "
+        + "based on notification_type in the request")
     @PreAuthorize(SecurityUtil.IS_BUREAU)
     public ResponseEntity<LaNotificationResponseDto> sendNotification(
         @Valid @RequestBody LaNotificationRequestDto request) {
 
-        log.info("Sending notifications to {} Local Authorities", request.getLaCodes().size());
+        log.info("Sending {} notifications to {} Local Authorities",
+                 request.getNotificationType(), request.getLaCodes().size());
         LaNotificationResponseDto response = laNotificationService.sendNotificationsToLocalAuthorities(request);
-
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
+
 }
 
 

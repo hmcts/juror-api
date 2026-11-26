@@ -110,10 +110,18 @@ public interface AppSettingService {
     String getNotifyErReminderTemplateId();
 
     /**
-    * Notify template ID for emails.
-    *
-    *       @return the Notify template ID for emails
-    */
+     * Notify template ID for Local Authority initial emails.
+     *
+     * @return the Notify template ID for LA initial emails
+     */
+    String getNotifyErInitialTemplateId();
+
+    /**
+     * Notify template ID for emails.
+     *
+     *       @return the Notify template ID for emails
+     */
+
     String getWeAreGroupContactInformationTemplateId();
 
     /**
