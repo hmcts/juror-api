@@ -284,13 +284,13 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
 
     @Override
     public DashboardResponseDto.AutoOnlineResponseData getAutoProcessedResponses(DashboardRequestDto request) {
-        // Obtain the online responses total
+        // Obtain online responses and total summoned for the selected summons months.
         DashboardMandatoryKpiData mandatoryKpiData = getMandatoryKpis(request);
 
         // Amend date ranges to include whole months in range.
         List<Date> dateRange = getAmendedDateRange(request);
 
-        // Get welsh responses from db for given period.
+        // Auto processed counts use processing dates within the selected whole-month period.
         final List<StatsAutoProcessed> autoResponses = jurorDashboardData.getAutoOnlineResponses(
             dateRange.getFirst(), dateRange.get(1));
 
@@ -308,9 +308,12 @@ public class JurorDashboardServiceImpl implements JurorDashboardService {
             jurorDashboardCalculateService.totalNoofAutoOnlineResponses(autoResponses));
 
         autoOnlineResponseData.setOnlineResponseTotal(mandatoryKpiData.getOnlineResponsesTotal());
+        autoOnlineResponseData.setSummonedTotal(mandatoryKpiData.getSummonedTotal());
+        // Total summoned includes paper responses, online responses and jurors who have not responded.
+        // This compares processing activity with summonses issued in the period, rather than the same jurors.
         autoOnlineResponseData.setPercentAutoProcessedOnlineResponses(jurorDashboardCalculateService.percentage(
             autoOnlineResponseData.getAutoProcessedOnlineResponseTotal().floatValue(),
-            autoOnlineResponseData.getOnlineResponseTotal().floatValue()
+            autoOnlineResponseData.getSummonedTotal().floatValue()
         ));
 
         return autoOnlineResponseData;

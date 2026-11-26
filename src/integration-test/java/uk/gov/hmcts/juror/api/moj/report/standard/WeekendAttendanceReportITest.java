@@ -2,6 +2,7 @@ package uk.gov.hmcts.juror.api.moj.report.standard;
 
 
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.jdbc.Sql;
@@ -64,17 +65,17 @@ class WeekendAttendanceReportITest extends AbstractStandardReportControllerITest
             .responseConsumer(this::verifyReportResponse);
     }
 
-    @SuppressWarnings("PMD.StringToString")
     @Test
-    void negativeInvalidCourtLocCode() {
+    void negativeInvalidCourtLocCode() throws Exception {
         StandardReportRequest request = getValidPayload();
         request.setLocCode("999");
-        ControllerTest.ControllerTestResponseString res = testBuilder()
+        ControllerTest<StandardReportRequest, StandardReportResponse>.ControllerTestResponseString res = testBuilder()
             .payload(request)
             .triggerInvalid();
         assertThat(res.body()).isNotNull();
-        assertThat(res.body().toString()).contains("\"status\":400,\"error\":\"Bad Request\"");
-        assertThat(res.body().toString()).contains("Invalid loc code: 999");
+        JSONAssert.assertEquals(
+            "{\"status\":400,\"error\":\"Bad Request\",\"message\":\"Invalid loc code: 999\"}",
+            res.body(), false);
     }
 
     protected String getValidBureauJwt() {

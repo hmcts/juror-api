@@ -365,6 +365,246 @@ class JurorResponseServiceImplTest {
             1, 1, 1);
     }
 
+    @Test
+    void updatesPaperPersonalAddressAndContactDetails() {
+        PaperResponse response = new PaperResponse();
+        response.setJurorNumber("123456789");
+        response.setFirstName("Original");
+        response.setLastName("Name");
+        response.setAddressLine1("1 Original Street");
+        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber("123456789");
+
+        JurorPersonalDetailsDto request = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
+        request.setTitle("Dr");
+        request.setDateOfBirth(LocalDate.of(1990, 1, 1));
+        request.setAddressLineOne("1 Updated Street");
+        request.setAddressLineTwo("Updated Village");
+        request.setAddressLineThree("Updated District");
+        request.setAddressTown("Updated Town");
+        request.setAddressCounty("Updated County");
+        request.setAddressPostcode("MK5 6LA");
+        request.setPrimaryPhone("07700900123");
+        request.setSecondaryPhone("07700900456");
+        request.setEmailAddress("juror@example.com");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+
+        jurorResponseService.updateJurorPersonalDetails(payload, request, "123456789");
+
+        Assertions.assertThat(response.getTitle()).isEqualTo("Dr");
+        Assertions.assertThat(response.getFirstName()).isEqualTo("FName");
+        Assertions.assertThat(response.getLastName()).isEqualTo("LName");
+        Assertions.assertThat(response.getDateOfBirth()).isEqualTo(LocalDate.of(1990, 1, 1));
+        Assertions.assertThat(response.getAddressLine1()).isEqualTo("1 Updated Street");
+        Assertions.assertThat(response.getAddressLine2()).isEqualTo("Updated Village");
+        Assertions.assertThat(response.getAddressLine3()).isEqualTo("Updated District");
+        Assertions.assertThat(response.getAddressLine4()).isEqualTo("Updated Town");
+        Assertions.assertThat(response.getAddressLine5()).isEqualTo("Updated County");
+        Assertions.assertThat(response.getPostcode()).isEqualTo("MK5 6LA");
+        Assertions.assertThat(response.getPhoneNumber()).isEqualTo("07700900123");
+        Assertions.assertThat(response.getAltPhoneNumber()).isEqualTo("07700900456");
+        Assertions.assertThat(response.getEmail()).isEqualTo("juror@example.com");
+        Mockito.verify(jurorPaperResponseRepository).save(Mockito.same(response));
+        Mockito.verifyNoInteractions(jurorDigitalResponseRepository);
+    }
+
+    @Test
+    void updatesPaperThirdPartyDetails() {
+        PaperResponse response = new PaperResponse();
+        response.setJurorNumber("123456789");
+        response.setThirdPartyFName("Original");
+        response.setRelationship("Original relationship");
+        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber("123456789");
+        JurorPersonalDetailsDto request = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
+        request.setThirdParty(JurorPaperResponseDto.ThirdParty.builder()
+            .thirdPartyFName("Other")
+            .thirdPartyLName("Person")
+            .mainPhone("07700900789")
+            .otherPhone("07700900987")
+            .emailAddress("third.party@example.com")
+            .relationship("Friend")
+            .thirdPartyReason("Other")
+            .thirdPartyOtherReason("Needs assistance")
+            .useJurorPhoneDetails(false)
+            .useJurorEmailDetails(false)
+            .build());
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+
+        jurorResponseService.updateJurorPersonalDetails(payload, request, "123456789");
+
+        Assertions.assertThat(response.getThirdPartyFName()).isEqualTo("Other");
+        Assertions.assertThat(response.getThirdPartyLName()).isEqualTo("Person");
+        Assertions.assertThat(response.getMainPhone()).isEqualTo("07700900789");
+        Assertions.assertThat(response.getOtherPhone()).isEqualTo("07700900987");
+        Assertions.assertThat(response.getEmailAddress()).isEqualTo("third.party@example.com");
+        Assertions.assertThat(response.getRelationship()).isEqualTo("Friend");
+        Assertions.assertThat(response.getThirdPartyReason()).isEqualTo("Other");
+        Assertions.assertThat(response.getThirdPartyOtherReason()).isEqualTo("Needs assistance");
+        Assertions.assertThat(response.getJurorPhoneDetails()).isFalse();
+        Assertions.assertThat(response.getJurorEmailDetails()).isFalse();
+        Mockito.verify(jurorPaperResponseRepository).save(Mockito.same(response));
+        Mockito.verifyNoInteractions(jurorDigitalResponseRepository);
+    }
+
+    @Test
+    void updatesDigitalDateOfBirthAndPreservesOtherDetails() {
+        DigitalResponse response = new DigitalResponse();
+        response.setJurorNumber("123456789");
+        response.setDateOfBirth(LocalDate.of(1990, 1, 1));
+        response.setTitle("Mr");
+        response.setFirstName("Original");
+        response.setLastName("Person");
+        response.setAddressLine1("1 Original Street");
+        response.setPostcode("MK5 6LA");
+        response.setPhoneNumber("07700900123");
+        response.setAltPhoneNumber("07700900456");
+        response.setEmail("original@example.com");
+        response.setThirdPartyFName("Original contact");
+        response.setRelationship("Friend");
+        Mockito.doReturn(response).when(jurorDigitalResponseRepository).findByJurorNumber("123456789");
+        JurorPersonalDetailsDto request = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
+        request.setDateOfBirth(LocalDate.of(1991, 2, 2));
+        request.setTitle("Dr");
+        request.setAddressLineOne("2 Updated Street");
+        request.setAddressPostcode("SW1A 1AA");
+        request.setPrimaryPhone("07700900789");
+        request.setSecondaryPhone("07700900987");
+        request.setEmailAddress("updated@example.com");
+        request.setThirdParty(JurorPaperResponseDto.ThirdParty.builder()
+            .thirdPartyFName("Updated contact").relationship("Sibling").build());
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+
+        jurorResponseService.updateJurorPersonalDetails(payload, request, "123456789");
+
+        Assertions.assertThat(response.getDateOfBirth()).isEqualTo(LocalDate.of(1991, 2, 2));
+        Assertions.assertThat(response.getTitle()).isEqualTo("Mr");
+        Assertions.assertThat(response.getFirstName()).isEqualTo("Original");
+        Assertions.assertThat(response.getLastName()).isEqualTo("Person");
+        Assertions.assertThat(response.getAddressLine1()).isEqualTo("1 Original Street");
+        Assertions.assertThat(response.getPostcode()).isEqualTo("MK5 6LA");
+        Assertions.assertThat(response.getPhoneNumber()).isEqualTo("07700900123");
+        Assertions.assertThat(response.getAltPhoneNumber()).isEqualTo("07700900456");
+        Assertions.assertThat(response.getEmail()).isEqualTo("original@example.com");
+        Assertions.assertThat(response.getThirdPartyFName()).isEqualTo("Original contact");
+        Assertions.assertThat(response.getRelationship()).isEqualTo("Friend");
+        Mockito.verify(jurorDigitalResponseRepository).save(Mockito.same(response));
+        Mockito.verifyNoInteractions(jurorPaperResponseRepository);
+    }
+
+    @Test
+    void doesNotSavePaperResponseWhenDetailsAreUnchanged() {
+        PaperResponse response = new PaperResponse();
+        response.setJurorNumber("123456789");
+        response.setFirstName("FName");
+        response.setLastName("LName");
+        response.setAddressLine1("1 Test Street");
+        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber("123456789");
+        JurorPersonalDetailsDto request = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
+        request.setAddressLineOne("1 Test Street");
+        request.setThirdParty(null);
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+
+        jurorResponseService.updateJurorPersonalDetails(payload, request, "123456789");
+
+        Assertions.assertThat(response.getFirstName()).isEqualTo("FName");
+        Assertions.assertThat(response.getLastName()).isEqualTo("LName");
+        Assertions.assertThat(response.getAddressLine1()).isEqualTo("1 Test Street");
+        Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(any(PaperResponse.class));
+        Mockito.verifyNoInteractions(jurorDigitalResponseRepository, straightThroughProcessorService);
+    }
+
+    @Test
+    void doesNotSaveDigitalResponseWhenOnlyIgnoredDetailsChange() {
+        DigitalResponse response = new DigitalResponse();
+        response.setJurorNumber("123456789");
+        response.setFirstName("Original");
+        response.setAddressLine1("1 Original Street");
+        Mockito.doReturn(response).when(jurorDigitalResponseRepository).findByJurorNumber("123456789");
+        JurorPersonalDetailsDto request = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
+        request.setAddressLineOne("2 Updated Street");
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+
+        jurorResponseService.updateJurorPersonalDetails(payload, request, "123456789");
+
+        Assertions.assertThat(response.getFirstName()).isEqualTo("Original");
+        Assertions.assertThat(response.getAddressLine1()).isEqualTo("1 Original Street");
+        Mockito.verify(jurorDigitalResponseRepository, Mockito.never()).save(any(DigitalResponse.class));
+        Mockito.verifyNoInteractions(jurorPaperResponseRepository, straightThroughProcessorService);
+    }
+
+    @Test
+    void preservesPaperThirdPartyDetailsWhenRequestHasNoThirdParty() {
+        PaperResponse response = new PaperResponse();
+        response.setJurorNumber("123456789");
+        response.setFirstName("FName");
+        response.setLastName("LName");
+        response.setThirdPartyFName("Other");
+        response.setEmailAddress("third.party@example.com");
+        response.setRelationship("Friend");
+        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber("123456789");
+        JurorPersonalDetailsDto request = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
+        request.setThirdParty(null);
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+
+        jurorResponseService.updateJurorPersonalDetails(payload, request, "123456789");
+
+        Assertions.assertThat(response.getThirdPartyFName()).isEqualTo("Other");
+        Assertions.assertThat(response.getEmailAddress()).isEqualTo("third.party@example.com");
+        Assertions.assertThat(response.getRelationship()).isEqualTo("Friend");
+        Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(any(PaperResponse.class));
+        Mockito.verifyNoInteractions(jurorDigitalResponseRepository);
+    }
+
+    @Test
+    void clearsPaperOptionalContactDetailsWhenRequestValuesAreNull() {
+        PaperResponse response = new PaperResponse();
+        response.setJurorNumber("123456789");
+        response.setFirstName("FName");
+        response.setLastName("LName");
+        response.setPhoneNumber("07700900123");
+        response.setAltPhoneNumber("07700900456");
+        response.setEmail("original@example.com");
+        Mockito.doReturn(response).when(jurorPaperResponseRepository).findByJurorNumber("123456789");
+        JurorPersonalDetailsDto request = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
+        request.setThirdParty(null);
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+
+        jurorResponseService.updateJurorPersonalDetails(payload, request, "123456789");
+
+        Assertions.assertThat(response.getPhoneNumber()).isNull();
+        Assertions.assertThat(response.getAltPhoneNumber()).isNull();
+        Assertions.assertThat(response.getEmail()).isNull();
+        Assertions.assertThat(response.getFirstName()).isEqualTo("FName");
+        Assertions.assertThat(response.getLastName()).isEqualTo("LName");
+        Mockito.verify(jurorPaperResponseRepository).save(Mockito.same(response));
+        Mockito.verifyNoInteractions(jurorDigitalResponseRepository);
+    }
+
+    @Test
+    void rejectsMissingPaperResponseWithoutSavingOrProcessing() {
+        Mockito.doReturn(null).when(jurorPaperResponseRepository).findByJurorNumber("123456789");
+        JurorPersonalDetailsDto request = buildJurorPersonalDetailsDto(ReplyMethod.PAPER);
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+
+        Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+            jurorResponseService.updateJurorPersonalDetails(payload, request, "123456789"));
+
+        Mockito.verify(jurorPaperResponseRepository, Mockito.never()).save(any(PaperResponse.class));
+        Mockito.verifyNoInteractions(jurorDigitalResponseRepository, straightThroughProcessorService);
+    }
+
+    @Test
+    void rejectsMissingDigitalResponseWithoutSavingOrProcessing() {
+        Mockito.doReturn(null).when(jurorDigitalResponseRepository).findByJurorNumber("123456789");
+        JurorPersonalDetailsDto request = buildJurorPersonalDetailsDto(ReplyMethod.DIGITAL);
+        BureauJwtPayload payload = TestUtils.createJwt("400", "SOME_USER", "99");
+
+        Assertions.assertThatExceptionOfType(MojException.NotFound.class).isThrownBy(() ->
+            jurorResponseService.updateJurorPersonalDetails(payload, request, "123456789"));
+
+        Mockito.verify(jurorDigitalResponseRepository, Mockito.never()).save(any(DigitalResponse.class));
+        Mockito.verifyNoInteractions(jurorPaperResponseRepository, straightThroughProcessorService);
+    }
+
     private JurorPool createTestJurorPool(String owner) {
         CourtLocation courtLocation = new CourtLocation();
         courtLocation.setLocCode("415");

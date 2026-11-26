@@ -9,6 +9,7 @@ import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 import uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolAddCitizenRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.CoronerPoolRequestDto;
 import uk.gov.hmcts.juror.api.moj.controller.request.NilPoolRequestDto;
@@ -111,6 +112,7 @@ public class PoolCreateServiceImpl implements PoolCreateService {
     private final CoronerPoolDetailRepository coronerPoolDetailRepository;
     private final CoronerPoolRepository coronerPoolRepository;
     private final FeatureFlagConfigurationProperties featureFlags;
+    private final WelshCourtLocationRepository welshCourtLocationRepository;
 
     @Override
     @Transactional
@@ -384,12 +386,14 @@ public class PoolCreateServiceImpl implements PoolCreateService {
                 jurorHistBuilder.historyCode(HistoryCodeMod.DISQUALIFY_POOL_MEMBER);
                 jurorHistBuilder.otherInformationRef(HistoryCodeMod.DISQUALIFY_POOL_MEMBER.getCode());
                 historyList.add(jurorHistBuilder.build());
-            } else if (isDigitalByDefault) {
-                jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
-                jurorHistBuilder.otherInformation("DBD Summons letter");
-                historyList.add(jurorHistBuilder.build());
             } else {
                 jurorHistBuilder.historyCode(HistoryCodeMod.PRINT_SUMMONS);
+                String otherInfo = isDigitalByDefault ? "DBD Summons letter" : null;
+                if (juror.isWelsh()
+                    && welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode()) != null) {
+                    otherInfo = isDigitalByDefault ? "DBD Summons letter (Welsh)" : "Summons letter (Welsh)";
+                }
+                jurorHistBuilder.otherInformation(otherInfo);
                 historyList.add(jurorHistBuilder.build());
             }
         });
