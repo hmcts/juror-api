@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
@@ -47,6 +48,7 @@ public class FinancialAuditDetailsAppearances implements Serializable {
 
     @AllArgsConstructor
     @NoArgsConstructor
+    @EqualsAndHashCode
     public static final class IdClass {
         private Long financialAuditId;
         private LocalDate attendanceDate;

@@ -146,24 +146,23 @@ public class SecurityConfigEndpoints {
 
     @Bean
     public WebSecurityCustomizer ignoringCustomizer() {
-        PathPatternRequestMatcher.Builder matcher =
-            PathPatternRequestMatcher.withDefaults();
+        PathPatternRequestMatcher.Builder pathMatcher = PathPatternRequestMatcher.withDefaults();
         return web -> web
             .ignoring()
             .requestMatchers(
-               matcher.matcher(HttpMethod.GET, "/"),
-               matcher.matcher(HttpMethod.GET, ERROR),
-               matcher.matcher(HttpMethod.POST, ERROR),
-               matcher.matcher(HttpMethod.GET, "/webjars/**"),
-               matcher.matcher(HttpMethod.GET, "/swagger-resources/**"),
-               matcher.matcher(HttpMethod.GET, "/v3/api-docs/**"),
-               matcher.matcher(HttpMethod.GET, "/swagger-ui/**"),
-               matcher.matcher(HttpMethod.GET, "/login"),
-               //TODO: remove me once the auto-config redirect mvc login is disabled
-               //FIXME: remove the actuator ignores later, move them to be secured under
-               // AuthenticationEndpointHmacSecurityConfiguration
-               matcher.matcher(HttpMethod.GET, "/health"),
-               matcher.matcher(HttpMethod.GET, "/info")
+                pathMatcher.matcher(HttpMethod.GET, "/"),
+                pathMatcher.matcher(HttpMethod.GET, ERROR),
+                pathMatcher.matcher(HttpMethod.POST, ERROR),
+                pathMatcher.matcher(HttpMethod.GET, "/webjars/**"),
+                pathMatcher.matcher(HttpMethod.GET, "/swagger-resources/**"),
+                pathMatcher.matcher(HttpMethod.GET, "/v3/api-docs/**"),
+                pathMatcher.matcher(HttpMethod.GET, "/swagger-ui/**"),
+                pathMatcher.matcher(HttpMethod.GET, "/login"),
+                //TODO: remove me once the auto-config redirect mvc login is disabled
+                //FIXME: remove the actuator ignores later, move them to be secured under
+                // AuthenticationEndpointHmacSecurityConfiguration
+                pathMatcher.matcher(HttpMethod.GET, "/health"),
+                pathMatcher.matcher(HttpMethod.GET, "/info")
             );
     }
 }

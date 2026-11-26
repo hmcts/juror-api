@@ -16,6 +16,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.history.Revision;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -156,7 +159,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.juror.api.config.FeatureFlagConfigurationProperties.DIGITAL_BY_DEFAULT_FEATURE_FLAG;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith({SpringExtension.class, MockitoExtension.class})
+@MockitoSettings(strictness = Strictness.LENIENT)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.CouplingBetweenObjects",
     "PMD.TooManyMethods", "PMD.TooManyFields", "PMD.NcssCount"})
 class JurorRecordServiceTest {

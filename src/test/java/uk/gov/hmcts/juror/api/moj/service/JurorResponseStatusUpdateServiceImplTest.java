@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.juror.domain.ProcessingStatus;
@@ -42,7 +42,7 @@ import static org.mockito.Mockito.verify;
 /**
  * Unit test for {@link uk.gov.hmcts.juror.api.bureau.service.ResponseStatusUpdateServiceImpl}.
  */
-@RunWith(SpringRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods"})
 public class JurorResponseStatusUpdateServiceImplTest {
 

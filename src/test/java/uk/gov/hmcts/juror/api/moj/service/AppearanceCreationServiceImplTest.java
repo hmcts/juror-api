@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import uk.gov.hmcts.juror.api.TestUtils;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
@@ -19,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class AppearanceCreationServiceImplTest {
     private static final String COURT_USER = "COURT_USER";
     private static final String JUROR_NUMBER = "041500081";

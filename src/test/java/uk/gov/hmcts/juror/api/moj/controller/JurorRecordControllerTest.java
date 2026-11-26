@@ -13,14 +13,15 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -75,10 +76,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 @SuppressWarnings({"PMD.ExcessiveImports", "PMD.TooManyMethods", "PMD.CouplingBetweenObjects"})
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = JurorRecordController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
+@WebMvcTest(
+    controllers = JurorRecordController.class,
+    excludeAutoConfiguration = {SecurityAutoConfiguration.class, UserDetailsServiceAutoConfiguration.class}
+)
+@org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc(addFilters = false)
 @ContextConfiguration(classes = {JurorRecordController.class, BulkServiceImpl.class})
 @DisplayName("Controller: /api/v1/moj/juror-record")
 class JurorRecordControllerTest {
@@ -92,13 +96,13 @@ class JurorRecordControllerTest {
     private static final String USERNAME_BUREAU = "BUREAU_USER";
 
 
-    @MockBean
+    @MockitoBean
     private JurorRecordService jurorRecordService;
 
     @Autowired
     private BulkService bulkService;
 
-    @MockBean
+    @MockitoBean
     private RestfulAuthenticationEntryPoint restfulAuthenticationEntryPoint;
 
     private BureauJwtPayload bureauJwtPayload;
@@ -110,6 +114,7 @@ class JurorRecordControllerTest {
         bureauJwtPayload = null;
         mockMvc = MockMvcBuilders
             .standaloneSetup(new JurorRecordController(jurorRecordService, bulkService))
+            .setMessageConverters(TestUtils.jackson2HttpMessageConverter())
             .setCustomArgumentResolvers(new PrincipalDetailsArgumentResolver())
             .build();
     }

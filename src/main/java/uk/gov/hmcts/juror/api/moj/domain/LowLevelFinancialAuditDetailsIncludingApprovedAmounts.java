@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Immutable;
@@ -150,6 +151,7 @@ public class LowLevelFinancialAuditDetailsIncludingApprovedAmounts {
     private BigDecimal totalOutstanding;
 
     @SuppressWarnings({"PMD.UnusedPrivateField"}) // this class used by @IdClass
+    @EqualsAndHashCode
     public static class IdClass {
         private Long id;
         private String jurorNumber;
