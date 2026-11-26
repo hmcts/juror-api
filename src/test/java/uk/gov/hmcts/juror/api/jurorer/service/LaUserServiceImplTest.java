@@ -54,6 +54,7 @@ class LaUserServiceImplTest {
     @Test
     void testGetLocalAuthoritiesHappy() {
 
+        String objectId = "11111111-1111-1111-1111-111111111111";
         String email = "testemail@localauth1.gov.uk";
         LocalAuthority localAuthority = LocalAuthority.builder()
             .laCode("001")
@@ -67,9 +68,9 @@ class LaUserServiceImplTest {
                 .localAuthority(localAuthority)
                 .build());
 
-        when(userRepository.findByUsernameIgnoreCase(email)).thenReturn(laUsers);
+        when(userRepository.findByObjectIdIgnoreCase(objectId)).thenReturn(laUsers);
 
-        List<LocalAuthority> localAuthorities = laUserService.getLocalAuthorities(email);
+        List<LocalAuthority> localAuthorities = laUserService.getLocalAuthorities(objectId);
 
         assertNotNull(localAuthorities);
         assertEquals(1, localAuthorities.size());
@@ -80,27 +81,65 @@ class LaUserServiceImplTest {
     @Test
     void testGetLocalAuthoritiesUserNotFound() {
 
-        String email = "testemail@localauth1.gov.uk";
+        String objectId = "11111111-1111-1111-1111-111111111111";
 
-        when(userRepository.findByUsernameIgnoreCase(email)).thenReturn(List.of());
+        when(userRepository.findByObjectIdIgnoreCase(objectId)).thenReturn(List.of());
 
         MojException.NotFound exception =
             assertThrows(
                 MojException.NotFound.class,
-                () -> laUserService.getLocalAuthorities(email),
+                () -> laUserService.getLocalAuthorities(objectId),
                 "Should throw an error when user is not found"
             );
 
         assertThat(exception).isNotNull();
         assertThat(exception.getMessage()).contains("User not found");
 
-        verify(userRepository).findByUsernameIgnoreCase(email);
+        verify(userRepository).findByObjectIdIgnoreCase(objectId);
 
+    }
+
+    @Test
+    void getObjectIdByEmailReturnsSameIdAcrossLocalAuthorities() {
+        String objectId = "aaaaaaaa-1111-1111-1111-111111111111";
+        when(userRepository.findByUsernameIgnoreCase("test@example.com")).thenReturn(List.of(
+            LaUser.builder().objectId(objectId).build(),
+            LaUser.builder().objectId(objectId.toUpperCase(java.util.Locale.ROOT)).build()));
+
+        assertEquals(objectId, laUserService.getObjectIdByEmail("test@example.com"));
+    }
+
+    @Test
+    void getObjectIdByEmailUnknownUser() {
+        when(userRepository.findByUsernameIgnoreCase("unknown@example.com")).thenReturn(List.of());
+
+        assertThrows(MojException.NotFound.class,
+            () -> laUserService.getObjectIdByEmail("unknown@example.com"));
+    }
+
+    @Test
+    void getObjectIdByEmailMissingId() {
+        when(userRepository.findByUsernameIgnoreCase("test@example.com")).thenReturn(List.of(
+            LaUser.builder().build(), LaUser.builder().objectId(" ").build()));
+
+        assertThrows(MojException.NotFound.class,
+            () -> laUserService.getObjectIdByEmail("test@example.com"));
+    }
+
+    @Test
+    void getObjectIdByEmailInconsistentIds() {
+        when(userRepository.findByUsernameIgnoreCase("test@example.com")).thenReturn(List.of(
+            LaUser.builder().objectId("11111111-1111-1111-1111-111111111111").build(),
+            LaUser.builder().objectId("22222222-2222-2222-2222-222222222222").build()));
+
+        assertThrows(MojException.InternalServerError.class,
+            () -> laUserService.getObjectIdByEmail("test@example.com"));
     }
 
     @Test
     void createJwtHappy() {
 
+        String objectId = "11111111-1111-1111-1111-111111111111";
         String email = "testemail@localauth1.gov.uk";
 
         LocalAuthority localAuthority = LocalAuthority.builder()
@@ -111,11 +150,12 @@ class LaUserServiceImplTest {
 
         LaUser laUser = LaUser.builder()
                 .username(email)
+                .objectId(objectId)
                 .active(true)
                 .localAuthority(localAuthority)
                 .build();
 
-        when(userRepository.findByUsernameIgnoreCase(email))
+        when(userRepository.findByObjectIdIgnoreCase(objectId))
             .thenReturn(List.of(laUser));
         when(jwtService.getSigningKey(anyString())).thenReturn(null);
 
@@ -127,7 +167,7 @@ class LaUserServiceImplTest {
 
 
             LocalDateTime before = LocalDateTime.now();
-            LaJwtDto dto = laUserService.createJwt(email, "001");
+            LaJwtDto dto = laUserService.createJwt(objectId, "001");
             LocalDateTime after = LocalDateTime.now();
 
             assertNotNull(dto);
@@ -135,10 +175,11 @@ class LaUserServiceImplTest {
             assertThat(laUser.getLastLoggedIn()).isBetween(before, after);
         }
 
-        verify(userRepository).findByUsernameIgnoreCase(email);
+        verify(userRepository).findByObjectIdIgnoreCase(objectId);
         verify(jwtService).getSigningKey(null);
 
         Map<String, Object> expectedClaims = Map.of(
+            "objectId", objectId,
             "laCode", "001",
             "role", List.of("LA_USER"),
             "laName", "Local Authority 1",
@@ -153,21 +194,21 @@ class LaUserServiceImplTest {
     @Test
     void createJwtUserNotFound() {
 
-        String email = "testemail@localauth1.gov.uk";
+        String objectId = "11111111-1111-1111-1111-111111111111";
 
-        when(userRepository.findByUsernameIgnoreCase(email)).thenReturn(List.of());
+        when(userRepository.findByObjectIdIgnoreCase(objectId)).thenReturn(List.of());
 
         MojException.NotFound exception =
             assertThrows(
                 MojException.NotFound.class,
-                () -> laUserService.createJwt(email, "001"),
+                () -> laUserService.createJwt(objectId, "001"),
                 "Should throw an error when user is not found"
             );
 
         assertThat(exception).isNotNull();
         assertThat(exception.getMessage()).contains("User not found");
 
-        verify(userRepository).findByUsernameIgnoreCase(email);
+        verify(userRepository).findByObjectIdIgnoreCase(objectId);
         verifyNoInteractions(jwtService);
     }
 

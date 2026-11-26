@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,10 +48,10 @@ public class LaUserServiceImpl implements LaUserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LocalAuthority> getLocalAuthorities(String email) {
+    public List<LocalAuthority> getLocalAuthorities(String objectId) {
 
-        // read the user by email and get the local authority
-        List<LaUser> user = userRepository.findByUsernameIgnoreCase(email);
+        // Read the user by their Entra object ID and get their local authorities.
+        List<LaUser> user = userRepository.findByObjectIdIgnoreCase(objectId);
 
         if (user.isEmpty()) {
             throw new MojException.NotFound("User not found", null);
@@ -64,9 +65,28 @@ public class LaUserServiceImpl implements LaUserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public String getObjectIdByEmail(String email) {
+        List<String> objectIds = userRepository.findByUsernameIgnoreCase(email).stream()
+            .map(LaUser::getObjectId)
+            .filter(id -> id != null && !id.isBlank())
+            .map(id -> id.toLowerCase(Locale.ROOT))
+            .distinct()
+            .toList();
+
+        if (objectIds.isEmpty()) {
+            throw new MojException.NotFound("User object ID not found", null);
+        }
+        if (objectIds.size() > 1) {
+            throw new MojException.InternalServerError("User has inconsistent object IDs", null);
+        }
+        return objectIds.getFirst();
+    }
+
+    @Override
     @Transactional
-    public LaJwtDto createJwt(String email, String laCode) {
-        final List<LaUser> userList = findUserByUsername(email);
+    public LaJwtDto createJwt(String objectId, String laCode) {
+        final List<LaUser> userList = userRepository.findByObjectIdIgnoreCase(objectId);
 
         LaUser user = userList.stream()
             .filter(u -> u.getLocalAuthority().getLaCode().equals(laCode))
@@ -90,6 +110,7 @@ public class LaUserServiceImpl implements LaUserService {
             .toList();
 
         claims.put("username", user.getUsername());
+        claims.put("objectId", user.getObjectId());
         claims.put("laCode", localAuthority.getLaCode());
         claims.put("laName", localAuthority.getLaName());
         claims.put("role", List.of(LaRoles.LA_USER.toString()));

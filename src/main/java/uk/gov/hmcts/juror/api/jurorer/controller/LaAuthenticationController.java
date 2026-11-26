@@ -16,11 +16,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaDevLoginDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaEmailDto;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaJwtDto;
+import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaObjectIdDto;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.service.LaUserService;
-import uk.gov.hmcts.juror.api.moj.domain.authentication.EmailDto;
 
 import java.util.List;
 
@@ -33,12 +34,18 @@ public class LaAuthenticationController {
 
     private final LaUserService userService;
 
+    @PostMapping("/dev-login")
+    @Operation(summary = "Look up an LA user object ID by email for dev login")
+    public ResponseEntity<LaObjectIdDto> devLogin(@RequestBody @Valid LaDevLoginDto request) {
+        return ResponseEntity.ok(new LaObjectIdDto(userService.getObjectIdByEmail(request.getEmail())));
+    }
+
     @PostMapping("/local-authorities")
     @Operation(summary = "Get a users local authorities")
     public ResponseEntity<List<LocalAuthority>> viewLocalAuthorities(
-        @RequestBody @Valid EmailDto emailDto
+        @RequestBody @Valid LaEmailDto loginDto
     ) {
-        return ResponseEntity.ok(userService.getLocalAuthorities(emailDto.getEmail()));
+        return ResponseEntity.ok(userService.getLocalAuthorities(loginDto.getObjectId()));
     }
 
     @PostMapping("/jwt/{la_code}")
@@ -46,8 +53,8 @@ public class LaAuthenticationController {
     public ResponseEntity<LaJwtDto> createJwt(
         @P("la_code") @PathVariable("la_code") @Valid @NotBlank
         @Pattern(regexp = "^\\d{3}$") String laCode,
-        @RequestBody @Valid LaEmailDto emailDto
+        @RequestBody @Valid LaEmailDto loginDto
     ) {
-        return ResponseEntity.ok(userService.createJwt(emailDto.getEmail(), laCode));
+        return ResponseEntity.ok(userService.createJwt(loginDto.getObjectId(), laCode));
     }
 }

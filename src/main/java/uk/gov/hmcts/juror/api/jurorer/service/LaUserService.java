@@ -12,9 +12,11 @@ import java.util.Optional;
 
 public interface LaUserService {
 
-    List<LocalAuthority> getLocalAuthorities(String email);
+    List<LocalAuthority> getLocalAuthorities(String objectId);
 
-    LaJwtDto createJwt(String email, String laCode);
+    String getObjectIdByEmail(String email);
+
+    LaJwtDto createJwt(String objectId, String laCode);
 
     List<LaUser> findUserByUsername(String username);
 
