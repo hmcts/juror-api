@@ -106,16 +106,17 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
     }
 
     @Test
-    void negativeMethodNotFound() {
-        NotFoundMethodTestObject notFoundMethodTestObject = new NotFoundMethodTestObject();
+    void negativeReferencedFieldNotFound() {
+        MissingReferencedFieldTestObject missingReferencedFieldTestObject = new MissingReferencedFieldTestObject();
         ValidateIfTrigger validateIfTrigger =
-            createAnnotation(Map.of("classToValidate", notFoundMethodTestObject.getClass()),
+            createAnnotation(Map.of("classToValidate", missingReferencedFieldTestObject.getClass()),
                 ValidateIfTrigger.class);
 
         IllegalArgumentException exception =
             assertThrows(IllegalArgumentException.class, () -> validator.initialize(validateIfTrigger),
                 "Exception should be thrown");
-        assertEquals("Failed to find method: getField2",
+        assertEquals("One or more fields not found in class "
+                + MissingReferencedFieldTestObject.class.getName() + " - fields: [field2, field3]",
             exception.getMessage(),
             "Exception message should be correct");
     }
@@ -497,14 +498,13 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
         }
     }
 
-    public static class NotFoundMethodTestObject {
+    public static class MissingReferencedFieldTestObject {
         @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
             type = ValidateIf.Type.REQUIRE,
             fields = {"field2", "field3"},
             message = "Some message that I have overridden")
         @Getter
         private final String field1 = null;
-        private final String field2 = "abc";
         @Getter
         private final String field3 = "abc";
 
