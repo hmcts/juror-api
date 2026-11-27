@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JurorErJwtPayload {
     private String username;
+    private String objectId;
     private String laName;
     private String laCode;
     private List<String> roles;
@@ -39,6 +40,9 @@ public class JurorErJwtPayload {
     public Map<String, Object> toClaims() {
         Map<String, Object> data = new ConcurrentHashMap<>();
         data.put("username", username);
+        if (objectId != null) {
+            data.put("objectId", objectId);
+        }
         data.put("loCode", laCode);
         data.put("laName", laName);
         data.put("role", roles);
@@ -51,6 +55,7 @@ public class JurorErJwtPayload {
 
         return JurorErJwtPayload.builder()
             .username(claims.get("username", String.class))
+            .objectId(claims.get("objectId", String.class))
             .laCode(claims.get("laCode", String.class))
             .laName(claims.get("laName", String.class))
             .roles(claims.get("role", List.class))

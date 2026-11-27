@@ -78,9 +78,9 @@ public class ExcusalLetterTest extends AbstractLetterTest {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
-        ExcusalLetter excusalLetter = new ExcusalLetter(LetterTestUtils.testJurorPool(date),
+        ExcusalLetter excusalLetter = new ExcusalLetter(LetterTestUtils.createJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
 
         assertThat(excusalLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
         assertThat(excusalLetter.getFormCode()).isEqualTo(FormCode.ENG_EXCUSAL.getCode());
@@ -99,8 +99,8 @@ public class ExcusalLetterTest extends AbstractLetterTest {
         setupWelshExpectedResult();
         ExcusalLetter excusalLetter = new ExcusalLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation(),
-            LetterTestUtils.testWelshCourtLocation());
+            LetterTestUtils.createBureauLocation(),
+            LetterTestUtils.createWelshCourtLocation());
 
 
         assertThat(excusalLetter.getLetterString()).isEqualTo(getExpectedWelshResult());

@@ -81,9 +81,9 @@ class PostponeLetterTest extends AbstractLetterTest {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
-        PostponeLetter postponeLetter = new PostponeLetter(LetterTestUtils.testJurorPool(date),
+        PostponeLetter postponeLetter = new PostponeLetter(LetterTestUtils.createJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
 
 
         assertThat(postponeLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
@@ -101,8 +101,8 @@ class PostponeLetterTest extends AbstractLetterTest {
         setupWelshExpectedResult();
         PostponeLetter postponeLetter = new PostponeLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation(),
-            LetterTestUtils.testWelshCourtLocation());
+            LetterTestUtils.createBureauLocation(),
+            LetterTestUtils.createWelshCourtLocation());
 
 
         assertThat(postponeLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
@@ -120,7 +120,7 @@ class PostponeLetterTest extends AbstractLetterTest {
         setupEnglishExpectedResult();
         PostponeLetter postponeLetter = new PostponeLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
         assertThat(postponeLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
     }
 }

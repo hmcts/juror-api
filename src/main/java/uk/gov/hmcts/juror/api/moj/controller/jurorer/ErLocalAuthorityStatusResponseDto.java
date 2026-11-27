@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
+import uk.gov.hmcts.juror.api.jurorer.enumeration.LaEmailNotificationType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,6 +33,9 @@ public class ErLocalAuthorityStatusResponseDto {
         private UploadStatus uploadStatus;
 
         private LocalDateTime lastUploadDate;
+
+        private LaEmailNotificationType.InitialEmailStatus initialEmailStatus;
+
     }
 
 }

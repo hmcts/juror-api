@@ -82,9 +82,9 @@ class DeferralLetterTest extends AbstractLetterTest {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
-        DeferralLetter deferralLetter = new DeferralLetter(LetterTestUtils.testJurorPool(date),
+        DeferralLetter deferralLetter = new DeferralLetter(LetterTestUtils.createJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
 
         assertThat(deferralLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
         assertThat(deferralLetter.getFormCode()).isEqualTo(FormCode.ENG_DEFERRAL.getCode());
@@ -101,8 +101,8 @@ class DeferralLetterTest extends AbstractLetterTest {
         setupWelshExpectedResult();
         DeferralLetter deferralLetter = new DeferralLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation(),
-            LetterTestUtils.testWelshCourtLocation());
+            LetterTestUtils.createBureauLocation(),
+            LetterTestUtils.createWelshCourtLocation());
 
         assertThat(deferralLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
         assertThat(deferralLetter.getFormCode()).isEqualTo(FormCode.BI_DEFERRAL.getCode());
@@ -118,7 +118,7 @@ class DeferralLetterTest extends AbstractLetterTest {
         setupEnglishExpectedResult();
         DeferralLetter deferralLetter = new DeferralLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
         assertThat(deferralLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
     }
 }

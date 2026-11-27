@@ -78,6 +78,7 @@ public class JurorCommsEmailServiceImplTest {
         given(bulkPrintDataRepository.findByJurorNoAndIdAndCreationDate(anyString(), anyLong(), any(LocalDate.class)))
             .willReturn(List.of(pendingEmail));
 
+        LocalDate beforeProcessing = LocalDate.now();
         SchedulerServiceClient.Result result = service.process();
 
         verify(bulkPrintDataRepository).deleteDbdEmails();
@@ -85,6 +86,7 @@ public class JurorCommsEmailServiceImplTest {
 
         verify(bulkPrintDataRepository).saveAll(List.of(pendingEmail));
         assertThat(pendingEmail.getEmailStatus()).isEqualTo(EmailStatus.SENT);
+        assertThat(pendingEmail.getExtractedDate()).isBetween(beforeProcessing, LocalDate.now());
         assertThat(result.getStatus()).isEqualTo(SchedulerServiceClient.Result.Status.SUCCESS);
         assertThat(result.getMetaData()).containsEntry("COMMNS_SENT", "1");
     }
@@ -102,6 +104,7 @@ public class JurorCommsEmailServiceImplTest {
 
         verify(bulkPrintDataRepository, never()).saveAll(any());
         assertThat(pendingEmail.getEmailStatus()).isEqualTo(EmailStatus.PENDING);
+        assertThat(pendingEmail.getExtractedDate()).isNull();
         assertThat(result.getStatus()).isEqualTo(SchedulerServiceClient.Result.Status.PARTIAL_SUCCESS);
         assertThat(result.getMetaData()).containsEntry("COMMS_FAILED", "1");
     }

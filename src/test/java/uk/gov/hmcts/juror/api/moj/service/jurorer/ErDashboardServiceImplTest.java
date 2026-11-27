@@ -12,6 +12,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.juror.api.jurorer.domain.Deadline;
 import uk.gov.hmcts.juror.api.jurorer.domain.LocalAuthority;
 import uk.gov.hmcts.juror.api.jurorer.domain.UploadStatus;
+import uk.gov.hmcts.juror.api.jurorer.enumeration.LaEmailNotificationType;
 import uk.gov.hmcts.juror.api.jurorer.repository.DeadlineRepository;
 import uk.gov.hmcts.juror.api.jurorer.repository.ReminderHistoryRepository;
 import uk.gov.hmcts.juror.api.jurorer.service.FileUploadsService;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.juror.api.moj.exception.MojException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -200,6 +202,9 @@ class ErDashboardServiceImplTest {
         when(localAuthorityService.getAllLocalAuthorities(true))
             .thenReturn(localAuthorities);
 
+        when(reminderHistoryRepository.findLaCodesByNotificationType(LaEmailNotificationType.INITIAL_EMAIL))
+            .thenReturn(Set.of("LA1"));
+
         ErLocalAuthorityStatusResponseDto responseDto = erDashboardService.getLocalAuthorityStatus(requestDto);
 
         assertThat(responseDto).isNotNull();
@@ -210,6 +215,7 @@ class ErDashboardServiceImplTest {
 
         ErLocalAuthorityStatusResponseDto.ErLocalAuthorityStatus laStatus =
                                                                 responseDto.getLocalAuthorityStatuses().getFirst();
+        assertEquals(LaEmailNotificationType.InitialEmailStatus.SENT, laStatus.getInitialEmailStatus());
         assertEquals("LA1", laStatus.getLocalAuthorityCode(),
                         "Expected first local authority code in response to be LA1");
         assertEquals("Local Authority 1", laStatus.getLocalAuthorityName(),
@@ -221,6 +227,7 @@ class ErDashboardServiceImplTest {
                             + " date from the file upload status");
 
         laStatus = responseDto.getLocalAuthorityStatuses().get(1);
+        assertEquals(LaEmailNotificationType.InitialEmailStatus.NOT_SENT, laStatus.getInitialEmailStatus());
         assertEquals("LA2", laStatus.getLocalAuthorityCode(),
                      "Expected second local authority code in response to be LA2");
         assertEquals("Local Authority 2", laStatus.getLocalAuthorityName(),

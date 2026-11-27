@@ -194,6 +194,7 @@ class AdministrationControllerITest extends AbstractIntegrationTest {
                     new CodeDescriptionResponse("PE", "Personal engagement", null),
                     new CodeDescriptionResponse("R", "RELIGIOUS REASONS", null),
                     new CodeDescriptionResponse("S", "RECENTLY SERVED", null),
+                    new CodeDescriptionResponse("SE", "SOCIAL ENGAGEMENT", null),
                     new CodeDescriptionResponse("T", "TRAVELLING DIFFICULTIES", null),
                     new CodeDescriptionResponse("W", "WORK RELATED", null),
                     new CodeDescriptionResponse("X", "CARER", null),

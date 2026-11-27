@@ -3,6 +3,7 @@ package uk.gov.hmcts.juror.api.moj.controller.request;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
@@ -80,6 +81,7 @@ public class JurorCreateRequestDto {
     @Length(max = 254)
     @Pattern(regexp = EMAIL_ADDRESS_REGEX)
     @Schema(description = "Juror email address")
+    @JsonDeserialize(using = BlankEmailToNullDeserializer.class)
     private String emailAddress;
 
     @JsonProperty("notes")

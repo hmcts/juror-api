@@ -20,6 +20,7 @@ import uk.gov.hmcts.juror.api.AbstractIntegrationTest;
 import uk.gov.hmcts.juror.api.config.bureau.BureauJwtPayload;
 import uk.gov.hmcts.juror.api.jurorer.controller.dto.LaNotificationRequestDto;
 import uk.gov.hmcts.juror.api.jurorer.domain.ReminderHistory;
+import uk.gov.hmcts.juror.api.jurorer.enumeration.LaEmailNotificationType;
 import uk.gov.hmcts.juror.api.jurorer.repository.ReminderHistoryRepository;
 import uk.gov.hmcts.juror.api.moj.domain.UserType;
 
@@ -71,9 +72,37 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
         private static final String URL = BASE_URL + "/send-la-reminder";
 
         @Test
+        void sendInitialNotificationRecordsType() {
+            LaNotificationRequestDto request = LaNotificationRequestDto.builder()
+                .notificationType(LaEmailNotificationType.INITIAL_EMAIL)
+                .laCodes(List.of("001"))
+                .build();
+            ResponseEntity<Void> response = restTemplate.exchange(
+                new RequestEntity<>(request, httpHeaders, POST, URI.create(URL)), Void.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(reminderHistoryRepository.findByLaCodeOrderByTimeSentDesc("001"))
+                .hasSize(2)
+                .allMatch(history -> history.getNotificationType() == LaEmailNotificationType.INITIAL_EMAIL);
+            assertThat(reminderHistoryRepository.findLaCodesByNotificationType(LaEmailNotificationType.INITIAL_EMAIL))
+                .containsExactly("001");
+            assertThat(reminderHistoryRepository.findLaCodesByNotificationType(LaEmailNotificationType.REMINDER_EMAIL))
+                .isEmpty();
+        }
+
+        @Test
+        void sendNotificationRequiresType() {
+            LaNotificationRequestDto request = LaNotificationRequestDto.builder().laCodes(List.of("002")).build();
+            ResponseEntity<Void> response = restTemplate.exchange(
+                new RequestEntity<>(request, httpHeaders, POST, URI.create(URL)), Void.class);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(reminderHistoryRepository.count()).isZero();
+        }
+
+        @Test
         @DisplayName("Should successfully send notification to single LA with single user")
         void sendNotificationToSingleLaHappy() {
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
+                .notificationType(LaEmailNotificationType.REMINDER_EMAIL)
                 .laCodes(List.of("002"))  // LA 002 has 1 user
                 .build();
 
@@ -96,12 +125,14 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
             assertThat(history.getSentBy()).isEqualTo(BUREAU_USER);
             assertThat(history.getSentTo()).isEqualTo("user1@la002.gov.uk");
             assertThat(history.getTimeSent()).isNotNull();
+            assertThat(history.getNotificationType()).isEqualTo(LaEmailNotificationType.REMINDER_EMAIL);
         }
 
         @Test
         @DisplayName("Should successfully send notifications to LA with multiple users")
         void sendNotificationToLaWithMultipleUsers() {
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
+                .notificationType(LaEmailNotificationType.REMINDER_EMAIL)
                 .laCodes(List.of("001"))  // LA 001 has 2 users
                 .build();
 
@@ -133,6 +164,7 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
         @DisplayName("Should successfully send notifications to multiple LAs")
         void sendNotificationToMultipleLasHappy() {
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
+                .notificationType(LaEmailNotificationType.REMINDER_EMAIL)
                 .laCodes(List.of("001", "002", "003"))
                 .build();
 
@@ -163,6 +195,7 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
         @DisplayName("Should skip LA with no active users")
         void sendNotificationSkipsLaWithNoActiveUsers() {
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
+                .notificationType(LaEmailNotificationType.REMINDER_EMAIL)
                 .laCodes(List.of("001", "004")) // 004 has only inactive user
                 .build();
 
@@ -188,6 +221,7 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
         @DisplayName("Should return NO_CONTENT when LA code does not exist")
         void sendNotificationLaNotFound() {
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
+                .notificationType(LaEmailNotificationType.REMINDER_EMAIL)
                 .laCodes(List.of("999"))
                 .build();
 
@@ -209,6 +243,7 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
         @DisplayName("Should return BAD_REQUEST for empty LA codes list")
         void sendNotificationEmptyLaCodes() {
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
+                .notificationType(LaEmailNotificationType.REMINDER_EMAIL)
                 .laCodes(List.of())
                 .build();
 
@@ -225,6 +260,7 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
         @DisplayName("Should return BAD_REQUEST for invalid LA code format")
         void sendNotificationInvalidLaCodeFormat() {
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
+                .notificationType(LaEmailNotificationType.REMINDER_EMAIL)
                 .laCodes(List.of("INVALID"))
                 .build();
 
@@ -257,6 +293,7 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
             httpHeaders.set(HttpHeaders.AUTHORIZATION, courtJwt);
 
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
+                .notificationType(LaEmailNotificationType.REMINDER_EMAIL)
                 .laCodes(List.of("001"))
                 .build();
 
@@ -275,6 +312,7 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
             httpHeaders.remove(HttpHeaders.AUTHORIZATION);
 
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
+                .notificationType(LaEmailNotificationType.REMINDER_EMAIL)
                 .laCodes(List.of("001"))
                 .build();
 
@@ -291,6 +329,7 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
         @DisplayName("Should handle mixed valid and invalid LA codes gracefully")
         void sendNotificationMixedValidInvalid() {
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
+                .notificationType(LaEmailNotificationType.REMINDER_EMAIL)
                 .laCodes(List.of("001", "999", "002")) // 999 doesn't exist
                 .build();
 
@@ -317,6 +356,7 @@ public class LaNotificationControllerITest extends AbstractIntegrationTest {
         @DisplayName("Should create multiple reminder history entries when called multiple times")
         void sendNotificationMultipleTimes() {
             LaNotificationRequestDto request = LaNotificationRequestDto.builder()
+                .notificationType(LaEmailNotificationType.REMINDER_EMAIL)
                 .laCodes(List.of("002"))  // LA 002 has 1 user
                 .build();
 

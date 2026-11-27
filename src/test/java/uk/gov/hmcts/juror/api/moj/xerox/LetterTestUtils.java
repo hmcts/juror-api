@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 
-//False positive this class is used to set up test data instead of running tests
+// Shared factories for letter test data.
 public final class LetterTestUtils {
 
     private LetterTestUtils() {
@@ -72,7 +72,7 @@ public final class LetterTestUtils {
         return poolRequest;
     }
 
-    public static JurorPool testJurorPool(LocalDate date) {
+    public static JurorPool createJurorPool(LocalDate date) {
         JurorPool jurorPool = new JurorPool();
         jurorPool.setOwner("400");
         jurorPool.setNextDate(date);
@@ -86,7 +86,7 @@ public final class LetterTestUtils {
         return jurorPool;
     }
 
-    public static JurorPool testDisqualifiedJurorPool(LocalDate date) {
+    public static JurorPool createDisqualifiedJurorPool(LocalDate date) {
         JurorPool jurorPool = new JurorPool();
         jurorPool.setOwner("400");
         jurorPool.setNextDate(date);
@@ -111,7 +111,7 @@ public final class LetterTestUtils {
         return jurorPool;
     }
 
-    public static CourtLocation testBureauLocation() {
+    public static CourtLocation createBureauLocation() {
         CourtLocation courtLocationBureau = new CourtLocation();
         courtLocationBureau.setName("JURY CENTRAL SUMMONING BUREAU");
         courtLocationBureau.setAddress1("THE COURT SERVICE");
@@ -150,7 +150,7 @@ public final class LetterTestUtils {
         return courtLocation;
     }
 
-    public static WelshCourtLocation testWelshCourtLocation() {
+    public static WelshCourtLocation createWelshCourtLocation() {
         WelshCourtLocation courtLocationWelsh = new WelshCourtLocation();
         courtLocationWelsh.setLocCourtName("ABERTAWE");
         courtLocationWelsh.setCorrespondenceName("YN ABERTAWE");

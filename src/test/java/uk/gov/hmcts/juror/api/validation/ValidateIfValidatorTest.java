@@ -25,7 +25,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("PMD")
+@SuppressWarnings("PMD.PublicMemberInNonPublicType")
 class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
 
     private ValidateIfValidator validator;
@@ -106,16 +106,17 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
     }
 
     @Test
-    void negativeMethodNotFound() {
-        NotFoundMethodTestObject notFoundMethodTestObject = new NotFoundMethodTestObject();
+    void negativeReferencedFieldNotFound() {
+        MissingReferencedFieldTestObject missingReferencedFieldTestObject = new MissingReferencedFieldTestObject();
         ValidateIfTrigger validateIfTrigger =
-            createAnnotation(Map.of("classToValidate", notFoundMethodTestObject.getClass()),
+            createAnnotation(Map.of("classToValidate", missingReferencedFieldTestObject.getClass()),
                 ValidateIfTrigger.class);
 
         IllegalArgumentException exception =
             assertThrows(IllegalArgumentException.class, () -> validator.initialize(validateIfTrigger),
                 "Exception should be thrown");
-        assertEquals("Failed to find method: getField2",
+        assertEquals("One or more fields not found in class "
+                + MissingReferencedFieldTestObject.class.getName() + " - fields: [field2, field3]",
             exception.getMessage(),
             "Exception message should be correct");
     }
@@ -481,25 +482,34 @@ class ValidateIfValidatorTest extends AbstractValidatorTest<ValidateIfTrigger> {
             type = ValidateIf.Type.REQUIRE,
             fields = {"field2", "field3"},
             message = "Some message that I have overridden")
-        private String field1;
-        private String field2 = "abc";
-        private String field3 = "abc";
+        private final String field1;
+        private final String field2;
+        private final String field3;
+
+        public MethodExceptionTestObject() {
+            field1 = null;
+            field2 = "abc";
+            field3 = "abc";
+        }
 
         public String getField2() {
-            throw new RuntimeException("Some exception");
+            throw new IllegalStateException("Some exception");
         }
     }
 
-    public static class NotFoundMethodTestObject {
+    public static class MissingReferencedFieldTestObject {
         @ValidateIf(condition = ValidateIf.Condition.ANY_PRESENT,
             type = ValidateIf.Type.REQUIRE,
             fields = {"field2", "field3"},
             message = "Some message that I have overridden")
         @Getter
-        private final String field1 = null;
-        private final String field2 = "abc";
+        private final String field1;
         @Getter
-        private final String field3 = "abc";
+        private final String field3;
 
+        public MissingReferencedFieldTestObject() {
+            field1 = null;
+            field3 = "abc";
+        }
     }
 }
