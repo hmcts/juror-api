@@ -7,7 +7,9 @@ import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -121,6 +123,32 @@ class SecurityConfigTest {
                 .andExpect(status().isUnauthorized()));
     }
 
+    @ParameterizedTest
+    @EnumSource(UrLs.class)
+    void missingCredentials(UrLs route) {
+        assertThrows(InvalidJwtAuthenticationException.class, () -> mockMvc.perform(get(route.url)));
+    }
+
+    @ParameterizedTest
+    @EnumSource(UrLs.class)
+    void emptyCredentials(UrLs route) {
+        assertThrows(InvalidJwtAuthenticationException.class, () ->
+            mockMvc.perform(get(route.url).header(HttpHeaders.AUTHORIZATION, "")));
+    }
+
+    @ParameterizedTest
+    @EnumSource(UrLs.class)
+    void malformedCredentials(UrLs route) {
+        assertThrows(InvalidJwtAuthenticationException.class, () ->
+            mockMvc.perform(get(route.url).header(HttpHeaders.AUTHORIZATION, "invalid-jwt")));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"/", "/login", "/health", "/info", "/error"})
+    void publicEndpointsDoNotRequireCredentials(String path) throws Exception {
+        mockMvc.perform(get(path)).andExpect(status().isOk());
+    }
+
     private Stream<Arguments> unauthorisedRequests() {
         Stream.Builder<Arguments> builder = Stream.builder();
 
@@ -154,6 +182,8 @@ class SecurityConfigTest {
         HMAC_AUTH_2(JwtType.HMAC, "/api/v1/auth/bureau/test"),
         HMAC_AUTH_3(JwtType.HMAC, "/api/v1/auth/public/test"),
         HMAC_AUTH_4(JwtType.HMAC, "/api/v1/auth/settings/test"),
+        HMAC_AUTH_5(JwtType.HMAC, "/api/v1/auth/moj/test"),
+        HMAC_AUTH_6(JwtType.HMAC, "/api/v1/auth/juror-er/test"),
         PUBLIC_AUTH(JwtType.PUBLIC, "/api/v1/public/test"),
         BUREAU_AUTH(JwtType.BUREAU, "/api/v1/bureau/test"),
         BUREAU_AUTH_2(JwtType.BUREAU, "/api/v1/moj/test"),
@@ -257,12 +287,14 @@ class SecurityConfigTest {
     @RestController
     static class SecurityConfigControllerTest {
         @GetMapping({
+            "/", "/login", "/health", "/info", "/error",
             "/api/v1/public/test",
             "/api/v1/bureau/test",
             "/api/v1/moj/test",
             "/api/v1/juror-er/test",
             "/api/v1/auth/juror/test",
             "/api/v1/auth/bureau/test",
+            "/api/v1/auth/moj/test",
             "/api/v1/auth/public/test",
             "/api/v1/auth/juror-er/test",
             "/api/v1/auth/settings/test"

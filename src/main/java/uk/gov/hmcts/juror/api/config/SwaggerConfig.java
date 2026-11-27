@@ -1,11 +1,15 @@
 package uk.gov.hmcts.juror.api.config;
 
 import com.google.common.io.Files;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.parameters.HeaderParameter;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +18,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import uk.gov.hmcts.juror.api.JurorDigitalApplication;
 
 import java.io.FileNotFoundException;
@@ -31,6 +36,11 @@ import java.util.List;
 @Configuration
 @Slf4j
 public class SwaggerConfig {
+    private static final String JWT_AUTH = "jwtAuth";
+    private static final String PUBLIC_AUTH = "publicJwtAuth";
+    private static final String ER_AUTH = "electoralRegisterJwtAuth";
+    private static final String HMAC_AUTH = "hmacJwtAuth";
+
     @Value("${git.commit.id}")
     private String gitCommitId;
 
@@ -57,6 +67,50 @@ public class SwaggerConfig {
 
 
     @Bean
+    public GlobalOpenApiCustomizer authenticationSecurity() {
+        return openApi -> {
+            if (openApi.getComponents() == null) {
+                openApi.setComponents(new Components());
+            }
+            openApi.getComponents()
+                .addSecuritySchemes(JWT_AUTH, jwtSecurityScheme("Bureau and MOJ API token"))
+                .addSecuritySchemes(PUBLIC_AUTH, jwtSecurityScheme("Public juror API token"))
+                .addSecuritySchemes(ER_AUTH, jwtSecurityScheme("Electoral register portal API token"))
+                .addSecuritySchemes(HMAC_AUTH, jwtSecurityScheme("HMAC-signed authentication API token"));
+            openApi.setSecurity(List.of(new SecurityRequirement().addList(JWT_AUTH)));
+            if (openApi.getPaths() != null) {
+                openApi.getPaths().forEach((path, pathItem) -> {
+                    if (path.startsWith("/api/v1/auth/")) {
+                        requireSecurity(pathItem, HMAC_AUTH);
+                    } else if (path.startsWith("/api/v1/public/")) {
+                        requireSecurity(pathItem, PUBLIC_AUTH);
+                    } else if (path.startsWith("/api/v1/juror-er/")) {
+                        requireSecurity(pathItem, ER_AUTH);
+                    } else if ("/error".equals(path)) {
+                        pathItem.readOperations().forEach(operation -> operation.setSecurity(List.of()));
+                    } else if (List.of("/", "/login", "/health", "/info").contains(path)
+                        && pathItem.getGet() != null) {
+                        pathItem.getGet().setSecurity(List.of());
+                    }
+                });
+            }
+        };
+    }
+
+    private SecurityScheme jwtSecurityScheme(String description) {
+        return new SecurityScheme()
+            .type(SecurityScheme.Type.APIKEY)
+            .in(SecurityScheme.In.HEADER)
+            .name(HttpHeaders.AUTHORIZATION)
+            .description(description + ". Enter the raw signed JWT without a Bearer prefix.");
+    }
+
+    private void requireSecurity(PathItem pathItem, String scheme) {
+        pathItem.readOperations().forEach(operation ->
+            operation.setSecurity(List.of(new SecurityRequirement().addList(scheme))));
+    }
+
+    @Bean
     public GroupedOpenApi jurorDigitalApi() throws IOException {
         final String versionInfo = phase + " " + softwareVersion + "\n(Git: [" + gitCommitId + "] " + branchName + ")";
         String description;
@@ -72,13 +126,6 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
             .group("API - Juror Digital")
             .packagesToScan(JurorDigitalApplication.class.getPackage().getName())
-            .addOperationCustomizer((operation, handlerMethod) -> operation.addParametersItem(
-                    new HeaderParameter()
-                        .name("Authorization")
-                        .description("JWT Auth header (Base64 encoded)")
-                        .required(true)
-                )
-            )
             .addOpenApiCustomizer(openApi ->
                 openApi.info(
                         new Info()
@@ -96,13 +143,6 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
             .group("Spring Boot Actuator")
             .packagesToScan(org.springframework.boot.actuate.endpoint.Operation.class.getPackage().getName())
-            .addOperationCustomizer((operation, handlerMethod) -> operation.addParametersItem(
-                    new HeaderParameter()
-                        .name("Authorization")
-                        .description("HMAC Auth header (Base64 encoded)")
-                        .required(true)
-                )
-            )
             .addOpenApiCustomizer(openApi ->
                 openApi.info(
                         new Info()
