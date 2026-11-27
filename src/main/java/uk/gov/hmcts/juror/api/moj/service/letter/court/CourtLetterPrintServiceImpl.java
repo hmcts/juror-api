@@ -132,7 +132,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
             }
             letters.add(dto);
             // add history item
-            addHistoryItem(printLettersRequestDto, login, jurorNumber, data);
+            addHistoryItem(printLettersRequestDto, login, jurorNumber, data, welsh);
 
         }
 
@@ -163,7 +163,7 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
 
     @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.ExhaustiveSwitchHasDefault"})
     private void addHistoryItem(PrintLettersRequestDto printLettersRequestDto, String login, String jurorNumber,
-                                Tuple data) {
+                                Tuple data, boolean welsh) {
         JurorHistory.JurorHistoryBuilder jurorHistory = JurorHistory.builder()
             .jurorNumber(jurorNumber)
             .dateCreated(LocalDateTime.now())
@@ -230,6 +230,9 @@ public class CourtLetterPrintServiceImpl implements CourtLetterPrintService {
         }
 
         JurorHistory history = jurorHistory.build();
+        if (welsh) {
+            history.setOtherInformation(history.getOtherInformation() + " (Welsh)");
+        }
         jurorHistoryRepository.save(history);
     }
 

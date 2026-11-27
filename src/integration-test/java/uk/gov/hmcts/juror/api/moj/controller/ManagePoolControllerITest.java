@@ -5,8 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -197,8 +197,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
                 + "represents the total number of bureau owned members in a pool wih a status of 'Responded'")
             .isEqualTo(2);
         assertThat(bureauSummoning.getRequestedFromBureau())
-            .as("Requested from bureau should be mapped from the NO_REQUESTED value in the POOL_REQUEST view and "
-                + "represents the number of jurors requested from the Bureau (total required - court supply)")
+            .as("Requested from bureau should be mapped from NO_REQUESTED in the POOL table")
             .isEqualTo(9);
         assertThat(bureauSummoning.getUnavailable())
             .as("Unavailable should be mapped from the UNAVAILABLE value in the POOL_STATS view and represents the "
@@ -280,8 +279,7 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
                 + "represents the total number of bureau owned members in a pool wih a status of 'Responded'")
             .isEqualTo(0);
         assertThat(bureauSummoning.getRequestedFromBureau())
-            .as("Requested from bureau should be mapped from the NO_REQUESTED value in the POOL_REQUEST view and "
-                + "represents the number of jurors requested from the Bureau (total required - court supply)")
+            .as("Requested from bureau should be mapped from NO_REQUESTED in the POOL table")
             .isEqualTo(9);
         assertThat(bureauSummoning.getUnavailable())
             .as("Unavailable should be mapped from the UNAVAILABLE value in the POOL_STATS view and represents the "
@@ -372,9 +370,8 @@ public class ManagePoolControllerITest extends AbstractIntegrationTest {
                 + "represents the total number of bureau owned members in a pool wih a status of 'Responded'")
             .isEqualTo(2);
         assertThat(bureauSummoning.getRequestedFromBureau())
-            .as("Requested from bureau should be mapped from the NO_REQUESTED value in the POOL_REQUEST view and "
-                + "represents the number of jurors requested from the Bureau (total required - court supply)")
-            .isEqualTo(0); // This number cannot go negative as per JS-1086
+            .as("Requested from bureau should use NO_REQUESTED even when TOTAL_NO_REQUIRED is zero")
+            .isEqualTo(9);
         assertThat(bureauSummoning.getUnavailable())
             .as("Unavailable should be mapped from the UNAVAILABLE value in the POOL_STATS view and represents the "
                 + "number of bureau owned members in  a pool with a status that is NOT: 'Responded', 'Summoned', or "

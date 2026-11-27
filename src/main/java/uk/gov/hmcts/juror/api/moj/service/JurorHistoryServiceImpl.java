@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.juror.api.config.security.IsCourtUser;
 import uk.gov.hmcts.juror.api.config.security.IsSeniorCourtUser;
 import uk.gov.hmcts.juror.api.juror.domain.CourtLocation;
+import uk.gov.hmcts.juror.api.juror.domain.WelshCourtLocationRepository;
 import uk.gov.hmcts.juror.api.moj.domain.Appearance;
 import uk.gov.hmcts.juror.api.moj.domain.FinancialAuditDetails;
 import uk.gov.hmcts.juror.api.moj.domain.FormCode;
@@ -37,6 +38,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     private static final String SYSTEM_USER_ID = "SYSTEM";
     private final JurorHistoryRepository jurorHistoryRepository;
     private final Clock clock;
+    private final WelshCourtLocationRepository welshCourtLocationRepository;
 
     @Override
     public void createJuryEmpanelmentHistory(JurorPool jurorPool, Panel panelMember) {
@@ -135,9 +137,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
                                                            + "summoned to and deferred from", null);
         }
 
-        String otherInfo = communicationChannel == CommunicationChannel.EMAIL
-            ? "Deferral Email"
-            : "Deferral Letter";
+        String otherInfo = channelInfo(jurorPool, "Deferral Letter", communicationChannel);
 
         registerHistoryLoginUserAdditionalInfo(
             jurorPool, HistoryCodeMod.DEFERRED_LETTER,
@@ -149,9 +149,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     public void createDeferredDeniedLetterHistory(JurorPool jurorPool, CommunicationChannel communicationChannel) {
 
-        String otherInfo = communicationChannel == CommunicationChannel.EMAIL
-            ? "Deferral Denied Email"
-            : "Deferral Denied Letter";
+        String otherInfo = channelInfo(jurorPool, "Deferral Denied Letter", communicationChannel);
 
         registerHistoryLoginUserAdditionalInfo(
             jurorPool, HistoryCodeMod.NON_DEFERRED_LETTER,
@@ -281,14 +279,14 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     public void createSummonsReminderLetterHistory(JurorPool jurorPool) {
         registerHistoryLoginUser(jurorPool, HistoryCodeMod.NON_RESPONDED_LETTER,
-                                 "Reminder letter");
+                                 channelInfo(jurorPool, "Reminder letter", CommunicationChannel.LETTER));
     }
 
     @Override
     public void createConfirmationLetterHistory(JurorPool jurorPool, String otherInfo,
                                                 CommunicationChannel communicationChannel) {
         registerHistorySystem(jurorPool, HistoryCodeMod.RESPONDED_LETTER,
-                              channelInfo(otherInfo, communicationChannel));
+                              channelInfo(jurorPool, otherInfo, communicationChannel));
     }
 
     @Override
@@ -296,7 +294,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
                                       CommunicationChannel communicationChannel) {
         registerHistorySystem(jurorPool,
                               HistoryCodeMod.WITHDRAWAL_LETTER,
-                              channelInfo(otherInfo, communicationChannel),
+                              channelInfo(jurorPool, otherInfo, communicationChannel),
                               null,
                               code);
     }
@@ -306,7 +304,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
                                           CommunicationChannel communicationChannel) {
         registerHistoryLoginUserAdditionalInfo(jurorPool,
                                                HistoryCodeMod.WITHDRAWAL_LETTER,
-                                               channelInfo(otherInfo, communicationChannel),
+                                               channelInfo(jurorPool, otherInfo, communicationChannel),
                                                null,
                                                code);
     }
@@ -338,7 +336,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
                                               CommunicationChannel communicationChannel) {
         registerHistoryLoginUserAdditionalInfo(jurorPool,
                                                HistoryCodeMod.NON_EXCUSED_LETTER,
-                                               channelInfo(otherInfo, communicationChannel),
+                                               channelInfo(jurorPool, otherInfo, communicationChannel),
                                                jurorPool.getJuror().getExcusalDate(),
                                                jurorPool.getJuror().getExcusalCode());
     }
@@ -347,7 +345,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     public void createExcusedLetter(JurorPool jurorPool, CommunicationChannel communicationChannel) {
         registerHistoryLoginUserAdditionalInfo(jurorPool,
                                                HistoryCodeMod.EXCUSED_LETTER,
-                                               channelInfo("Excusal Letter", communicationChannel),
+                                               channelInfo(jurorPool, "Excusal Letter", communicationChannel),
                                                jurorPool.getJuror().getExcusalDate(),
                                                jurorPool.getJuror().getExcusalCode());
     }
@@ -362,7 +360,8 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     @Override
     public void createAwaitingFurtherInformationHistory(JurorPool jurorPool, String missingInformation) {
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.AWAITING_FURTHER_INFORMATION,
-                                               missingInformation, null, null);
+                                               channelInfo(jurorPool, missingInformation, CommunicationChannel.LETTER),
+                                               null, null);
     }
 
     @Override
@@ -386,24 +385,26 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     public void createSummonLetterReprintedHistory(JurorPool jurorPool, FormCode formCode) {
         if (formCode == FormCode.ENG_DBD_SUMMONS || formCode == FormCode.BI_DBD_SUMMONS) {
             registerHistoryLoginUser(jurorPool, HistoryCodeMod.SUMMONS_REPRINTED,
-                                     "Reissued DBD summons letter");
+                                     channelInfo(jurorPool, "Reissued DBD summons letter",
+                                                 CommunicationChannel.LETTER));
             return;
         }
         registerHistoryLoginUser(jurorPool, HistoryCodeMod.SUMMONS_REPRINTED,
-                                 "Reissued summons letter");
+                                 channelInfo(jurorPool, "Reissued summons letter", CommunicationChannel.LETTER));
     }
 
     @Override
     public void createResendLetterHistory(JurorPool jurorPool, HistoryCodeMod historyCode) {
-        registerHistoryLoginUser(jurorPool, historyCode, null);
+        createResendLetterHistory(jurorPool, historyCode, CommunicationChannel.LETTER);
     }
 
     @Override
     public void createResendLetterHistory(JurorPool jurorPool, HistoryCodeMod historyCode,
                                           CommunicationChannel communicationChannel) {
-        String otherInfo = communicationChannel == CommunicationChannel.EMAIL
-            ? channelInfo(historyCode.getDescription(), communicationChannel)
-            : null;
+        String otherInfo = channelInfo(jurorPool, historyCode.getDescription(), communicationChannel);
+        if (communicationChannel != CommunicationChannel.EMAIL && otherInfo.equals(historyCode.getDescription())) {
+            otherInfo = null;
+        }
 
         registerHistoryLoginUser(jurorPool, historyCode, otherInfo);
     }
@@ -420,8 +421,9 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
     }
 
     @Override
-    public void createDeleteAdditionalInfoLetterHistory(JurorPool jurorPool) {
-        registerHistoryLoginUser(jurorPool, HistoryCodeMod.DELETE_REQUEST_MORE_INFO, null);
+    public void createDeleteAdditionalInfoLetterHistory(JurorPool jurorPool, FormCode formCode) {
+        String otherInfo = formCode == FormCode.BI_REQUESTINFO ? "Request for information deleted (Welsh)" : null;
+        registerHistoryLoginUser(jurorPool, HistoryCodeMod.DELETE_REQUEST_MORE_INFO, otherInfo);
     }
 
     @Override
@@ -442,7 +444,9 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
 
     @Override
     public void createResponsePackPrintedHistory(JurorPool jurorPool) {
-        registerHistoryLoginUser(jurorPool, HistoryCodeMod.RESPONSE_PACK_PRINTED, null);
+        String otherInfo = channelInfo(jurorPool, "Response pack", CommunicationChannel.LETTER);
+        registerHistoryLoginUser(jurorPool, HistoryCodeMod.RESPONSE_PACK_PRINTED,
+                                 "Response pack".equals(otherInfo) ? null : otherInfo);
     }
 
 
@@ -456,7 +460,7 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
         }
 
         registerHistoryLoginUserAdditionalInfo(jurorPool, HistoryCodeMod.POSTPONED_LETTER,
-                                               channelInfo(postponedLetter, communicationChannel),
+                                               channelInfo(jurorPool, postponedLetter, communicationChannel),
                                                jurorPool.getDeferralDate(),
                                                jurorPool.getDeferralCode());
 
@@ -489,16 +493,21 @@ public class JurorHistoryServiceImpl implements JurorHistoryService {
      * Builds an otherInformation string that reflects which channel the letter was queued on, mirroring the
      * pattern originally established by {@link #createDeferredLetterHistory}.
      *
+     * @param jurorPool the juror and court used to select the correspondence language
      * @param label   the base description of the letter/comm, e.g. "Confirmation Letter"
      * @param channel the channel it was queued on
      * @return "{label}" for {@link CommunicationChannel#LETTER}, otherwise "{label}" with "Letter" replaced by
-     *     "Email"
+     *     "Email", with " (Welsh)" appended when Welsh correspondence is selected
      */
-    private String channelInfo(String label, CommunicationChannel channel) {
+    private String channelInfo(JurorPool jurorPool, String label, CommunicationChannel channel) {
         String base = label == null ? "" : label;
-        return channel == CommunicationChannel.EMAIL
+        String channelLabel = channel == CommunicationChannel.EMAIL
             ? base.replace("Letter", "Email").trim()
             : base.trim();
+        boolean welsh = jurorPool.getJuror().isWelsh()
+            && (channel == CommunicationChannel.EMAIL
+            || welshCourtLocationRepository.findByLocCode(jurorPool.getCourt().getLocCode()) != null);
+        return welsh ? channelLabel + " (Welsh)" : channelLabel;
     }
 
     private void registerHistoryLoginUser(JurorPool jurorPool, HistoryCodeMod historyCode, String info) {
