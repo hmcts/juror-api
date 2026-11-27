@@ -52,9 +52,9 @@ class DbdSummonsReminderLetterTest extends AbstractLetterTest {
         setupEnglishExpectedResult();
 
         DbdSummonsReminderLetter letter = new DbdSummonsReminderLetter(
-            LetterTestUtils.testJurorPool(LocalDate.of(2017, Month.FEBRUARY, 6)),
+            LetterTestUtils.createJurorPool(LocalDate.of(2017, Month.FEBRUARY, 6)),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
 
         assertThat(letter.getLetterString()).isEqualTo(getExpectedEnglishResult());
         assertThat(letter.getFormCode()).isEqualTo(FormCode.ENG_DBD_SUMMONS_REM.getCode());
@@ -68,8 +68,8 @@ class DbdSummonsReminderLetterTest extends AbstractLetterTest {
         DbdSummonsReminderLetter letter = new DbdSummonsReminderLetter(
             LetterTestUtils.testWelshJurorPool(LocalDate.of(2017, Month.FEBRUARY, 6)),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation(),
-            LetterTestUtils.testWelshCourtLocation());
+            LetterTestUtils.createBureauLocation(),
+            LetterTestUtils.createWelshCourtLocation());
 
         assertThat(letter.getLetterString()).isEqualTo(getExpectedWelshResult());
         assertThat(letter.getFormCode()).isEqualTo(FormCode.BI_DBD_SUMMONS_REM.getCode());
@@ -83,7 +83,7 @@ class DbdSummonsReminderLetterTest extends AbstractLetterTest {
         DbdSummonsReminderLetter letter = new DbdSummonsReminderLetter(
             LetterTestUtils.testWelshJurorPool(LocalDate.of(2017, Month.FEBRUARY, 6)),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
 
         assertThat(letter.getLetterString()).isEqualTo(getExpectedEnglishResult());
     }

@@ -117,9 +117,9 @@ class SummonsLetterTest extends AbstractLetterTest {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
-        SummonsLetter summonsLetter = new SummonsLetter(LetterTestUtils.testJurorPool(date),
+        SummonsLetter summonsLetter = new SummonsLetter(LetterTestUtils.createJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
 
 
         assertThat(summonsLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
@@ -139,8 +139,8 @@ class SummonsLetterTest extends AbstractLetterTest {
         setupWelshExpectedResult();
         SummonsLetter summonsLetter = new SummonsLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation(),
-            LetterTestUtils.testWelshCourtLocation());
+            LetterTestUtils.createBureauLocation(),
+            LetterTestUtils.createWelshCourtLocation());
 
         assertThat(summonsLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
         assertThat(summonsLetter.getFormCode()).isEqualTo(FormCode.BI_SUMMONS.getCode());
@@ -157,7 +157,7 @@ class SummonsLetterTest extends AbstractLetterTest {
         setupEnglishExpectedResult();
         SummonsLetter summonsLetter = new SummonsLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
         assertThat(summonsLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
     }
 }

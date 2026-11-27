@@ -83,9 +83,9 @@ class ConfirmLetterTest extends AbstractLetterTest {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
-        ConfirmLetter confirmLetter = new ConfirmLetter(LetterTestUtils.testJurorPool(date),
+        ConfirmLetter confirmLetter = new ConfirmLetter(LetterTestUtils.createJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
 
         assertThat(confirmLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
         assertThat(confirmLetter.getFormCode()).isEqualTo(FormCode.ENG_CONFIRMATION.getCode());
@@ -103,8 +103,8 @@ class ConfirmLetterTest extends AbstractLetterTest {
         setupWelshExpectedResult();
         ConfirmLetter confirmLetter = new ConfirmLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation(),
-            LetterTestUtils.testWelshCourtLocation());
+            LetterTestUtils.createBureauLocation(),
+            LetterTestUtils.createWelshCourtLocation());
 
         assertThat(confirmLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
         assertThat(confirmLetter.getFormCode()).isEqualTo(FormCode.BI_CONFIRMATION.getCode());
@@ -121,7 +121,7 @@ class ConfirmLetterTest extends AbstractLetterTest {
         setupEnglishExpectedResult();
         ConfirmLetter confirmLetter = new ConfirmLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
         assertThat(confirmLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
     }
 }

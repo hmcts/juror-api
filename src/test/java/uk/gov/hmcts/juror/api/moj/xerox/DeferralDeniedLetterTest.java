@@ -91,9 +91,9 @@ class DeferralDeniedLetterTest extends AbstractLetterTest {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
-        DeferralDeniedLetter deferralDeniedLetter = new DeferralDeniedLetter(LetterTestUtils.testJurorPool(date),
+        DeferralDeniedLetter deferralDeniedLetter = new DeferralDeniedLetter(LetterTestUtils.createJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
 
         assertThat(deferralDeniedLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
         assertThat(deferralDeniedLetter.getFormCode()).isEqualTo(FormCode.ENG_DEFERRALDENIED.getCode());
@@ -111,8 +111,8 @@ class DeferralDeniedLetterTest extends AbstractLetterTest {
         setupWelshExpectedResult();
         DeferralDeniedLetter deferralDeniedLetter = new DeferralDeniedLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation(),
-            LetterTestUtils.testWelshCourtLocation());
+            LetterTestUtils.createBureauLocation(),
+            LetterTestUtils.createWelshCourtLocation());
 
         assertThat(deferralDeniedLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
         assertThat(deferralDeniedLetter.getFormCode()).isEqualTo(FormCode.BI_DEFERRALDENIED.getCode());
@@ -130,7 +130,7 @@ class DeferralDeniedLetterTest extends AbstractLetterTest {
         setupEnglishExpectedResult();
         DeferralDeniedLetter deferralDeniedLetter = new DeferralDeniedLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
         assertThat(deferralDeniedLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
     }
 }

@@ -65,7 +65,7 @@ class LetterBaseTest {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
         return LetterBase.LetterContext.builder()
-            .jurorPool(LetterTestUtils.testJurorPool(date));
+            .jurorPool(LetterTestUtils.createJurorPool(date));
     }
 
     @Test
@@ -140,7 +140,7 @@ class LetterBaseTest {
         courtLocation.setLocCourtName("GUILDFORD");
 
         LetterBase.LetterContext context = LetterBase.LetterContext.builder()
-            .jurorPool(LetterTestUtils.testJurorPool(
+            .jurorPool(LetterTestUtils.createJurorPool(
                 LocalDate.of(2017, Month.FEBRUARY, 6)))
             .courtLocation(courtLocation)
             .build();
@@ -285,7 +285,7 @@ class LetterBaseTest {
     @Test
     void bureauNameIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .bureauLocation(LetterTestUtils.createBureauLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_NAME, 40);
@@ -295,7 +295,7 @@ class LetterBaseTest {
     @Test
     void bureauAddress1IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .bureauLocation(LetterTestUtils.createBureauLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_ADDRESS1, 40);
@@ -305,7 +305,7 @@ class LetterBaseTest {
     @Test
     void bureauAddress2IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .bureauLocation(LetterTestUtils.createBureauLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_ADDRESS2, 40);
@@ -315,7 +315,7 @@ class LetterBaseTest {
     @Test
     void bureauAddress3IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .bureauLocation(LetterTestUtils.createBureauLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_ADDRESS3, 40);
@@ -325,7 +325,7 @@ class LetterBaseTest {
     @Test
     void bureauAddress4IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .bureauLocation(LetterTestUtils.createBureauLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_ADDRESS4, 40);
@@ -335,7 +335,7 @@ class LetterBaseTest {
     @Test
     void bureauAddress5IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .bureauLocation(LetterTestUtils.createBureauLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_ADDRESS5, 40);
@@ -345,7 +345,7 @@ class LetterBaseTest {
     @Test
     void bureauAddress6IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .bureauLocation(LetterTestUtils.createBureauLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_ADDRESS6, 40);
@@ -355,7 +355,7 @@ class LetterBaseTest {
     @Test
     void bureauPostcodeIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .bureauLocation(LetterTestUtils.createBureauLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_POSTCODE, 40);
@@ -365,7 +365,7 @@ class LetterBaseTest {
     @Test
     void bureauPhoneIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .bureauLocation(LetterTestUtils.createBureauLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_PHONE, 40);
@@ -375,7 +375,7 @@ class LetterBaseTest {
     @Test
     void bureauFaxIsBlank() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .bureauLocation(LetterTestUtils.createBureauLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_FAX, 40);
@@ -386,7 +386,7 @@ class LetterBaseTest {
     @Test
     void bureauSignatoryIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .bureauLocation(LetterTestUtils.testBureauLocation())
+            .bureauLocation(LetterTestUtils.createBureauLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.BUREAU_SIGNATORY, 40);
@@ -581,7 +581,7 @@ class LetterBaseTest {
     @Test
     void welshCourtNameIsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .welshCourtLocation(LetterTestUtils.createWelshCourtLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_NAME, 40);
@@ -591,7 +591,7 @@ class LetterBaseTest {
     @Test
     void welshCourtAddress1IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .welshCourtLocation(LetterTestUtils.createWelshCourtLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_ADDRESS1, 40);
@@ -601,7 +601,7 @@ class LetterBaseTest {
     @Test
     void welshCourtAddress2IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .welshCourtLocation(LetterTestUtils.createWelshCourtLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_ADDRESS2, 40);
@@ -611,7 +611,7 @@ class LetterBaseTest {
     @Test
     void welshCourtAddress3IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .welshCourtLocation(LetterTestUtils.createWelshCourtLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_ADDRESS3, 40);
@@ -621,7 +621,7 @@ class LetterBaseTest {
     @Test
     void welshCourtAddress4IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .welshCourtLocation(LetterTestUtils.createWelshCourtLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_ADDRESS4, 40);
@@ -631,7 +631,7 @@ class LetterBaseTest {
     @Test
     void welshCourtAddress5IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .welshCourtLocation(LetterTestUtils.createWelshCourtLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_ADDRESS5, 40);
@@ -641,7 +641,7 @@ class LetterBaseTest {
     @Test
     void welshCourtAddress6IsCorrect() {
         LetterBase testLetter = new LetterBase(testContextBuilder()
-            .welshCourtLocation(LetterTestUtils.testWelshCourtLocation())
+            .welshCourtLocation(LetterTestUtils.createWelshCourtLocation())
             .build());
 
         testLetter.addData(LetterBase.LetterDataType.WELSH_COURT_ADDRESS6, 40);

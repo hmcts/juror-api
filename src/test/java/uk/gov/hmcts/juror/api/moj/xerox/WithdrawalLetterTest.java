@@ -77,9 +77,9 @@ public class WithdrawalLetterTest extends AbstractLetterTest {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
-        WithdrawalLetter withdrawalLetter = new WithdrawalLetter(LetterTestUtils.testJurorPool(date),
+        WithdrawalLetter withdrawalLetter = new WithdrawalLetter(LetterTestUtils.createJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
 
         assertThat(withdrawalLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
         assertThat(withdrawalLetter.getFormCode()).isEqualTo(FormCode.ENG_WITHDRAWAL.getCode());
@@ -98,8 +98,8 @@ public class WithdrawalLetterTest extends AbstractLetterTest {
         setupWelshExpectedResult();
         WithdrawalLetter withdrawalLetter = new WithdrawalLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation(),
-            LetterTestUtils.testWelshCourtLocation());
+            LetterTestUtils.createBureauLocation(),
+            LetterTestUtils.createWelshCourtLocation());
 
         assertThat(withdrawalLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
         assertThat(withdrawalLetter.getFormCode()).isEqualTo(FormCode.BI_WITHDRAWAL.getCode());

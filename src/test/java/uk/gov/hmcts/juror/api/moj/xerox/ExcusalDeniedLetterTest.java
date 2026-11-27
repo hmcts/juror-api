@@ -91,9 +91,9 @@ class ExcusalDeniedLetterTest extends AbstractLetterTest {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
-        ExcusalDeniedLetter excusalDeniedLetter = new ExcusalDeniedLetter(LetterTestUtils.testJurorPool(date),
+        ExcusalDeniedLetter excusalDeniedLetter = new ExcusalDeniedLetter(LetterTestUtils.createJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
 
         assertThat(excusalDeniedLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
         assertThat(excusalDeniedLetter.getFormCode()).isEqualTo(FormCode.ENG_EXCUSALDENIED.getCode());
@@ -111,8 +111,8 @@ class ExcusalDeniedLetterTest extends AbstractLetterTest {
         setupWelshExpectedResult();
         ExcusalDeniedLetter excusalDeniedLetter = new ExcusalDeniedLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation(),
-            LetterTestUtils.testWelshCourtLocation());
+            LetterTestUtils.createBureauLocation(),
+            LetterTestUtils.createWelshCourtLocation());
 
         assertThat(excusalDeniedLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
         assertThat(excusalDeniedLetter.getFormCode()).isEqualTo(FormCode.BI_EXCUSALDENIED.getCode());
@@ -130,7 +130,7 @@ class ExcusalDeniedLetterTest extends AbstractLetterTest {
         setupEnglishExpectedResult();
         ExcusalDeniedLetter excusalDeniedLetter = new ExcusalDeniedLetter(LetterTestUtils.testWelshJurorPool(date),
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
         assertThat(excusalDeniedLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
     }
 }

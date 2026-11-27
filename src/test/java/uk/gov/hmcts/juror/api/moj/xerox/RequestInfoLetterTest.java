@@ -82,10 +82,10 @@ class RequestInfoLetterTest extends AbstractLetterTest {
 
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         setupEnglishExpectedResult();
-        RequestInfoLetter requestInfoLetter = new RequestInfoLetter(LetterTestUtils.testJurorPool(date),
+        RequestInfoLetter requestInfoLetter = new RequestInfoLetter(LetterTestUtils.createJurorPool(date),
                                                                     ADDITIONAL_INFORMATION,
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
 
 
         assertThat(requestInfoLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
@@ -105,8 +105,8 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         RequestInfoLetter requestInfoLetter = new RequestInfoLetter(LetterTestUtils.testWelshJurorPool(date),
                                                                     ADDITIONAL_INFORMATION,
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation(),
-            LetterTestUtils.testWelshCourtLocation());
+            LetterTestUtils.createBureauLocation(),
+            LetterTestUtils.createWelshCourtLocation());
 
         assertThat(requestInfoLetter.getLetterString()).isEqualTo(getExpectedWelshResult());
         assertThat(requestInfoLetter.getFormCode()).isEqualTo(FormCode.BI_REQUESTINFO.getCode());
@@ -124,7 +124,7 @@ class RequestInfoLetterTest extends AbstractLetterTest {
         RequestInfoLetter requestInfoLetter = new RequestInfoLetter(LetterTestUtils.testWelshJurorPool(date),
                                                                     ADDITIONAL_INFORMATION,
             LetterTestUtils.testCourtLocation(),
-            LetterTestUtils.testBureauLocation());
+            LetterTestUtils.createBureauLocation());
         assertThat(requestInfoLetter.getLetterString()).isEqualTo(getExpectedEnglishResult());
     }
 }

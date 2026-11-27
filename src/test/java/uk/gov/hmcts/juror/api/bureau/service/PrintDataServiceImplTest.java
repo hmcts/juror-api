@@ -71,9 +71,9 @@ class PrintDataServiceImplTest {
                 eq("FORM_CODE_ENUM"),
                 (FormAttributeRepository) any()))
             .thenReturn(formAttribute);
-        doReturn(LetterTestUtils.testBureauLocation()).when(courtLocationService)
+        doReturn(LetterTestUtils.createBureauLocation()).when(courtLocationService)
             .getCourtLocation(PrintDataServiceImpl.BUREAU_LOC_CODE);
-        doReturn(LetterTestUtils.testWelshCourtLocation()).when(welshCourtLocationRepository)
+        doReturn(LetterTestUtils.createWelshCourtLocation()).when(welshCourtLocationRepository)
             .findByLocCode(any());
     }
 
@@ -102,9 +102,9 @@ class PrintDataServiceImplTest {
 
         doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
         ArrayList<JurorPool> dummyList = new ArrayList<>();
-        dummyList.add(LetterTestUtils.testJurorPool(date));
-        dummyList.add(LetterTestUtils.testJurorPool(date));
-        dummyList.add(LetterTestUtils.testJurorPool(date));
+        dummyList.add(LetterTestUtils.createJurorPool(date));
+        dummyList.add(LetterTestUtils.createJurorPool(date));
+        dummyList.add(LetterTestUtils.createJurorPool(date));
         printDataService.bulkPrintSummonsLetter(dummyList);
         verify(bulkPrintDataRepository, times(3)).save(any());
     }
@@ -115,9 +115,9 @@ class PrintDataServiceImplTest {
 
         doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
         ArrayList<JurorPool> dummyList = new ArrayList<>();
-        dummyList.add(LetterTestUtils.testJurorPool(date));
-        dummyList.add(LetterTestUtils.testJurorPool(date));
-        dummyList.add(LetterTestUtils.testDisqualifiedJurorPool(date));
+        dummyList.add(LetterTestUtils.createJurorPool(date));
+        dummyList.add(LetterTestUtils.createJurorPool(date));
+        dummyList.add(LetterTestUtils.createDisqualifiedJurorPool(date));
         printDataService.bulkPrintSummonsLetter(dummyList);
         verify(bulkPrintDataRepository, times(2)).save(any());
     }
@@ -133,7 +133,7 @@ class PrintDataServiceImplTest {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
         doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
-        printDataService.printDeferralLetter(LetterTestUtils.testJurorPool(date));
+        printDataService.printDeferralLetter(LetterTestUtils.createJurorPool(date));
         verify(bulkPrintDataRepository, times(1)).save(any());
     }
 
@@ -148,7 +148,7 @@ class PrintDataServiceImplTest {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
         doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
-        printDataService.printDeferralDeniedLetter(LetterTestUtils.testJurorPool(date));
+        printDataService.printDeferralDeniedLetter(LetterTestUtils.createJurorPool(date));
         verify(bulkPrintDataRepository, times(1)).save(any());
     }
 
@@ -163,7 +163,7 @@ class PrintDataServiceImplTest {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
         doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
-        printDataService.printExcusalDeniedLetter(LetterTestUtils.testJurorPool(date));
+        printDataService.printExcusalDeniedLetter(LetterTestUtils.createJurorPool(date));
         verify(bulkPrintDataRepository, times(1)).save(any());
     }
 
@@ -178,7 +178,7 @@ class PrintDataServiceImplTest {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
         doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
-        printDataService.printConfirmationLetter(LetterTestUtils.testJurorPool(date));
+        printDataService.printConfirmationLetter(LetterTestUtils.createJurorPool(date));
         verify(bulkPrintDataRepository, times(1)).save(any());
     }
 
@@ -194,7 +194,7 @@ class PrintDataServiceImplTest {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
 
         doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
-        printDataService.printPostponeLetter(LetterTestUtils.testJurorPool(date));
+        printDataService.printPostponeLetter(LetterTestUtils.createJurorPool(date));
     }
 
     @Test
@@ -207,7 +207,7 @@ class PrintDataServiceImplTest {
     void printExcusalLetterCallsCommit() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
-        printDataService.printExcusalLetter(LetterTestUtils.testJurorPool(date));
+        printDataService.printExcusalLetter(LetterTestUtils.createJurorPool(date));
         verify(bulkPrintDataRepository, times(1)).save(any());
     }
 
@@ -221,7 +221,7 @@ class PrintDataServiceImplTest {
     void printWithdrawalLetterCallsCommit() {
         final LocalDate date = LocalDate.of(2017, Month.FEBRUARY, 6);
         doReturn(IJurorStatus.SUMMONED).when(jurorStatus).getStatus();
-        printDataService.printWithdrawalLetter(LetterTestUtils.testJurorPool(date));
+        printDataService.printWithdrawalLetter(LetterTestUtils.createJurorPool(date));
         verify(bulkPrintDataRepository, times(1)).save(any());
     }
 
@@ -236,7 +236,7 @@ class PrintDataServiceImplTest {
         mockFormAttributeLookup(FormCode.ENG_DBD_RESPONSE);
         doReturn(null).when(welshCourtLocationRepository).findByLocCode(any());
 
-        printDataService.printDbdResponseLetter(LetterTestUtils.testJurorPool(LocalDate.of(2017, Month.FEBRUARY, 6)));
+        printDataService.printDbdResponseLetter(LetterTestUtils.createJurorPool(LocalDate.of(2017, Month.FEBRUARY, 6)));
 
         ArgumentCaptor<BulkPrintData> committedRecord = ArgumentCaptor.forClass(BulkPrintData.class);
         verify(bulkPrintDataRepository).save(committedRecord.capture());
@@ -248,7 +248,7 @@ class PrintDataServiceImplTest {
     void printDbdResponseLetterCallsCommitWithWelshResponseFormCode() {
         mockFormAttributeLookup(FormCode.BI_DBD_RESPONSE);
 
-        printDataService.printDbdResponseLetter(LetterTestUtils.testJurorPool(LocalDate.of(2017, Month.FEBRUARY, 6)));
+        printDataService.printDbdResponseLetter(LetterTestUtils.createJurorPool(LocalDate.of(2017, Month.FEBRUARY, 6)));
 
         ArgumentCaptor<BulkPrintData> committedRecord = ArgumentCaptor.forClass(BulkPrintData.class);
         verify(bulkPrintDataRepository).save(committedRecord.capture());
