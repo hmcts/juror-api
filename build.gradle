@@ -154,7 +154,7 @@ dependencies {
   implementation('org.projectlombok:lombok:1.18.48')
   annotationProcessor('org.projectlombok:lombok')
 
-  implementation('org.apache.commons:commons-lang3:3.21.0')
+  implementation('org.apache.commons:commons-lang3:3.22.0')
   implementation('org.apache.commons:commons-text:1.15.0')
 
   implementation("uk.gov.service.notify:notifications-java-client:${notifyVersion}")
